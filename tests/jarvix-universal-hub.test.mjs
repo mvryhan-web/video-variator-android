@@ -16,7 +16,7 @@ test('Modes are selected in existing composer; plus stays plus and selection glo
  assert.match(composer,/sessionStorage\.setItem\('jarvix_composer_mode',mode\)/);
  assert.match(composer,/reportMode\(\)/);
  assert.match(composer,/plus\.textContent='\+'/);
- assert.match(design,/const isQuickChat=form\.id==='homeQuickForm'\|\|form\.id==='jChatForm'/);
+ assert.match(design,/const isQuickChat=\['homeQuickForm','jChatForm','creator'\]\.includes\(form\.id\)/);
  assert.match(design,/activeMode\.hidden=!/);
  assert.match(design,/if\(attach&&!isQuickChat\)/);
  assert.match(design,/if\(imageChoice&&!isQuickChat/);
@@ -32,7 +32,9 @@ test('No new website framework, no invented asset page, upload uses original val
  assert.match(design,/\[data-j-icon\]/);
  assert.ok(!css.includes('.j-mode-rail::after'));
  assert.match(css,/\.jarvix-compose \.j-settings-menu/);
- assert.match(design,/generate-studio\.html\?studio='\+kind\+'&settings=1'/);
+ // Owner now requires local mode choice, not redirecting the entire chat to Studio.
+ assert.match(design,/choice\.onclick=\(\)=>\{form\.querySelector\('#jPlusMenu/);
+ assert.doesNotMatch(design,/link\.href='generate-studio\.html\?studio='/);
  for(const html of [home,chat])assert.match(html,/class="j-send-plane"/);
 });
 

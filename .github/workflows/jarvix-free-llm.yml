@@ -16,6 +16,7 @@ on:
       - 'app/src/main/assets/studio-universal-dock.js'
       - 'tests/studio-universal-dock.test.mjs'
       - 'tests/studio-universal-dock.browser.test.mjs'
+      - 'tests/jarvix-universal-hub.browser.test.mjs'
       - 'app/src/main/assets/deepsyq.html'
       - 'app/src/main/assets/jarvix-chat.html'
       - 'tests/jarvix-universal-hub.test.mjs'
