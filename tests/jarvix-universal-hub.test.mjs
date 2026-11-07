@@ -35,3 +35,10 @@ test('No new website framework, no invented asset page, upload uses original val
  assert.match(design,/generate-studio\.html\?studio='\+kind\+'&settings=1'/);
  for(const html of [home,chat])assert.match(html,/class="j-send-plane"/);
 });
+
+test('existing My Creations Assets destination tolerates missing optional archived filter',async()=>{
+ const s=await get('my-creations.html');
+ assert.match(s,/<title>My Creations/);
+ assert.match(s,/\$\('includeArchived'\)\?\.addEventListener\('change'/);
+ assert.ok(s.includes("'/api/studio/workspace/cards?'"));
+});
