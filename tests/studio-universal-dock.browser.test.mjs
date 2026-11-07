@@ -173,6 +173,55 @@ try{
    await page.locator('#homeStudioSettingsHost').waitFor({state:'hidden',timeout:12000});
   }finally{await context.close();}
  });
+
+ // Owner #619: test the actual shared CSS after late styles are loaded; never send a paid request.
+ await test('Issue 619: golden dock and arrow-only Send on Home, JARVIX and all Studios',async()=>{
+  for(const layout of [{name:'desktop',w:1365,h:900},{name:'mobile',w:390,h:844},{name:'small-mobile',w:320,h:700}]){
+   for(const route of ['deepsyq.html','jarvix-chat.html','generate-studio.html?studio=image',
+    'generate-studio.html?studio=video','generate-studio.html?studio=audio']){
+    const context=await browser.newContext({viewport:{width:layout.w,height:layout.h},
+     isMobile:layout.w<761,hasTouch:layout.w<761});
+    await context.addInitScript(()=>{localStorage.setItem('deepsyq_lumina_terms_accepted','true');});
+    const page=await context.newPage(),paid=[];
+    page.on('request',r=>{if(r.method()==='POST'&&/\\/api\\/(?:studio\\/jobs|stripe|payments)\\b/.test(r.url()))paid.push(r.url());});
+    try{
+     await page.goto(base+'/'+route,{waitUntil:'domcontentloaded',timeout:30000});
+     const studio=route.startsWith('generate-studio');
+     const dockSelector=studio?'#studioUniversalDock.j-neon-dock':
+      route==='jarvix-chat.html'?'.j-chat-bottom.j-neon-dock':'#homeQuickBar.j-neon-dock';
+     const sendSelector=studio?'#generate':route==='jarvix-chat.html'?'#jSend':'#homeQuickSubmit';
+     await page.waitForSelector(dockSelector+' #jPlus',{timeout:25000});
+     await page.waitForFunction(()=>getComputedStyle(document.getElementById('jPlus')).borderTopColor==='rgb(255, 191, 82)',{timeout:15000});
+     const styles=await page.evaluate(({dockSelector,sendSelector})=>{
+      const dock=document.querySelector(dockSelector),plus=dock.querySelector('#jPlus'),
+       send=dock.querySelector(sendSelector),icon=send?.querySelector('.j-send-plane');
+      const d=getComputedStyle(dock),p=getComputedStyle(plus),s=getComputedStyle(send);
+      const r=dock.getBoundingClientRect();
+      return {dockBackground:d.backgroundImage,plusBorder:p.borderTopColor,
+       plusBackground:p.backgroundImage,sendColor:s.color,
+       sendBackground:s.backgroundImage,sendBackgroundColor:s.backgroundColor,
+       sendBorder:s.borderTopWidth,sendShadow:s.boxShadow,
+       glyph:!!icon,iconStroke:icon&&getComputedStyle(icon).stroke,
+       left:r.left,right:r.right,viewport:innerWidth};
+     },{dockSelector,sendSelector});
+     assert.ok(styles.dockBackground.includes('rgb(255, 191, 82)')||
+      styles.dockBackground.includes('rgb(255, 202, 107)'),route+' gold frame '+JSON.stringify(styles));
+     assert.equal(styles.plusBorder,'rgb(255, 191, 82)',route+' + must be amber');
+     assert.equal(styles.sendColor,'rgb(255, 191, 82)',route+' arrow must be amber');
+     assert.equal(styles.sendBackground,'none',route+' no colored Send disc');
+     assert.equal(styles.sendBackgroundColor,'rgba(0, 0, 0, 0)',route+' no Send fill');
+     assert.equal(styles.sendBorder,'0px',route+' no circular Send border');
+     assert.equal(styles.sendShadow,'none',route+' no circular Send glow');
+     assert.equal(styles.glyph,true,route+' existing real paper-plane SVG retained');
+     assert.ok(styles.left>=-2&&styles.right<=layout.w+2,route+' dock not clipped '+JSON.stringify(styles));
+     await page.screenshot({path:file+'/issue619-'+layout.name+'-'+route.split('/').pop().replace(/[^a-z0-9-]/gi,'_')+'.png',fullPage:false});
+     await page.locator(dockSelector+' #jPlus').click();
+     assert.equal(await page.locator(dockSelector+' #jPlusMenu .j-hub-tile').count(),8,route+' native hub remains');
+     assert.equal(paid.length,0,route+' no paid requests');
+    }finally{await context.close();}
+   }
+  }
+ });
 }finally{
  await browser?.close();server.kill('SIGTERM');
  if(server.exitCode===null&&server.signalCode===null)await once(server,'exit');
