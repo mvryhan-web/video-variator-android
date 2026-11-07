@@ -558,7 +558,7 @@ test('Owner 07 Nov mobile/desktop header: Credit left of orb, Tour right, no hea
  expect(writes).toEqual([]);
 });
 
-test('Canvas outer frame is removed on Home and Canvas without hiding the gallery or its controls',async({page})=>{
+test('Canvas original outer frame is preserved on Home and Canvas with its gallery and controls',async({page})=>{
  test.setTimeout(90000);
  for(const route of ['/deepsyq.html','/canvas.html']){
   await page.goto(route,{waitUntil:'domcontentloaded'});
@@ -568,14 +568,39 @@ test('Canvas outer frame is removed on Home and Canvas without hiding the galler
    const s=getComputedStyle(el);
    return {top:s.borderTopWidth,left:s.borderLeftWidth,bottom:s.borderBottomWidth,right:s.borderRightWidth,shadow:s.boxShadow};
   });
-  expect(css.top).toBe('0px');
-  expect(css.left).toBe('0px');
-  expect(css.bottom).toBe('0px');
-  expect(css.right).toBe('0px');
+  // Revert the previous mistaken Canvas edit; the user requested VIDEO carousel only.
+  expect(css.top).toBe('1px');
+  expect(css.left).toBe('1px');
+  expect(css.bottom).toBe('1px');
+  expect(css.right).toBe('1px');
   expect(css.shadow).toBe('none');
   await expect(container.locator('#canvasExampleGrid .canvas-example')).toHaveCount(9);
   // Home intentionally shows just the compact 9-image gallery; its full
   // existing editor remains only on /canvas.html.
   if(route==='/canvas.html')await expect(container.locator('#quickCreateForm')).toHaveCount(1);
+ }
+});
+
+
+test('only Home video carousel purple outlines disappear without changing carousel playback or Canvas',async({page})=>{
+ test.setTimeout(90000);
+ for(const width of [390,1365]){
+  await page.setViewportSize({width,height:900});
+  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+  const carousel=page.locator('#homeHeroCarousel');
+  await expect(carousel).toHaveCount(1);
+  await expect(page.locator('.hero-stage-cinematic .hero-film-outline')).toBeHidden();
+  await expect(page.locator('.hero-stage-cinematic .hero-neighbor')).toHaveCount(2);
+  const borders=await page.locator('.hero-stage-cinematic .hero-neighbor').evaluateAll(items=>items.map(item=>{
+    const css=getComputedStyle(item);
+    return {border:css.borderTopWidth,shadow:css.boxShadow};
+  }));
+  for(const frame of borders){
+    expect(frame.border).toBe('0px');
+    expect(frame.shadow).toBe('none');
+  }
+  await expect(page.locator('#homeHeroPrevious,#homeHeroNext')).toHaveCount(2);
+  await expect(page.locator('#inspirationHeroVideo')).toHaveCount(1);
+  await expect(page.locator('#canvasFeature.landing-feature')).toHaveCount(1);
  }
 });
