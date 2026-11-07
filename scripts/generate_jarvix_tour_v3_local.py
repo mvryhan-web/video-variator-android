@@ -76,7 +76,7 @@ def main() -> None:
         lang, text = item["language"], item["text"]
         if len(text) > 300:
             raise RuntimeError("Text exceeds server-safe 300 chars: " + lang)
-        tag = hashlib.sha256((lang + "\\0" + text).encode("utf-8")).hexdigest()[:12]
+        tag = hashlib.sha256((lang + "\0" + text).encode("utf-8")).hexdigest()[:12]
         filename = f"t3_{lang}_{tag}.wav"
         path = OUTPUT / filename
         if validate_wav(path):
@@ -103,7 +103,7 @@ def main() -> None:
     clips = []
     for item in items:
         lang, spoken = item["language"], item["text"]
-        tag = hashlib.sha256((lang + "\\0" + spoken).encode("utf-8")).hexdigest()[:12]
+        tag = hashlib.sha256((lang + "\0" + spoken).encode("utf-8")).hexdigest()[:12]
         filename = f"t3_{lang}_{tag}.wav"
         path = OUTPUT / filename
         if validate_wav(path):
