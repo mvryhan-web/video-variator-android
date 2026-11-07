@@ -130,14 +130,25 @@ function setupMobileShell() {
   if(!login.id)login.id='topLogin';
   if(!login.isConnected)desktopActions.append(login);
   desktopActions.prepend(tools);
-  if(document.body.classList.contains('j-action-workspace') || document.body.classList.contains('ds-embedded-uniquifier')){
+  const legacyDesktopCredit = document.body.classList.contains('j-action-workspace') || document.body.classList.contains('ds-embedded-uniquifier');
+  {
+    // Owner 07 Nov: reuse the same mobile AI Credit beside All tools on EVERY route.
+    // The desktop credit stays exactly as it was: only legacy workspaces receive this extra.
     // Owner 07 Nov: no AI Apps header pill. Its position beside the orb
     // belongs to the working AI Credit link; Tour moves to the other side.
     const balance=link('AI Credit','pricing.html#credits','ds-header-credit');
     balance.setAttribute('aria-label','AI Credit');
     const updateCredit=async()=>{const token=localStorage.getItem('vv_token');balance.textContent='AI Credit';balance.removeAttribute('title');if(!token)return;try{const r=await fetch('/api/ai-wallet/balance',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const data=await r.json();if(token===localStorage.getItem('vv_token')&&Number.isSafeInteger(data.available)&&data.available>=0)balance.title='Available AI credits: '+data.available.toLocaleString();}catch{}};
     void updateCredit();window.addEventListener('storage',e=>{if(e.key==='vv_token')void updateCredit();});
-    const placeExtras=()=>{if(balance.closest('.ds-header-pod-right'))return;if(document.body.classList.contains('ds-mobile-layout')){left.append(balance);}else if(!document.getElementById('walletButton')){desktopActions.insertBefore(balance,tour);}else balance.remove();};
+    const placeExtras=()=>{
+      if(document.body.classList.contains('ds-mobile-layout')){
+        if(balance.parentElement!==left)left.append(balance);
+      }else if(balance.closest('.ds-header-pod-right')){
+        return; // Existing desktop shared header continues to own its credit.
+      }else if(legacyDesktopCredit && !document.getElementById('walletButton')){
+        if(balance.parentElement!==desktopActions)desktopActions.insertBefore(balance,tour);
+      }else balance.remove();
+    };
     new MutationObserver(placeExtras).observe(document.body,{attributes:true,attributeFilter:['class']});placeExtras();
   }
   const reused = [toggle, tools, tour, pricing, login];
@@ -193,6 +204,9 @@ function setupMobileShell() {
       move(header, document.body); document.body.prepend(spacer, header);
       header.classList.add('ds-mobile-header'); sidebar.classList.add('ds-mobile-drawer');
       document.body.classList.add('ds-mobile-layout');
+      // Preserve the existing JARVIX button and its handlers; on pages where it
+      // lives inside a legacy wrapper, expose it as a direct header child.
+      if(orb && orb.parentElement!==header)move(orb,header);
       header.append(brand, controls);
       move(toggle, document.body); toggle.classList.add('ds-mobile-menu');
       move(tools, left); move(tour, right); move(pricing, right); move(login, right);
@@ -204,6 +218,9 @@ function setupMobileShell() {
         if (marker?.parentNode) { marker.replaceWith(el); saved.delete(el); }
         else el.remove();
       }
+      // Restore the original desktop orb slot only if mobile had to move it.
+      const orbMarker=orb&&saved.get(orb);
+      if(orbMarker?.parentNode){orbMarker.replaceWith(orb);saved.delete(orb);}
       brand.remove(); controls.remove(); spacer.remove();
       const marker = saved.get(header); if (marker?.parentNode) marker.replaceWith(header); saved.delete(header);
       header.classList.remove('ds-mobile-header'); sidebar.classList.remove('ds-mobile-drawer');

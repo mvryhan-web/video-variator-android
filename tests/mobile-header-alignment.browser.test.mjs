@@ -1,3 +1,4 @@
+// Owner parity acceptance: one Home-style mobile header on every shared page.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
@@ -27,7 +28,10 @@ test('Owner mobile header positioning across shared pages',async()=>{
     for(const route of ['deepsyq.html','ai-apps.html','pricing.html','canvas.html',
       'generate-studio.html?studio=image','generate-studio.html?studio=video',
       'generate-studio.html?studio=audio','jarvix-chat.html','free-tools.html',
-      'my-creations.html','index.html']){
+      'my-creations.html','index.html','video-uniquifier.html','ai-agents.html',
+      'avatar-studio.html','compare-ai.html','design-gallery.html','contact.html',
+      'audio-studio.html','jarvix-studio.html','mobile-utility.html',
+      'deepsyq.html#inspirationPreview']){
      const page=await context.newPage();
      try{
       await page.goto(base+'/'+route,{waitUntil:'domcontentloaded',timeout:18000});
@@ -42,7 +46,12 @@ test('Owner mobile header positioning across shared pages',async()=>{
       });
       console.log('MOBILE_HEADER_QA '+JSON.stringify({width,route,...geometry}));
       const centerX=b=>b.x+b.w/2,centerY=b=>b.y+b.h/2;
-      for(const key of ['header','spacer','brand','word','login','menu','orb','controls','main'])
+      // The legacy JARVIX Studio route has no native <main>; its header is
+      // shared, but this task must not rewrite that page's document structure.
+      const expectedBoxes=route==='jarvix-studio.html'
+       ? ['header','spacer','brand','word','login','menu','orb','controls']
+       : ['header','spacer','brand','word','login','menu','orb','controls','main'];
+      for(const key of expectedBoxes)
        assert.ok(geometry[key]&&geometry[key].w>0&&geometry[key].h>0,
         width+' '+route+' missing shared visible '+key+' '+JSON.stringify(geometry));
       assert.equal(geometry.header.h,132,width+' '+route+' exactly one compact 132px header');
@@ -59,12 +68,61 @@ test('Owner mobile header positioning across shared pages',async()=>{
        width+' '+route+' original orb must fit within compact header');
       assert.ok(geometry.controls.y+geometry.controls.h<=geometry.header.y+geometry.header.h+1,
        width+' '+route+' existing second-row controls must fit header');
-      assert.ok(geometry.main.y>=geometry.header.y+geometry.header.h-1&&
-       geometry.main.y<=geometry.header.y+geometry.header.h+28,
+      // Legacy informational/tool pages have their own content paddings; this
+      // task must normalize their HEADER, not redesign their first content row.
+      const legacyContentGap=['contact.html','audio-studio.html','jarvix-studio.html','mobile-utility.html'].includes(route)?80:28;
+      // Inspiration is a Home anchor: its intentional scroll shifts <main>
+      // above the viewport while the fixed mobile header stays in place.
+      if(geometry.main&&!route.includes('#'))assert.ok(geometry.main.y>=geometry.header.y+geometry.header.h-1&&
+       geometry.main.y<=geometry.header.y+geometry.header.h+legacyContentGap,
        width+' '+route+' actual content begins near the common header without a large top gap');
       assert.ok(geometry.word.x>geometry.menu.x+geometry.menu.w+2&&
        geometry.word.x+geometry.word.w<geometry.login.x-2,
        width+' '+route+' title must not overlap menu or Login');
+      // All routes must use the Home mobile header: Tools + AI Credit on the
+      // left, the SAME JARVIX button at center, Tour/Pricing on the right.
+      // Remove only the large group outlines; retain each button's own border.
+      const parity=await page.evaluate(()=>{
+       const header=document.querySelector('header.ds-mobile-header');
+       const left=document.querySelector('.ds-mobile-control-left');
+       const right=document.querySelector('.ds-mobile-control-right');
+       const orb=document.getElementById('topJarvisBtn');
+       const styles=el=>{const s=getComputedStyle(el);return{
+        borderLeft:s.borderLeftColor,borderRight:s.borderRightColor,
+        backgroundImage:s.backgroundImage,shadow:s.boxShadow,
+        display:s.display,visibility:s.visibility,opacity:s.opacity
+       };};
+       const credit=left.querySelector('.ds-header-credit');
+       return {
+        leftTools:left.querySelectorAll('.ds-header-tools').length,
+        leftCredit:left.querySelectorAll('.ds-header-credit').length,
+        creditHref:credit?.getAttribute('href'),
+        rightTour:right.querySelectorAll('#dsTakeTour').length,
+        rightPricing:right.querySelectorAll('#topPricing').length,
+        originalOrb:header.querySelector(':scope > #topJarvisBtn')===orb,
+        orbCount:document.querySelectorAll('#topJarvisBtn').length,
+        approvedOrb:!!orb?.querySelector('.jarvis-mini-orb.jv-approved-orb'),
+        orb:styles(orb),left:styles(left),right:styles(right)
+       };
+      });
+      const clear='rgba(0, 0, 0, 0)';
+      assert.equal(parity.leftTools,1,width+' '+route+' missing All tools');
+      assert.equal(parity.leftCredit,1,width+' '+route+' missing Home AI Credit');
+      assert.equal(parity.creditHref,'pricing.html#credits',width+' '+route+' wrong AI Credit route');
+      assert.equal(parity.rightTour,1,width+' '+route+' missing Tour');
+      assert.equal(parity.rightPricing,1,width+' '+route+' missing Pricing');
+      assert.equal(parity.orbCount,1,width+' '+route+' must reuse exactly one JARVIX');
+      assert.equal(parity.originalOrb,true,width+' '+route+' orb must be header direct child');
+      assert.equal(parity.approvedOrb,true,width+' '+route+' owner-approved original orb missing');
+      assert.equal(parity.orb.display,'flex',width+' '+route+' JARVIX hidden by route');
+      assert.equal(parity.orb.visibility,'visible',width+' '+route+' JARVIX visually hidden');
+      assert.equal(parity.orb.opacity,'1',width+' '+route+' JARVIX transparent');
+      for(const side of ['left','right']){
+       assert.equal(parity[side].borderLeft,clear,width+' '+route+' outer '+side+' border');
+       assert.equal(parity[side].borderRight,clear,width+' '+route+' outer '+side+' border');
+       assert.equal(parity[side].backgroundImage,'none',width+' '+route+' outer '+side+' gradient');
+       assert.equal(parity[side].shadow,'none',width+' '+route+' outer '+side+' shadow');
+      }
 
      }finally{await page.close();}
     }

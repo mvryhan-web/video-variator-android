@@ -410,3 +410,28 @@ body.ds-tour-active #luminaTermsModal.is-open{visibility:hidden!important;opacit
 }
 /* On the narrowest phones the approved logo and title still fit between
    menu and account, without moving either control or changing typography. */
+
+/* Owner 07 Nov: mobile Home is the reference for EVERY page.
+   Only remove the large extra group outlines (not individual pill borders).
+   Keep the same dimensions, button handlers, 132px header and original orb art. */
+@media (max-width:760px){
+  html body.ds-mobile-layout .ds-mobile-control-left,
+  html body.ds-mobile-layout .ds-mobile-control-right{
+    border-color:transparent!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    outline:none!important;
+  }
+  /* The shared original button must remain visible in the mobile header,
+     including on pages which previously nested it in a desktop wrapper. */
+  html body.ds-mobile-layout header.ds-mobile-header > #topJarvisBtn:not([hidden]){
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    z-index:606!important;
+  }
+  html body.ds-mobile-layout.ds-mobile-drawer-open header.ds-mobile-header > #topJarvisBtn{
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+}
