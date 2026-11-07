@@ -45,18 +45,37 @@ function createOrbSvg(){
 function decorate(slot){
  if(slot.classList.contains('jv-approved-orb'))return;
  slot.classList.add('jv-approved-orb');
- slot.append(createOrbSvg()); // Preserved original, used automatically when photo is disabled or fails.
- if(OWNER_SPHERE_TEST_ENABLED){
-  const photo=document.createElement('img');
-  photo.className='jv-owner-upload-orb';
-  photo.alt='';
-  photo.setAttribute('aria-hidden','true');
-  photo.decoding='async';
-  photo.referrerPolicy='no-referrer';
-  photo.addEventListener('load',()=>slot.classList.add('jv-owner-photo-test'),{once:true});
-  photo.addEventListener('error',()=>photo.remove(),{once:true});
-  photo.src=OWNER_SPHERE_TEST_URL;
-  slot.append(photo);
+ // The owner photo and the old SVG must NEVER render together: old SVG
+ // orbit ellipses were the unauthorized extra arcs in the owner's screenshot.
+ if(!OWNER_SPHERE_TEST_ENABLED){
+  slot.append(createOrbSvg()); // Exact original rollback, no asset deletion.
+ }else{
+  const parts=['base','inner','cyan','orange','pink'];
+  const layers=parts.map(part=>{
+   const photo=document.createElement('img');
+   photo.className='jv-owner-upload-orb jv-owner-layer-'+part;
+   photo.alt='';
+   photo.setAttribute('aria-hidden','true');
+   photo.decoding='async';
+   photo.referrerPolicy='no-referrer';
+   return photo;
+  });
+  const fail=()=>{
+   for(const layer of layers)layer.remove();
+   slot.classList.remove('jv-owner-photo-test');
+   // Failure fallback only; NEVER overlay the owner's photo with SVG.
+   slot.append(createOrbSvg());
+  };
+  layers[0].addEventListener('load',()=>{
+   if(layers[0].naturalWidth===1254&&layers[0].naturalHeight===1254){
+    slot.classList.add('jv-owner-photo-test');
+   }else fail();
+  },{once:true});
+  layers[0].addEventListener('error',fail,{once:true});
+  for(const photo of layers){
+   photo.src=OWNER_SPHERE_TEST_URL; // SAME original PNG; masks select its own pixels.
+   slot.append(photo);
+  }
  }
  const header=slot.closest('#topJarvisBtn');
  if(header)header.classList.add('jv-approved-orb-button');
@@ -80,7 +99,7 @@ export function mountApprovedJarvixOrb(root=document){
 export function installApprovedJarvixOrb(){
  if(!document.getElementById('jvApprovedOrbStyles')){
   const css=document.createElement('link');css.id='jvApprovedOrbStyles';
-  css.rel='stylesheet';css.href='jarvix-approved-orb.css?v=owner-photo-test-20261107';
+  css.rel='stylesheet';css.href='jarvix-approved-orb.css?v=owner-source-motion-20261107';
   document.head.append(css);
  }
  mountApprovedJarvixOrb();

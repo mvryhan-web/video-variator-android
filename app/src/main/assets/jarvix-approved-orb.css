@@ -31,31 +31,69 @@
 .j-mode-rail .jv-rail-mini-orb>.ds-reference-orb{
  width:100%!important;height:100%!important;
 }
-/* Owner's exact uploaded PNG — reversible TEST-only visual substitution.
-   The SVG is retained beneath it; remove the JS test flag to restore it. */
-.jv-approved-orb>.jv-owner-upload-orb{display:none!important}
-.jv-approved-orb.jv-owner-photo-test>.ds-reference-orb{
- visibility:hidden!important;
+/* Owner 2026-11-07: animate ONLY pixels from their uploaded original PNG.
+   No legacy SVG orbit, synthetic glow, shadow, halo, graphics or new colors.
+   The source image's existing blue/cyan/pink/orange portions are isolated by
+   concentric radial masks and moved; same PNG in every image layer. */
+.jarvis-mini-orb.jv-owner-photo-test::before,
+.jarvis-mini-orb.jv-owner-photo-test::after{
+ content:none!important;display:none!important;animation:none!important;
 }
-.jv-approved-orb.jv-owner-photo-test>.jv-owner-upload-orb{
+.jarvis-mini-orb.jv-owner-photo-test>.ds-reference-orb{display:none!important}
+.jarvis-mini-orb.jv-approved-orb>.jv-owner-upload-orb{display:none!important}
+.jarvis-mini-orb.jv-owner-photo-test>.jv-owner-upload-orb{
  display:block!important;
  position:absolute!important;inset:0!important;
  width:100%!important;height:100%!important;max-width:none!important;
- object-fit:contain;pointer-events:none;
- mask-image:radial-gradient(circle closest-side at center,#000 0%,#000 79%,transparent 100%);
- -webkit-mask-image:radial-gradient(circle closest-side at center,#000 0%,#000 79%,transparent 100%);
- filter:drop-shadow(0 0 3px #10d9ff88);
- transition:filter .2s ease;
+ object-fit:contain!important;pointer-events:none!important;
+ border:0!important;border-radius:0!important;box-shadow:none!important;
+ background:transparent!important;filter:none!important;
+ transform-origin:50% 50%!important;
+ -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
 }
 #topJarvisBtn.jv-approved-orb-button>.jarvis-mini-orb.jv-owner-photo-test>.jv-owner-upload-orb{
  inset:-25%!important;width:150%!important;height:150%!important;
- filter:drop-shadow(0 0 7px #0ee7ffaa);
 }
-#topJarvisBtn.is-listening .jv-owner-photo-test>.jv-owner-upload-orb{
- filter:brightness(1.12) drop-shadow(0 0 7px #12f0ffc9);
+/* Segments tile the same source with no redraw. Distances are percent of
+   original sphere radius, not arbitrary added shapes. */
+.jarvis-mini-orb.jv-owner-photo-test>.jv-owner-layer-base{
+ -webkit-mask-image:radial-gradient(circle closest-side at center,#000 0%,#000 9.8%,transparent 10%,transparent 59.9%,#000 60.1%,#000 82%,transparent 92%);
+ mask-image:radial-gradient(circle closest-side at center,#000 0%,#000 9.8%,transparent 10%,transparent 59.9%,#000 60.1%,#000 82%,transparent 92%);
+ animation:jv-photo-original-halo-breath 5s ease-in-out infinite;
 }
-#topJarvisBtn.is-speaking .jv-owner-photo-test>.jv-owner-upload-orb{
- filter:brightness(1.07) drop-shadow(0 0 8px #26dfffc0);
+.jarvis-mini-orb.jv-owner-photo-test>.jv-owner-layer-inner{
+ -webkit-mask-image:radial-gradient(circle closest-side at center,transparent 0%,transparent 9.7%,#000 10%,#000 40.2%,transparent 40.6%);
+ mask-image:radial-gradient(circle closest-side at center,transparent 0%,transparent 9.7%,#000 10%,#000 40.2%,transparent 40.6%);
+ animation:jv-photo-blue-orbits-up 12s ease-in-out infinite alternate;
+}
+.jarvis-mini-orb.jv-owner-photo-test>.jv-owner-layer-cyan{
+ -webkit-mask-image:radial-gradient(circle closest-side at center,transparent 0%,transparent 40.2%,#000 40.5%,#000 45.2%,transparent 45.5%);
+ mask-image:radial-gradient(circle closest-side at center,transparent 0%,transparent 40.2%,#000 40.5%,#000 45.2%,transparent 45.5%);
+ animation:jv-photo-cyan-clockwise 16s linear infinite;
+}
+.jarvis-mini-orb.jv-owner-photo-test>.jv-owner-layer-orange{
+ -webkit-mask-image:radial-gradient(circle closest-side at center,transparent 0%,transparent 45.2%,#000 45.5%,#000 53.6%,transparent 53.9%);
+ mask-image:radial-gradient(circle closest-side at center,transparent 0%,transparent 45.2%,#000 45.5%,#000 53.6%,transparent 53.9%);
+ animation:jv-photo-original-orange-flow 22s linear infinite;
+}
+.jarvis-mini-orb.jv-owner-photo-test>.jv-owner-layer-pink{
+ -webkit-mask-image:radial-gradient(circle closest-side at center,transparent 0%,transparent 53.6%,#000 53.9%,#000 59.8%,transparent 60.1%);
+ mask-image:radial-gradient(circle closest-side at center,transparent 0%,transparent 53.6%,#000 53.9%,#000 59.8%,transparent 60.1%);
+ animation:jv-photo-pink-counterclockwise 20s linear infinite;
+}
+@keyframes jv-photo-cyan-clockwise{to{transform:rotate(360deg)}}
+@keyframes jv-photo-pink-counterclockwise{to{transform:rotate(-360deg)}}
+@keyframes jv-photo-original-orange-flow{to{transform:rotate(360deg)}}
+@keyframes jv-photo-blue-orbits-up{
+ from{transform:translateY(.4%)}to{transform:translateY(-.4%)}
+}
+@keyframes jv-photo-original-halo-breath{
+ 0%,100%{opacity:.95}50%{opacity:1}
+}
+@media(prefers-reduced-motion:reduce){
+ .jarvis-mini-orb.jv-owner-photo-test>.jv-owner-upload-orb{
+  animation:none!important;transform:none!important;
+ }
 }
 
 /* Only stage07 appearance. Opposing ring motion and live voice reactions
