@@ -153,3 +153,104 @@ test('five Inspiration videos and image cards share one compact and expandable p
   await expect(dialog).toHaveCount(0);
  }
 });
+
+
+test('Mobile Inspiration image carousel keeps photo, prompt, copy and Clone & Try synchronized',async({page})=>{
+ test.setTimeout(105000);
+ const photos=[
+  {...image,id:'carousel-one',title:'Aurora photo',prompt:'Prompt belonging only to aurora',previewUrl:'/media/inspiration/openai-20261021/image-01-orbital-muse.webp'},
+  {...image,id:'carousel-two',title:'Rose photo',prompt:'Prompt belonging only to rose',previewUrl:'/media/inspiration/openai-20261021/image-04-soft-signal.webp'},
+  {...image,id:'carousel-three',title:'Glass photo',prompt:'Prompt belonging only to glass',previewUrl:'/media/inspiration/openai-20261021/image-05-solar-visor.webp'}
+ ];
+ const paid=[];page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio|billing|ai-wallet)/.test(r.url()))paid.push(r.url());});
+ await page.addInitScript(()=>{
+  Object.defineProperty(navigator,'clipboard',{configurable:true,value:{
+   writeText:async value=>{window.__inspirationCopied=value;}
+  }});
+ });
+ await page.route('**/api/config',r=>r.fulfill({json:{features:{inspiration:true},plans:{}}}));
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[video,...photos],categories:[],ratios:[]}}));
+ await page.setViewportSize({width:390,height:850});
+ await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ await page.getByRole('button',{name:'View Aurora photo inspiration'}).click();
+ const dialog=page.locator('dialog.inspiration-detail-minimal');
+ await expect(dialog).toBeVisible();
+ const showMore=dialog.getByRole('button',{name:'Show more'});
+ const copy=dialog.getByRole('button',{name:'Copy prompt'});
+ const prev=dialog.getByRole('button',{name:'Previous image'});
+ const next=dialog.getByRole('button',{name:'Next image'});
+ await expect(prev).toBeVisible();
+ await expect(next).toBeVisible();
+ await expect(dialog.locator('.inspiration-detail-count')).toHaveText('1 / 3');
+ await expect(dialog.locator('.inspiration-detail-media')).toHaveAttribute('src',photos[0].previewUrl);
+ await expect(dialog.locator('.inspiration-detail-prompt')).toHaveText(photos[0].prompt);
+ // Copy and expansion remain one row, with Copy Prompt aligned to the right.
+ const controls=await dialog.evaluate(d=>{
+  const m=d.querySelector('.inspiration-detail-more').getBoundingClientRect();
+  const c=d.querySelector('.inspiration-detail-copy').getBoundingClientRect();
+  const side=d.querySelector('.inspiration-detail-sidebar').getBoundingClientRect();
+  return {left:m.left,right:c.right,sideRight:side.right,copyLeft:c.left};
+ });
+ expect(controls.copyLeft).toBeGreaterThan(controls.left);
+ expect(controls.right).toBeLessThanOrEqual(controls.sideRight+2);
+ await copy.click();
+ await expect.poll(()=>page.evaluate(()=>window.__inspirationCopied)).toBe(photos[0].prompt);
+ await next.click();
+ await expect(dialog.locator('.inspiration-detail-count')).toHaveText('2 / 3');
+ await expect(dialog.locator('.inspiration-detail-media')).toHaveAttribute('src',photos[1].previewUrl);
+ await expect(dialog.locator('.inspiration-detail-media')).toHaveAttribute('alt',photos[1].title);
+ await expect(dialog.locator('.inspiration-detail-prompt')).toHaveText(photos[1].prompt);
+ await copy.click();
+ await expect.poll(()=>page.evaluate(()=>window.__inspirationCopied)).toBe(photos[1].prompt);
+ // Left returns to the previous image, right wraps from last to first.
+ await prev.click();
+ await expect(dialog.locator('.inspiration-detail-count')).toHaveText('1 / 3');
+ await prev.click();
+ await expect(dialog.locator('.inspiration-detail-count')).toHaveText('3 / 3');
+ await expect(dialog.locator('.inspiration-detail-prompt')).toHaveText(photos[2].prompt);
+ await page.keyboard.press('ArrowRight');
+ await expect(dialog.locator('.inspiration-detail-count')).toHaveText('1 / 3');
+ // Emulate a genuine touch gesture on the image, never a vertical-page scroll.
+ await dialog.locator('.inspiration-detail-image-area').evaluate(area=>{
+  const e=(name,x,y)=>{
+   const event=new Event(name,{bubbles:true,cancelable:true});
+   const touch={clientX:x,clientY:y};
+   Object.defineProperty(event,'touches',{value:name==='touchstart'?[touch]:[]});
+   Object.defineProperty(event,'changedTouches',{value:[touch]});
+   area.dispatchEvent(event);
+  };
+  e('touchstart',280,210);e('touchend',82,217);
+ });
+ await expect(dialog.locator('.inspiration-detail-count')).toHaveText('2 / 3');
+ await expect(dialog.locator('.inspiration-detail-prompt')).toHaveText(photos[1].prompt);
+ // The full-size Clone action must now hand off this SECOND image's prompt.
+ const clone=dialog.getByRole('button',{name:'Clone & Try'});
+ await expect(clone).toBeEnabled();
+ await page.route('**/generate-studio.html?**',r=>r.fulfill({contentType:'text/html',body:'<p>Studio handoff</p>'}));
+ await clone.click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=image/);
+ const handoff=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('deepsyq_template_start')));
+ expect(handoff.promptTemplate).toBe(photos[1].prompt);
+ expect(handoff.id).toBe(photos[1].id);
+ expect(paid).toEqual([]);
+});
+
+test('Inspiration keeps image carousel out of video detail and single-image gallery',async({page})=>{
+ test.setTimeout(60000);
+ await page.route('**/api/config',r=>r.fulfill({json:{features:{inspiration:true},plans:{}}}));
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[video,image],categories:[],ratios:[]}}));
+ await page.setViewportSize({width:390,height:850});
+ await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ await page.getByRole('button',{name:'View Golden perfume splash inspiration'}).click();
+ let dialog=page.locator('dialog.inspiration-detail-minimal');
+ await expect(dialog.getByRole('button',{name:'Copy prompt'})).toBeVisible();
+ await expect(dialog.getByRole('button',{name:'Previous image'})).toHaveCount(0);
+ await expect(dialog.getByRole('button',{name:'Next image'})).toHaveCount(0);
+ await dialog.getByRole('button',{name:'Close inspiration preview'}).click();
+ await page.getByRole('button',{name:'View Original cinematic video inspiration'}).click();
+ dialog=page.locator('dialog.inspiration-detail-minimal');
+ await expect(dialog.locator('video')).toHaveCount(1);
+ await expect(dialog.getByRole('button',{name:'Copy prompt'})).toHaveCount(0);
+ await expect(dialog.getByRole('button',{name:'Next image'})).toHaveCount(0);
+ await expect(dialog.locator('.inspiration-detail-prompt')).toHaveText(video.prompt);
+});
