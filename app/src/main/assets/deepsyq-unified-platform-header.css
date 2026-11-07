@@ -1,15 +1,17 @@
-/* Owner 2026-11-07 Cockpit Header CSS: exact match to media_1794074488180_596c4603.jpg */
+/* Owner 2026-11-07 Cockpit Header CSS: EXACT match to owner screenshot media_1794076777524_b2e60749.jpg */
 @media (min-width: 761px) {
   header.ds-unified-header,
   header.top.ds-stable-header,
-  header.top {
+  header.ds-stable-header,
+  header.top,
+  header.ds-platform-header {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     position: sticky !important;
     top: 0 !important;
-    height: 80px !important;
-    min-height: 80px !important;
+    height: 76px !important;
+    min-height: 76px !important;
     padding: 0 20px !important;
     background: rgba(3, 8, 22, 0.94) !important;
     border-bottom: 1px solid rgba(0, 242, 254, 0.22) !important;
@@ -22,13 +24,28 @@
     margin: 0 !important;
   }
 
-  /* Hide raw unused old header actions on desktop when unified */
+  /* Hide raw unused old header actions on desktop */
   header.ds-unified-header > :not(.top-brand):not(.ds-mobile-brand):not(.ds-unified-actions),
-  header.top > :not(.top-brand):not(.ds-mobile-brand):not(.ds-unified-actions) {
+  header.top > :not(.top-brand):not(.ds-mobile-brand):not(.ds-unified-actions),
+  header.ds-platform-header > :not(.top-brand):not(.ds-mobile-brand):not(.ds-unified-actions) {
     display: none !important;
   }
 
-  /* Brand on left */
+  /* Hide duplicate brand in header when sidebar brand is present and visible */
+  body:has(#sidebar) header .top-brand,
+  body:has(#sidebar) header .ds-mobile-brand,
+  body:has(#dsSiteSidebar) header .top-brand,
+  body:has(#dsSiteSidebar) header .ds-mobile-brand,
+  #sidebar ~ .content header .top-brand,
+  #sidebar ~ .content header .ds-mobile-brand,
+  #sidebar ~ main header .top-brand,
+  #sidebar ~ main header .ds-mobile-brand,
+  .shell>.sidebar ~ * header .top-brand,
+  .shell>.sidebar ~ * header .ds-mobile-brand {
+    display: none !important;
+  }
+
+  /* Standalone brand on left (only when no visible sidebar) */
   .top-brand, .ds-mobile-brand {
     display: inline-flex !important;
     align-items: center !important;
@@ -57,17 +74,17 @@
     position: relative !important;
     width: 100% !important;
     max-width: 100% !important;
-    gap: 18px !important;
+    gap: 16px !important;
     box-sizing: border-box !important;
     margin: 0 auto !important;
   }
 
-  /* Glowing Capsules / Pods */
+  /* Dual Glowing Capsules / Pods */
   .ds-header-pod {
     display: inline-flex !important;
     align-items: center !important;
-    gap: 10px !important;
-    padding: 6px 14px !important;
+    gap: 8px !important;
+    padding: 5px 12px !important;
     background: rgba(4, 10, 24, 0.88) !important;
     border: 1.5px solid #00f2fe !important;
     border-radius: 9999px !important;
@@ -99,7 +116,7 @@
     margin: 0 !important;
   }
 
-  /* Menu hamburger */
+  /* Menu hamburger squircle */
   .ds-pod-menu {
     width: 38px !important;
     min-width: 38px !important;
@@ -111,21 +128,23 @@
     color: #fff !important;
   }
 
-  /* Tour button */
+  /* Tour button: white/cyan border */
   .ds-pod-tour {
-    border: 1px solid rgba(255, 255, 255, 0.45) !important;
+    border: 1px solid rgba(255, 255, 255, 0.42) !important;
     color: #ffffff !important;
+    padding: 6px 16px !important;
   }
   .ds-pod-tour:hover {
     border-color: #00f2fe !important;
     box-shadow: 0 0 10px rgba(0, 242, 254, 0.5) !important;
   }
 
-  /* Everyday Tools: bright purple neon glow border */
+  /* Everyday Tools: bright purple/magenta neon glow border */
   .ds-pod-tools {
     border: 1.5px solid #a855f7 !important;
-    box-shadow: 0 0 14px rgba(168, 85, 247, 0.65) !important;
+    box-shadow: 0 0 14px rgba(168, 85, 247, 0.65), inset 0 0 6px rgba(168, 85, 247, 0.25) !important;
     color: #ffffff !important;
+    padding: 6px 16px !important;
   }
   .ds-pod-tools:hover {
     box-shadow: 0 0 20px rgba(168, 85, 247, 0.9) !important;
@@ -133,6 +152,7 @@
 
   /* Center Orb container: RELATIVE positioning context for inner absolute orb elements */
   body.home-neon.j-action-workspace header.top.ds-stable-header #topJarvisBtn,
+  body header.ds-stable-header #topJarvisBtn,
   header.ds-unified-header #topJarvisBtn,
   #topJarvisBtn.ds-pod-center-orb {
     position: relative !important;
@@ -157,7 +177,7 @@
     display: none !important;
   }
 
-  /* Ensure approved orb is fully centered */
+  /* Ensure approved orb is fully centered inside button */
   #topJarvisBtn.ds-pod-center-orb > .jarvis-mini-orb {
     position: relative !important;
     inset: auto !important;
@@ -170,8 +190,9 @@
   /* AI Credits: bright cyan neon glow border */
   .ds-pod-credit {
     border: 1.5px solid #00f2fe !important;
-    box-shadow: 0 0 14px rgba(0, 242, 254, 0.65) !important;
+    box-shadow: 0 0 14px rgba(0, 242, 254, 0.65), inset 0 0 6px rgba(0, 242, 254, 0.25) !important;
     color: #ffffff !important;
+    padding: 6px 16px !important;
   }
   .ds-pod-credit:hover {
     box-shadow: 0 0 20px rgba(0, 242, 254, 0.9) !important;
@@ -180,14 +201,15 @@
   /* Pricing / Тарифы: magenta glow border */
   .ds-pod-pricing {
     border: 1.5px solid #d946ef !important;
-    box-shadow: 0 0 14px rgba(217, 70, 239, 0.6) !important;
+    box-shadow: 0 0 14px rgba(217, 70, 239, 0.6), inset 0 0 6px rgba(217, 70, 239, 0.25) !important;
     color: #ffffff !important;
+    padding: 6px 16px !important;
   }
   .ds-pod-pricing:hover {
     box-shadow: 0 0 20px rgba(217, 70, 239, 0.85) !important;
   }
 
-  /* Language select */
+  /* Language select pill */
   .ds-pod-lang-wrap {
     display: inline-flex !important;
     align-items: center !important;
@@ -200,25 +222,27 @@
     color: #fff !important;
     border: 1px solid rgba(255, 255, 255, 0.28) !important;
     border-radius: 9999px !important;
-    padding: 7px 24px 7px 12px !important;
+    height: 38px !important;
+    padding: 0 26px 0 14px !important;
     font-size: 13px !important;
     font-weight: 700 !important;
     cursor: pointer !important;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23ffffff' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
-    background-position: right 8px center !important;
+    background-position: right 9px center !important;
     box-sizing: border-box !important;
   }
 
-  /* Log in / Войти: bright magenta to cyan gradient */
+  /* Log in / Войти: vibrant magenta-pink to cyan gradient */
   .ds-pod-login {
-    background: linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #06b6d4 100%) !important;
+    background: linear-gradient(90deg, #f43f5e 0%, #d946ef 45%, #06b6d4 100%) !important;
     color: #ffffff !important;
     border: none !important;
     font-weight: 700 !important;
-    box-shadow: 0 0 16px rgba(236, 72, 153, 0.5) !important;
+    padding: 6px 18px !important;
+    box-shadow: 0 0 18px rgba(217, 70, 239, 0.6) !important;
   }
   .ds-pod-login:hover {
-    box-shadow: 0 0 24px rgba(236, 72, 153, 0.8) !important;
+    box-shadow: 0 0 26px rgba(217, 70, 239, 0.9) !important;
   }
 }
