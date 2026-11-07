@@ -1,3 +1,4 @@
+// Owner parity acceptance: one Home-style mobile header on every shared page.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
