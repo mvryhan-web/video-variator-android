@@ -442,3 +442,58 @@ test('Video Uniquifier mobile uses platform drawer; no second legacy sidebar or 
  await expect(page.locator('body')).toHaveClass(/ds-site-nav-open/);
  await expect(page.locator('#dsSiteSidebar')).toBeVisible();
 });
+
+
+test('one approved header shell reuses JARVIX and platform actions on secondary routes',async({page})=>{
+ test.setTimeout(150000);
+ await page.setViewportSize({width:1365,height:900});
+ let paid=0;page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio\/jobs|payments|stripe)\b/.test(r.url()))paid++;});
+ for(const route of ['generate-studio.html?studio=image','generate-studio.html?studio=video','generate-studio.html?studio=audio','ai-apps.html','canvas.html','pricing.html','my-creations.html','free-tools.html']){
+  await page.goto('/'+route,{waitUntil:'domcontentloaded'});
+  await expect.poll(()=>page.evaluate(()=>document.body.dataset.dsUnifiedPlatform),{timeout:12000}).toBe('ready');
+  await expect(page.locator('header.ds-unified-header')).toHaveCount(1);
+  const header=page.locator('header.ds-unified-header');
+  await expect(header.locator('#topJarvisBtn')).toHaveCount(1);
+  await expect(header.locator('#topJarvisBtn .jv-owner-photo-test')).toHaveCount(1);
+  await expect(header.locator('#dsTakeTour')).toHaveCount(1);
+  await expect(header.locator('.ds-header-tools')).toHaveCount(1);
+  await expect(header.locator('.ds-header-credit')).toHaveCount(1);
+  await expect(header.locator('#topPricing')).toHaveAttribute('href','pricing.html');
+  await expect(header.locator('#topLogin')).toHaveCount(1);
+  await expect(header.locator('#dsUnifiedLanguage')).toHaveValue(/en|ru|fr|es/);
+  await expect(page.locator('#dsSiteSidebar')).toHaveCount(1);
+  await expect(page.locator('.vu-appbar,.vu-side-nav,.vu-upgrade')).toHaveCount(0);
+  await expect(header).toBeVisible();
+  expect(await header.evaluate(el=>getComputedStyle(el).position)).toBe('fixed');
+ }
+ expect(paid).toBe(0);
+});
+test('secondary-page desktop navigation toggles with a single persistent owner orb',async({page})=>{
+ test.setTimeout(90000);
+ await page.setViewportSize({width:1365,height:900});
+ await page.goto('/free-tools.html',{waitUntil:'domcontentloaded'});
+ await expect.poll(()=>page.evaluate(()=>document.body.dataset.dsUnifiedPlatform),{timeout:12000}).toBe('ready');
+ const orb=page.locator('header.ds-unified-header #topJarvisBtn');
+ await page.evaluate(()=>{window.__ownerOrbInstance=document.querySelector('header.ds-unified-header #topJarvisBtn');});
+ const menu=page.locator('.ds-site-mobile-toggle');
+ await expect(menu).toBeVisible();
+ await menu.click();
+ await expect(page.locator('body')).toHaveClass(/ds-unified-nav-collapsed/);
+ await expect(orb).toHaveCount(1);
+ expect(await orb.evaluate(el=>el===window.__ownerOrbInstance)).toBe(true);
+ await menu.click();
+ await expect(page.locator('body')).not.toHaveClass(/ds-unified-nav-collapsed/);
+});
+test('mobile secondary header preserves existing mobile buttons without duplicating them',async({page})=>{
+ test.setTimeout(80000);
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/generate-studio.html?studio=image',{waitUntil:'domcontentloaded'});
+ await expect.poll(()=>page.evaluate(()=>document.body.dataset.mobileShell),{timeout:12000}).toBe('ready');
+ await expect(page.locator('#topJarvisBtn')).toHaveCount(1);
+ await expect(page.locator('#dsTakeTour')).toHaveCount(1);
+ await expect(page.locator('.ds-header-tools')).toHaveCount(1);
+ await expect(page.locator('#topLogin')).toHaveCount(1);
+ await expect(page.locator('.ds-mobile-control-left #dsTakeTour')).toHaveCount(1);
+ await expect(page.locator('.ds-mobile-control-left .ds-header-tools')).toHaveCount(1);
+ await expect(page.locator('.ds-mobile-control-right #topLogin')).toHaveCount(1);
+});
