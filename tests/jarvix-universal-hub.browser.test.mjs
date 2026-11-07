@@ -87,10 +87,20 @@ try{
      await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded',timeout:30000});
      await page.waitForSelector('#homeQuickForm .j-settings-shortcut',{timeout:16000});
      // Mode chosen with Universal Hub is preserved; the old Home gear opens real Studio Settings.
+     const beforeSettings=new URL(page.url()).pathname;
      await page.locator('#homeQuickForm .j-settings-shortcut').click();
-     await page.waitForURL('**/generate-studio.html?studio=video&settings=1',{timeout:16000});
-     assert.equal(new URL(page.url()).searchParams.get('settings'),'1');
-     assert.equal(new URL(page.url()).searchParams.get('studio'),'video');
+     await page.locator('#homeStudioSettingsFrame').waitFor({timeout:20000});
+     const native=page.frameLocator('#homeStudioSettingsFrame');
+     await native.locator('#studioSettingsHub[open]').waitFor({timeout:22000});
+     assert.equal(new URL(page.url()).pathname,beforeSettings,'settings popup must stay on Home');
+     assert.equal(await page.locator('#homeQuickForm #jSettingsMenu').count(),0,'no old three-card selector');
+     assert.match(await page.locator('#homeStudioSettingsFrame').getAttribute('src'),/studio=video&settings=1/);
+     for(const id of ['studioTypePicker','modelButton','settingsButton'])
+       assert.equal(await native.locator('#studioSettingsHub #'+id).count(),1,'real native Studio control: '+id);
+     await page.screenshot({path:folder+'/'+l.name+'-native-studio-settings.png',fullPage:false});
+     await native.locator('#studioSettingsHub > button:nth-child(2)').click();
+     await page.locator('#homeStudioSettingsFrame').waitFor({state:'detached',timeout:12000});
+     assert.equal(new URL(page.url()).pathname,beforeSettings,'closing popup must preserve Home');
     }
     assert.equal(errors.length,0,'console runtime errors: '+errors.join('; '));
    }finally{await context.close();}
