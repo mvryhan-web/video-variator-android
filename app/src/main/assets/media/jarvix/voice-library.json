@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "jarvix-voice-library/v1",
+  "engine": "VoxCPM2",
+  "languageCodes": [
+    "ru",
+    "en",
+    "fr",
+    "es"
+  ],
+  "totalRecordedClips": 536,
+  "collections": [
+    {
+      "id": "original-owner-clips",
+      "manifest": "clips/manifest.json",
+      "mediaPath": "clips/",
+      "count": 344,
+      "format": "mp3",
+      "usage": "normal JARVIX speech",
+      "status": "published"
+    },
+    {
+      "id": "tour-v3",
+      "manifest": "tour-v3/manifest.json",
+      "mediaPath": "tour-v3/",
+      "count": 192,
+      "format": "mp3",
+      "usage": "read-only 19-stage guided tour",
+      "status": "TEST-preview",
+      "perClipListeningReview": "pending"
+    }
+  ],
+  "note": "Declarative library index only. Existing 344 original clips are immutable; Tour V3 preview is isolated, with individual review flags preserved."
+}
