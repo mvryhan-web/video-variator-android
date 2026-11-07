@@ -73,3 +73,29 @@ test('Owner six approved Studio panels reuse six existing native dialogs with pr
  assert.match(studiojs,/\$\('ratio'\)\.value=r/);
  assert.match(pop,/hub\.append\(heading,close,picker,model,format\)/);
 });
+
+test('Owner final identity badges distinguish official model names without fake logos',async()=>{
+ const css=await get('studio-premium-panels.css');
+ for(const [name,code] of [
+  ['nano-banana','NB'],['seedream','SR'],['seedance','SE'],
+  ['veo','V'],['gpt-image','GPT']
+ ]){
+  assert.ok(dock.includes("family:'"+name+"'"),'recognized family '+name);
+  assert.ok(dock.includes("badge:'"+code), 'short readable badge for '+name);
+ }
+ assert.match(dock,/model-family text badge, not an official image/);
+ assert.match(dock,/modelIdentity===signature/);
+ assert.match(css,/white-space:nowrap!important/);
+ assert.match(css,/tabular-nums/);
+ assert.doesNotMatch(dock,/<img|https:\/\/www\.google|https:\/\/seed\.bytedance/);
+});
+test('Video ratio grid presents Image-order slots but never enables missing provider ratios',()=>{
+ assert.match(dock,/const slots=\['1:1','2:3','3:2','9:16','16:9'\]/);
+ assert.match(dock,/const nativeButtons=\[\.\.\.ratioTiles\.querySelectorAll\('button'\)\]/);
+ assert.match(dock,/ratioTiles\.append\(button\)/);
+ assert.match(dock,/button\.disabled=true/);
+ assert.match(dock,/aria-disabled/);
+ assert.match(dock,/ratioTiles\.querySelectorAll\('\.premium-unavailable-ratio'\)/);
+ assert.match(dock,/недоступно для выбранной модели/);
+ assert.doesNotMatch(dock,/new Option\(|\$\('ratio'\)\.value=/);
+});
