@@ -30,7 +30,7 @@ try{
   await test(l.name,async()=>{
    const context=await browser.newContext({viewport:{width:l.w,height:l.h},isMobile:l.mobile,
     deviceScaleFactor:1,hasTouch:l.mobile});
-   const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+   const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e.stack||e)));
    try{
     await page.goto(base+'/'+l.page,{waitUntil:'domcontentloaded',timeout:30000});
     await page.waitForSelector('#jPlus',{timeout:16000});
@@ -57,19 +57,21 @@ try{
     assert.match(await page.locator('.j-active-mode').innerText(),/Video/);
     assert.equal(await page.locator('#jPlus').innerText(),'+');
     assert.equal(await page.locator('#jPlusMenu').isVisible(),false);
-    if(l.page==='jarvix-chat.html'){
-     await page.locator('.j-settings-shortcut').click();
-     assert.equal(await page.locator('#jSettingsMenu .j-settings-tile').count(),3);
-     assert.equal(await page.locator('#jSettingsMenu').isVisible(),true);
-     await page.screenshot({path:folder+'/'+l.name+'-settings.png',fullPage:false});
-     const pageBeforeSettings=new URL(page.url()).pathname;
-     await page.locator('#jSettingsMenu .j-settings-tile').first().click();
-     assert.equal(new URL(page.url()).pathname,pageBeforeSettings,'JARVIX Chat settings still select in place');
-     assert.match(await page.locator('.j-active-mode').innerText(),/Image/);
-     assert.equal(await page.locator('#jSettingsMenu').isVisible(),false);
-    }else{
-     assert.equal(await page.locator('#jSettingsMenu').count(),0,'Home uses its former real Studio settings shortcut');
-    }
+    // Both Home and JARVIX Chat must open native Studio Settings in place,
+    // never the discarded three-card mode selector, never a redirect.
+    assert.equal(await page.locator('#jSettingsMenu').count(),0);
+    const chatOrHomeBefore=new URL(page.url()).pathname;
+    await page.locator('.j-settings-shortcut').click();
+    const inlineNative=page.frameLocator('#homeStudioSettingsFrame');
+    await inlineNative.locator('#studioSettingsHub[open]').waitFor({timeout:22000});
+    await page.locator('#homeStudioSettingsHost[data-ready="true"]').waitFor({timeout:22000});
+    assert.equal(new URL(page.url()).pathname,chatOrHomeBefore);
+    assert.match(await page.locator('#homeStudioSettingsFrame').getAttribute('src'),/studio=video&settings=1/);
+    for(const id of ['studioTypePicker','modelButton','settingsButton'])
+      assert.equal(await inlineNative.locator('#studioSettingsHub #'+id).count(),1,id+' native control');
+    await page.screenshot({path:folder+'/'+l.name+'-settings.png',fullPage:false});
+    await inlineNative.locator('#studioSettingsHub > button:nth-child(2)').click();
+    await page.locator('#homeStudioSettingsHost').waitFor({state:'hidden',timeout:12000});
     await page.locator('#jPlus').click();
     const chooserPromise=page.waitForEvent('filechooser');
     await page.locator('#jAttach').click();
@@ -87,10 +89,42 @@ try{
      await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded',timeout:30000});
      await page.waitForSelector('#homeQuickForm .j-settings-shortcut',{timeout:16000});
      // Mode chosen with Universal Hub is preserved; the old Home gear opens real Studio Settings.
+     const beforeSettings=new URL(page.url()).pathname;
      await page.locator('#homeQuickForm .j-settings-shortcut').click();
-     await page.waitForURL('**/generate-studio.html?studio=video&settings=1',{timeout:16000});
-     assert.equal(new URL(page.url()).searchParams.get('settings'),'1');
-     assert.equal(new URL(page.url()).searchParams.get('studio'),'video');
+     await page.locator('#homeStudioSettingsFrame').waitFor({timeout:20000});
+     const native=page.frameLocator('#homeStudioSettingsFrame');
+     await native.locator('#studioSettingsHub[open]').waitFor({timeout:22000});
+     await page.locator('#homeStudioSettingsHost[data-ready="true"]').waitFor({timeout:22000});
+     assert.equal(new URL(page.url()).pathname,beforeSettings,'settings popup must stay on Home');
+     assert.equal(await page.locator('#homeQuickForm #jSettingsMenu').count(),0,'no old three-card selector');
+     assert.match(await page.locator('#homeStudioSettingsFrame').getAttribute('src'),/studio=video&settings=1/);
+     for(const id of ['studioTypePicker','modelButton','settingsButton'])
+       assert.equal(await native.locator('#studioSettingsHub #'+id).count(),1,'real native Studio control: '+id);
+     // Use the existing native model and format dialogs: this must not be a
+     // static copy of Studio Settings or a fake intermediate chooser.
+     await native.locator('#studioSettingsHub #modelButton').click();
+     await native.locator('#modelDialog[open]').waitFor({timeout:12000});
+     await native.locator('#modelDialog [data-close="modelDialog"]').click();
+     await native.locator('#modelDialog[open]').waitFor({state:'hidden',timeout:12000});
+     await native.locator('#studioSettingsHub #settingsButton').click();
+     await native.locator('#settingsDialog[open]').waitFor({timeout:12000});
+     await native.locator('#settingsDialog [data-t="done"]').click();
+     await native.locator('#settingsDialog[open]').waitFor({state:'hidden',timeout:12000});
+     assert.equal(await native.locator('#studioSettingsHub[open]').count(),1,'parent hub stays open after model and format panels');
+     const embeddedHeader=await native.locator('body>.topbar').evaluate(el=>({
+      display:getComputedStyle(el).display,style:el.getAttribute('style'),
+      bodyId:document.body.id,hasPresentation:!!document.getElementById('homeNativeStudioSettingsPresentation')
+     }));
+     assert.equal(embeddedHeader.display,'none','embedded Studio header must not duplicate Home: '+JSON.stringify(embeddedHeader));
+     assert.equal(await native.locator('body>.studio-shell').evaluate(el=>getComputedStyle(el).display),'none','embedded Studio layout and second bottom dock must be hidden');
+     await page.screenshot({path:folder+'/'+l.name+'-native-studio-settings.png',fullPage:false});
+     await native.locator('#studioSettingsHub > button:nth-child(2)').click();
+     await page.locator('#homeStudioSettingsHost').waitFor({state:'hidden',timeout:12000});
+     assert.equal(new URL(page.url()).pathname,beforeSettings,'closing popup must preserve Home');
+     await page.locator('#homeQuickForm .j-settings-shortcut').click();
+     await page.locator('#homeStudioSettingsHost').waitFor({state:'visible',timeout:12000});
+     await page.locator('#homeQuickForm .j-settings-shortcut').click();
+     await page.locator('#homeStudioSettingsHost').waitFor({state:'hidden',timeout:12000});
     }
     assert.equal(errors.length,0,'console runtime errors: '+errors.join('; '));
    }finally{await context.close();}

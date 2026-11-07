@@ -19,7 +19,6 @@ export function mountStudioUniversalDock({form,nav,gear}){
  plus.setAttribute('aria-label','Open Universal Hub');
  const menu=make('div','j-plus-menu j-hub-menu');menu.id='jPlusMenu';menu.hidden=true;
  menu.setAttribute('aria-label','DEEPSYQ quick access');
- const modes=[['image','Image'],['video','Video'],['audio','Audio']];
  const actions=[
   {type:'mode',mode:'image',name:'Image',icon:'image'},
   {type:'mode',mode:'video',name:'Video',icon:'video'},
@@ -42,10 +41,7 @@ export function mountStudioUniversalDock({form,nav,gear}){
   return accepted;
  };
  const closeMenu=()=>{menu.hidden=true;plus.setAttribute('aria-expanded','false');};
- const settings=make('div','j-settings-menu');settings.id='jSettingsMenu';settings.hidden=true;
- settings.setAttribute('aria-label','Studio settings');
- const closeSettings=()=>{settings.hidden=true;gear.setAttribute('aria-expanded','false');};
- const openRealStudioSettings=gear.onclick; // Real protected Studio Settings Hub handler.
+ const openRealStudioSettings=gear.onclick; // Original protected Studio Settings Hub handler.
  for(const action of actions){
   const el=make(action.type==='link'?'a':'button','j-hub-tile');
   if(action.type==='link')el.href=action.href;
@@ -67,23 +63,12 @@ export function mountStudioUniversalDock({form,nav,gear}){
   };
   menu.append(el);
  }
- for(const [mode,label] of modes){
-  const tile=make('button','j-settings-tile');tile.type='button';
-  tile.dataset.jMode=mode;
-  const svg=createCanonicalIcon(mode);if(svg)tile.append(svg);
-  tile.append(document.createTextNode(label));
-  tile.onclick=()=>{
-   if(selectNative(mode)){closeSettings();openRealStudioSettings?.call(gear);}
-  };
-  settings.append(tile);
- }
- plus.onclick=()=>{menu.hidden=!menu.hidden;plus.setAttribute('aria-expanded',String(!menu.hidden));if(!menu.hidden)closeSettings();};
- // Same small 3-card Settings selector as Home/Chat, but selection stays on
- // this Studio and invokes its original protected model/settings hub locally.
+ plus.onclick=()=>{menu.hidden=!menu.hidden;plus.setAttribute('aria-expanded',String(!menu.hidden));};
+ // Open the SAME existing native Studio Settings Hub, no intermediate tiles.
  gear.classList.add('j-settings-shortcut');
- gear.setAttribute('aria-controls','jSettingsMenu');gear.setAttribute('aria-expanded','false');
+ gear.setAttribute('aria-controls','studioSettingsHub');
  gear.setAttribute('aria-label','Studio settings');
- gear.onclick=()=>{settings.hidden=!settings.hidden;gear.setAttribute('aria-expanded',String(!settings.hidden));if(!settings.hidden)closeMenu();};
+ gear.onclick=()=>{closeMenu();openRealStudioSettings?.call(gear);};
  prompt.setAttribute('form','creator');
  prompt.setAttribute('rows','1');
  prompt.placeholder='Describe your image, video, or audio…';
@@ -99,7 +84,7 @@ export function mountStudioUniversalDock({form,nav,gear}){
  plane.setAttribute('aria-hidden','true');
  plane.innerHTML='<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>';
  submit.append(plane);
- bar.append(plus,menu,prompt,mic,gear,settings,submit);
+ bar.append(plus,menu,prompt,mic,gear,submit);
  dock.append(bar,rail);
  document.body.append(dock);
  document.body.classList.add('studio-universal-ready');
@@ -115,9 +100,9 @@ export function mountStudioUniversalDock({form,nav,gear}){
  // Studio's controller loads asynchronously, so also observe the data-studio
  // readout through its native mutation flow; never write its model or config.
  syncMode();
- document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeMenu();closeSettings();}});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu();});
  document.addEventListener('pointerdown',event=>{
-  if(!dock.contains(event.target)){closeMenu();closeSettings();}
+  if(!dock.contains(event.target))closeMenu();
   else if(!menu.hidden&&!menu.contains(event.target)&&event.target!==plus)closeMenu();
  });
  window.addEventListener('pagehide',()=>observer.disconnect(),{once:true});

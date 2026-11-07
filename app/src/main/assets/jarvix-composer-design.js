@@ -60,26 +60,10 @@ export function decorateComposer(form,{settingsTarget=null}={}){
  if(settingsTarget){
   const gear=make('button','');gear.type='button';gear.className='j-settings-shortcut';gear.setAttribute('aria-label',ru?'Настройки студии':'Studio settings');gear.setAttribute('aria-haspopup','dialog');
   gear.innerHTML='<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M9 3v6M15 9v6M8 15v6"/></svg>';
-  // Owner restores the previous Home gear destination only; Chat and Studio retain their menus.
-  if(isQuickChat&&form.id!=='homeQuickForm'){
-   const panel=make('div','');panel.className='j-settings-menu';panel.id='jSettingsMenu';panel.hidden=true;
-   panel.setAttribute('aria-label',ru?'Настройки творческой студии':'Creative Studio settings');
-   for(const [kind,label] of [['image','Image'],['video','Video'],['audio','Audio']]){
-    const choice=make('button','');choice.type='button';choice.className='j-settings-tile';
-    choice.dataset.jMode=kind;
-    const icon=createCanonicalIcon(kind);if(icon)choice.append(icon);
-    choice.append(document.createTextNode(label));panel.append(choice);
-    // Choosing a mode is local to this chat. Never redirect to another Studio page.
-    choice.onclick=()=>{form.querySelector('#jPlusMenu [data-j-mode="'+kind+'"]')?.click();close();};
-   }
-   form.append(panel);gear.setAttribute('aria-haspopup','true');gear.setAttribute('aria-controls',panel.id);
-   gear.setAttribute('aria-expanded','false');
-   const close=()=>{panel.hidden=true;gear.setAttribute('aria-expanded','false');};
-   gear.onclick=()=>{panel.hidden=!panel.hidden;gear.setAttribute('aria-expanded',String(!panel.hidden));
-    const plusMenu=form.querySelector('#jPlusMenu');if(plusMenu&&!panel.hidden){plusMenu.hidden=true;form.querySelector('#jPlus')?.setAttribute('aria-expanded','false');}};
-   document.addEventListener('pointerdown',e=>{if(!panel.hidden&&!panel.contains(e.target)&&e.target!==gear)close();});
-   document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
-  }else gear.onclick=settingsTarget;
+  // All composer gear buttons open the ONE original Studio Settings hub.
+  // Image/Video/Audio belong to the separate Universal Hub (+), never here.
+  gear.setAttribute('aria-expanded','false');
+  gear.onclick=settingsTarget;
   mic?.after(gear);
  }
  const plus=form.querySelector('#jPlus');if(plus)plus.classList.add('j-glow-plus');
