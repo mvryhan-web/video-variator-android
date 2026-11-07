@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `fb381726892ac37dbaf2d362ecae4cbe5c98730c`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `0cc74822b97cbfc85e3c7a2f628e9bba9926efad`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` | Indexed files: 62 | Named symbols: 177 | Checked relations: 50
 
 ## Topic finder (matching filenames)
@@ -139,7 +139,7 @@ storage (L11) · state (L12) · cleanupTask (L38) · heartbeat (L51)
 
 ### `server/jarvix-brain.js`
 
-REPO_ROOT (L19) · SITE_ASSETS_DIR (L20) · SITE_PAGE_FILES (L25) · DEEPSYQ_CAPABILITIES (L142) · activeSessions (L184) · jarvixSessionStore (L185) · SITE_TOOL_ALIASES (L315)
+REPO_ROOT (L19) · SITE_ASSETS_DIR (L20) · SITE_PAGE_FILES (L25) · DEEPSYQ_CAPABILITIES (L143) · activeSessions (L185) · jarvixSessionStore (L186) · SITE_TOOL_ALIASES (L316)
 
 ### `server/jarvix-free-llm.js`
 
