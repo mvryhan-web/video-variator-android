@@ -73,3 +73,17 @@ test('Tour V3 uses pre-recorded owner voice, no browser speech and no on-screen 
  assert.ok(!guide.includes('<span class="ds-tour-caption"'));
  assert.ok(!guide.includes('<span class="ds-tour-label"'));
 });
+
+test('Central JARVIX voice catalog inventories both packs without overwriting legacy recordings',()=>{
+ const index=JSON.parse(source('media/jarvix/voice-library.json'));
+ const original=JSON.parse(source('media/jarvix/clips/manifest.json'));
+ assert.equal(index.schemaVersion,'jarvix-voice-library/v1');
+ assert.equal(index.engine,'VoxCPM2');
+ assert.equal(index.totalRecordedClips,536);
+ assert.deepEqual(index.collections.map(c=>c.count),[344,192]);
+ assert.equal(original.expected,344);
+ assert.equal(original.ready,344);
+ assert.equal(original.clips.length,344);
+ assert.equal(manifest.clips.length,192);
+ assert.deepEqual(index.collections.map(c=>c.manifest),['clips/manifest.json','tour-v3/manifest.json']);
+});
