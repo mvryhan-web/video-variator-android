@@ -30,7 +30,7 @@ try{
   await test(l.name,async()=>{
    const context=await browser.newContext({viewport:{width:l.w,height:l.h},isMobile:l.mobile,
     deviceScaleFactor:1,hasTouch:l.mobile});
-   const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+   const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e.stack||e)));
    try{
     await page.goto(base+'/'+l.page,{waitUntil:'domcontentloaded',timeout:30000});
     await page.waitForSelector('#jPlus',{timeout:16000});
