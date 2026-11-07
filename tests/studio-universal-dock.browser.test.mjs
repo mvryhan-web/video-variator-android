@@ -92,6 +92,7 @@ try{
    await page.locator('#homeQuickForm .j-settings-shortcut').click();
    const native=page.frameLocator('#homeStudioSettingsFrame');
    await native.locator('#studioSettingsHub[open]').waitFor({timeout:22000});
+   await page.locator('#homeStudioSettingsHost[data-ready="true"]').waitFor({timeout:22000});
    assert.equal(new URL(page.url()).pathname,'/deepsyq.html','real settings appear over existing Home');
    assert.match(await page.locator('#homeStudioSettingsFrame').getAttribute('src'),/studio=image&settings=1/);
    assert.equal(await native.locator('#studioSettingsHub #studioTypePicker').count(),1);
