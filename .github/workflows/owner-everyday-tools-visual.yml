@@ -6,6 +6,8 @@ on:
       - 'app/src/main/assets/free-tools.html'
       - 'app/src/main/assets/everyday-tools-visual.js'
       - 'app/src/main/assets/everyday-tools-visual.css'
+      - 'app/src/main/assets/approved-page-design.js'
+      - 'app/src/main/assets/approved-page-design.css'
       - 'tests/owner-everyday-tools-visual.spec.mjs'
       - '.github/workflows/owner-everyday-tools-visual.yml'
   workflow_dispatch:
