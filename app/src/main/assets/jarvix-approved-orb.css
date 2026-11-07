@@ -1,0 +1,35 @@
+/* GO stage07 — approved SVG artwork only, from prior owner-used JARVIX orb.
+   Do not alter header/sidebar geometry, labels, routes or any click handlers. */
+.jarvis-mini-orb.jv-approved-orb{
+ position:relative;isolation:isolate;
+ background:transparent!important;border-color:transparent!important;
+ box-shadow:none!important;overflow:visible!important;
+}
+.jarvis-mini-orb.jv-approved-orb>.jarvis-core,
+.jarvis-mini-orb.jv-approved-orb>.jarvis-ring{display:none!important}
+.jarvis-mini-orb.jv-approved-orb>.ds-reference-orb{
+ display:block!important;position:absolute!important;inset:0!important;
+ width:100%!important;height:100%!important;max-width:none!important;
+ overflow:visible;filter:drop-shadow(0 0 3px #10d9ff90);
+ pointer-events:none;transform:none!important;
+}
+#topJarvisBtn.jv-approved-orb-button{
+ background:transparent!important;border-color:transparent!important;
+ box-shadow:none!important;overflow:visible!important;
+}
+#topJarvisBtn.jv-approved-orb-button::before,
+#topJarvisBtn.jv-approved-orb-button::after{display:none!important}
+#topJarvisBtn.jv-approved-orb-button>.jarvis-mini-orb.jv-approved-orb>.ds-reference-orb{
+ inset:-25%!important;width:150%!important;height:150%!important;
+ filter:drop-shadow(0 0 7px #0ee7ffaa);
+}
+.j-mode-rail .jv-rail-mini-orb{
+ display:inline-block!important;flex:none;
+ width:19px!important;height:19px!important;
+ margin-right:4px;vertical-align:middle;pointer-events:none;
+}
+.j-mode-rail .jv-rail-mini-orb>.ds-reference-orb{
+ width:100%!important;height:100%!important;
+}
+/* Only stage07 appearance. Opposing ring motion and live voice reactions
+   are developed and tested separately in stages08/09. */
