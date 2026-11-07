@@ -92,6 +92,7 @@ try{
      await page.locator('#homeStudioSettingsFrame').waitFor({timeout:20000});
      const native=page.frameLocator('#homeStudioSettingsFrame');
      await native.locator('#studioSettingsHub[open]').waitFor({timeout:22000});
+     await page.locator('#homeStudioSettingsHost[data-ready="true"]').waitFor({timeout:22000});
      assert.equal(new URL(page.url()).pathname,beforeSettings,'settings popup must stay on Home');
      assert.equal(await page.locator('#homeQuickForm #jSettingsMenu').count(),0,'no old three-card selector');
      assert.match(await page.locator('#homeStudioSettingsFrame').getAttribute('src'),/studio=video&settings=1/);
