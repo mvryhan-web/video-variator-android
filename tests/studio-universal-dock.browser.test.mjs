@@ -255,6 +255,11 @@ try{
     await agent.click();
     await page.waitForURL('**/jarvix-chat.html',{timeout:20000});
     assert.ok(!(await page.locator('body').innerText()).includes('Text, images, video and audio — one conversation.'));
+    for(const kind of ['image','video','audio']){
+     await page.goto(base+'/generate-studio.html?studio='+kind,{waitUntil:'domcontentloaded'});
+     await page.waitForSelector('#studioUniversalDock #jPlus',{timeout:20000});
+     assert.ok(!(await page.locator('body').innerText()).includes('Text, images, video and audio — one conversation.'),kind+' page must remain clean');
+    }
     assert.equal(paid.length,0);
    }finally{await context.close();}
   }
