@@ -82,8 +82,11 @@ function setupMobileShell() {
     es: ['Herramientas', 'Precios', 'Acceder', 'Visita guiada']
   };
   const locale = () => {
-    try { return localStorage.getItem('deepsyq_home_language') || document.documentElement.lang.split('-')[0]; }
-    catch { return document.documentElement.lang.split('-')[0]; }
+    try {
+      const saved=localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang');
+      if(['ru','en','fr','es'].includes(saved))return saved;
+    } catch (_) {}
+    return document.documentElement.lang.split('-')[0];
   };
   const copy = () => words[locale()] || words.en;
   // Desktop keeps the original Home actions and their existing event handlers.
@@ -154,7 +157,10 @@ function setupMobileShell() {
     if(localeSelect){
       localeSelect.value=['en','ru','fr','es'].includes(locale())?locale():'en';
       localeSelect.addEventListener('change',()=>{
-        localStorage.setItem('deepsyq_home_language',localeSelect.value);
+        try{
+          localStorage.setItem('deepsyq_home_language',localeSelect.value);
+          localStorage.setItem('deepsyq_lang',localeSelect.value);
+        }catch(_){}
         window.dispatchEvent(new Event('deepsyq:lang'));
         refresh();
       });
