@@ -225,3 +225,36 @@ test('stage06 composer uses stable icons and preserves existing image mode and a
  }
  expect(paid).toBe(0);
 });
+
+
+test('stage07 approved JARVIX orb reused in header, nav and composer without duplicate controls',async({page})=>{
+ test.setTimeout(120000);
+ await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+ let paid=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio\/jobs|payments|stripe)\b/.test(r.url()))paid++;});
+ for(const width of [390,1365]){
+  await page.setViewportSize({width,height:900});
+  for(const route of ['deepsyq.html','generate-studio.html?studio=image','my-creations.html']){
+   await page.goto('/'+route,{waitUntil:'domcontentloaded'});
+   const top=page.locator('#topJarvisBtn');
+   await expect(top).toHaveCount(1);
+   await expect(top.locator('.jarvis-mini-orb.jv-approved-orb > svg.ds-reference-orb')).toHaveCount(1);
+   await expect(top.locator('svg.ds-reference-orb')).toHaveAttribute('viewBox','0 0 160 160');
+   await expect(top.locator('.jarvis-ring:visible')).toHaveCount(0);
+   const artwork=await page.locator('.jarvis-mini-orb.jv-approved-orb > svg.ds-reference-orb').evaluateAll(nodes=>nodes.map(x=>x.querySelector('radialGradient')?.id));
+   expect(artwork.every(Boolean)).toBe(true);
+   expect(new Set(artwork).size).toBe(artwork.length);
+   const rail=page.locator('.j-mode-rail');
+   if(await rail.count()){
+    const jarvix=rail.locator('a[href="jarvix-chat.html"]');
+    await expect(jarvix).toHaveCount(1);
+    await expect(jarvix.locator('.jv-approved-orb > svg.ds-reference-orb')).toHaveCount(1);
+    await expect(jarvix).toContainText('JARVIX');
+   }
+   const nav=page.locator('.ds-site-jarvix-btn .jv-approved-orb > svg.ds-reference-orb, #sidebar .nav-entry .jv-approved-orb > svg.ds-reference-orb');
+   if(await page.locator('.ds-site-jarvix-btn,#sidebar .nav-entry a[aria-label="JARVIX"]').count())await expect(nav.first()).toBeAttached();
+   expect(await page.locator('#topJarvisBtn').count()).toBe(1);
+  }
+ }
+ expect(paid).toBe(0);
+});
