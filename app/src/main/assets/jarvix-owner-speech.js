@@ -15,7 +15,19 @@ function stopVoiceLevelMeter(){
  voiceLevelFrame=null;
  publishVoiceLevel(0);
 }
-// Track the PCM buffer that is actually being played, by AudioContext clock.
+// Directly measure the already decoded speech buffer; the audio graph is unchanged.
+export function measuredVoiceLevel(waveform,sampleRate,elapsedSeconds){
+ if(!waveform?.length||!Number.isFinite(sampleRate)||sampleRate<=0||!Number.isFinite(elapsedSeconds))return 0;
+ const mid=Math.max(0,Math.floor(elapsedSeconds*sampleRate));
+ if(mid>=waveform.length)return 0;
+ const start=Math.max(0,mid-Math.floor(sampleRate*.035));
+ const end=Math.min(waveform.length,mid+Math.floor(sampleRate*.015));
+ const step=Math.max(1,Math.floor(sampleRate/1600));
+ let power=0,count=0;
+ for(let i=start;i<end;i+=step){power+=waveform[i]*waveform[i];count++;}
+ return Math.max(0,Math.min(1,Math.sqrt(power/Math.max(1,count))*7-.035));
+}
+// Track the PCM buffer that is actually playing, by the existing AudioContext clock.
 // No microphone, changed voice, output gain, synthesis call or extra provider.
 function meterDecodedSpeech(buffer,context,node,turn){
  stopVoiceLevelMeter();
@@ -24,14 +36,9 @@ function meterDecodedSpeech(buffer,context,node,turn){
  const startedAt=context.currentTime;
  const tick=()=>{
   if(turn!==version||source!==node||context.state!=='running'){stopVoiceLevelMeter();return;}
-  const mid=Math.floor((context.currentTime-startedAt)*sampleRate);
-  if(mid>=waveform.length){stopVoiceLevelMeter();return;}
-  const start=Math.max(0,mid-Math.floor(sampleRate*.035));
-  const end=Math.min(waveform.length,mid+Math.floor(sampleRate*.015));
-  const step=Math.max(1,Math.floor(sampleRate/1600));
-  let power=0,count=0;
-  for(let i=start;i<end;i+=step){power+=waveform[i]*waveform[i];count++;}
-  publishVoiceLevel(Math.max(0,Math.min(1,Math.sqrt(power/Math.max(1,count))*7-.035)));
+  const elapsed=context.currentTime-startedAt;
+  if(elapsed>=buffer.duration){stopVoiceLevelMeter();return;}
+  publishVoiceLevel(measuredVoiceLevel(waveform,sampleRate,elapsed));
   voiceLevelFrame=requestAnimationFrame(tick);
  };
  voiceLevelFrame=requestAnimationFrame(tick);
