@@ -100,3 +100,13 @@ As inspected 2026-11-07, GitHub reports `deepsyq-platform.protected=false`. Work
 **If Administrator and owner share the same GitHub account, CODEOWNERS cannot distinguish them**; separate identities and ruleset permissions are required to make an actual approval boundary. Do not claim these repository settings have been enabled until separately verified.
 
 Status labels: `SCOPE_APPROVED`, `CODE_CHANGED`, `SCOPED_CI_PASS`, `MERGE_BLOCKED`, `TEST_LIVE`, `VISUAL_NOT_VERIFIED`, `OWNER_ACCEPTED`. Never use DONE just for writing code.
+
+
+## Owner visual lock — bottom JARVIX composer, desktop + portrait mobile (2026-11-07)
+
+Approved owner visual references supplied in chat: desktop **1670×941** and portrait mobile **941×1672 (~9:16)**. The existing bottom composer on Home (\`#homeQuickBar\`) and JARVIX Chat (\`.j-chat-bottom\`) is **one canonical two-row UI**, not two redesignable versions. Only the appearance and placement of these exact existing controls are locked here; their event handlers and paid-generation rules remain unchanged.
+
+- Top row, left to right: glowing **perfectly circular +**, editable prompt field, image attachment shortcut, paperclip, microphone, settings, glowing **perfectly circular paper-plane Send** anchored at the right edge. No floating, displaced, rotated or oversized Send icon. Microphone can still become a Stop square with active waves while recording. Do not change existing behavior.
+- Second row: **JARVIX → Image → Video → Audio → Tools → Video Uniquifier**, horizontal rounded-pill navigation, same order on desktop/mobile. Desktop decorative waveform at row end; hide it on mobile. On a narrower phone, reduce spacing/allow horizontal scrolling rather than reorder or hide the tools.
+- Desktop: fixed dock centered in the actual content area below the left sidebar. Portrait mobile: fixed, viewport-safe, almost full-width dock above the bottom safe area, with both rows visible and controls inside the frame. No impact on header, sidebar, hero, pricing, Studio settings or other blocks.
+- The shared implementation/lock is restricted to \`app/src/main/assets/jarvix-chat.css\` and the existing paper-plane content in \`deepsyq.html\` and \`jarvix-chat.html\`; the shared navigation still comes from \`jarvix-composer-design.js\`. The \`tests/jarvix-bottom-dock.test.mjs\` regression contract should block accidental button rearrangement and reintroduction of the flying send icon. **Do not modify this accepted visual arrangement in later unrelated tasks without a new explicit owner instruction.**
