@@ -346,6 +346,15 @@ test('owner JARVIX shows no rejected sphere at all when owner image fails',async
  }
 });
 
+test('owner image module contains no legacy SVG builder or fallback',async({page})=>{
+ const response=await page.request.get('/jarvix-approved-orb.js');
+ expect(response.ok()).toBe(true);
+ const moduleSource=await response.text();
+ expect(moduleSource).not.toContain('function createOrbSvg');
+ expect(moduleSource).not.toContain('slot.append(createOrbSvg');
+ expect(moduleSource).toContain('jv-owner-layer-cyan');
+});
+
 test('JARVIX removes any late-injected old orb nodes without touching owner image or controls',async({page})=>{
  test.setTimeout(60000);
  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
