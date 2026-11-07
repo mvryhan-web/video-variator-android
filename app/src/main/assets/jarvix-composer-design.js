@@ -6,7 +6,7 @@ export function decorateComposer(form,{settingsTarget=null}={}){
  const viewport=()=>{const v=window.visualViewport;document.documentElement.style.setProperty('--j-keyboard-inset',Math.max(0,innerHeight-(v?.height||innerHeight)-(v?.offsetTop||0))+'px');};window.visualViewport?.addEventListener('resize',viewport);window.visualViewport?.addEventListener('scroll',viewport);viewport();
  const ru=(localStorage.getItem('deepsyq_home_language')||document.documentElement.lang).startsWith('ru');
  const make=(tag,label)=>{const el=document.createElement(tag);el.textContent=label;return el;};
- const isQuickChat=form.id==='homeQuickForm'||form.id==='jChatForm';
+ const isQuickChat=['homeQuickForm','jChatForm','creator'].includes(form.id);
  const rail=make('nav','');rail.className='j-mode-rail';rail.setAttribute('aria-label',ru?'Режимы и инструменты':'Creation modes and tools');
  const navItems=isQuickChat?[['JARVIX','jarvix-chat.html',null],['Video Uniquifier','index.html','legacy']]:
  [['JARVIX','jarvix-chat.html',null],['Image','generate-studio.html?studio=image','image'],['Video','generate-studio.html?studio=video','video'],['Audio','generate-studio.html?studio=audio','audio'],['Tools','free-tools.html','tools'],['Video Uniquifier','index.html','legacy']];
@@ -64,9 +64,12 @@ export function decorateComposer(form,{settingsTarget=null}={}){
    const panel=make('div','');panel.className='j-settings-menu';panel.id='jSettingsMenu';panel.hidden=true;
    panel.setAttribute('aria-label',ru?'Настройки творческой студии':'Creative Studio settings');
    for(const [kind,label] of [['image','Image'],['video','Video'],['audio','Audio']]){
-    const link=make('a','');link.className='j-settings-tile';link.href='generate-studio.html?studio='+kind+'&settings=1';
-    const icon=createCanonicalIcon(kind);if(icon)link.append(icon);
-    link.append(document.createTextNode(label));panel.append(link);
+    const choice=make('button','');choice.type='button';choice.className='j-settings-tile';
+    choice.dataset.jMode=kind;
+    const icon=createCanonicalIcon(kind);if(icon)choice.append(icon);
+    choice.append(document.createTextNode(label));panel.append(choice);
+    // Choosing a mode is local to this chat. Never redirect to another Studio page.
+    choice.onclick=()=>{form.querySelector('#jPlusMenu [data-j-mode="'+kind+'"]')?.click();close();};
    }
    form.append(panel);gear.setAttribute('aria-haspopup','true');gear.setAttribute('aria-controls',panel.id);
    gear.setAttribute('aria-expanded','false');

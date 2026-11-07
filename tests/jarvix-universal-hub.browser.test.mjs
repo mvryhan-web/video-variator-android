@@ -60,10 +60,14 @@ try{
     await page.locator('.j-settings-shortcut').click();
     assert.equal(await page.locator('#jSettingsMenu .j-settings-tile').count(),3);
     assert.equal(await page.locator('#jSettingsMenu').isVisible(),true);
-    assert.ok((await page.locator('#jSettingsMenu .j-settings-tile').nth(1).getAttribute('href')).includes('studio=video&settings=1'));
     await page.screenshot({path:folder+'/'+l.name+'-settings.png',fullPage:false});
-    await page.locator('#jPlus').click();
+    // New owner rule: settings choice selects mode IN PLACE, never redirects.
+    const pageBeforeSettings=new URL(page.url()).pathname;
+    await page.locator('#jSettingsMenu .j-settings-tile').first().click();
+    assert.equal(new URL(page.url()).pathname,pageBeforeSettings);
+    assert.match(await page.locator('.j-active-mode').innerText(),/Image/);
     assert.equal(await page.locator('#jSettingsMenu').isVisible(),false);
+    await page.locator('#jPlus').click();
     const chooserPromise=page.waitForEvent('filechooser');
     await page.locator('#jAttach').click();
     const chooser=await chooserPromise;

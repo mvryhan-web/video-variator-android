@@ -9,7 +9,9 @@ const navigation=await readFile(new URL('jarvix-composer-design.js',path),'utf8'
 
 test('owner correction: existing shared LOWER navigation untouched, no invented waveform',()=>{
  assert.doesNotMatch(css,/\.j-neon-dock\s*>\s*\.j-mode-rail/);
- assert.doesNotMatch(css,/\.j-mode-rail::after|\.j-mode-rail\s*\{/);
+ assert.doesNotMatch(css,/\.j-mode-rail::after/);
+ // Original Home/Chat rail stays unchanged; Studio may style its own same rail.
+ assert.match(css,/#studioUniversalDock>\.j-mode-rail\{/);
  assert.doesNotMatch(css,/clip-path:polygon/);
  assert.doesNotMatch(css,/:where\(#homeQuickBar,\.j-chat-bottom\)\.j-neon-dock/);
  assert.doesNotMatch(css,/bottom:clamp\(18px,7vh,72px\)/);
