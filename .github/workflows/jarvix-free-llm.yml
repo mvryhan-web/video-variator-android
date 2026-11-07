@@ -10,6 +10,9 @@ on:
       - 'app/src/main/assets/jarvix-composer.js'
       - 'app/src/main/assets/jarvix-voice-input.js'
       - 'app/src/main/assets/jarvix-chat.css'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/jarvix-chat.html'
+      - 'tests/jarvix-bottom-dock.test.mjs'
       - 'tests/jarvix-voice-input.test.mjs'
       - 'tests/jarvix-free-llm.test.mjs'
       - '.github/workflows/jarvix-free-llm.yml'
@@ -48,6 +51,7 @@ jobs:
           node --check app/src/main/assets/jarvix-composer.js
           node --check app/src/main/assets/jarvix-voice-input.js
           node --check tests/jarvix-voice-input.test.mjs
+          node --check tests/jarvix-bottom-dock.test.mjs
           node --check tests/jarvix-free-llm.test.mjs
       - name: Zero-spend free LLM, voice and preview isolation
-        run: node --test tests/jarvix-free-llm.test.mjs tests/jarvix-local-voice.test.mjs tests/jarvix-chat-preview.test.mjs tests/jarvix-speech-draft.test.mjs tests/jarvix-voice-input.test.mjs
+        run: node --test tests/jarvix-free-llm.test.mjs tests/jarvix-local-voice.test.mjs tests/jarvix-chat-preview.test.mjs tests/jarvix-speech-draft.test.mjs tests/jarvix-voice-input.test.mjs tests/jarvix-bottom-dock.test.mjs
