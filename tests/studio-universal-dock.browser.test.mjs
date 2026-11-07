@@ -365,9 +365,10 @@ try{
      const sheet=[...document.styleSheets].find(s=>s.href?.endsWith('/deepsyq-mobile-shell.css'));
      const enabled=[...sheet.cssRules].some(rule=>rule.cssText.startsWith('@view-transition')
       &&rule.cssText.includes('navigation: auto'));
-     const blocker=[...document.querySelectorAll('link[rel="stylesheet"]')]
-      .filter(link=>/deepsyq-mobile-shell|deepsyq-unified-platform-header|jarvix-action-design/.test(link.href))
-      .every(link=>link.blocking.contains('render'));
+     const injected=[...document.querySelectorAll('link[rel="stylesheet"]')]
+      .filter(link=>/\/(?:deepsyq-unified-platform-header|jarvix-action-design)\.css$/.test(new URL(link.href).pathname));
+     // deepsyq-mobile-shell.css is already render-blocking from the static HTML head.
+     const blocker=injected.length===2&&injected.every(link=>link.blocking?.contains('render'));
      return {probe:window.__deepsyqNavProbe||null,enabled,blocker,
       position:css?.position,top:rect?.top,width:rect?.width,
       hasLeft:!!header?.querySelector('.ds-header-pod-left'),
