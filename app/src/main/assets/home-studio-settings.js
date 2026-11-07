@@ -124,6 +124,9 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   pin();
   frame.contentWindow.requestAnimationFrame(pin);
   hub.addEventListener('close',close,{once:true});
+  // Ensure the host closes even if the native dialog close event is delayed
+  // in mobile WebKit/Chromium iframe top layers.
+  hub.querySelector(':scope > button:nth-child(2)')?.addEventListener('click',()=>queueMicrotask(close),{once:true});
  });
  document.body.append(host);
  position();
