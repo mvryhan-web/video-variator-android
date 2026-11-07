@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Video Uniquifier creates multiple finished versions from your own videos with privacy-first on-device processing.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="v3.css">
+  <title>Video Uniquifier</title>
+<link rel="stylesheet" href="theme.css"><script src="theme.js"></script>
+
+<link rel="stylesheet" href="v5.css">
+<link rel="stylesheet" href="product-polish.css">
+<link rel="stylesheet" href="auth-email.css">
+<link rel="stylesheet" href="studio.css">
+<link rel="stylesheet" href="creator-showcase.css">
+<link rel="stylesheet" href="creator-pages.css">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="192x192" href="deepsyq-icon-192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="deepsyq-install-192.png">
+<link rel="stylesheet" href="startup.css">
+<script src="startup.js"></script>
+<link rel="stylesheet" href="tool-access.css">
+<link rel="stylesheet" href="deepsyq-global-theme.css"><link rel="stylesheet" href="approved-page-design.css">
+<link rel="stylesheet" href="video-uniquifier-reference.css?v=owner-20261103-banner-24-25">
+<script defer src="approved-page-design.js"></script>
+<link rel="stylesheet" href="jarvis-core.css?v=6.0">
+<link rel="stylesheet" href="deepsyq-mobile-shell.css">
+<link rel="stylesheet" href="deepsyq-platform-embedded.css">
+<script defer src="deepsyq-site-shell.js"></script>
+<script type="module" blocking="render" src="deepsyq-mobile-shell.js"></script>
+</head>
+<body class="ds-embedded-uniquifier deepsyq-sitewide-shell">
+<header class="ds-platform-header" aria-label="Deepsyq site header">
+  <button id="topJarvisBtn" type="button" class="top-jarvis-btn" aria-label="Activate JARVIX AI" title="JARVIX — AI Voice Commander & Compare"><div class="jarvis-mini-orb"></div><span class="jarvis-name">JARVIX</span></button>
+  <label class="ds-platform-language"><select id="homeLanguage" aria-label="Platform language"><option value="en">EN</option><option value="fr">FR</option><option value="es">ES</option><option value="ru">RU</option></select></label>
+</header>
+<div class="shell">
+  <div id="localeBadge" hidden>EN</div>
+
+  <main class="main">
+    <header class="topbar">
+      <button id="menuBtn" class="iconBtn mobileOnly" aria-label="Menu">☰</button>
+      <div class="topTitle"><span class="eyebrow">VIDEO UNIQUIFIER</span><h1 id="pageTitle" data-i18n="navDashboard">Dashboard</h1></div>
+      
+      <div class="accountActions">
+        <span id="accountChip" class="accountChip" hidden></span>
+        <button id="signInBtn" class="ghostBtn" data-i18n="signIn">Sign in</button>
+      </div>
+    </header>
+
+    <section id="dashboardView" class="view active">
+      <div class="hero card">
+        <div>
+          <span class="pill success" data-i18n="trialPill">100 free videos included</span>
+          <h2 id="heroTitle">Уникализируй своё старое видео</h2>
+          <p data-i18n="heroText">Upload a video, choose a processing style, and let Video Uniquifier handle the rest.</p>
+        </div>
+        <div class="usageBox">
+          <div class="usageTop"><span id="usageLabel">Free trial videos</span><b id="creditText">0 / 100</b></div>
+          <div class="usageTrack"><div id="creditBar" style="width:0%"></div></div>
+          <small id="planLabel">Free trial</small>
+        </div>
+      </div>
+
+      <div class="statsGrid">
+        <article class="stat card"><span data-i18n="statProcessed">Processed</span><b id="processedCount">0</b><small id="processedSub" data-i18n="statProcessedSub">videos completed</small></article>
+        <article class="stat card"><span data-i18n="statRemaining">Remaining</span><b id="remainingCount">100</b><small id="remainingSub">free videos</small></article>
+        <article class="stat card"><span data-i18n="statPlan">Current plan</span><b id="currentPlan">Trial</b><small id="planStatus" data-i18n="trialStatus">No card required</small></article>
+      </div>
+
+      <section class="card workspace">
+        <div class="sectionHead"><div><h3 data-i18n="newProject">New variation</h3><p data-i18n="newProjectSub">Choose one or more videos. Completed files are saved automatically.</p></div><span id="engineBadge" class="statusDot" data-i18n="engineStandby">Engine standby</span></div>
+        <div class="pickerGrid singlePicker">
+          <label class="picker">
+            <input id="fileInput" type="file" accept="video/*" multiple hidden>
+            <span class="pickerIcon">＋</span><b data-i18n="chooseVideos">Choose videos</b><small data-i18n="chooseVideosSub">One or multiple files</small>
+          </label>
+        </div>
+        <div id="fileSummary" class="fileSummary" data-i18n="noFiles">No videos selected yet.</div>
+
+        <div class="settingsGrid">
+          <label><span data-i18n="variantsLabel">Variations per video</span><select id="variantCount"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option></select></label>
+          <label><span data-i18n="modeLabel">Processing mode</span><select id="mode"><option value="gentle" selected>Gentle</option><option value="balanced">Balance</option><option value="dynamic">Dynamic</option></select></label>
+        </div>
+        <div class="formatGrid">
+          <label><span data-i18n="formatLabel">Video format</span><select id="aspectRatio"><option value="9:16" selected>9:16 · Vertical</option><option value="16:9">16:9 · Landscape</option></select></label>
+          <label><span data-i18n="qualityLabel">Output resolution</span><select id="quality"><option value="720" selected>720p</option><option value="1080">1080p</option><option value="2160">4K</option></select></label>
+        </div>
+        <div id="planAccessHint" class="planAccessHint">Trial / Basic: Gentle · 720p</div>
+        <div class="creditEstimate"><span data-i18n="estimatedCost">Estimated processing cost</span><b id="creditEstimate">—</b></div>
+        <input id="microCut" type="hidden" value="auto">
+        <input id="preserveAudio" type="hidden" value="1">
+
+        <div class="actionRow">
+          <button id="startBtn" class="primaryBtn" disabled data-i18n="startProcessing">Create variations</button>
+          <button id="cancelBtn" class="ghostBtn danger" hidden data-i18n="cancel">Cancel</button>
+        </div>
+      </section>
+
+      <section id="progressCard" class="card progressCard" hidden>
+        <div class="progressHead"><div><span id="progressStage" class="pill">Preparing</span><h3 id="progressTitle" data-i18n="preparing">Preparing your video</h3></div><b id="progressPercent">0%</b></div>
+        <div class="progressTrack"><div id="progressBar"></div></div>
+        <p id="progressText" class="muted" data-i18n="preparingSub">Getting everything ready…</p>
+        <div class="stageRow"><span class="stage active" data-stage="upload" data-i18n="stageUpload">Load</span><span class="stage" data-stage="process" data-i18n="stageProcess">Process</span><span class="stage" data-stage="save" data-i18n="stageSave">Save</span><span class="stage" data-stage="done" data-i18n="stageDone">Done</span></div>
+      </section>
+
+      <section id="resultsCard" class="card readyCard" hidden>
+        <div class="readyIcon">✓</div><div><p id="readyText" data-i18n="readyText">Completed files were saved automatically.</p></div>
+        <button class="ghostBtn" data-view-jump="history" data-i18n="viewHistory">View history</button>
+      </section>
+
+      <section id="errorCard" class="card errorPanel" hidden><div class="sectionHead"><div><h3 data-i18n="recentIssue">Recent issue</h3><p id="errorMessage"></p></div><button id="dismissErrorBtn" class="ghostBtn">Dismiss</button></div></section>
+    </section>
+
+    <section id="historyView" class="view">
+      <div class="sectionHead pageSection"><div><h2 data-i18n="historyTitle">Download history</h2><p data-i18n="historySub">Your recent processed files and download status.</p></div><button id="clearHistoryBtn" class="ghostBtn" data-i18n="clearHistory">Clear history</button></div>
+      <div id="historyList" class="historyList"></div>
+      <div id="historyEmpty" class="emptyState card"><b data-i18n="historyEmptyTitle">No processed videos yet</b><p data-i18n="historyEmptyText">Your completed videos will appear here.</p></div>
+    </section>
+
+    <section id="analyticsView" class="view">
+      <div class="pageSection"><h2 data-i18n="analyticsTitle">Analytics</h2><p data-i18n="analyticsSub">Track usage, output volume, and processing reliability.</p></div>
+      <div class="analyticsGrid">
+        <article class="card analyticsCard"><span class="analyticsLabel" data-i18n="creditsUsed">Credits used</span><div id="analyticsCredits" class="analyticsValue">0</div><div class="metricSub">1 second = 1 credit</div></article>
+        <article class="card analyticsCard"><span class="analyticsLabel" data-i18n="outputsCreated">Outputs created</span><div id="analyticsOutputs" class="analyticsValue">0</div><div class="metricSub" id="analyticsDuration">0 sec processed</div></article>
+        <article class="card analyticsCard"><span class="analyticsLabel" data-i18n="successRate">Success rate</span><div id="analyticsSuccess" class="analyticsValue">100%</div><div class="metricSub" id="analyticsErrors">0 errors</div></article>
+      </div>
+    </section>
+
+    <section id="plansView" class="view">
+      <div class="pricingHero"><span class="pill accent" id="introOffer" data-i18n="firstOffer">Intro discount available on your first subscription</span><h2 data-i18n="plansTitle">Choose the plan that fits your workflow</h2><p data-i18n="plansSub">One second of generated video uses one credit. The selected number of variations multiplies the base cost.</p></div>
+      <div class="pricingGrid">
+        <article class="priceCard card"><span class="planName">Basic</span><small class="planAudience" data-plan-audience="basic">For everyday creators</small><div class="price"><b>$9</b><span data-i18n="perMonth">/ month</span></div><p><strong>750</strong> credits</p><span class="planUnit">Gentle · 720p · up to 5 variations · Avatar Narrator</span><button class="primaryBtn planBtn" data-plan="basic">Choose Basic</button></article>
+        <article class="priceCard card featured"><span class="popular" data-i18n="mostPopular">Recommended</span><span class="planName">Pro</span><small class="planAudience" data-plan-audience="pro">For growing creators</small><div class="price"><b>$24</b><span data-i18n="perMonth">/ month</span></div><p><strong>2,250</strong> credits</p><span class="planUnit">Gentle + Balance · 1080p · up to 10 variations · Avatar Narrator</span><button class="primaryBtn planBtn" data-plan="pro">Choose Pro</button></article>
+        <article class="priceCard card"><span class="planName">Business</span><small class="planAudience" data-plan-audience="business">For high-volume teams</small><div class="price"><b>$99</b><span data-i18n="perMonth">/ month</span></div><p><strong>15,000</strong> credits</p><span class="planUnit">All modes · 4K · up to 15 variations · Avatar Narrator</span><button class="primaryBtn planBtn" data-plan="business">Choose Business</button></article>
+        <article class="priceCard card lifetimeCard"><span class="popular lifetimeBadge">Lifetime</span><span class="planName">Lifetime</span><small class="planAudience">Pay once. Keep everything.</small><div class="price"><b>€2,999</b><span>one-time</span></div><p><strong>Unlimited</strong> credits</p><span class="planUnit">All modes · 720p / 1080p / 4K · up to 15 variations · Avatar Narrator · all current &amp; future features included</span><button class="primaryBtn planBtn" data-plan="lifetime">Get Lifetime</button></article>
+      </div>
+      <div class="guarantee card"><div class="guaranteeIcon">↺</div><div><b data-i18n="guaranteeTitle">Money-back guarantee</b><p data-i18n="guaranteeText">Eligible first subscription purchases are covered by our refund policy. Full eligibility terms are shown before checkout.</p></div></div>
+    </section>
+
+    <section id="faqView" class="view">
+      <div class="pageSection"><h2 data-i18n="faqTitle">Frequently asked questions</h2><p data-i18n="faqSub">Everything you need to know before processing your videos.</p></div>
+      <div class="faqNote">Paid plans use seconds, not file count: 1 second = 1 credit, multiplied by the number of selected variations.</div>
+      <div class="faqList">
+        <details class="card"><summary>How do credits work?</summary><p>The base cost is the source video duration in seconds. The number of variations you choose multiplies that base cost.</p></details>
+        <details class="card"><summary>What processing modes are included?</summary><p>Basic includes Gentle. Pro includes Gentle and Balance. Business unlocks Gentle, Balance, and Dynamic. Lifetime includes all current modes and future features.</p></details>
+        <details class="card"><summary>What quality is included?</summary><p>Basic outputs at 720p, Pro at 1080p, and Business at 4K. Lifetime unlocks 720p, 1080p, and 4K. Both 9:16 and 16:9 are supported.</p></details>
+        <details class="card"><summary>How does Lifetime work?</summary><p>Lifetime is a single €2,999 payment. Once Stripe confirms the payment, the account receives permanent Lifetime access with unlimited credits, all current features, and future feature access included. There is no recurring Lifetime subscription to cancel.</p></details>
+        <details class="card"><summary>How does the free test work?</summary><p>New users can process 100 source videos. The dashboard starts at 0 / 2 and counts upward as free videos are used.</p></details>
+        <details class="card"><summary>Where are my videos processed?</summary><p>Video processing is designed to run locally on your device. Account, billing, analytics, usage, and history metadata may sync securely over HTTPS.</p></details>
+        <details class="card"><summary>Can I cancel my subscription easily?</summary><p>Yes. Open Profile & Settings to manage billing or schedule cancellation at the end of the current billing period.</p></details>
+        <details class="card"><summary>How is my data protected?</summary><p>Production web services require HTTPS, Stripe handles card data, OAuth tokens are verified server-side, and raw video files are not uploaded for account or billing operations.</p></details>
+        <details class="card"><summary>What happens if processing fails?</summary><p>The dashboard shows a clear error state, records reliability metrics, and keeps the job from silently failing.</p></details>
+      </div>
+    </section>
+
+    <section id="profileView" class="view">
+      <div class="pageSection"><h2 data-i18n="profileTitle">Profile & Settings</h2><p data-i18n="profileSub">Manage your account, subscription, privacy, and updates.</p></div>
+      <div class="profileGrid">
+        <article class="card profileCard"><h3>Account</h3><div class="profileRows"><div class="profileRow"><span>Email</span><b id="profileEmail">Not signed in</b></div><div class="profileRow"><span>Plan</span><b id="profilePlan">Trial</b></div><div class="profileRow"><span>Status</span><b id="profileStatus">Inactive</b></div></div></article>
+        <article class="card profileCard"><h3>Subscription</h3><p class="muted">Manage payment methods, invoices, or cancel your subscription securely through Stripe.</p><div class="profileActionRow"><button id="manageBillingBtn" class="primaryBtn">Manage billing</button><button id="cancelSubscriptionBtn" class="ghostBtn danger">Cancel subscription</button></div></article>
+        <article class="card profileCard"><h3>Updates</h3><p class="muted" id="updateStatus">The web app checks for updates automatically.</p><div class="profileActionRow"><button id="checkUpdateBtn" class="ghostBtn">Check for updates</button><a id="downloadAndroidBtn" class="primaryBtn" href="https://github.com/mvryhan-web/video-variator-android/releases/latest/download/VideoUniquifier.apk">Download Android app</a></div></article>
+      </div>
+      <section class="card privacyPanel"><h3>Privacy & security</h3><div class="privacyPoint"><i>✓</i><span>HTTPS is enforced for production web traffic.</span></div><div class="privacyPoint"><i>✓</i><span>Raw video processing stays on-device whenever supported.</span></div><div class="privacyPoint"><i>✓</i><span>Stripe handles card data; Video Uniquifier does not store card numbers.</span></div><div class="privacyPoint"><i>✓</i><span>Google and Apple identity tokens are verified on the server.</span></div></section>
+    </section>
+  </main>
+</div>
+
+<div id="authModal" class="modal" hidden>
+  <div class="modalBackdrop" data-close-auth></div>
+  <section class="authCard card">
+    <button class="modalClose" data-close-auth aria-label="Close">×</button>
+    <span class="eyebrow">VIDEO UNIQUIFIER</span><h2>Sign in to sync your account</h2><p>Keep your plan, credits, and history connected across devices.</p>
+    <div id="googleButton" class="providerSlot"><button id="googleFallback" class="providerBtn"><span class="googleG">G</span><span>Continue with Google</span></button></div>
+    <button id="appleButton" class="providerBtn appleBtn"><span class="appleLogo">●</span><span>Continue with Apple</span></button>
+    <small class="muted">Secure sign-in opens through the provider. Video files are not uploaded for authentication.</small>
+  </section>
+</div>
+
+<div id="updateBanner" class="updateBanner" hidden><div><b>An update is available</b><p>Reload to use the latest Video Uniquifier version.</p></div><button id="applyUpdateBtn" class="primaryBtn">Update now</button></div>
+<div id="toast" class="toast" hidden></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js" async defer></script>
+<script src="bootstrap.js" defer></script>
+<script src="video-core.js" defer></script>
+<script src="file-share.js" defer></script>
+<script src="persistent-media.js" defer></script>
+<script src="result-delete.js" defer></script>
+<script src="app-v4.js" defer></script>
+<script src="processing-session.js" defer></script>
+<script src="admin-access.js" defer></script>
+<script src="app-v5.js" defer></script>
+<script src="auth-email.js" defer></script>
+<script src="trial-quality.js" defer></script>
+<script src="product-polish.js" defer></script>
+<script src="creator-showcase.js" defer></script>
+<script src="creator-pages.js" defer></script>
+<script src="share-import.js" defer></script>
+<script src="tool-access.js" defer></script>
+<script defer src="video-uniquifier-reference.js?v=owner-20261103-banner-24-25"></script>
+<script type="module" src="jarvis-core.js"></script>
+</body>
+</html>

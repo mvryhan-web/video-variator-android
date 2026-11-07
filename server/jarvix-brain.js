@@ -47,6 +47,7 @@ const SITE_PAGE_FILES = Object.freeze([
   ['telegram-free-mini.html', 'Telegram mini app'],
   ['audio-studio.html', 'Audio tools'],
   ['voice-agent-preview.html', 'Voice agent preview'],
+  ['video-uniquifier.html', 'Video Uniquifier — Multi-variation video processor'],
   ['index.html', 'Creative workspace and account pages'],
   ['pricing.html', 'Pricing'],
   ['ai-privacy.html', 'AI privacy information'],

@@ -36,9 +36,10 @@
   };
 
   function readJson(key,fallback){try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback));}catch(_){return fallback;}}
-  function detectLocale(){const raw=(navigator.languages?.[0]||navigator.language||'en-US').toLowerCase();if(raw.startsWith('fr'))return'fr';if(raw.startsWith('ru'))return'ru';if(raw.startsWith('uk'))return'uk';return'en';}
+  function detectLocale(){try{const saved=localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang');if(saved==='ru'||saved==='fr'||saved==='uk'||saved==='en')return saved;}catch(_){}const raw=(navigator.languages?.[0]||navigator.language||'en-US').toLowerCase();if(raw.startsWith('fr'))return'fr';if(raw.startsWith('ru')||raw.startsWith('uk')||raw.startsWith('be'))return'ru';return'en';}
   function t(key){return translations[state.locale]?.[key]||en[key]||key;}
-  function applyLocale(){state.locale=detectLocale();document.documentElement.lang=state.locale==='en'?'en-US':state.locale;$('localeBadge').textContent=state.locale.toUpperCase();qsa('[data-i18n]').forEach(el=>{const v=t(el.dataset.i18n);if(v)el.textContent=v;});renderAll();}
+  function applyLocale(){state.locale=detectLocale();document.documentElement.lang=state.locale==='en'?'en-US':state.locale;const badge=$('localeBadge');if(badge)badge.textContent=state.locale.toUpperCase();qsa('[data-i18n]').forEach(el=>{const v=t(el.dataset.i18n);if(v)el.textContent=v;});renderAll();}
+  window.addEventListener('deepsyq:lang',()=>applyLocale());
   function bytes(n){const units=['B','KB','MB','GB'];let i=0,v=n||0;while(v>=1024&&i<units.length-1){v/=1024;i++;}return `${v.toFixed(v>=100?0:v>=10?1:2)} ${units[i]}`;}
   function toast(message){const el=$('toast');el.textContent=message;el.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.hidden=true,3500);}
   function saveHistory(){localStorage.setItem('vv_history',JSON.stringify(state.history.slice(0,100)));}
@@ -163,7 +164,7 @@
 
   qsa('.navBtn').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
   qsa('[data-view-jump]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.viewJump)));
-  $('menuBtn').addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('open'));
+  $('menuBtn')?.addEventListener('click',()=>{const s=document.getElementById('dsSiteNavToggle');if(s)s.click();else document.querySelector('.sidebar')?.classList.toggle('open');});
   $('fileInput').addEventListener('change',e=>{core.setFiles(e.target.files);updateFileSummary();});
   $('variantCount').addEventListener('change',scheduleEstimate);$('aspectRatio').addEventListener('change',scheduleEstimate);$('mode').addEventListener('change',scheduleEstimate);
   $('startBtn').addEventListener('click',startProcessing);$('cancelBtn').addEventListener('click',()=>core.cancel());$('dismissErrorBtn').addEventListener('click',()=>{$('errorCard').hidden=true;});
