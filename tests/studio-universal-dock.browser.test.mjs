@@ -97,8 +97,9 @@ try{
    assert.equal(await native.locator('#studioSettingsHub #studioTypePicker').count(),1);
    assert.equal(await native.locator('#studioSettingsHub #modelButton').count(),1);
    assert.equal(await native.locator('#studioSettingsHub #settingsButton').count(),1);
+   assert.equal(await native.locator('body>.topbar').evaluate(el=>getComputedStyle(el).display),'none','no duplicate embedded Studio header');
    await native.locator('#studioSettingsHub > button:nth-child(2)').click();
-   await page.locator('#homeStudioSettingsFrame').waitFor({state:'detached',timeout:12000});
+   await page.locator('#homeStudioSettingsHost').waitFor({state:'hidden',timeout:12000});
   }finally{await context.close();}
  });
 }finally{
