@@ -98,6 +98,17 @@ try{
      assert.match(await page.locator('#homeStudioSettingsFrame').getAttribute('src'),/studio=video&settings=1/);
      for(const id of ['studioTypePicker','modelButton','settingsButton'])
        assert.equal(await native.locator('#studioSettingsHub #'+id).count(),1,'real native Studio control: '+id);
+     // Use the existing native model and format dialogs: this must not be a
+     // static copy of Studio Settings or a fake intermediate chooser.
+     await native.locator('#studioSettingsHub #modelButton').click();
+     await native.locator('#modelDialog[open]').waitFor({timeout:12000});
+     await native.locator('#modelDialog [data-close="modelDialog"]').click();
+     await native.locator('#modelDialog:not([open])').waitFor({timeout:12000});
+     await native.locator('#studioSettingsHub #settingsButton').click();
+     await native.locator('#settingsDialog[open]').waitFor({timeout:12000});
+     await native.locator('#settingsDialog [data-close="settingsDialog"]').click();
+     await native.locator('#settingsDialog:not([open])').waitFor({timeout:12000});
+     assert.equal(await native.locator('#studioSettingsHub[open]').count(),1,'parent hub stays open after model and format panels');
      const embeddedHeader=await native.locator('body>.topbar').evaluate(el=>({
       display:getComputedStyle(el).display,style:el.getAttribute('style'),
       bodyId:document.body.id,hasPresentation:!!document.getElementById('homeNativeStudioSettingsPresentation')
