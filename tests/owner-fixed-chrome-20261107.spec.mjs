@@ -497,3 +497,48 @@ test('mobile secondary header preserves existing mobile buttons without duplicat
  await expect(page.locator('.ds-mobile-control-left .ds-header-tools')).toHaveCount(1);
  await expect(page.locator('.ds-mobile-control-right #topLogin')).toHaveCount(1);
 });
+
+test('Owner 07 Nov mobile/desktop header: Credit left of orb, Tour right, no header AI Apps or dash',async({page},info)=>{
+ test.setTimeout(100000);
+ const writes=[];
+ page.on('request',req=>{if(req.method()==='POST'&&/\/api\/(studio\/jobs|stripe|payments)\b/.test(req.url()))writes.push(req.url());});
+ await page.addInitScript(()=>{localStorage.setItem('deepsyq_home_language','ru');});
+ for(const [width,route] of [[320,'deepsyq.html'],[390,'deepsyq.html'],[430,'deepsyq.html'],
+  [390,'generate-studio.html?studio=image'],[390,'jarvix-chat.html'],
+  [1365,'generate-studio.html?studio=image']]){
+  await page.setViewportSize({width,height:844});
+  await page.goto('/'+route,{waitUntil:'domcontentloaded',timeout:30000});
+  await expect.poll(()=>page.evaluate(()=>document.body.dataset.mobileShell),{timeout:15000}).toBe('ready');
+  const mobile=width<=760,credit=page.locator(mobile?'.ds-mobile-control-left .ds-header-credit':'.ds-unified-actions-left .ds-header-credit');
+  const tour=page.locator(mobile?'.ds-mobile-control-right #dsTakeTour':'.ds-unified-actions-right #dsTakeTour');
+  await expect(credit,route+' must show exactly one credit link on the left').toHaveCount(1);
+  await expect(tour,route+' must show one original Tour button on the right').toHaveCount(1);
+  await expect(credit).toBeVisible();
+  await expect(tour).toBeVisible();
+  await expect(credit).toHaveAttribute('href','pricing.html#credits');
+  await expect(credit).toHaveText('AI Credit');
+  await expect(tour).toHaveText('Экскурсия');
+  await expect(page.locator('.ds-header-apps')).toHaveCount(0);
+  const infoRects=await page.evaluate(isMobile=>{
+   const rect=s=>{const el=document.querySelector(s),r=el?.getBoundingClientRect();return r?{l:r.left,r:r.right,t:r.top,b:r.bottom,c:(r.left+r.right)/2}:null;};
+   const scope=isMobile?'.ds-mobile-controls':'.ds-unified-actions';
+   return {viewport:innerWidth,orb:rect('#topJarvisBtn'),
+    credit:rect(scope+' .ds-header-credit'),tour:rect(scope+' #dsTakeTour'),
+    tools:rect(scope+' .ds-header-tools'),price:rect(scope+' #topPricing'),
+    overflow:document.documentElement.scrollWidth>innerWidth+1};
+  },mobile);
+  expect(infoRects.orb,route+' missing JARVIX orb').toBeTruthy();
+  expect(Math.abs(infoRects.orb.c-width/2),route+' orb must remain centered').toBeLessThanOrEqual(4);
+  expect(infoRects.credit.r,route+' Credit must be left of orb').toBeLessThan(infoRects.orb.l+4);
+  expect(infoRects.tour.l,route+' Tour must be right of orb').toBeGreaterThan(infoRects.orb.r-4);
+  expect(infoRects.credit.l,route+' Credit must fit viewport').toBeGreaterThanOrEqual(-1);
+  expect(infoRects.tour.r,route+' Tour must fit viewport').toBeLessThanOrEqual(width+1);
+  if(mobile){
+   expect(infoRects.tools.r,route+' Tools and Credit must not overlap').toBeLessThanOrEqual(infoRects.credit.l+1);
+   expect(infoRects.tour.r,route+' Tour and Pricing must not overlap').toBeLessThanOrEqual(infoRects.price.l+1);
+  }
+  expect(infoRects.overflow,route+' must not create horizontal scroll').toBe(false);
+  await page.screenshot({path:info.outputPath('header-credit-tour-'+width+'-'+route.split('?')[0]+'.png'),fullPage:false,animations:'disabled'});
+ }
+ expect(writes).toEqual([]);
+});
