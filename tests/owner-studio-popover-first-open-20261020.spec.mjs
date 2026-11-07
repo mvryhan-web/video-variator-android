@@ -17,7 +17,7 @@ test('first settings panel open stays anchored in Image, Video and Audio Studio'
    await expect(gear).toBeVisible();
    await gear.click();
    await expect(hub).toBeVisible();
-   await expect(page.locator('#studioTypePicker')).toBeVisible();
+   await expect(page.locator('#studioTypePicker')).toHaveCount(0);
    await expect(page.locator('.studio-shell>.studio-nav')).toBeHidden();
    await hub.locator('#settingsButton').click();
    await expect(hub).toHaveAttribute('open','');

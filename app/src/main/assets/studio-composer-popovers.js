@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  const nav=document.querySelector('.studio-shell>.studio-nav');
  const controls=document.querySelector('.composer-controls');
  if(!nav||!controls||!$('modelDialog')||!$('settingsDialog'))return;
- const ru=navigator.language.toLowerCase().startsWith('ru');
+ const ru=(localStorage.getItem('deepsyq_home_language')||document.documentElement.lang).startsWith('ru');
  const text=(en,r)=>ru?r:en;
  const types={image:text('AI Image','Изображение'),video:text('AI Video','Видео'),music:text('Audio','Аудио')};
  const picker=document.createElement('button');
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  const heading=document.createElement('h2');heading.textContent=text('Studio settings','Настройки студии');
  const close=document.createElement('button');close.type='button';close.textContent='×';close.setAttribute('aria-label',text('Close settings','Закрыть настройки'));close.onclick=()=>hub.close();
  const format=$('settingsButton'),model=$('modelButton');
- hub.append(heading,close,picker,model,format);document.body.append(hub);
+ picker.remove();hub.append(heading,close,model,format);document.body.append(hub);
  // The hub stays open when a user selects model, type or format.
  // Child dialogs close independently and return to this parent Settings view.
  const gear=document.createElement('button');gear.type='button';gear.className='pill j-studio-settings';gear.id='studioSettingsToggle';gear.setAttribute('aria-label',text('Studio settings','Настройки студии'));gear.textContent='☷';gear.setAttribute('aria-haspopup','dialog');gear.onclick=()=>{if(!hub.open)hub.showModal();prepare(hub,gear);position(hub,gear);};

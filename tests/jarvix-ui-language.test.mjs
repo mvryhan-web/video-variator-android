@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {translateUi} from '../app/src/main/assets/jarvix-ui-language.js';
+test('shared nav labels switch RU and back EN',()=>{for(const [en,ru] of [['Image','Фото'],['Video','Видео'],['Audio','Аудио'],['Studio settings','Настройки студии']]){assert.equal(translateUi(en,'ru'),ru);assert.match(translateUi(ru,'en'),new RegExp(en==='Image'?'Image':en==='Video'?'Video':en));}});
+test('unknown user content and model names remain untouched',()=>{for(const text of ['Nano Banana 2','сделай видео про Рождество','My own prompt'])assert.equal(translateUi(text,'ru'),text);});

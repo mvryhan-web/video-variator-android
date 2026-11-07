@@ -1,3 +1,4 @@
+import {sidebarPreferences,mountReferenceOrb} from './jarvix-shell-extras.js';
 // Owner mobile reference, 2026-11-05. Keep existing buttons and their handlers.
 export function drawerSwipe(start, end, open, width) {
   if (!start || Math.abs(end.y - start.y) > 45 || end.time - start.time > 700) return null;
@@ -25,6 +26,8 @@ function setupMobileShell() {
   if (!header || !sidebar || !toggle) return;
   document.body.dataset.mobileShell = 'ready';
   header.classList.add('ds-stable-header');sidebar.classList.add('ds-stable-sidebar');
+  const polish=document.createElement('link');polish.rel='stylesheet';polish.href='jarvix-polish.css';document.head.append(polish);
+  sidebarPreferences(sidebar);
   if (!document.querySelector('link[href="deepsyq-mobile-shell.css"]')) {const css=document.createElement('link');css.rel='stylesheet';css.href='deepsyq-mobile-shell.css';document.head.append(css);}
 
   // Only the global header search is removed; template/tool searches remain useful.
@@ -32,9 +35,9 @@ function setupMobileShell() {
   header.querySelectorAll('form:has(input[type="search"])').forEach(el => el.remove());
 
   const words = {
-    en: ['All tools', 'Pricing', 'Log in', 'Take a Tour'],
-    ru: ['Все инструменты', 'Тарифы', 'Войти', 'Экскурсия'],
-    fr: ['Tous les outils', 'Tarifs', 'Connexion', 'Visite guidée'],
+    en: ['Tools', 'Pricing', 'Log in', 'Take a Tour'],
+    ru: ['Инструменты', 'Тарифы', 'Войти', 'Экскурсия'],
+    fr: ['Outils', 'Tarifs', 'Connexion', 'Visite guidée'],
     es: ['Herramientas', 'Precios', 'Acceder', 'Visita guiada']
   };
   const locale = () => {
@@ -74,16 +77,15 @@ function setupMobileShell() {
   const pricing = document.getElementById('topPricing') || link(copy()[1], 'pricing.html', '');
   if(!pricing.id){pricing.id='topPricing';desktopActions.append(pricing);}
   const login = document.getElementById('topLogin') || link(copy()[2], 'deepsyq.html?panel=login', '');
-  if(!document.getElementById('topLogin'))desktopActions.append(login);
+  if(!document.getElementById('topLogin')){login.id='topLogin';desktopActions.append(login);}
   desktopActions.prepend(tools);
   if(document.body.classList.contains('j-action-workspace')){
     const apps=link('✦ AI Apps','ai-apps.html','ds-header-apps');desktopActions.append(apps);
-    const balance=link('⚡ AI credits: —','pricing.html#credits','ds-header-credit');if(!document.getElementById('walletButton'))desktopActions.append(balance);
-    const updateCredit=async()=>{const token=localStorage.getItem('vv_token');balance.textContent='⚡ AI credits: —';if(!token)return;try{const r=await fetch('/api/ai-wallet/balance',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const data=await r.json();if(token===localStorage.getItem('vv_token')&&Number.isSafeInteger(data.available)&&data.available>=0)balance.textContent='⚡ AI credits: '+data.available.toLocaleString();}catch{}};
-    void updateCredit();window.addEventListener('storage',e=>{if(e.key==='vv_token')void updateCredit();});
-    const placeExtras=()=>{if(document.body.classList.contains('ds-mobile-layout')){left.append(apps);right.prepend(balance);}else {desktopActions.append(apps);if(!document.getElementById('walletButton'))desktopActions.append(balance);else balance.remove();}};
+    const placeExtras=()=>{if(document.body.classList.contains('ds-mobile-layout'))left.append(apps);else desktopActions.append(apps);};
     new MutationObserver(placeExtras).observe(document.body,{attributes:true,attributeFilter:['class']});placeExtras();
   }
+  mountReferenceOrb(orb);
+  const centerOrb=()=>header.style.setProperty('--ds-orb-x',(innerWidth/2-header.getBoundingClientRect().left)+'px');new ResizeObserver(centerOrb).observe(header);window.addEventListener('resize',centerOrb);requestAnimationFrame(centerOrb);
   const reused = [toggle, tools, tour, pricing, login];
   const saved = new Map();
   const move = (el, parent) => {
@@ -93,7 +95,7 @@ function setupMobileShell() {
   function refresh() {
     const labels = copy();
     tools.textContent=labels[0];tour.textContent=labels[3];
-    if (!document.getElementById('topPricing')) pricing.textContent = labels[1];
+    pricing.textContent = labels[1];
     let token='';try{token=localStorage.getItem('vv_token')||'';}catch{}
     const account=headerAccount(token,locale());login.textContent=account.label;if(login.tagName==='A')login.href=account.href;
   }
@@ -120,7 +122,7 @@ function setupMobileShell() {
       document.body.classList.add('ds-mobile-layout');
       header.append(brand, controls);
       move(toggle, document.body); toggle.classList.add('ds-mobile-menu');
-      move(tools, left); move(tour, left); move(pricing, right); move(login, right);
+      move(tools, left); move(tour, right); move(pricing, right); move(login, right);
     } else if (!mobile.matches && mounted) {
       if (isOpen()) toggle.click();
       mounted = false;

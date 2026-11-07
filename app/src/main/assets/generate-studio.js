@@ -1,3 +1,4 @@
+import {createSpeechDraft} from './jarvix-speech-draft.js';
 import {resolveActionModel} from './jarvix-action-plan.js';
 import {saveLocal} from './ai-media.js';
 import {MODEL_CATALOG,MODELS} from './generate-models.js';
@@ -16,10 +17,10 @@ const resolveStudioLang=()=>{
   }catch(_){}
   return navigator.language?.startsWith('ru')?'ru':navigator.language?.startsWith('fr')?'fr':navigator.language?.startsWith('es')?'es':'en';
 };
-const curLang=resolveStudioLang();
-const ru=curLang==='ru';
-const fr=curLang==='fr';
-const es=curLang==='es';
+let curLang=resolveStudioLang();
+let ru=curLang==='ru';
+let fr=curLang==='fr';
+let es=curLang==='es';
 const say=(en,r,f,s)=>ru?r:fr?(f||en):es?(s||en):en;
 const say3=(en,frStr,r,s)=>say(en,r,frStr,s);
 
@@ -29,7 +30,7 @@ const studioI18n={
   fr:{back:'← Retour',pilot:'Aperçu du studio',workspace:'VOTRE ESPACE',video:'Vidéo',image:'Images',audio:'Audio',dashboard:'Accueil ↗',translation:'Traduction · bientôt',create:'Créer',history:'Mes résultats',label:'STUDIO CRÉATIF',headline:'Votre idée. Donnez-lui vie.',prompt:'Décrivez ce que vous souhaitez créer',addPhoto:'Photo',clear:'Effacer la photo',generate:'Créer ✦',consent:'J’accepte que la description et les photos soient transmises au modèle sélectionné. Les coûts sont indiqués avant le lancement.',pilotNote:'Aperçu du studio. La facturation n’est pas activée.',chooseModel:'Choisir le modèle',modelHint:'Choisissez un outil pour votre projet. Chaque modèle affiche son statut.',settings:'Paramètres',format:'Format',capabilityNote:'Paramètres adaptés au modèle sélectionné.',trackType:'Type audio',song:'Chanson avec voix',instrumental:'Instrumental',voiceoverMode:'Voix off · bientôt disponible',voiceover:'Ouvrir l’outil de voix off →',language:'Langue',voice:'Voix',done:'Terminé',download:'Télécharger',share:'Partager',delete:'Supprimer',saveNote:'Enregistrez une copie. La suppression du résultat ne supprime pas les fichiers téléchargés.',historyHint:'Vos créations apparaissent ici. Aucune génération automatique.',checkResult:'Vérifier le dernier résultat',historyLoading:'Chargement des résultats…',historyNone:'Aucun résultat enregistré pour le moment.',historyOpen:'Ouvrir',historyReady:'Prêt',historyProcessing:'En cours',historyFailed:'Erreur',filterAll:'Tous',filterImages:'Images',filterVideos:'Vidéos',filterFailed:'Échecs',filterProcessing:'En cours',pricingLink:'Tarifs et crédits IA →',privacyLink:'Confidentialité des médias IA →'},
   es:{back:'← Volver',pilot:'Vista previa del estudio',workspace:'TU ESPACIO',video:'Vídeo',image:'Imágenes',audio:'Audio',dashboard:'Inicio ↗',translation:'Traducción · pronto',create:'Crear',history:'Mis resultados',label:'ESTUDIO CREATIVO',headline:'Tu idea. Hazla realidad.',prompt:'Describe lo que quieres crear',addPhoto:'Foto',clear:'Quitar foto',generate:'Crear ✦',consent:'Acepto que la solicitud y las fotos se envíen al modelo seleccionado. Los costes se muestran antes del lanzamiento.',pilotNote:'Vista previa del estudio. El cobro no está habilitado.',chooseModel:'Elegir modelo',modelHint:'Elige una herramienta para tu proyecto.',settings:'Ajustes',format:'Formato',capabilityNote:'Los ajustes corresponden al modelo seleccionado.',trackType:'Tipo de audio',song:'Canción con voz',instrumental:'Instrumental',voiceoverMode:'Voz en off · próximamente',voiceover:'Abrir herramienta de locución →',language:'Idioma',voice:'Voz',done:'Listo',download:'Descargar',share:'Compartir',delete:'Eliminar',saveNote:'Guarda una copia. Eliminar no borra las descargas.',historyHint:'Tus resultados guardados aparecen aquí.',checkResult:'Comprobar último resultado',historyLoading:'Cargando resultados…',historyNone:'Aún no hay resultados guardados.',historyOpen:'Abrir',historyReady:'Listo',historyProcessing:'En proceso',historyFailed:'Error',filterAll:'Todos',filterImages:'Imágenes',filterVideos:'Vídeos',filterFailed:'Fallos',filterProcessing:'En proceso',pricingLink:'Precios y créditos IA →',privacyLink:'Privacidad de medios IA →'}
 };
-const strings=studioI18n[curLang]||studioI18n.en;
+let strings=studioI18n[curLang]||studioI18n.en;
 document.documentElement.lang=curLang==='en'?'en-US':curLang;
 document.querySelectorAll('[data-t]').forEach(e=>e.textContent=strings[e.dataset.t]||e.textContent);
 if($('backgroundVideo'))$('backgroundVideo').textContent=say('Continue in background →','Продолжить в фоне →','Continuer en arrière-plan →','Continuar en segundo plano →');
@@ -1273,9 +1274,10 @@ function initStudioVoiceInput() {
         } catch (_) {}
       }
       recognition = new SpeechRec();
+      const instance=recognition,draft=createSpeechDraft(baseText);
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru')) ? 'ru-RU' : 'en-US';
+      recognition.lang = ({ru:'ru-RU',en:'en-US',fr:'fr-FR',es:'es-ES'})[(localStorage.getItem('deepsyq_home_language')||document.documentElement.lang).slice(0,2)]||'en-US';
 
       recognition.onstart = () => {
         isListening = true;
@@ -1285,12 +1287,9 @@ function initStudioVoiceInput() {
       };
 
       recognition.onresult = (e) => {
-        let currentTranscript = '';
-        for (let i = 0; i < e.results.length; ++i) {
-          currentTranscript += e.results[i][0].transcript;
-        }
+        if(recognition!==instance||!shouldBeListening)return;
         if (promptEl) {
-          promptEl.value = (baseText + currentTranscript).trim();
+          promptEl.value = draft(e);
           promptEl.dispatchEvent(new Event('input', { bubbles: true }));
         }
       };
@@ -1313,6 +1312,7 @@ function initStudioVoiceInput() {
       };
 
       recognition.onend = () => {
+        if(recognition!==instance)return;
         // Keep listening even if browser pauses after silence!
         if (shouldBeListening) {
           baseText = promptEl.value.trim();
@@ -1524,3 +1524,5 @@ window.addEventListener('jarvix:studio-action',async event=>{
   voiceActionPending=true;$('creator').requestSubmit();
  }catch(e){$('status').textContent=errorText(e);void briefVoice(say('Clarify prompt','Уточните промпт','Précisez','Aclara petición'));}
 });
+
+window.addEventListener('deepsyq:lang',()=>{curLang=resolveStudioLang();ru=curLang==='ru';fr=curLang==='fr';es=curLang==='es';strings=studioI18n[curLang]||studioI18n.en;document.querySelectorAll('[data-t]').forEach(el=>{if(strings[el.dataset.t])el.textContent=strings[el.dataset.t];});renderModels();});
