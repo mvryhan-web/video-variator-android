@@ -1,0 +1,101 @@
+/* 2026-11-07 Owner screenshot: the AI platform's header belongs to DEEPSYQ,
+   including on secondary pages. Original Home/VU and all feature content stay.
+   Existing buttons/handlers are reused, not duplicated or redrawn. */
+@media(min-width:761px){
+ html body.ds-unified-platform header.ds-unified-header{
+  min-height:88px!important;height:88px!important;
+  padding:0 18px!important;display:flex!important;align-items:center!important;
+  border:1px solid #13cfff!important;border-radius:20px!important;
+  background:linear-gradient(108deg,#020917,#04091c 62%,#08051c)!important;
+  box-shadow:0 0 13px #04ccf84d,inset 0 0 1px #ca41ff!important;
+  overflow:visible!important;isolation:isolate!important;
+  box-sizing:border-box!important;max-width:none!important;
+ }
+ html body.ds-unified-platform header.ds-unified-header>:not(#topJarvisBtn):not(.ds-unified-actions){
+  display:none!important;
+ }
+ html body.ds-unified-platform header.ds-unified-header .ds-unified-actions{
+  display:flex!important;align-items:center;justify-content:space-between;
+  width:100%;height:100%;min-width:0;box-sizing:border-box;
+  position:relative;gap:8px;white-space:nowrap;
+ }
+ html body.ds-unified-platform .ds-unified-actions-left,
+ html body.ds-unified-platform .ds-unified-actions-right{
+  display:flex;align-items:center;gap:12px;min-width:0;
+ }
+ html body.ds-unified-platform .ds-unified-actions-left{margin-left:62px}
+ html body.ds-unified-platform .ds-unified-actions-right{margin-left:auto}
+ html body.ds-unified-platform header.ds-unified-header .ds-unified-actions :is(button,a){
+  position:static!important;left:auto!important;right:auto!important;
+  top:auto!important;bottom:auto!important;transform:none!important;
+  display:inline-flex!important;align-items:center;justify-content:center;
+  margin:0!important;white-space:nowrap;min-height:42px;
+  padding:9px 15px!important;font:650 13px system-ui!important;
+  text-decoration:none!important;color:#f0f5ff!important;
+  border:1px solid #9357f5!important;border-radius:999px!important;
+  background:linear-gradient(125deg,#101029,#06162b)!important;
+  box-shadow:0 0 12px #a42ff84a!important;cursor:pointer;
+  box-sizing:border-box;
+ }
+ html body.ds-unified-platform header.ds-unified-header .ds-header-tools{
+  border-color:#5a54fc!important;box-shadow:0 0 14px #6a43ff99!important;
+ }
+ html body.ds-unified-platform header.ds-unified-header .ds-header-credit{
+  border-color:#06dfff!important;box-shadow:0 0 12px #02d9fa75!important;
+ }
+ html body.ds-unified-platform header.ds-unified-header #topPricing{
+  border-color:#bf40f9!important;box-shadow:0 0 11px #b329f88c!important;
+ }
+ html body.ds-unified-platform header.ds-unified-header #topLogin{
+  background:linear-gradient(112deg,#b02df0,#07cdeb)!important;
+  color:#0c1230!important;border-color:#bd36f8!important;
+ }
+ html body.ds-unified-platform header.ds-unified-header .ds-unified-language select{
+  width:65px;min-height:42px;padding:9px 11px;
+  border-radius:999px;border:1px solid #9c65de;background:#090f25;
+  font:650 13px system-ui;color:#f4f6ff;cursor:pointer;box-sizing:border-box;
+ }
+ html body.ds-unified-platform header.ds-unified-header #topJarvisBtn{
+  display:block!important;position:absolute!important;top:50%!important;
+  left:50%!important;right:auto!important;bottom:auto!important;
+  transform:translate(-50%,-50%)!important;z-index:9!important;
+  /* No animation reset, new orb drawing, new arcs or extra effects. */
+ }
+ html body.ds-unified-platform .ds-site-mobile-toggle{
+  display:grid!important;place-items:center!important;position:fixed!important;
+  left:var(--ds-unified-menu-left,226px)!important;top:27px!important;
+  width:44px!important;height:44px!important;min-height:44px!important;
+  border:1px solid #7e6df0!important;border-radius:13px!important;
+  background:#071328!important;color:#f4f8ff!important;
+  font-size:23px!important;z-index:545!important;
+ }
+}
+@media(min-width:901px){
+ html body.ds-unified-platform.ds-unified-nav-collapsed{padding-left:0!important}
+ html body.ds-unified-platform.ds-unified-nav-collapsed #dsSiteSidebar{
+  transform:translateX(-110%)!important;pointer-events:none!important;
+ }
+}
+@media(min-width:761px) and (max-width:1250px){
+ html body.ds-unified-platform .ds-unified-actions-left,
+ html body.ds-unified-platform .ds-unified-actions-right{gap:6px}
+ html body.ds-unified-platform .ds-unified-actions-left{margin-left:48px}
+ html body.ds-unified-platform header.ds-unified-header .ds-unified-actions :is(button,a){
+  padding:8px 10px!important;font-size:11px!important;min-height:38px;
+ }
+ html body.ds-unified-platform header.ds-unified-header .ds-unified-language select{
+  width:57px;padding:7px;font-size:11px
+ }
+}
+@media(max-width:900px) and (min-width:761px){
+ html body.ds-unified-platform .ds-site-mobile-toggle{left:12px!important;top:23px!important}
+ html body.ds-unified-platform .ds-unified-actions-left{margin-left:45px}
+}
+@media(max-width:760px){
+ /* Existing owner-approved mobile header and its original drawer remain in charge.
+    The mobile shell moves its working buttons, while the shared group remains empty. */
+ html body.ds-unified-platform header.ds-unified-header .ds-unified-actions{display:none!important}
+ html body.ds-unified-platform header.ds-unified-header #topJarvisBtn{
+  visibility:visible!important;
+ }
+}
