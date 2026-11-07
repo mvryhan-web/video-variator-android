@@ -46,6 +46,22 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await page.locator('.topbar .back').click();await expect(page).toHaveURL(/deepsyq.html/);
 });
 
+test('Owner removal: no Studio availability label appears in enabled Home on desktop or mobile',async({page})=>{
+ await fixtures(page);
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,ownerOnly:false,models:[],catalog:[]}}));
+ for(const width of [1440,390]){
+  await page.setViewportSize({width,height:900});
+  const response=page.waitForResponse(r=>r.url().endsWith('/api/studio/config'));
+  await home(page);
+  await response;
+  await expect(page.locator('#studioStatus')).toHaveCount(0);
+  await expect(page.locator('.hero')).not.toContainText('Open a studio to see the available models.');
+  await expect(page.locator('.home-prompt-ideas summary')).toHaveText('Need an idea?');
+  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+  await expect(page.locator('#homeCreativeTools .home-create-card')).toHaveCount(6);
+ }
+});
+
 test('Deepsyq keeps a collapsible left rail and shows only selectable configured image and video models',async({page})=>{
  await fixtures(page);
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:true,
