@@ -6,10 +6,10 @@ let current=null;
 export function openHomeStudioSettings({gear,mode='image'}={}){
  if(!gear?.isConnected)return;
  const selected=['image','video','audio'].includes(mode)?mode:'image';
- if(current){
-  const toggleOff=current.gear===gear&&current.mode===selected;
-  current.close();
-  if(toggleOff)return;
+ if(current?.gear===gear){
+  if(current.visible&&current.mode===selected)current.close();
+  else current.show(selected);
+  return;
  }
 
  const host=document.createElement('section');
@@ -28,9 +28,9 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
  frame.src=url.href;
  host.append(frame);
 
- let closed=false;
+ let visible=true,hubRef=null,pinRef=null;
  const position=()=>{
-  if(closed||!gear.isConnected)return;
+  if(!visible||!gear.isConnected)return;
   const r=gear.getBoundingClientRect();
   const w=Math.max(240,Math.min(420,innerWidth-24));
   const h=Math.max(200,Math.min(570,r.top-20));
@@ -44,19 +44,35 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
  };
  const onEscape=event=>{if(event.key==='Escape')close();};
  const close=()=>{
-  if(closed)return;
-  closed=true;
-  host.remove();
+  if(!visible)return;
+  visible=false;
+  // Keep the native Studio document mounted but invisible. Removing a live
+  // iframe fires Studio's account-scrub pagehide after its DOM is detached.
+  // One hidden reusable frame prevents both that race and duplicate frames.
+  host.style.display='none';
   gear.removeAttribute('aria-controls');
   gear.setAttribute('aria-expanded','false');
   document.removeEventListener('pointerdown',onOutside,true);
   document.removeEventListener('keydown',onEscape);
   window.removeEventListener('resize',position);
-  if(current?.close===close)current=null;
+ };
+ const show=nextMode=>{
+  if(current?.mode!==nextMode){
+   const nativeKind=nextMode==='audio'?'music':nextMode;
+   frame.contentDocument?.querySelector('[data-kind="'+nativeKind+'"]')?.click();
+   if(current)current.mode=nextMode;
+  }
+  visible=true;host.style.display='block';position();
+  gear.setAttribute('aria-expanded','true');gear.setAttribute('aria-controls',host.id);
+  if(hubRef&&!hubRef.open)hubRef.showModal();
+  pinRef?.();
+  document.addEventListener('pointerdown',onOutside,true);
+  document.addEventListener('keydown',onEscape);
+  window.addEventListener('resize',position);
  };
 
  frame.addEventListener('load',()=>{
-  if(closed)return;
+  if(!host.isConnected)return;
   let doc;
   try{
    if(frame.contentWindow.location.origin!==location.origin||
@@ -71,6 +87,12 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   for(const id of ['modelDialog','settingsDialog']){
    const child=doc.getElementById(id);
    if(child&&child.parentElement!==doc.body)doc.body.append(child);
+  }
+  // Absolutely no second header, orb, main content or bottom dock may show
+  // through the settings frame. Their real DOM remains for native handlers.
+  for(const child of [...doc.body.children]){
+   if(['DIALOG','SCRIPT','STYLE'].includes(child.tagName))continue;
+   child.style.setProperty('display','none','important');
   }
   const style=doc.createElement('style');
   style.id='homeNativeStudioSettingsPresentation';
@@ -113,20 +135,22 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   doc.head.append(style);
   // The native Studio script already opens this real hub for ?settings=1.
   if(!hub.open)hub.showModal();
+  hubRef=hub;
   const pin=()=>{
-   if(closed||!hub.isConnected)return;
+   if(!hub.isConnected)return;
    hub.style.setProperty('left','8px','important');
    hub.style.setProperty('top','auto','important');
    hub.style.setProperty('bottom','8px','important');
    hub.style.setProperty('right','auto','important');
    hub.style.setProperty('max-height','calc(100dvh - 16px)','important');
   };
+  pinRef=pin;
   pin();
   frame.contentWindow.requestAnimationFrame(pin);
-  hub.addEventListener('close',close,{once:true});
+  hub.addEventListener('close',close);
   // Ensure the host closes even if the native dialog close event is delayed
   // in mobile WebKit/Chromium iframe top layers.
-  hub.querySelector(':scope > button:nth-child(2)')?.addEventListener('click',()=>queueMicrotask(close),{once:true});
+  hub.querySelector(':scope > button:nth-child(2)')?.addEventListener('click',()=>queueMicrotask(close));
  });
  document.body.append(host);
  position();
@@ -135,6 +159,6 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
  document.addEventListener('pointerdown',onOutside,true);
  document.addEventListener('keydown',onEscape);
  window.addEventListener('resize',position);
- current={gear,mode:selected,close};
+ current={gear,mode:selected,close,show,get visible(){return visible;}};
  return close;
 }
