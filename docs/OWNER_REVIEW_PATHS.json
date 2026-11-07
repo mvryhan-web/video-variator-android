@@ -10,6 +10,7 @@
     ".github/copilot-instructions.md",
     ".github/pull_request_template.md",
     ".github/workflows/owner-change-scope.yml",
+    ".github/workflows/owner-final-page-design-lock.yml",
     "scripts/owner-change-scope.mjs",
     "tests/owner-change-scope.test.mjs",
     "app/src/main/assets/generate-studio.html",
