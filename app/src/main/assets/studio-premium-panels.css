@@ -293,3 +293,32 @@ body.studio-premium-panels #settingsDialog.composer-popover .dialog-head::before
  content:"☷";display:grid!important;place-items:center!important;
  font-size:23px!important;font-weight:700!important;line-height:1!important;color:#ffcd6b!important;
 }
+
+/* Owner finish-pass: recognisable model-family labels, NOT invented logos.
+   Maintain legibility at 320px and preserve the selected model's real name. */
+body.studio-premium-panels #modelDialog .model-provider-mark[data-model-family]{
+ white-space:nowrap!important;overflow:hidden!important;
+ text-overflow:clip!important;font-size:clamp(10px,2.6vw,12px)!important;
+ font-variant-numeric:tabular-nums!important;font-weight:760!important;
+ letter-spacing:-.04em!important;
+}
+body.studio-premium-panels #modelDialog .model-provider-mark[data-model-family="nano-banana"]{
+ color:#e3faff!important;border-color:#3cabc1!important;
+}
+body.studio-premium-panels #modelDialog .model-provider-mark[data-model-family="seedream"]{
+ color:#ffdc97!important;border-color:#b68e50!important;
+}
+body.studio-premium-panels #modelDialog .model-provider-mark[data-model-family="seedance"]{
+ color:#a4f2ec!important;border-color:#33a9a2!important;
+}
+body.studio-premium-panels #modelDialog .model-provider-mark[data-model-family="veo"]{
+ color:#ddf5ff!important;border-color:#5298c0!important;
+}
+body.studio-premium-panels #settingsDialog .ratio-choices button.premium-unavailable-ratio{
+ opacity:.45!important;cursor:not-allowed!important;
+ border-style:dashed!important;box-shadow:none!important;
+ background:#091c28!important;
+}
+body.studio-premium-panels #settingsDialog .ratio-choices button.premium-unavailable-ratio .ratio-drawing{
+ border-color:#708c99!important;box-shadow:none!important;
+}
