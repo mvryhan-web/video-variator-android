@@ -411,7 +411,17 @@ test('Video Uniquifier runs only inside DEEPSYQ shell; old menus and sales bar s
  await expect(page.locator('.vu-appbar,.vu-side-nav,.vu-upgrade')).toHaveCount(0);
  await expect(page.locator('.shell>.sidebar')).toBeHidden();
  await expect(page.locator('.shell>.main>.topbar')).toBeHidden();
- await expect(page.locator('#dashboardView>.hero')).toBeHidden();
+ // The owner's original VIDEO workspace visuals must remain, even though the
+ // standalone video's marketing/navigation chrome is permanently retired.
+ await expect(page.locator('#dashboardView>.hero')).toBeVisible();
+ await expect(page.locator('#dashboardView .vu-hero-image')).toHaveCount(1);
+ await expect(page.locator('#dashboardView .vu-hero-films')).toHaveCount(1);
+ // Standalone VU stats are intentionally hidden by the approved VU reference.
+ await expect(page.locator('#dashboardView>.statsGrid')).toBeHidden();
+ await expect(page.locator('#dashboardView>.vu-how')).toBeVisible();
+ await expect(page.locator('#dashboardView .vu-content-grid')).toBeVisible();
+ await expect(page.locator('#dashboardView .vu-film img')).toHaveCount(3);
+ await expect(page.locator('#dashboardView .vu-output')).toHaveCount(1);
  await expect(page.locator('#fileInput')).toHaveCount(1);
  await expect(page.locator('#variantCount')).toHaveCount(1);
  await expect(page.locator('#mode')).toHaveCount(1);
@@ -546,4 +556,26 @@ test('Owner 07 Nov mobile/desktop header: Credit left of orb, Tour right, no hea
   await page.screenshot({path:info.outputPath('header-credit-tour-'+width+'-'+route.split('?')[0]+'.png'),fullPage:false,animations:'disabled'});
  }
  expect(writes).toEqual([]);
+});
+
+test('Canvas outer frame is removed on Home and Canvas without hiding the gallery or its controls',async({page})=>{
+ test.setTimeout(90000);
+ for(const route of ['/deepsyq.html','/canvas.html']){
+  await page.goto(route,{waitUntil:'domcontentloaded'});
+  const container=page.locator('#canvasFeature.landing-feature');
+  await expect(container).toHaveCount(1);
+  const css=await container.evaluate(el=>{
+   const s=getComputedStyle(el);
+   return {top:s.borderTopWidth,left:s.borderLeftWidth,bottom:s.borderBottomWidth,right:s.borderRightWidth,shadow:s.boxShadow};
+  });
+  expect(css.top).toBe('0px');
+  expect(css.left).toBe('0px');
+  expect(css.bottom).toBe('0px');
+  expect(css.right).toBe('0px');
+  expect(css.shadow).toBe('none');
+  await expect(container.locator('#canvasExampleGrid .canvas-example')).toHaveCount(9);
+  // Home intentionally shows just the compact 9-image gallery; its full
+  // existing editor remains only on /canvas.html.
+  if(route==='/canvas.html')await expect(container.locator('#quickCreateForm')).toHaveCount(1);
+ }
 });
