@@ -11,6 +11,78 @@ export function mountStudioUniversalDock({form,nav,gear}){
  const prompt=$('prompt'),submit=$('generate'),mic=$('studioVoiceBtn'),references=$('references'),rail=form.querySelector('.j-mode-rail');
  if(!prompt||!submit||!mic||!references||!rail)return;
  form.dataset.studioUniversalDock='ready';
+
+ // Owner-approved six Studio settings panels: presentation layer only.
+ // No original model/provider, price, ratio select, dialog or form handlers
+ // are replaced; the same native Studio controls remain authoritative.
+ document.body.classList.add('studio-premium-panels');
+ if(!document.querySelector('link[data-deepsyq-studio-premium]')){
+  const skin=document.createElement('link');
+  skin.rel='stylesheet';
+  skin.href='studio-premium-panels.css?v=20261107-01';
+  skin.dataset.deepsyqStudioPremium='true';
+  document.head.append(skin);
+ }
+ const nativeModels=$('modelChoices');
+ const brandFor=(card)=>{
+  const label=(card.querySelector('strong')?.textContent||'').toLowerCase();
+  const id=(card.dataset.modelId||'').toLowerCase();
+  const name=label+' '+id;
+  if(/nano.?banana|\\bveo\\b|google/.test(name))return ['google','Google'];
+  if(/seedream|seedance|bytedance|byteplus/.test(name))return ['bytedance','Seed'];
+  if(/chatgpt|gpt.?image|openai/.test(name))return ['openai','OpenAI'];
+  return ['other','AI'];
+ };
+ const labelProviders=()=>{
+  if(!nativeModels)return;
+  for(const card of nativeModels.querySelectorAll('.model-card')){
+   // The old generic first-letter badge was the Russian status letter "П".
+   // Brand text is honest fallback; do NOT invent model-specific thumbnails.
+   const mark=card.querySelector('.model-provider-mark');
+   if(!mark)return; // Model renderer may still be inserting it.
+   const [brand,label]=brandFor(card);
+   if(mark.dataset.vendor===brand)continue;
+   mark.dataset.vendor=brand;
+   mark.textContent=label;
+   mark.setAttribute('title',label+' · model provider');
+  }
+ };
+ if(nativeModels){
+  const visualObserver=new MutationObserver(labelProviders);
+  visualObserver.observe(nativeModels,{childList:true,subtree:true});
+  labelProviders();
+  window.addEventListener('pagehide',()=>visualObserver.disconnect(),{once:true});
+ }
+ // Video uses EXACTLY the ratios exposed by the current provider. The three
+ // extra visual slots mirror Image Settings but are explicitly disabled when
+ // a model does not support them; they NEVER alter the native #ratio select.
+ const nativeSettings=$('settingsDialog'),ratioTiles=$('ratioChoices');
+ const syncVisualRatioGrid=()=>{
+  if(!nativeSettings||!ratioTiles)return;
+  ratioTiles.querySelectorAll('.premium-unavailable-ratio').forEach(el=>el.remove());
+  if(nativeSettings.dataset.studioKind!=='video'||!nativeSettings.open)return;
+  const supported=new Set([...ratioTiles.querySelectorAll('button[aria-label]')].map(el=>el.getAttribute('aria-label')));
+  for(const label of ['1:1','2:3','3:2','9:16','16:9']){
+   if(supported.has(label))continue;
+   const b=make('button','premium-unavailable-ratio');
+   b.type='button';b.disabled=true;b.setAttribute('aria-disabled','true');
+   b.setAttribute('aria-label',label+' — unavailable for this model');
+   b.setAttribute('title','This video model does not support '+label);
+   const drawing=make('span','ratio-drawing');
+   const [w,h]=label.split(':').map(Number);
+   const scale=Math.min(46/w,42/h);
+   drawing.style.width=Math.max(1,Math.floor(w*scale))+'px';
+   drawing.style.aspectRatio=w+' / '+h;
+   drawing.setAttribute('aria-hidden','true');
+   const caption=make('span');caption.textContent=label;
+   b.append(drawing,caption);ratioTiles.append(b);
+  }
+ };
+ if(nativeSettings){
+  const ratioViewObserver=new MutationObserver(()=>queueMicrotask(syncVisualRatioGrid));
+  ratioViewObserver.observe(nativeSettings,{attributes:true,attributeFilter:['open','data-studio-kind']});
+  window.addEventListener('pagehide',()=>ratioViewObserver.disconnect(),{once:true});
+ }
  const dock=make('section','j-neon-dock');dock.id='studioUniversalDock';
  dock.setAttribute('aria-label','JARVIX Universal Hub and Studio composer');
  const bar=make('div','jarvix-compose j-neon-composer');bar.id='studioDockControls';
