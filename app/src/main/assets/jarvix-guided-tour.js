@@ -50,8 +50,10 @@ function blocked(current,message='Audio unavailable'){if(current!==turn||!state)
 function speakNavigation(step,target,current){
  const link=showNavigation(step.url);
  const file=tourNavigationClip(step.title,state.index,state.language);
+ let clip=null;
  const navigate=()=>{
   if(current!==turn||!state||state.phase!=='playing')return;
+  if(clip){clip.onended=null;clip.pause();clip.remove();if(audio===clip)audio=null;}
   state.navAnnounced=state.index;state.position=0;save();
   navTimer=setTimeout(()=>{
    if(current!==turn||!state||state.phase!=='playing')return;
@@ -60,7 +62,7 @@ function speakNavigation(step,target,current){
   },350);
  };
  if(!file){navTimer=setTimeout(navigate,1100);return;}
- audio=new Audio(file);const clip=audio;clip.id='dsTourAudio';clip.hidden=true;document.body.append(clip);
+ audio=new Audio(file);clip=audio;clip.id='dsTourAudio';clip.hidden=true;document.body.append(clip);
  clip.onloadedmetadata=()=>{if(state?.position)clip.currentTime=Math.min(state.position,Math.max(0,(clip.duration||0)-.1));};
  clip.onplay=()=>{pauseJarvisRecognition();updateJarvisState('speaking');};
  clip.onended=navigate;clip.onerror=()=>blocked(current,'Navigation voice unavailable');
