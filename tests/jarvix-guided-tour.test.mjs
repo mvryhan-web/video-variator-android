@@ -6,8 +6,8 @@ import {chromium} from '@playwright/test';
 
 // Real Playwright clicks + deterministic local silent WAV fixtures.
 // No AI keys, paid provider, voice clone, user data, or network billing.
-function makeWav(){
- const rate=16000,samples=rate*1.5;
+function makeWav(seconds=1.5){
+ const rate=16000,samples=Math.round(rate*seconds);
  const out=Buffer.alloc(44+samples*2);
  out.write('RIFF',0);out.writeUInt32LE(out.length-8,4);out.write('WAVEfmt ',8);
  out.writeUInt32LE(16,16);out.writeUInt16LE(1,20);out.writeUInt16LE(1,22);
@@ -87,6 +87,43 @@ test('V3 missing owner voice pauses safely; never switches to a different narrat
    assert.equal(await page.locator('.ds-tour-caption').count(),0);
    assert.equal(new URL(page.url()).pathname,'/deepsyq.html');
    await page.locator('[data-tour="stop"]').click();
+  }finally{await page.close();}
+ });
+});
+
+
+test('full V3 19-step route stays synchronized and never sends paid requests',async()=>{
+ await preview(32607,async(browser,base)=>{
+  const page=await browser.newPage({viewport:{width:1280,height:800}});
+  const paid=[];
+  page.on('request',req=>{
+   if(req.method()==='POST'&&/\/api\/(?:billing|checkout|studio\/jobs|wallet|generation)/.test(new URL(req.url()).pathname))paid.push(req.url());
+  });
+  await page.addInitScript(()=>{localStorage.setItem('deepsyq_home_language','ru');});
+  await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
+  await page.route('**/media/jarvix/tour-v3/manifest.json',route=>route.fulfill({status:404,body:''}));
+  await page.route('**/api/jarvix/voice-config',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({configured:true,speechModelInstalled:true,speechSource:'self-hosted',engine:'VoxCPM2'})}));
+  await page.route('**/api/jarvix/tts',route=>route.fulfill({status:200,contentType:'audio/wav',body:makeWav(0.19)}));
+  let maxStage=0,last='none',finished=false;
+  try{
+   await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});
+   await page.locator('#dsTakeTour').focus();await page.keyboard.press('Enter');
+   const until=Date.now()+85000;
+   while(Date.now()<until){
+    let status=null;
+    try{
+     status=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('deepsyq_guided_tour_v6')||'null'));
+    }catch{await new Promise(resolve=>setTimeout(resolve,180));continue;}
+    if(status){
+     maxStage=Math.max(maxStage,status.index);
+     last=status.index+' '+status.phase+(status.error?' '+status.error:'')+' @ '+page.url();
+     if(status.phase==='paused')throw Error('V3 stalled at '+last);
+    }else if(maxStage>=18){finished=true;break;}
+    await new Promise(resolve=>setTimeout(resolve,200));
+   }
+   assert.equal(finished,true,'Tour never reached normal completion: '+last);
+   assert.equal(maxStage,18,'Tour must visit the concluding Home stage');
+   assert.deepEqual(paid,[],'Tour must not spend credits, upload or trigger payment');
   }finally{await page.close();}
  });
 });
