@@ -18,6 +18,13 @@ body:has(#homeQuickForm[data-jarvix-chat]){padding-bottom:calc(var(--jarvix-comp
 @media(min-width:761px){body.sidebar-collapsed #homeQuickBar:has([data-jarvix-chat]){left:50%;width:min(840px,calc(100vw - 40px))}}
 
 .jarvix-chat .j-plus-menu{max-height:min(350px,55dvh);overflow:auto}.jarvix-chat .j-chat-bottom{position:relative}.jarvix-chat .jarvix-compose textarea{background:transparent;border:0}.jarvix-chat .j-message button{margin-top:8px;margin-right:6px;font-size:12px}
+/* Owner: same composer width as the existing Universal Studio dock; chat only. */
+.jarvix-chat>.j-chat-bottom.j-neon-dock{
+ box-sizing:border-box;width:min(840px,calc(100vw - 300px),100%);max-width:100%;align-self:center;
+}
+@media(max-width:900px){
+ .jarvix-chat>.j-chat-bottom.j-neon-dock{width:100%}
+}
 
 @media(max-width:360px){.j-chat-toolbar h1{font-size:14px}.j-chat-toolbar .j-history{max-width:110px}.j-chat-toolbar button{font-size:11px;padding:5px}.jarvix-compose textarea::placeholder{font-size:14px}}
 
