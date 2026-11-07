@@ -43,3 +43,20 @@ test('Owner header swap: Credit replaces only upper AI Apps and Tour moves right
  assert.match(css,/\.ds-mobile-control-right #dsTakeTour\{/);
  assert.match(css,/position:static!important;inset:auto!important/);
 });
+
+test('owner web header swap and single-line Russian Tour remain style-only',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const src=new URL('../app/src/main/assets/',import.meta.url);
+ const mobile=await readFile(new URL('deepsyq-mobile-shell.css',src),'utf8');
+ const home=await readFile(new URL('jarvix-action-design.css',src),'utf8');
+ const vu=await readFile(new URL('deepsyq-platform-embedded.css',src),'utf8');
+ assert.match(mobile,/\.ds-mobile-control-right #dsTakeTour\{/);
+ assert.match(mobile,/white-space:nowrap!important/);
+ assert.match(mobile,/word-break:keep-all!important/);
+ assert.match(mobile,/top:calc\(18px \+ env\(safe-area-inset-top\)\)!important/);
+ assert.match(home,/body\.home-neon\.j-action-workspace header\.top\.ds-stable-header #topJarvisBtn/);
+ assert.match(home,/\.ds-desktop-actions \.ds-header-credit\{/);
+ assert.match(home,/\.ds-desktop-actions #dsTakeTour\{/);
+ assert.match(vu,/\.ds-platform-header \.ds-header-credit\{/);
+ assert.match(vu,/\.ds-platform-header #dsTakeTour\{/);
+});
