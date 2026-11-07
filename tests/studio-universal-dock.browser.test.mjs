@@ -70,7 +70,35 @@ try{
      assert.equal(new URL(page.url()).searchParams.get('studio'),choice,'gear must preserve selected mode');
      for(const id of ['studioTypePicker','modelButton','settingsButton'])
       assert.equal(await page.locator('#studioSettingsHub #'+id).count(),1,id+' native settings control');
+     await page.locator('link[data-deepsyq-studio-premium]').waitFor({timeout:12000});
+     assert.equal(await page.locator('body.studio-premium-panels').count(),1,'approved premium skin is scoped to Studio');
+     const hubTheme=await page.locator('#studioSettingsHub').evaluate(el=>({
+       borderRadius:getComputedStyle(el).borderRadius,background:getComputedStyle(el).backgroundImage
+     }));
+     assert.match(hubTheme.background,/gradient/,'parent uses real turquoise/gold panel background');
      await page.screenshot({path:file+'/'+layout.name+'-'+kind+'-settings.png',fullPage:false});
+     await page.locator('#studioSettingsHub #modelButton').click();
+     await page.locator('#modelDialog[open]').waitFor({timeout:12000});
+     assert.ok(await page.locator('#modelDialog .model-card').count()>0,'native real model cards remain present');
+     await page.locator('#modelDialog .model-provider-mark').first().waitFor({timeout:12000});
+     const providerBadge=await page.locator('#modelDialog .model-provider-mark').first().textContent();
+     assert.notEqual(providerBadge?.trim(),'П','old generic connection-letter placeholder removed');
+     await page.screenshot({path:file+'/'+layout.name+'-'+kind+'-premium-models.png',fullPage:false});
+     await page.locator('#modelDialog [data-close="modelDialog"]').click();
+     await page.locator('#studioSettingsHub[open]').waitFor({timeout:12000});
+     await page.locator('#studioSettingsHub #settingsButton').click();
+     await page.locator('#settingsDialog[open]').waitFor({timeout:12000});
+     assert.ok(await page.locator('#settingsDialog .ratio-choices button:not(:disabled)').count()>=1,'native supported ratio choice persists');
+     const nativeOptions=await page.locator('#ratio option').allTextContents();
+     const validButtons=await page.locator('#settingsDialog .ratio-choices button:not(:disabled)').count();
+     assert.equal(validButtons,nativeOptions.length,'never add unsupported selectable video ratios');
+     if(choice==='video'){
+      assert.equal(await page.locator('#settingsDialog .ratio-choices button').count(),5,'visual ratio grid matches Image Settings');
+      assert.equal(await page.locator('#settingsDialog .ratio-choices button:disabled').count(),5-nativeOptions.length,'unsupported ratios visibly disabled');
+     }
+     await page.screenshot({path:file+'/'+layout.name+'-'+kind+'-premium-parameters.png',fullPage:false});
+     await page.locator('#settingsDialog [data-t="done"]').click();
+     await page.locator('#studioSettingsHub[open]').waitFor({timeout:12000});
      await page.locator('#studioSettingsHub > button:nth-child(2)').click();
      await page.locator('#studioSettingsHub[open]').waitFor({state:'hidden',timeout:12000});
      await page.locator('#studioUniversalDock #prompt').fill('Owner interface-only smoke test prompt');
