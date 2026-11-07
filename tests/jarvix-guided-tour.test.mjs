@@ -205,3 +205,53 @@ test('real owner MP3 continues after document navigation to Image without a seco
   }
  });
 });
+
+
+test('all 19 Tour V3 stages play every original Russian MP3, never a silent placeholder',async()=>{
+ await preview(32609,async(browser,base)=>{
+  const page=await browser.newPage({viewport:{width:1365,height:900}});
+  const actual=[],paid=[],pageErrors=[];
+  page.on('pageerror',e=>pageErrors.push(e.message));
+  page.on('request',req=>{
+   const url=new URL(req.url());
+   if(req.method()==='POST'&&/\/api\/(?:billing|checkout|studio\/jobs|wallet|generation)/.test(url.pathname))paid.push(url.pathname);
+   if(url.pathname.includes('/media/jarvix/tour-v3/')&&url.pathname.endsWith('.mp3'))
+    actual.push(words.get(url.pathname.split('/').pop()));
+  });
+  try{
+   await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
+   await page.addInitScript(()=>{
+    localStorage.setItem('deepsyq_home_language','ru');
+    const native=HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play=function(...args){
+     // Exercise the REAL encoded files and onended events, but accelerate QA.
+     if(String(this.src||'').includes('/media/jarvix/tour-v3/'))this.playbackRate=4;
+     return native.apply(this,args);
+    };
+   });
+   await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});
+   await page.locator('#dsTakeTour').waitFor({state:'attached',timeout:12000});
+   await page.locator('#dsTakeTour').focus();
+   await page.keyboard.press('Enter');
+   let furthest=0,finished=false,last='none';
+   const deadline=Date.now()+195000;
+   while(Date.now()<deadline){
+    let current;
+    try{current=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('deepsyq_guided_tour_v6')||'null'));}
+    catch{await new Promise(resolve=>setTimeout(resolve,180));continue;}
+    if(current){
+     furthest=Math.max(furthest,current.index);
+     last=current.index+' beat '+current.beat+' '+current.phase+' '+(current.error||'')+' @ '+page.url();
+     if(current.phase==='paused')throw Error('Real owner MP3 stopped: '+last);
+    }else if(furthest>=18){finished=true;break;}
+    await new Promise(resolve=>setTimeout(resolve,180));
+   }
+   assert.ok(finished,'Real MP3 19-stage tour did not finish: '+last+' errors '+JSON.stringify(pageErrors));
+   const expected=manifest.clips.filter(c=>c.language==='ru').map(c=>c.text);
+   assert.equal(expected.length,48);
+   assert.equal(actual.length,48,'Tour must load every one of its 48 RU voice lines exactly once');
+   assert.deepEqual(new Set(actual),new Set(expected),'Every distinct official MP3 must be used');
+   assert.deepEqual(paid,[],'Tour may never generate or spend paid credits');
+  }finally{await page.close();}
+ });
+});
