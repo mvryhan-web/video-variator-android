@@ -35,6 +35,7 @@ test('No new website framework, no invented asset page, upload uses original val
  // Home gear returns to the prior real Studio settings destination; Chat remains in-page.
  assert.match(design,/if\(isQuickChat&&form\.id!=='homeQuickForm'\)/);
  assert.match(composer,/location\.assign\('generate-studio\.html\?studio='/);
+ assert.match(composer,/\['image','video','audio'\]\.includes\(mode\)\?mode:'image'/);
  assert.match(design,/gear\.onclick=settingsTarget/);
  assert.match(design,/choice\.onclick=\(\)=>\{form\.querySelector\('#jPlusMenu/);
  assert.doesNotMatch(design,/link\.href='generate-studio\.html\?studio='/);
