@@ -43,4 +43,4 @@ jobs:
           node --check app/src/main/assets/jarvix-chat.js
           node --check tests/jarvix-free-llm.test.mjs
       - name: Zero-spend free LLM, voice and preview isolation
-        run: node --test tests/jarvix-free-llm.test.mjs tests/jarvix-local-voice.test.mjs tests/deepsyq-preview.mjs
+        run: node --test tests/jarvix-free-llm.test.mjs tests/jarvix-local-voice.test.mjs tests/jarvix-chat-preview.test.mjs
