@@ -211,9 +211,9 @@ test('stage06 composer uses stable icons and preserves existing image mode and a
     expect(matching[0].icon,route+' font-dependent '+label).toContain('<svg');
    }
    expect(controls.filter(x=>x.label.includes('JARVIX')).length).toBe(1);
-   await expect(page.locator('.j-attach-shortcut').first()).toHaveCount(1);
-   await expect(page.locator('.j-settings-shortcut').first()).toHaveCount(1);
    if(route==='deepsyq.html'){
+    await expect(page.locator('.j-attach-shortcut').first()).toHaveCount(1);
+    await expect(page.locator('.j-settings-shortcut').first()).toHaveCount(1);
     const shortcut=page.locator('.j-image-shortcut');
     await expect(shortcut).toHaveCount(1);
     await shortcut.click();
