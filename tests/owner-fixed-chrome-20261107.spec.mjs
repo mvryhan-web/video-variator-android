@@ -303,3 +303,37 @@ test('stage08 JARVIX orbit directions, halo duration and stable shell size',asyn
  }
  expect(paid).toBe(0);
 });
+
+
+test('GO stage09 orb reacts to measured speech, listening and silence without resizing shell',async({page})=>{
+ test.setTimeout(90000);
+ await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+ let paid=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\\/api\\/(studio\\/jobs|payments|stripe)\\b/.test(r.url()))paid++;});
+ for(const width of [390,1365]){
+  await page.setViewportSize({width,height:900});
+  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+  const orb=page.locator('#topJarvisBtn .jv-approved-orb').first();
+  await expect(orb.locator('.jv-voice-side-glints')).toHaveCount(1);
+  const original=await orb.evaluate(el=>el.getBoundingClientRect().toJSON());
+  await page.evaluate(()=>document.getElementById('topJarvisBtn').classList.add('is-listening'));
+  await expect.poll(()=>orb.evaluate(el=>el.dataset.jvMode)).toBe('listening');
+  await page.evaluate(()=>{
+   const btn=document.getElementById('topJarvisBtn');
+   btn.classList.remove('is-listening');btn.classList.add('is-speaking');
+   window.dispatchEvent(new CustomEvent('jarvix:voice-level',{detail:{level:.65}}));
+  });
+  await expect.poll(()=>orb.evaluate(el=>el.dataset.jvMode)).toBe('speaking');
+  await expect.poll(()=>orb.evaluate(el=>el.style.getPropertyValue('--jv-voice-level'))).toBe('0.65');
+  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('jarvix:voice-level',{detail:{level:0}})));
+  await expect.poll(()=>orb.evaluate(el=>el.style.getPropertyValue('--jv-voice-level'))).toBe('0');
+  await page.evaluate(()=>document.getElementById('topJarvisBtn').classList.remove('is-speaking'));
+  await expect.poll(()=>orb.evaluate(el=>el.dataset.jvMode)).toBe('idle');
+  const later=await orb.evaluate(el=>el.getBoundingClientRect().toJSON());
+  expect(later.width).toBeCloseTo(original.width,1);
+  expect(later.height).toBeCloseTo(original.height,1);
+  const ring=await orb.locator('.ds-orbit-spin').evaluate(el=>getComputedStyle(el).animationName);
+  expect(ring).toContain('jv-ring-clockwise');
+ }
+ expect(paid).toBe(0);
+});
