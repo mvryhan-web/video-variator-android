@@ -1,0 +1,112 @@
+/* DEEPSYQ owns the navigation and visual chrome. The original Video
+   Uniquifier keeps its processing engine, form, jobs, progress, history and
+   downloads; its previous app bar/sidebar/pricing controls never appear. */
+body.ds-embedded-uniquifier{padding-left:260px!important;background:#020a18}
+body.ds-embedded-uniquifier .ds-site-sidebar{width:260px!important;z-index:410}
+body.ds-embedded-uniquifier > a[href="deepsyq.html"]{display:none!important}
+body.ds-embedded-uniquifier .shell{display:block!important;min-height:0!important;max-width:none!important;margin:0!important;background:transparent!important}
+body.ds-embedded-uniquifier .shell>.sidebar,
+body.ds-embedded-uniquifier .shell>.vu-appbar,
+body.ds-embedded-uniquifier .shell>.main>.topbar,
+body.ds-embedded-uniquifier .vu-side-nav,
+body.ds-embedded-uniquifier .vu-upgrade,
+body.ds-embedded-uniquifier .vu-top-tools,
+body.ds-embedded-uniquifier .vu-top-user,
+body.ds-embedded-uniquifier .vu-search{display:none!important}
+body.ds-embedded-uniquifier .shell>.main{
+ display:block!important;margin:0!important;max-width:none!important;
+ width:100%!important;padding:18px 18px 40px!important;min-width:0;
+ box-sizing:border-box;
+}
+/* Only the original processing workspace and its real progress/results/history.
+   Old VU promotional banner, sales dashboard, tool-plan and tutorial aren't a
+   second DEEPSYQ homepage or subscription offering. No processing controls hide. */
+body.ds-embedded-uniquifier.vu-reference #dashboardView>.hero,
+body.ds-embedded-uniquifier.vu-reference #dashboardView>.statsGrid,
+body.ds-embedded-uniquifier.vu-reference #dashboardView>.vu-how{display:none!important}
+body.ds-embedded-uniquifier.vu-reference #dashboardView>.vu-content-grid{
+ display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:14px!important
+}
+body.ds-embedded-uniquifier.vu-reference #dashboardView>.vu-content-grid>.vu-left,
+body.ds-embedded-uniquifier.vu-reference #dashboardView>.vu-content-grid>.vu-right{
+ width:100%!important;max-width:none!important;min-width:0!important
+}
+body.ds-embedded-uniquifier.vu-reference .workspace{min-height:0!important;margin:0!important}
+body.ds-embedded-uniquifier .ds-platform-header{
+ position:relative;display:flex;align-items:center;justify-content:center;
+ min-height:88px;height:88px;margin:11px 14px 0 0;padding:0 14px 0 78px;
+ border:1px solid #24c8f1;border-radius:19px;
+ background:linear-gradient(110deg,#02091b,#060a23 54%,#070a21);
+ box-shadow:0 0 0 1px #4834a766,0 0 13px #00e9ff59,inset 0 0 12px #4c38bc25;
+ box-sizing:border-box;isolation:isolate;
+}
+body.ds-embedded-uniquifier .ds-platform-header.ds-hard-fixed{
+ margin:0!important;border-radius:18px;z-index:480!important;
+}
+body.ds-embedded-uniquifier #topJarvisBtn{
+ position:absolute!important;left:50%!important;top:50%!important;
+ transform:translate(-50%,-50%)!important;z-index:5!important;
+}
+body.ds-embedded-uniquifier .ds-platform-header .ds-platform-language{
+ position:absolute;right:119px;top:50%;transform:translateY(-50%);
+ z-index:7
+}
+body.ds-embedded-uniquifier .ds-platform-language select{
+ min-height:40px;width:65px;padding:6px 9px;color:#f4f2ff;
+ background:#0b1027;border:1px solid #b15cf5;border-radius:22px;
+ font:600 13px system-ui;cursor:pointer
+}
+body.ds-embedded-uniquifier .ds-platform-header .ds-desktop-actions{display:contents}
+body.ds-embedded-uniquifier .ds-platform-header .ds-desktop-actions :is(a,button){
+ position:absolute;top:50%;transform:translateY(-50%);
+ white-space:nowrap;min-height:42px;border-radius:22px;
+ padding:9px 15px;text-decoration:none;font:650 13px system-ui
+}
+body.ds-embedded-uniquifier .ds-platform-header .ds-header-tools{
+ left:262px;border-color:#8450f7;color:#e9faff
+}
+body.ds-embedded-uniquifier .ds-platform-header .ds-header-tour{left:90px}
+body.ds-embedded-uniquifier .ds-platform-header .ds-header-apps{display:none!important}
+body.ds-embedded-uniquifier .ds-platform-header .ds-header-credit{right:365px;border-color:#00dfff;color:#d9faff}
+body.ds-embedded-uniquifier .ds-platform-header #topPricing{right:209px;border-color:#bc39f8}
+body.ds-embedded-uniquifier .ds-platform-header #topLogin{
+ right:12px;background:linear-gradient(110deg,#b92ff7,#06dffc);color:#081027
+}
+/* The same platform drawer control replaces the old VU hamburger. */
+body.ds-embedded-uniquifier .ds-site-mobile-toggle{
+ display:grid!important;place-items:center;top:32px;left:280px;
+ z-index:535;border-color:#8c72f5
+}
+body.ds-embedded-uniquifier.ds-vu-nav-collapsed{padding-left:0!important}
+body.ds-embedded-uniquifier.ds-vu-nav-collapsed #dsSiteSidebar{transform:translateX(-105%)!important}
+body.ds-embedded-uniquifier.ds-vu-nav-collapsed .ds-site-mobile-toggle{left:23px}
+@media(max-width:1350px) and (min-width:761px){
+ body.ds-embedded-uniquifier .ds-platform-header .ds-header-tools{left:224px}
+ body.ds-embedded-uniquifier .ds-platform-header .ds-header-tour{left:69px}
+ body.ds-embedded-uniquifier .ds-platform-header .ds-header-credit{right:328px}
+ body.ds-embedded-uniquifier .ds-platform-header #topPricing{right:180px}
+ body.ds-embedded-uniquifier .ds-platform-header .ds-platform-language{right:105px}
+ body.ds-embedded-uniquifier .ds-platform-header .ds-desktop-actions :is(a,button){font-size:11px;padding:8px 10px}
+}
+@media(max-width:900px){
+ body.ds-embedded-uniquifier{padding-left:0!important}
+ body.ds-embedded-uniquifier #dsSiteSidebar{width:260px!important}
+ body.ds-embedded-uniquifier .ds-site-mobile-toggle{left:12px;top:12px}
+ body.ds-embedded-uniquifier.ds-site-nav-open #dsSiteSidebar{transform:translateX(0)!important}
+}
+@media(max-width:760px){
+ body.ds-embedded-uniquifier .ds-platform-header{height:156px;min-height:156px;margin:0!important;padding:0!important;border-radius:0}
+ body.ds-embedded-uniquifier .shell>.main{padding:12px 9px 32px!important}
+ body.ds-embedded-uniquifier .ds-platform-header .ds-platform-language{
+  top:15px;right:105px;transform:none;z-index:605
+ }
+ body.ds-embedded-uniquifier .ds-platform-language select{width:48px;min-height:36px;padding:3px}
+ body.ds-embedded-uniquifier .ds-site-mobile-toggle{left:12px;top:46px}
+ body.ds-embedded-uniquifier .ds-platform-header .ds-desktop-actions{display:flex}
+ body.ds-embedded-uniquifier .ds-platform-header .ds-desktop-actions :is(a,button){
+  position:static;transform:none;min-height:36px;font-size:11px
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ body.ds-embedded-uniquifier #dsSiteSidebar{transition:none!important}
+}

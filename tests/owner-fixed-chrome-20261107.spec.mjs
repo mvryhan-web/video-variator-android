@@ -390,3 +390,55 @@ test('owner JARVIX original sphere has no outer football-shaped pseudo overlay',
   await expect(orb.locator('svg.ds-reference-orb, .jarvis-ring')).toHaveCount(0);
  }
 });
+
+
+test('Video Uniquifier runs only inside DEEPSYQ shell; old menus and sales bar stay suppressed',async({page})=>{
+ test.setTimeout(90000);
+ await page.setViewportSize({width:1365,height:900});
+ await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+ let paid=0;
+ page.on('request',r=>{if(r.method()==='POST'&&['/api/studio/jobs','/api/payments','/api/stripe'].some(p=>r.url().includes(p)))paid++;});
+ await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('body.ds-embedded-uniquifier')).toHaveCount(1);
+ await expect(page.locator('.ds-platform-header #topJarvisBtn')).toHaveCount(1);
+ await expect(page.locator('#dsSiteSidebar nav a[href="index.html"]')).toHaveCount(1);
+ await expect(page.locator('.ds-platform-header .ds-header-tools')).toContainText('Everyday Tools');
+ await expect(page.locator('.ds-platform-header .ds-header-tour')).toHaveCount(1);
+ await expect(page.locator('.ds-platform-header .ds-header-credit')).toHaveCount(1);
+ await expect(page.locator('.ds-platform-header #topPricing')).toHaveAttribute('href','pricing.html');
+ await expect(page.locator('.ds-platform-header #topLogin')).toHaveCount(1);
+ await expect(page.locator('.ds-platform-header #homeLanguage')).toHaveCount(1);
+ await expect(page.locator('.vu-appbar,.vu-side-nav,.vu-upgrade')).toHaveCount(0);
+ await expect(page.locator('.shell>.sidebar')).toBeHidden();
+ await expect(page.locator('.shell>.main>.topbar')).toBeHidden();
+ await expect(page.locator('#dashboardView>.hero')).toBeHidden();
+ await expect(page.locator('#fileInput')).toHaveCount(1);
+ await expect(page.locator('#variantCount')).toHaveCount(1);
+ await expect(page.locator('#mode')).toHaveCount(1);
+ await expect(page.locator('#aspectRatio')).toHaveCount(1);
+ await expect(page.locator('#quality')).toHaveCount(1);
+ await expect(page.locator('#startBtn')).toBeVisible();
+ await expect(page.locator('#progressCard,#resultsCard,#historyView')).toHaveCount(3);
+ const pin=await page.locator('.ds-platform-header').evaluate(el=>getComputedStyle(el).position);
+ expect(pin).toBe('fixed');
+ const orb=page.locator('#topJarvisBtn .jv-owner-photo-test');
+ await expect(orb).toHaveCount(1);
+ expect(paid).toBe(0);
+});
+
+test('Video Uniquifier mobile uses platform drawer; no second legacy sidebar or header',async({page})=>{
+ test.setTimeout(90000);
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('.ds-platform-header #topJarvisBtn')).toHaveCount(1);
+ await expect(page.locator('.ds-platform-header #topLogin')).toHaveCount(1);
+ await expect(page.locator('.shell>.sidebar')).toBeHidden();
+ await expect(page.locator('#dsSiteSidebar')).toHaveCount(1);
+ await expect(page.locator('.vu-appbar,.vu-side-nav,.vu-upgrade')).toHaveCount(0);
+ await expect(page.locator('#startBtn')).toBeVisible();
+ const menu=page.locator('.ds-site-mobile-toggle');
+ await expect(menu).toHaveCount(1);
+ await menu.click();
+ await expect(page.locator('body')).toHaveClass(/ds-site-nav-open/);
+ await expect(page.locator('#dsSiteSidebar')).toBeVisible();
+});
