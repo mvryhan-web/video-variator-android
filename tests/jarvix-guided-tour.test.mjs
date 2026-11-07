@@ -4,6 +4,7 @@ import {spawn} from 'node:child_process';
 import {once} from 'node:events';
 import {chromium} from '@playwright/test';
 import {readFileSync} from 'node:fs';
+import {tourV3Plan} from '../app/src/main/assets/jarvix-tour-v3-script.js';
 const manifest=JSON.parse(readFileSync(new URL('../app/src/main/assets/media/jarvix/tour-v3/manifest.json',import.meta.url),'utf8'));
 const words=new Map(manifest.clips.map(c=>[c.filename,c.text]));
 
@@ -100,8 +101,20 @@ test('full V3 19-step route stays synchronized and never sends paid requests',as
  await preview(32607,async(browser,base)=>{
   const page=await browser.newPage({viewport:{width:1280,height:800}});
   const paid=[];
+  const expectedNav=new Map(tourV3Plan('ru').filter(step=>step.navText).map(step=>{
+   const u=new URL(step.url,base+'/');
+   return [step.navText,u.pathname+u.search];
+  }));
+  const heardOn=[];
   page.on('request',req=>{
    if(req.method()==='POST'&&/\/api\/(?:billing|checkout|studio\/jobs|wallet|generation)/.test(new URL(req.url()).pathname))paid.push(req.url());
+   if(/\/media\/jarvix\/tour-v3\/t3_.*\.mp3(?:\?|$)/.test(req.url())){
+    const phrase=words.get(new URL(req.url()).pathname.split('/').pop());
+    if(expectedNav.has(phrase)){
+     const here=new URL(page.url());
+     heardOn.push({phrase,actual:here.pathname+here.search,expected:expectedNav.get(phrase)});
+    }
+   }
   });
   await page.addInitScript(()=>{localStorage.setItem('deepsyq_home_language','ru');});
   await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
@@ -127,6 +140,8 @@ test('full V3 19-step route stays synchronized and never sends paid requests',as
    }
    assert.equal(finished,true,'Tour never reached normal completion: '+last);
    assert.equal(maxStage,18,'Tour must visit the concluding Home stage');
+   assert.equal(heardOn.length,expectedNav.size,'Each destination title must play exactly once');
+   for(const x of heardOn)assert.equal(x.actual,x.expected,x.phrase+' must begin only on its destination');
    assert.deepEqual(paid,[],'Tour must not spend credits, upload or trigger payment');
   }finally{await page.close();}
  });
