@@ -6,6 +6,10 @@ on:
       - 'app/src/main/assets/jarvis-core.js'
       - 'app/src/main/assets/jarvis-core.css'
       - 'app/src/main/assets/jarvix-guided-tour.js'
+      - 'app/src/main/assets/jarvix-tour-v3-script.js'
+      - 'app/src/main/assets/jarvix-tour-v3-audio.js'
+      - 'scripts/generate_jarvix_tour_v3.mjs'
+      - 'tests/jarvix-tour-v3.test.mjs'
       - 'app/src/main/assets/jarvix-tour-plan.js'
       - 'app/src/main/assets/deepsyq-mobile-shell.css'
       - 'tests/jarvix-tour-plan.test.mjs'
@@ -17,6 +21,10 @@ on:
       - 'app/src/main/assets/jarvis-core.js'
       - 'app/src/main/assets/jarvis-core.css'
       - 'app/src/main/assets/jarvix-guided-tour.js'
+      - 'app/src/main/assets/jarvix-tour-v3-script.js'
+      - 'app/src/main/assets/jarvix-tour-v3-audio.js'
+      - 'scripts/generate_jarvix_tour_v3.mjs'
+      - 'tests/jarvix-tour-v3.test.mjs'
       - 'app/src/main/assets/jarvix-tour-plan.js'
       - 'app/src/main/assets/deepsyq-mobile-shell.css'
       - 'tests/jarvix-tour-plan.test.mjs'
@@ -37,8 +45,10 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
       - name: Verify tour JavaScript syntax
-        run: node --check app/src/main/assets/jarvis-core.js && node --check app/src/main/assets/jarvix-guided-tour.js && node --check app/src/main/assets/jarvix-tour-plan.js && node --check tests/jarvix-guided-tour.test.mjs && node --check tests/jarvix-tour-plan.test.mjs
+        run: node --check app/src/main/assets/jarvis-core.js && node --check app/src/main/assets/jarvix-guided-tour.js && node --check app/src/main/assets/jarvix-tour-plan.js && node --check app/src/main/assets/jarvix-tour-v3-script.js && node --check app/src/main/assets/jarvix-tour-v3-audio.js && node --check scripts/generate_jarvix_tour_v3.mjs && node --check tests/jarvix-tour-v3.test.mjs && node --check tests/jarvix-guided-tour.test.mjs && node --check tests/jarvix-tour-plan.test.mjs
       - name: Check four-language narration/action timing contract
         run: node --test tests/jarvix-tour-plan.test.mjs
+      - name: Validate exact approved V3 phrases and unchanged JARVIX narrator
+        run: node --test tests/jarvix-tour-v3.test.mjs
       - name: Click visible tour header button, verify overlay and exit, no paid calls
         run: node --test tests/jarvix-guided-tour.test.mjs
