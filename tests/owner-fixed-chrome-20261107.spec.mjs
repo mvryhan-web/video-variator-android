@@ -849,3 +849,27 @@ test('Home header and first film align at desktop edges with visible clearance',
  expect(mobile.horizontalOverflow).toBeLessThanOrEqual(1);
  expect(paid).toBe(0);
 });
+
+test('Owner desktop Home short cyan header edge segments disappear without changing cockpit or mobile border',async({page})=>{
+ test.setTimeout(60000);
+ await page.setViewportSize({width:1365,height:900});
+ const response=await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ expect(response.status()).toBe(200);
+ await expect(page.locator('.ds-header-cockpit')).toHaveCount(1);
+ await expect(page.locator('link[href^="deepsyq-home-neon-cinema-fix-20261107.css?v=20261107-edge-clear1"]')).toHaveCount(1);
+ await page.evaluate(()=>document.documentElement.setAttribute('data-site-theme','neon'));
+ const desktop=await page.evaluate(()=>{
+  const h=getComputedStyle(document.querySelector('body.home-neon .content > header.top'));
+  const cockpit=getComputedStyle(document.querySelector('.ds-header-cockpit'));
+  return {outer:h.borderBottomColor,inner:cockpit.borderBottomColor};
+ });
+ expect(desktop.outer,'only Home outer border removed').toBe('rgba(0, 0, 0, 0)');
+ expect(desktop.inner,'cockpit middle line preserved').not.toBe('rgba(0, 0, 0, 0)');
+ await page.setViewportSize({width:390,height:844});
+ await page.reload({waitUntil:'domcontentloaded'});
+ const mobile=await page.evaluate(()=>{
+  const header=document.querySelector('body.home-neon .content > header.top');
+  return getComputedStyle(header).borderBottomColor;
+ });
+ expect(mobile,'original mobile header edge left untouched').not.toBe('rgba(0, 0, 0, 0)');
+});
