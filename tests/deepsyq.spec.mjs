@@ -21,7 +21,8 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await expect(page.locator('.hero-stage')).not.toContainText('beyond limits');
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
  await expect(page.locator('#sidebar nav a[href="canvas.html"]')).toContainText('Canvas');
- await expect(page.locator('#studioStatus')).toContainText('owner preview');
+ await expect(page.locator('#studioStatus')).toHaveCount(0); // Owner removed the entire obsolete Studio availability label.
+ await expect(page.locator('.hero')).not.toContainText('Open a studio to see the available models.');
  await expect(page.locator('.plan')).toHaveCount(4);
  await expect(page.locator('.trial-plan .plan-action')).toHaveAttribute('href','pricing.html#plans');
  await expect(page.locator('.lifetime-disclaimer')).toContainText('does not provide unlimited AI generation');
@@ -43,6 +44,22 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await page.locator('#homeQuickPrompt').fill('Test creative image');await page.locator('[data-home-kind="image"]').click();await expect(page).toHaveURL(/studio=image/);
  await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await expect(page.locator('[data-kind="image"]')).toHaveAttribute('aria-pressed','true');await expect(page.locator('#prompt')).toHaveValue('Test creative image');
  await page.locator('.topbar .back').click();await expect(page).toHaveURL(/deepsyq.html/);
+});
+
+test('Owner removal: no Studio availability label appears in enabled Home on desktop or mobile',async({page})=>{
+ await fixtures(page);
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,ownerOnly:false,models:[],catalog:[]}}));
+ for(const width of [1440,390]){
+  await page.setViewportSize({width,height:900});
+  const response=page.waitForResponse(r=>r.url().endsWith('/api/studio/config'));
+  await home(page);
+  await response;
+  await expect(page.locator('#studioStatus')).toHaveCount(0);
+  await expect(page.locator('.hero')).not.toContainText('Open a studio to see the available models.');
+  await expect(page.locator('.home-prompt-ideas summary')).toHaveText('Need an idea?');
+  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+  await expect(page.locator('#homeCreativeTools .home-create-card')).toHaveCount(6);
+ }
 });
 
 test('Deepsyq keeps a collapsible left rail and shows only selectable configured image and video models',async({page})=>{
