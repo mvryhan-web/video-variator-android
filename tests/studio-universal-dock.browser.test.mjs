@@ -318,9 +318,10 @@ try{
  await test('Desktop page changes keep the top chrome steady while lower modes still switch',async()=>{
   const context=await browser.newContext({viewport:{width:1365,height:900}});
   await context.addInitScript(()=>{
+   // The outgoing page may fire pagereveal before Playwright resumes on navigation.
+   // Do not depend on late-observed events to test the header transition policy.
    document.addEventListener('pagereveal',event=>{
     window.__deepsyqNavHadTransition=!!event.viewTransition;
-    window.__deepsyqNavRevealed=true;
    },{once:true});
   });
   const page=await context.newPage(),paid=[];
@@ -343,17 +344,27 @@ try{
      page.locator('a[href="'+target+'"]').first().click()
     ]);
     await page.waitForSelector('header.ds-stable-header .ds-header-cockpit',{timeout:20000});
-    await page.waitForFunction(()=>window.__deepsyqNavRevealed===true,null,{timeout:10000});
+    await page.waitForFunction(()=>{
+     const sheet=[...document.styleSheets].find(s=>s.href?.endsWith('/deepsyq-mobile-shell.css'));
+     if(!sheet)return false;
+     try{return [...sheet.cssRules].some(rule=>rule.conditionText?.includes('min-width: 761px')
+      &&rule.cssText.includes('@view-transition')&&rule.cssText.includes('navigation: none'));}
+     catch{return false;}
+    },null,{timeout:15000});
     const state=await page.evaluate(()=>{
      const header=document.querySelector('header.ds-stable-header');
      const rect=header?.getBoundingClientRect(),css=header&&getComputedStyle(header);
-     return {transition:window.__deepsyqNavHadTransition,
+     const sheet=[...document.styleSheets].find(s=>s.href?.endsWith('/deepsyq-mobile-shell.css'));
+     const blocked=[...sheet.cssRules].some(rule=>rule.conditionText?.includes('min-width: 761px')
+      &&rule.cssText.includes('@view-transition')&&rule.cssText.includes('navigation: none'));
+     return {transition:window.__deepsyqNavHadTransition,desktopTransitionDisabled:blocked,
       position:css?.position,top:rect?.top,width:rect?.width,
       hasLeft:!!header?.querySelector('.ds-header-pod-left'),
       hasRight:!!header?.querySelector('.ds-header-pod-right'),
       hasOrb:!!header?.querySelector('#topJarvisBtn')};
     });
-    assert.equal(state.transition,false,label+' must not launch cross-page header transition');
+    assert.equal(state.desktopTransitionDisabled,true,label+' must opt out of cross-document header transitions');
+    if(typeof state.transition==='boolean')assert.equal(state.transition,false,label+' view transition must be absent');
     assert.equal(state.position,'fixed',label+' top header must stay fixed');
     assert.ok(Math.abs(state.top)<=3,label+' header top must remain stable');
     assert.equal(state.hasLeft,true,label+' left header actions preserved');
