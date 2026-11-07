@@ -756,6 +756,8 @@ test('Neon screenshot: fresh Home style removes actual rails, masks and credit g
   await expect(page.locator('link[href="deepsyq-home-neon-cinema-fix-20261107.css"]')).toHaveCount(1);
   await page.evaluate(()=>document.documentElement.setAttribute('data-site-theme','neon'));
   await expect(page.locator('#homeHeroCarousel')).toHaveCount(1);
+  // Assert the playable-film state, not the empty placeholder that hides overlays by default.
+  await page.evaluate(()=>document.querySelector('#homeHeroCarousel')?.classList.remove('is-empty'));
   await expect(page.locator('#homeHeroCarousel .hero-neighbor')).toHaveCount(2);
   await expect(page.locator('#homeHeroPrevious,#homeHeroNext')).toHaveCount(2);
   await expect(page.locator('#inspirationHeroVideo')).toHaveCount(1);
