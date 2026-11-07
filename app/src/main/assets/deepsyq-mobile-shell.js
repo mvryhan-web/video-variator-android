@@ -60,6 +60,9 @@ function setupMobileShell() {
   window.addEventListener('resize',queuePin);
   window.addEventListener('pageshow',queuePin);
   new ResizeObserver(queuePin).observe(chromeSlot);
+  // Pin immediately as well as after paint; WebKit can defer first animation
+  // frame when its emulated mobile viewport is being resized during testing.
+  sizePinnedHeader();
   queuePin();
   if (!document.querySelector('link[href="deepsyq-mobile-shell.css"]')) {const css=document.createElement('link');css.rel='stylesheet';css.href='deepsyq-mobile-shell.css';document.head.append(css);}
 
