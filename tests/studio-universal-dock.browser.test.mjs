@@ -41,12 +41,24 @@ try{
       return {vw:innerWidth,vh:innerHeight,dock:rect('#studioUniversalDock'),plus:rect('#studioUniversalDock #jPlus'),
        send:rect('#studioUniversalDock #generate'),prompt:rect('#studioUniversalDock #prompt'),
        composerDisplay:getComputedStyle(document.querySelector('#creator>.prompt-row')).display,
+       // Original live form may stay mounted for its handlers, but its obsolete
+       // amber gradient frame must NOT appear behind #studioUniversalDock.
+       nativeFrame:(()=>{
+        const style=getComputedStyle(document.getElementById('creator'));
+        return{borderTop:style.borderTopWidth,borderBottom:style.borderBottomWidth,
+         backgroundImage:style.backgroundImage,backgroundColor:style.backgroundColor,
+         boxShadow:style.boxShadow,outlineStyle:style.outlineStyle};
+       })(),
        inForm:document.getElementById('generate').form?.id,
        inputForm:document.getElementById('prompt').form?.id};
      });
      assert.ok(geometry.dock?.l>=-1&&geometry.dock?.r<=layout.w+1,'dock fits screen '+JSON.stringify(geometry));
      assert.ok(geometry.dock.b<=layout.h+1&&geometry.dock.b>layout.h-100,'dock pinned near bottom '+JSON.stringify(geometry));
      assert.equal(geometry.composerDisplay,'none','old Studio composer input row must be hidden');
+     assert.deepEqual(geometry.nativeFrame,{
+      borderTop:'0px',borderBottom:'0px',backgroundImage:'none',
+      backgroundColor:'rgba(0, 0, 0, 0)',boxShadow:'none',outlineStyle:'none'
+     },'No phantom gold line/glow from old native form behind real dock on '+layout.name+' '+kind);
      assert.equal(geometry.inForm,'creator','real generate remains tied to original form');
      assert.equal(geometry.inputForm,'creator','real prompt remains tied to original form');
      assert.ok(Math.abs(geometry.plus.w-geometry.plus.h)<2,'round +');
