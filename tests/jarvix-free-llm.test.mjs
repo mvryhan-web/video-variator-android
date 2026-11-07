@@ -59,3 +59,23 @@ test('Runtime quota SQL is schema-scoped and will not create tables with a privi
  assert.equal(calls.filter(sql=>sql.startsWith('INSERT INTO jarvix_quota.jarvix_free_daily')).length,3);
  assert.equal(calls.some(sql=>sql.toUpperCase().includes('CREATE TABLE')),false);
 });
+
+test('Free Gemini system prompt describes verified DEEPSYQ features without inventing financial markets',async()=>{
+ let instruction='';
+ const obj=createFreeJarvix({env,quotaStore:quota(),fetchImpl:async(_,options)=>{
+   const data=JSON.parse(options.body);instruction=data.systemInstruction.parts[0].text;
+   return Response.json({candidates:[{content:{parts:[{text:'DEEPSYQ предлагает Image Studio и Video Studio.'}]}}]});
+ }});
+ const response=await obj.respond({message:'Какие возможности у DEEPSYQ?',language:'ru',identity:'user:test'});
+ assert.equal(response.provider,'gemini-free');
+ for(const item of ['Image Studio','Video Studio','Audio Studio','Canvas','AI Apps','Everyday Tools','Video Uniquifier']){
+   assert.ok(instruction.includes(item),item);
+ }
+ assert.match(instruction,/не приписывай ей анализ финансовых рынков/i);
+});
+test('Voice Review Studio displays free Gemini status rather than stale LLM disconnected label',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const page=await readFile(new URL('../app/src/main/assets/jarvix-studio-page.js',import.meta.url),'utf8');
+ assert.match(page,/status\.freeLlm\?\.enabled/);
+ assert.match(page,/Gemini Free включена для JARVIX/);
+});
