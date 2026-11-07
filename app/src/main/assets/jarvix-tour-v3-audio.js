@@ -10,6 +10,8 @@ export async function getTourV3Recording(text,language) {
   .then(async r=>r.ok?await r.json():null)
   .catch(()=>null);
  const manifest=await manifestPromise;
+ // Retry a transient missing/failed manifest after the user presses Continue.
+ if(!manifest) manifestPromise=null;
  if(manifest?.schemaVersion!=='jarvix-tour-v3-audio/v1'||
     manifest?.engine!=='VoxCPM2'||
     manifest?.format!=='mp3'||
