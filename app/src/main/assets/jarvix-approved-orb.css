@@ -33,3 +33,46 @@
 }
 /* Only stage07 appearance. Opposing ring motion and live voice reactions
    are developed and tested separately in stages08/09. */
+
+/* GO stage08: the owner-specified continuous motion. Orb shell size is fixed. */
+.jv-approved-orb>.ds-reference-orb .ds-orbit-spin{
+ transform-box:view-box;transform-origin:80px 80px;
+ animation:jv-ring-clockwise 16s linear infinite;
+}
+.jv-approved-orb>.ds-reference-orb .ds-orbit-reverse{
+ transform-box:view-box;transform-origin:80px 80px;
+ animation:jv-ring-counterclockwise 20s linear infinite;
+}
+.jv-approved-orb>.ds-reference-orb .jv-blue-behind{
+ animation:jv-blue-up 12s ease-in-out infinite alternate;
+}
+.jv-approved-orb>.ds-reference-orb .jv-blue-front{
+ animation:jv-blue-up 12s ease-in-out infinite alternate-reverse;
+}
+.jv-approved-orb>.ds-reference-orb .jv-warm-in{
+ animation:jv-warm-leak-in 11s ease-in-out infinite;
+}
+.jv-approved-orb>.ds-reference-orb .jv-warm-out{
+ animation:jv-warm-leak-out 13s ease-in-out infinite;
+}
+.jarvis-mini-orb.jv-approved-orb::before{
+ content:'';position:absolute;inset:-8%;border-radius:50%;
+ background:radial-gradient(circle,transparent 47%,#05e6e71d 58%,#10f5ff48 70%,transparent 83%);
+ filter:blur(3px);opacity:.4;pointer-events:none;
+ animation:jv-halo-breath 5s ease-in-out infinite;
+}
+@keyframes jv-ring-clockwise{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes jv-ring-counterclockwise{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+@keyframes jv-blue-up{from{transform:translateY(3px);opacity:.48}to{transform:translateY(-3px);opacity:.8}}
+@keyframes jv-warm-leak-in{0%,100%{stroke-dashoffset:0;opacity:.44}50%{stroke-dashoffset:8;opacity:.82}}
+@keyframes jv-warm-leak-out{0%,100%{stroke-dashoffset:0;opacity:.52}50%{stroke-dashoffset:-8;opacity:.25}}
+@keyframes jv-halo-breath{0%,100%{opacity:.30}50%{opacity:.78}}
+@media(prefers-reduced-motion:reduce){
+ .jv-approved-orb>.ds-reference-orb .ds-orbit-spin,
+ .jv-approved-orb>.ds-reference-orb .ds-orbit-reverse,
+ .jv-approved-orb>.ds-reference-orb .jv-blue-behind,
+ .jv-approved-orb>.ds-reference-orb .jv-blue-front,
+ .jv-approved-orb>.ds-reference-orb .jv-warm-in,
+ .jv-approved-orb>.ds-reference-orb .jv-warm-out,
+ .jarvis-mini-orb.jv-approved-orb::before{animation:none!important}
+}
