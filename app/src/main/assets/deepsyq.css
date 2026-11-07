@@ -456,6 +456,9 @@ body button:focus-visible,
 /* Owner reference, 18 Oct: smaller 16:9 film with genuine neighboring videos.
    This class is present in the initial HTML; no delayed skin or UI replacement. */
 .hero-stage.hero-stage-cinematic{--film-width:74%;--film-left:13%;display:block;width:100%;min-width:0;min-height:0;aspect-ratio:2.15;border:0;border-radius:16px;background:radial-gradient(ellipse at 50% 100%,#12477945,transparent 62%),#090d19;overflow:hidden;isolation:isolate}
+/* Owner 07 Nov: NO decorative frame around the ENTIRE Home video carousel.
+   Target only the outside cinematic shell; retain clips, focusable controls and artwork. */
+body.home-neon #workspace > .hero > .hero-stage.hero-stage-cinematic{border:0!important;outline:0!important;box-shadow:none!important}
 .hero-stage.hero-stage-cinematic::before{inset:0;background:radial-gradient(ellipse at 50% 8%,#063e783d,transparent 70%)}
 .hero-stage.hero-stage-cinematic::after{display:none}
 .hero-stage-cinematic .home-hero-carousel{inset:0;z-index:2;outline:none;touch-action:pan-y}

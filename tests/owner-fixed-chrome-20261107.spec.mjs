@@ -589,6 +589,13 @@ test('only Home video carousel purple outlines disappear without changing carous
   await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
   const carousel=page.locator('#homeHeroCarousel');
   await expect(carousel).toHaveCount(1);
+  const outer=page.locator('#workspace > .hero > .hero-stage.hero-stage-cinematic');
+  await expect(outer).toHaveCount(1);
+  const outerStyle=await outer.evaluate(el=>{
+   const s=getComputedStyle(el);
+   return {top:s.borderTopWidth,right:s.borderRightWidth,bottom:s.borderBottomWidth,left:s.borderLeftWidth,outline:s.outlineStyle,shadow:s.boxShadow};
+  });
+  expect(outerStyle).toEqual({top:'0px',right:'0px',bottom:'0px',left:'0px',outline:'none',shadow:'none'});
   await expect(page.locator('.hero-stage-cinematic .hero-film-outline')).toBeHidden();
   await expect(page.locator('.hero-stage-cinematic .hero-neighbor')).toHaveCount(2);
   const borders=await page.locator('.hero-stage-cinematic .hero-neighbor').evaluateAll(items=>items.map(item=>{
