@@ -1,0 +1,46 @@
+name: JARVIX FREE LLM no-spend acceptance
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/jarvix-free-llm.js'
+      - 'server/deepsyq-preview.js'
+      - 'server/jarvix-session-scope.js'
+      - 'app/src/main/assets/jarvix-chat.js'
+      - 'tests/jarvix-free-llm.test.mjs'
+      - '.github/workflows/jarvix-free-llm.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/jarvix-free-llm.js'
+      - 'server/deepsyq-preview.js'
+      - '.github/workflows/jarvix-free-llm.yml'
+permissions:
+  contents: read
+jobs:
+  safe-free-tier:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      JARVIX_FREE_LLM_ENABLED: 'false'
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      OPENAI_API_KEY: ''
+      DATABASE_URL: ''
+      JARVIX_QUOTA_DATABASE_URL: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --omit=dev --no-audit --no-fund
+      - name: JavaScript syntax checks
+        run: |
+          node --check server/jarvix-free-llm.js
+          node --check server/jarvix-session-scope.js
+          node --check server/deepsyq-preview.js
+          node --check app/src/main/assets/jarvix-chat.js
+          node --check tests/jarvix-free-llm.test.mjs
+      - name: Zero-spend free LLM, voice and preview isolation
+        run: node --test tests/jarvix-free-llm.test.mjs tests/jarvix-local-voice.test.mjs tests/deepsyq-preview.mjs

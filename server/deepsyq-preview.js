@@ -272,7 +272,7 @@ app.post('/api/jarvix/chat',async(req,res)=>{
   if(session.history.length>24)session.history.splice(0,session.history.length-24);
  }
  res.json({ok:true,reply:result.reply,action:result.action||null,
-  entities:result.entities||{...session.accumulatedPrompt},compiledPrompt:result.compiledPrompt||null,
+  entities:result.entities||{...session.accumulatedPrompt},compiledPrompt:result.compiledPrompt??null,
   studioHandoff:result.studioHandoff||null,sessionId:scope.clientId,conversationId:scope.clientId,
   language,provider:result.provider,audioUrl:null,freeDailyLimit:live?.freeDailyLimit||15,
   remaining:live?.remaining??null,limitReached:live?.limitReached===true,

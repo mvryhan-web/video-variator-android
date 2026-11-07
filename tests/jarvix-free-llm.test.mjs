@@ -36,3 +36,13 @@ test('quota backend unavailable always blocks provider call',async()=>{
  let n=0;const service=createFreeJarvix({env,quotaStore:{async reserve(){throw Error('db unavailable');}},fetchImpl:async()=>{n++;return Response.json({});}});
  assert.equal(await service.respond({message:'hello',identity:'visitor:1'}),null);assert.equal(n,0);
 });
+
+test('simultaneous attempts allow at most fifteen free provider requests per visitor',async()=>{
+ let calls=0,n=0;
+ const store={async reserve(){n++;return {allowed:n<=15,remaining:Math.max(0,15-n),resetAt:'2026-11-08T00:00:00.000Z'};}};
+ const obj=createFreeJarvix({env,quotaStore:store,fetchImpl:async()=>{calls++;return Response.json({candidates:[{content:{parts:[{text:'Ready.'}]}}]});}});
+ const results=await Promise.all(Array.from({length:20},()=>obj.respond({identity:'same-visitor',message:'Hi',language:'en'})));
+ assert.equal(calls,15);
+ assert.equal(results.filter(x=>x.limitReached).length,5);
+ assert.equal(results.filter(x=>x.provider==='gemini-free').length,15);
+});
