@@ -303,3 +303,31 @@ test('stage08 JARVIX orbit directions, halo duration and stable shell size',asyn
  }
  expect(paid).toBe(0);
 });
+
+
+test('owner-uploaded JARVIX sphere replaces visual orb on TEST; original SVG remains for rollback',async({page})=>{
+ test.setTimeout(120000);
+ await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+ let paid=0;
+ page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))paid++;});
+ for(const width of [390,1365]){
+  await page.setViewportSize({width,height:900});
+  for(const route of ['/deepsyq.html','/generate-studio.html?studio=image','/jarvix-chat.html']){
+   await page.goto(route,{waitUntil:'domcontentloaded'});
+   const headerOrb=page.locator('#topJarvisBtn .jv-approved-orb').first();
+   await expect(headerOrb).toHaveCount(1);
+   const photo=headerOrb.locator('img.jv-owner-upload-orb');
+   await expect(photo).toHaveCount(1);
+   await expect.poll(()=>photo.evaluate(img=>img.complete&&img.naturalWidth===1254&&img.naturalHeight===1254),{timeout:25000}).toBe(true);
+   await expect.poll(()=>headerOrb.evaluate(el=>el.classList.contains('jv-owner-photo-test'))).toBe(true);
+   await expect(headerOrb.locator('svg.ds-reference-orb')).toHaveCount(1);
+   const oldHidden=await headerOrb.locator('svg.ds-reference-orb').evaluate(svg=>getComputedStyle(svg).visibility==='hidden');
+   expect(oldHidden).toBe(true);
+   const src=await photo.getAttribute('src');
+   expect(src).toContain('/760ea0b9-ba7d-4982-97f2-9bb59a6b0979.png');
+   await expect.poll(()=>page.evaluate(()=>[...document.querySelectorAll('.jarvis-mini-orb.jv-approved-orb')]
+     .every(el=>el.querySelector('img.jv-owner-upload-orb')))).toBe(true);
+  }
+ }
+ expect(paid).toBe(0);
+});

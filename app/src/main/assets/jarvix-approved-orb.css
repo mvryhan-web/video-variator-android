@@ -31,6 +31,33 @@
 .j-mode-rail .jv-rail-mini-orb>.ds-reference-orb{
  width:100%!important;height:100%!important;
 }
+/* Owner's exact uploaded PNG — reversible TEST-only visual substitution.
+   The SVG is retained beneath it; remove the JS test flag to restore it. */
+.jv-approved-orb>.jv-owner-upload-orb{display:none!important}
+.jv-approved-orb.jv-owner-photo-test>.ds-reference-orb{
+ visibility:hidden!important;
+}
+.jv-approved-orb.jv-owner-photo-test>.jv-owner-upload-orb{
+ display:block!important;
+ position:absolute!important;inset:0!important;
+ width:100%!important;height:100%!important;max-width:none!important;
+ object-fit:contain;pointer-events:none;
+ mask-image:radial-gradient(circle closest-side at center,#000 0%,#000 79%,transparent 100%);
+ -webkit-mask-image:radial-gradient(circle closest-side at center,#000 0%,#000 79%,transparent 100%);
+ filter:drop-shadow(0 0 3px #10d9ff88);
+ transition:filter .2s ease;
+}
+#topJarvisBtn.jv-approved-orb-button>.jarvis-mini-orb.jv-owner-photo-test>.jv-owner-upload-orb{
+ inset:-25%!important;width:150%!important;height:150%!important;
+ filter:drop-shadow(0 0 7px #0ee7ffaa);
+}
+#topJarvisBtn.is-listening .jv-owner-photo-test>.jv-owner-upload-orb{
+ filter:brightness(1.12) drop-shadow(0 0 7px #12f0ffc9);
+}
+#topJarvisBtn.is-speaking .jv-owner-photo-test>.jv-owner-upload-orb{
+ filter:brightness(1.07) drop-shadow(0 0 8px #26dfffc0);
+}
+
 /* Only stage07 appearance. Opposing ring motion and live voice reactions
    are developed and tested separately in stages08/09. */
 
