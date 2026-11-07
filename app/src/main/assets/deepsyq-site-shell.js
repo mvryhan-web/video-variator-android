@@ -7,14 +7,18 @@
     if (savedTheme) document.documentElement.setAttribute('data-site-theme', savedTheme);
   } catch (_) {}
 
-  // Current language resolver
-  const getLang = () => {
+  // Saved user choice takes precedence; otherwise use the first browser language.
+  function getActiveLanguage() {
     try {
-      return localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang') || 'en';
-    } catch (_) {
-      return 'en';
-    }
-  };
+      const saved = localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang');
+      if (saved && ['ru', 'en', 'fr', 'es'].includes(saved)) return saved;
+    } catch (_) {}
+    const nav = (navigator.languages?.[0] || navigator.language || 'en').toLowerCase();
+    if (nav.startsWith('ru') || nav.startsWith('uk') || nav.startsWith('be')) return 'ru';
+    if (nav.startsWith('fr')) return 'fr';
+    if (nav.startsWith('es')) return 'es';
+    return 'en';
+  }
 
   const shellI18n = {
     en: {
@@ -48,7 +52,7 @@
   };
 
   const currentLang = () => {
-    const l = getLang();
+    const l = getActiveLanguage();
     return shellI18n[l] ? l : 'en';
   };
   const t = () => shellI18n[currentLang()];

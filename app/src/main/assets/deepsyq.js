@@ -211,9 +211,19 @@ function applyHomeLanguage(code){
  if(homeLang)homeLang.value=lang;
  markHomeLogin();
 }
+function getActiveLanguage() {
+  try {
+    const saved = localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang');
+    if (saved && ['ru', 'en', 'fr', 'es'].includes(saved)) return saved;
+  } catch (_) {}
+  const nav = (navigator.languages?.[0] || navigator.language || 'en').toLowerCase();
+  if (nav.startsWith('ru') || nav.startsWith('uk') || nav.startsWith('be')) return 'ru';
+  if (nav.startsWith('fr')) return 'fr';
+  if (nav.startsWith('es')) return 'es';
+  return 'en';
+}
 if(homeLang){
- let saved='en';try{saved=localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang')||'en';}catch(_){}
- applyHomeLanguage(saved);
+ applyHomeLanguage(getActiveLanguage());
  homeLang.addEventListener('change',()=>{
    const val=homeLang.value;
    try{
