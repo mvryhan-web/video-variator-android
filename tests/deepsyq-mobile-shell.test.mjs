@@ -53,7 +53,10 @@ test('owner web header swap and single-line Russian Tour remain style-only',asyn
  assert.match(mobile,/\.ds-mobile-control-right #dsTakeTour\{/);
  assert.match(mobile,/white-space:nowrap!important/);
  assert.match(mobile,/word-break:keep-all!important/);
- assert.match(mobile,/top:calc\(18px \+ env\(safe-area-inset-top\)\)!important/);
+ assert.match(mobile,/top:calc\(22px \+ var\(--ds-mobile-safe-top\)\)!important/);
+ assert.match(mobile,/right:calc\(100% \+ 8px\)!important/);
+ assert.match(mobile,/height:calc\(132px \+ var\(--ds-mobile-safe-top\)\)!important/);
+ assert.match(mobile,/top:calc\(20px \+ var\(--ds-mobile-safe-top\)\)!important/);
  assert.match(home,/body\.home-neon\.j-action-workspace header\.top\.ds-stable-header #topJarvisBtn/);
  assert.match(home,/\.ds-desktop-actions \.ds-header-credit\{/);
  assert.match(home,/\.ds-desktop-actions #dsTakeTour\{/);
