@@ -137,3 +137,48 @@ test('stage04 sidebar icons remain identical and never revert to font glyphs acr
  }
  expect(paid).toBe(0);
 });
+
+
+test('stage05 mobile drawer preserves canonical icons, ordering, routes and close behavior',async({page})=>{
+ test.setTimeout(120000);
+ await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+ let paid=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio\/jobs|payments|stripe)\b/.test(r.url()))paid++;});
+ const expected=[
+  ['generate-studio.html?studio=image','image'],
+  ['generate-studio.html?studio=video','video'],
+  ['generate-studio.html?studio=audio','audio'],
+  ['ai-apps.html','apps'],['canvas.html','canvas'],
+  ['free-tools.html','tools'],['index.html','legacy'],
+  ['my-creations.html','history']
+ ];
+ for(const width of [320,390]){
+  await page.setViewportSize({width,height:844});
+  for(const route of ['deepsyq.html','ai-apps.html','pricing.html','generate-studio.html?studio=image']){
+   await page.goto('/'+route,{waitUntil:'domcontentloaded'});
+   await expect.poll(()=>page.evaluate(()=>document.body.dataset.mobileShell),{timeout:9000}).toBe('ready');
+   const toggle=page.locator('.ds-mobile-menu');
+   await expect(toggle).toBeVisible();
+   await expect(toggle).toHaveAttribute('aria-expanded','false');
+   await toggle.click();
+   await expect(page.locator('body')).toHaveClass(/ds-mobile-drawer-open/);
+   await expect(toggle).toHaveAttribute('aria-expanded','true');
+   const drawer=page.locator(route==='deepsyq.html'?'#sidebar':'#dsSiteSidebar');
+   await expect(drawer).toBeVisible();
+   const entries=await drawer.locator('nav a[href]').evaluateAll(nodes=>nodes.flatMap(a=>{
+    const svg=a.querySelector(':scope > [data-canonical-icon] svg');
+    if(!svg)return [];
+    return [{href:a.getAttribute('href'),icon:a.querySelector(':scope > [data-canonical-icon]')?.dataset.canonicalIcon}];
+   }));
+   const filtered=entries.filter(e=>expected.some(([href])=>href===e.href));
+   expect(filtered,route+' mobile icon order').toEqual(expected.map(([href,icon])=>({href,icon})));
+   await expect(drawer.getByRole('link',{name:'Assets',exact:true})).toHaveCount(0);
+   const close=page.locator('.ds-mobile-dismiss');
+   await expect(close).toBeVisible();
+   await close.click({position:{x:Math.min(width-20,Math.ceil(width*.75)),y:330}});
+   await expect(page.locator('body')).not.toHaveClass(/ds-mobile-drawer-open/);
+   await expect(toggle).toHaveAttribute('aria-expanded','false');
+  }
+ }
+ expect(paid).toBe(0);
+});
