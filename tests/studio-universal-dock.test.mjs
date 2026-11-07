@@ -66,7 +66,7 @@ test('Owner six approved Studio panels reuse six existing native dialogs with pr
  assert.match(dock,/card\.dataset\.modelId/);
  assert.match(dock,/button\.disabled=true/);
  assert.match(dock,/nativeSettings\.dataset\.studioKind!=='video'/);
- assert.match(dock,/for\(const label of \['1:1','2:3','3:2','9:16','16:9'\]\)/);
+ assert.match(dock,/const slots=\['1:1','2:3','3:2','9:16','16:9'\]/);
  assert.match(dock,/extra visual slots mirror Image Settings/);
  assert.doesNotMatch(dock,/\.requestSubmit\(|fetch\(|\/api\/studio\/jobs|\/api\/stripe\//);
  assert.match(studiojs,/for\(const r of m\?\.ratios\|\|\[\]\)/);
