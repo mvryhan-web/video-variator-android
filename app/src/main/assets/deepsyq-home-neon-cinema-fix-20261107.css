@@ -65,3 +65,11 @@ body.home-neon #homeHeroCarousel .hero-film-credit :is(strong, small) {
     margin-top: 20px !important;
   }
 }
+
+/* Owner: hide just the two short outer header-bottom cyan lines on desktop Home.
+   The separate cockpit bottom stroke stays visible across the middle. */
+@media (min-width: 761px) {
+  html body.home-neon .content > header.top {
+    border-bottom-color: transparent !important;
+  }
+}
