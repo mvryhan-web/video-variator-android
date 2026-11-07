@@ -46,3 +46,16 @@ test('simultaneous attempts allow at most fifteen free provider requests per vis
  assert.equal(results.filter(x=>x.limitReached).length,5);
  assert.equal(results.filter(x=>x.provider==='gemini-free').length,15);
 });
+
+test('Runtime quota SQL is schema-scoped and will not create tables with a privileged role',async()=>{
+ const {createPgDailyQuota}=await import('../server/jarvix-free-llm.js');
+ const calls=[];
+ const client={async query(sql){calls.push(sql);if(sql.startsWith('INSERT INTO'))return {rows:[{used:1}]};return {rows:[]};},release(){}};
+ const pool={async query(sql){calls.push(sql);return {rows:[]};},async connect(){return client;}};
+ const store=createPgDailyQuota(pool,{secret:'secret-'.repeat(8)});
+ const result=await store.reserve({identity:'visitor:one',ip:'127.0.0.1',provider:'gemini'});
+ assert.equal(result.allowed,true);assert.equal(result.remaining,14);
+ assert.ok(calls.some(sql=>sql.startsWith('SELECT 1 FROM jarvix_quota.jarvix_free_daily')));
+ assert.equal(calls.filter(sql=>sql.startsWith('INSERT INTO jarvix_quota.jarvix_free_daily')).length,3);
+ assert.equal(calls.some(sql=>sql.toUpperCase().includes('CREATE TABLE')),false);
+});
