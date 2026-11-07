@@ -305,8 +305,8 @@ test('Video and Audio Tour use the actual + menu, real Settings gear and X, with
     assert.ok(events.filter(e=>e.target==='studioSettingsToggle').length>=2,'Settings gear must be clicked on both sections');
     assert.ok(events.some(e=>e.target==='modelDialog'),'Model panel must close through its real X');
     assert.ok(events.some(e=>e.target==='settingsDialog'),'Settings panel must close through its real X before changing mode');
-    assert.ok(events.filter(e=>['modelDialog','settingsDialog'].includes(e.target)).every(e=>e.parentHidden),
-      'Tour must hide parent hub while one nested model/settings child is visible; no stacked windows');
+    assert.ok(events.filter(e=>['modelDialog','settingsDialog'].includes(e.target)&&e.at!=='?studio=image').every(e=>e.parentHidden),
+      'Video/Audio must hide parent hub while the nested model/settings window is visible; Image remains unchanged');
     assert.equal(await page.locator('#studioSettingsHub').evaluate(h=>h.open),false,
       'Audio Studio must close the settings parent with X before leaving the section');
     assert.deepEqual(paid,[],'Demonstration must not submit paid generation or checkout');
