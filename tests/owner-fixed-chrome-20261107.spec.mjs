@@ -80,11 +80,16 @@ test('mobile header reference: orb centered, brand centered, login above action 
    await expect.poll(()=>page.evaluate(()=>document.body.dataset.mobileShell),{timeout:9000}).toBe('ready');
    const result=await page.evaluate(()=>{
     const rect=selector=>{const x=document.querySelector(selector)?.getBoundingClientRect();return x?{left:x.left,right:x.right,top:x.top,bottom:x.bottom,width:x.width,height:x.height,center:(x.left+x.right)/2}:null;};
-    return {width:innerWidth,logo:rect('.ds-mobile-brand'),orb:rect('#topJarvisBtn'),login:rect('#topLogin'),header:rect('header.ds-mobile-header'),controls:rect('.ds-mobile-controls'),overflow:document.documentElement.scrollWidth>innerWidth+1};
+    return {width:innerWidth,logo:rect('.ds-mobile-brand'),logoText:rect('.ds-mobile-brand span'),logoIcon:rect('.ds-mobile-brand img'),orb:rect('#topJarvisBtn'),login:rect('#topLogin'),header:rect('header.ds-mobile-header'),spacer:rect('.ds-mobile-header-spacer'),controls:rect('.ds-mobile-controls'),overflow:document.documentElement.scrollWidth>innerWidth+1};
    });
    expect(result.logo,route+' logo missing').toBeTruthy();
    expect(result.orb,route+' orb missing').toBeTruthy();
-   expect(Math.abs(result.logo.center-width/2),route+' brand off center').toBeLessThanOrEqual(3);
+   expect(Math.abs(result.logoText.center-width/2),route+' WORD Deepsyq not viewport-centered').toBeLessThanOrEqual(3);
+   expect(result.logoIcon.right,route+' original icon must remain left of title').toBeLessThan(result.logoText.left+1);
+   expect(Math.abs((result.logoText.top+result.logoText.bottom)/2-(result.login.top+result.login.bottom)/2),route+' Deepsyq title and Login not on same row').toBeLessThanOrEqual(6);
+   expect(Math.abs(result.spacer.height-result.header.height),route+' extra header spacer creates phantom blank area').toBeLessThanOrEqual(2);
+   expect(result.header.height,route+' mobile header too tall').toBeLessThanOrEqual(130);
+   expect(result.orb.bottom,route+' existing JARVIX orb protrudes below header').toBeLessThanOrEqual(result.header.bottom+2);
    expect(Math.abs(result.orb.center-width/2),route+' JARVIX off center').toBeLessThanOrEqual(3);
    expect(result.login.top,route+' login moved into lower row').toBeLessThan(56);
    expect(result.login.right,route+' login overflows right edge').toBeLessThanOrEqual(width+1);
@@ -847,5 +852,42 @@ test('Home header and first film align at desktop edges with visible clearance',
  }));
  expect(mobile.padding).toBe('12px');
  expect(mobile.horizontalOverflow).toBeLessThanOrEqual(1);
+ expect(paid).toBe(0);
+});
+
+
+test('Owner mobile single compact title/header stays consistent on 320/390/760 all shared routes without paid POST',async({page})=>{
+ test.setTimeout(180000);
+ await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+ let paid=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:studio\/jobs|billing\/checkout|payments|stripe|ai-wallet)/.test(r.url()))paid++;});
+ const routes=['deepsyq.html','jarvix-chat.html','generate-studio.html?studio=image',
+ 'generate-studio.html?studio=video','generate-studio.html?studio=audio','ai-apps.html',
+ 'canvas.html','pricing.html','free-tools.html','my-creations.html'];
+ for(const width of [320,390,760]){
+  await page.setViewportSize({width,height:844});
+  for(const route of width===390?routes:[routes[0],routes[1],routes[2],routes[7]]){
+   await page.goto('/'+route,{waitUntil:'domcontentloaded'});
+   await expect.poll(()=>page.evaluate(()=>document.body.dataset.mobileShell),{timeout:12000}).toBe('ready');
+   const m=await page.evaluate(()=>{
+    const r=css=>{const q=document.querySelector(css)?.getBoundingClientRect();return q?{x:q.x,y:q.y,width:q.width,height:q.height,right:q.right,bottom:q.bottom,cx:q.x+q.width/2,cy:q.y+q.height/2}:null;};
+    return {width:innerWidth,brand:r('.ds-mobile-brand span'),icon:r('.ds-mobile-brand img'),login:r('#topLogin'),orb:r('#topJarvisBtn'),
+     header:r('header.ds-mobile-header'),spacer:r('.ds-mobile-header-spacer'),
+     menu:r('.ds-mobile-menu'),scrollWidth:document.documentElement.scrollWidth};
+   });
+   expect(m.brand,route+' missing title').toBeTruthy();
+   expect(m.login,route+' missing Login').toBeTruthy();
+   expect(m.orb,route+' missing existing orb').toBeTruthy();
+   expect(Math.abs(m.brand.cx-width/2),route+' wordmark center').toBeLessThanOrEqual(3);
+   expect(Math.abs(m.brand.cy-m.login.cy),route+' title/Login vertical centers').toBeLessThanOrEqual(6);
+   expect(m.icon.right,route+' logo must stay left of word').toBeLessThanOrEqual(m.brand.x+1);
+   expect(Math.abs(m.header.height-m.spacer.height),route+' inconsistent spacer').toBeLessThanOrEqual(2);
+   expect(m.header.height,route+' excessive mobile header height').toBeLessThanOrEqual(130);
+   expect(m.orb.bottom,route+' orb clipped or below shell').toBeLessThanOrEqual(m.header.bottom+2);
+   expect(m.menu.x,route+' menu outside viewport').toBeGreaterThanOrEqual(0);
+   expect(m.login.right,route+' Login outside viewport').toBeLessThanOrEqual(width+1);
+   expect(m.scrollWidth,route+' introduces horizontal overflow').toBeLessThanOrEqual(width+1);
+  }
+ }
  expect(paid).toBe(0);
 });
