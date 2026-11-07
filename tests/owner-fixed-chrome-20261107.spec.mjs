@@ -303,7 +303,7 @@ test('owner original-photo cyan clockwise, pink counterclockwise, inner orbits u
 });
 
 
-test('owner-uploaded JARVIX sphere replaces visual orb on TEST; original SVG remains for rollback',async({page})=>{
+test('owner-uploaded JARVIX sphere is the only orb art across TEST pages',async({page})=>{
  test.setTimeout(120000);
  await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
  let paid=0;
@@ -331,7 +331,7 @@ test('owner-uploaded JARVIX sphere replaces visual orb on TEST; original SVG rem
  expect(paid).toBe(0);
 });
 
-test('owner JARVIX no unrequested arcs even when original photo URL fails',async({page})=>{
+test('owner JARVIX shows no rejected sphere at all when owner image fails',async({page})=>{
  test.setTimeout(60000);
  await page.route('**/760ea0b9-ba7d-4982-97f2-9bb59a6b0979.png',route=>route.abort('failed'));
  for(const width of [390,1365]){
@@ -339,9 +339,28 @@ test('owner JARVIX no unrequested arcs even when original photo URL fails',async
   await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
   const orb=page.locator('#topJarvisBtn .jarvis-mini-orb.jv-approved-orb').first();
   await expect(orb).toHaveCount(1);
-  const fallback=orb.locator('svg.ds-reference-orb');
-  await expect(fallback).toHaveCount(1);
-  await expect(fallback.locator('ellipse')).toHaveCount(0);
-  await expect(orb.locator('.jv-owner-upload-orb')).toHaveCount(0);
+  await expect.poll(()=>orb.evaluate(el=>el.classList.contains('jv-owner-photo-unavailable'))).toBe(true);
+  await expect(orb.locator('svg, .ds-reference-orb, .jarvis-core, .jarvis-ring, .jv-owner-upload-orb')).toHaveCount(0);
+  const pseudo=await orb.evaluate(el=>getComputedStyle(el,'::before').content);
+  expect(pseudo).toBe('none');
  }
+});
+
+test('JARVIX removes any late-injected old orb nodes without touching owner image or controls',async({page})=>{
+ test.setTimeout(60000);
+ await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ const orb=page.locator('#topJarvisBtn .jarvis-mini-orb.jv-approved-orb').first();
+ await expect.poll(()=>orb.evaluate(el=>el.classList.contains('jv-owner-photo-test'))).toBe(true);
+ await page.evaluate(()=>{
+  const slot=document.querySelector('#topJarvisBtn .jarvis-mini-orb');
+  const oldSvg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  oldSvg.classList.add('ds-reference-orb');
+  slot.append(oldSvg);
+  for(const name of ['jarvis-core','jarvis-ring']){
+   const el=document.createElement('span');el.className=name;slot.append(el);
+  }
+ });
+ await expect(orb.locator('svg, .ds-reference-orb, .jarvis-core, .jarvis-ring')).toHaveCount(0);
+ await expect(orb.locator('.jv-owner-upload-orb')).toHaveCount(5);
+ await expect(page.locator('#topJarvisBtn')).toHaveCount(1);
 });
