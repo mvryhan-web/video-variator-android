@@ -4,6 +4,39 @@ let version = 0, pending = null, playing = null, objectUrl = null;
 // Only generic action acknowledgements are retained, never user prompts.
 const actionAudio=new Map(),actionWords=new Set(['Открыл','Перешёл','Готово','Сделано','Выполняю','Запустил','Есть','Недостаточно кредитов','Уточните промпт','Opened','Done','Started','Clarify prompt','Insufficient credits','Ouvert','Fait','Lancé','Précisez','Abierto','Listo','Iniciado','Aclara petición']);
 let audioContext = null, audioReady = null, source = null;
+let voiceLevelFrame = null;
+function publishVoiceLevel(level) {
+ if(typeof window==='undefined')return;
+ const safe=Number.isFinite(level)?Math.min(1,Math.max(0,level)):0;
+ window.dispatchEvent(new CustomEvent('jarvix:voice-level',{detail:{level:safe}}));
+}
+function stopVoiceLevelMeter(){
+ if(voiceLevelFrame!==null&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(voiceLevelFrame);
+ voiceLevelFrame=null;
+ publishVoiceLevel(0);
+}
+// Track the PCM buffer that is actually being played, by AudioContext clock.
+// No microphone, changed voice, output gain, synthesis call or extra provider.
+function meterDecodedSpeech(buffer,context,node,turn){
+ stopVoiceLevelMeter();
+ if(typeof requestAnimationFrame!=='function'||!buffer?.length||!buffer?.sampleRate)return;
+ const waveform=buffer.getChannelData(0),sampleRate=buffer.sampleRate;
+ const startedAt=context.currentTime;
+ const tick=()=>{
+  if(turn!==version||source!==node||context.state!=='running'){stopVoiceLevelMeter();return;}
+  const mid=Math.floor((context.currentTime-startedAt)*sampleRate);
+  if(mid>=waveform.length){stopVoiceLevelMeter();return;}
+  const start=Math.max(0,mid-Math.floor(sampleRate*.035));
+  const end=Math.min(waveform.length,mid+Math.floor(sampleRate*.015));
+  const step=Math.max(1,Math.floor(sampleRate/1600));
+  let power=0,count=0;
+  for(let i=start;i<end;i+=step){power+=waveform[i]*waveform[i];count++;}
+  publishVoiceLevel(Math.max(0,Math.min(1,Math.sqrt(power/Math.max(1,count))*7-.035)));
+  voiceLevelFrame=requestAnimationFrame(tick);
+ };
+ voiceLevelFrame=requestAnimationFrame(tick);
+}
+
 // Sentence-sized requests reduce time to first sound. They are not token streaming.
 export function splitSpeechChunks(text) {
   const chunks = [];
@@ -43,6 +76,7 @@ function greetingBlob(data, text, language) {
 }
 export function stopOwnerSpeech() {
   version += 1;
+  stopVoiceLevelMeter();
   if (source) { source.onended = null; try { source.stop(); } catch {} source = null; }
   pending?.abort(); pending = null;
   if (playing) { playing.onended = null; playing.onerror = null; playing.pause(); playing = null; }
@@ -105,7 +139,9 @@ export async function speakOwnerSpeech(text, language, hooks) {
             controller.signal.removeEventListener('abort', abort); resolve();
           };
           node.start();
+          meterDecodedSpeech(decoded,audioContext,node,turn);
         });
+        stopVoiceLevelMeter();
         node.disconnect();
         if (source === node) source = null;
       } else {
@@ -131,6 +167,7 @@ export async function speakOwnerSpeech(text, language, hooks) {
     if (turn === version) hooks.complete();
   } catch (error) {
     if (turn === version) {
+      stopVoiceLevelMeter();
       if (playing) { playing.pause(); playing = null; }
       if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
       if (source) { source.onended = null; try { source.stop(); } catch {} source = null; }
@@ -139,6 +176,7 @@ export async function speakOwnerSpeech(text, language, hooks) {
       hooks.complete();
     }
   } finally {
+    if(turn===version)stopVoiceLevelMeter();
     clearTimeout(timer);
     if (pending === controller) pending = null;
   }
