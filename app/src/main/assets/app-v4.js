@@ -36,9 +36,20 @@
   };
 
   function readJson(key,fallback){try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback));}catch(_){return fallback;}}
-  function detectLocale(){const raw=(navigator.languages?.[0]||navigator.language||'en-US').toLowerCase();if(raw.startsWith('fr'))return'fr';if(raw.startsWith('ru'))return'ru';if(raw.startsWith('uk'))return'uk';return'en';}
+  function getActiveLanguage() {
+    try {
+      const saved = localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang');
+      if (saved && ['ru', 'en', 'fr', 'es'].includes(saved)) return saved;
+    } catch (_) {}
+    const nav = (navigator.languages?.[0] || navigator.language || 'en').toLowerCase();
+    if (nav.startsWith('ru') || nav.startsWith('uk') || nav.startsWith('be')) return 'ru';
+    if (nav.startsWith('fr')) return 'fr';
+    if (nav.startsWith('es')) return 'es';
+    return 'en';
+  }
+  function detectLocale(){return getActiveLanguage();}
   function t(key){return translations[state.locale]?.[key]||en[key]||key;}
-  function applyLocale(){state.locale=detectLocale();document.documentElement.lang=state.locale==='en'?'en-US':state.locale;$('localeBadge').textContent=state.locale.toUpperCase();qsa('[data-i18n]').forEach(el=>{const v=t(el.dataset.i18n);if(v)el.textContent=v;});renderAll();}
+  function applyLocale(){state.locale=detectLocale();document.documentElement.lang=state.locale==='en'?'en-US':state.locale;if($('homeLanguage'))$('homeLanguage').value=state.locale;$('localeBadge').textContent=state.locale.toUpperCase();qsa('[data-i18n]').forEach(el=>{const v=t(el.dataset.i18n);if(v)el.textContent=v;});renderAll();}
   function bytes(n){const units=['B','KB','MB','GB'];let i=0,v=n||0;while(v>=1024&&i<units.length-1){v/=1024;i++;}return `${v.toFixed(v>=100?0:v>=10?1:2)} ${units[i]}`;}
   function toast(message){const el=$('toast');el.textContent=message;el.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.hidden=true,3500);}
   function saveHistory(){localStorage.setItem('vv_history',JSON.stringify(state.history.slice(0,100)));}
@@ -173,5 +184,7 @@
   $('clearHistoryBtn').addEventListener('click',()=>{const mediaKeys=state.history.map(x=>x.mediaCacheKey).filter(Boolean);state.history=[];sessionDownloads.clear();saveHistory();renderHistory();mediaKeys.forEach(k=>persistentMedia?.remove?.(k));toast(t('clearConfirm'));if(state.user)api('/api/history',{method:'DELETE'}).catch(()=>{});});
 
   window.VideoVariatorUI={setFiles(files){core.setFiles(files);updateFileSummary();},toast,refreshAccount,showView,reportError};
+  window.addEventListener('deepsyq:lang',applyLocale);
+  window.addEventListener('storage',e=>{if(e.key==='deepsyq_home_language'||e.key==='deepsyq_lang')applyLocale();});
   applyLocale();renderAll();if(['history','plans','profile'].includes(location.hash.slice(1)))showView(location.hash.slice(1));loadConfig().then(refreshAccount).then(refreshAnalytics).then(async()=>{if(location.hash==='#signin')openAuth();const q=new URLSearchParams(location.search);if(q.get("checkout")!=="success"||q.get("plan")!=="lifetime"||!state.user)return;for(let i=0;i<15;i++){if(usage().plan==="lifetime"&&usage().active){toast((navigator.language||"").startsWith("ru")?"Пожизненный доступ активирован.":"Lifetime access is active.");return;}await new Promise(r=>setTimeout(r,2000));await refreshAccount();}toast((navigator.language||"").startsWith("ru")?"Ожидаем подтверждение оплаты Stripe. Доступ появится после подтверждения.":"Waiting for Stripe payment confirmation. Access activates after confirmation.");});setupUpdates();
 })();
