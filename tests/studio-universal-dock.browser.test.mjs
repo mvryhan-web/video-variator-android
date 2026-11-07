@@ -83,6 +83,15 @@ try{
      await page.locator('#modelDialog .model-provider-mark').first().waitFor({timeout:12000});
      const providerBadge=await page.locator('#modelDialog .model-provider-mark').first().textContent();
      assert.notEqual(providerBadge?.trim(),'П','old generic connection-letter placeholder removed');
+     // A family-specific text identifier is not an official model illustration.
+     for(const [needle,prefix] of [['Nano Banana','NB'],['Seedream','SR'],['Seedance','SE'],['Veo','V'],['GPT Image','GPT']]){
+      const sample=page.locator('#modelDialog .model-card').filter({has:page.locator('strong', {hasText:needle})}).first();
+      if(await sample.count()){
+       const mark=sample.locator('.model-provider-mark');
+       assert.ok((await mark.innerText()).startsWith(prefix),needle+' model family code');
+       assert.match(await mark.getAttribute('title'),/not an official image/,needle+' no fake official mark');
+      }
+     }
      await page.screenshot({path:file+'/'+layout.name+'-'+kind+'-premium-models.png',fullPage:false});
      await page.locator('#modelDialog [data-close="modelDialog"]').click();
      await page.locator('#studioSettingsHub[open]').waitFor({timeout:12000});
@@ -95,6 +104,13 @@ try{
      if(choice==='video'){
       assert.equal(await page.locator('#settingsDialog .ratio-choices button').count(),5,'visual ratio grid matches Image Settings');
       assert.equal(await page.locator('#settingsDialog .ratio-choices button:disabled').count(),5-nativeOptions.length,'unsupported ratios visibly disabled');
+      const order=await page.locator('#settingsDialog .ratio-choices button').evaluateAll(nodes=>nodes.map(el=>el.querySelector('span:last-child')?.textContent?.trim()));
+      assert.deepEqual(order,['1:1','2:3','3:2','9:16','16:9'],'same visual ratio order as Image Settings');
+      const supportedSet=new Set(await page.locator('#ratio option').evaluateAll(xs=>xs.map(o=>o.value)));
+      for(const button of await page.locator('#settingsDialog .ratio-choices button').all()){
+       const label=(await button.locator('span:last-child').innerText()).trim();
+       assert.equal(await button.isEnabled(),supportedSet.has(label),'ratio support stays native: '+label);
+      }
      }
      await page.screenshot({path:file+'/'+layout.name+'-'+kind+'-premium-parameters.png',fullPage:false});
      await page.locator('#settingsDialog [data-t="done"]').click();
