@@ -82,8 +82,15 @@ function setupMobileShell() {
     es: ['Herramientas', 'Precios', 'Acceder', 'Visita guiada']
   };
   const locale = () => {
-    try { return localStorage.getItem('deepsyq_home_language') || document.documentElement.lang.split('-')[0]; }
-    catch { return document.documentElement.lang.split('-')[0]; }
+    try {
+      const saved = localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang');
+      if (saved) return saved;
+      const raw = (navigator.languages?.[0] || navigator.language || 'en').toLowerCase();
+      if (raw.startsWith('ru') || raw.startsWith('uk') || raw.startsWith('be')) return 'ru';
+      if (raw.startsWith('fr')) return 'fr';
+      if (raw.startsWith('es')) return 'es';
+      return document.documentElement.lang.split('-')[0] || 'en';
+    } catch { return document.documentElement.lang.split('-')[0] || 'en'; }
   };
   const copy = () => words[locale()] || words.en;
   // Desktop keeps the original Home actions and their existing event handlers.
