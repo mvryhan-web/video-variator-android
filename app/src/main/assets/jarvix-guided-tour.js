@@ -22,7 +22,7 @@ function setTourSpeaking(active){
  // The original orb state, not only the Tour decoration, must be silent between clips.
  updateJarvisState(playing?'speaking':'idle');
 }
-function clearAudio(){turn++;clearTimeout(navTimer);clearTimeout(waitTimer);setTourSpeaking(false);stopOwnerSpeech();if(audio){audio.onended=null;audio.onplay=null;audio.onerror=null;audio.ontimeupdate=null;audio.pause();audio.remove();audio=null;}}
+function clearAudio(){turn++;clearTimeout(navTimer);clearTimeout(waitTimer);setTourSpeaking(false);stopOwnerSpeech();if(audio){audio.onended=null;audio.onplay=null;audio.onplaying=null;audio.onwaiting=null;audio.onpause=null;audio.onerror=null;audio.ontimeupdate=null;audio.pause();audio.remove();audio=null;}}
 const navElements=()=>({sidebar:document.querySelector('#sidebar,#dsSiteSidebar,.shell>.sidebar'),toggle:document.querySelector('#menu,.ds-site-mobile-toggle,.vu-nav-toggle,#menuBtn')});
 function menuOpen(){return document.body.classList.contains('ds-mobile-drawer-open')||document.body.classList.contains('ds-site-nav-open')||document.body.classList.contains('menu-open')||document.body.classList.contains('vu-nav-open');}
 function showNavigation(url){
@@ -165,7 +165,10 @@ async function speakV3(text,current,complete,beat=null){
     if(seconds>0&&Number.isFinite(clip.duration)&&clip.duration>0)
      clip.currentTime=Math.min(seconds,Math.max(0,clip.duration-.05));
    };
-   clip.onplay=began;
+   // `play` fires before any audible samples; `playing` only when buffered media begins.
+   clip.onplaying=began;
+   clip.onwaiting=()=>{if(current===turn&&state?.phase==='playing')setTourSpeaking(false);};
+   clip.onpause=()=>{if(current===turn)setTourSpeaking(false);};
    clip.onended=()=>{clip.remove();if(audio===clip)audio=null;done();};
    clip.onerror=()=>blocked(current,'Owner voice recording unavailable');
    void clip.play().catch(()=>blocked(current,'Press Continue'));
