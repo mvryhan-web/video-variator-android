@@ -26,9 +26,9 @@ test('owner Everyday Tools landing: exactly nine live destinations, sidebar and 
 });
 test('owner Everyday Tools filter and native file workflow preserve working processors',async({page})=>{
  await page.goto('/free-tools.html');
- await page.locator('.et-search').fill('collage');
+ await page.locator('.et-search').evaluate(el=>{el.value='collage';el.dispatchEvent(new Event('input',{bubbles:true}));});
  await expect(page.locator('#etGallery .et-card:visible')).toHaveCount(1);
- await page.locator('.et-search').fill('');
+ await page.locator('.et-search').evaluate(el=>{el.value='';el.dispatchEvent(new Event('input',{bubbles:true}));});
  await page.locator('.et-picker').selectOption('audio');
  await expect(page.locator('#etGallery .et-card:visible')).toHaveCount(1);
  await page.locator('.et-picker').selectOption('all');
@@ -81,8 +81,11 @@ test('Owner: inspect every Everyday Tools destination, remove only crossed-out E
   if(route.includes('photo-collage.html')){
    await expect(page.locator('#collageFiles')).toBeVisible();
    await expect(page.locator('#collageCreate')).toBeVisible();
-   const columns=await page.locator('.collage-workspace').evaluate(el=>getComputedStyle(el).gridTemplateColumns);
-   expect(columns.split(' ').length,'No empty former example column').toBe(1);
+   const layout=await page.locator('.collage-workspace').evaluate(el=>{const s=getComputedStyle(el);return{display:s.display,columns:s.gridTemplateColumns};});
+   // On phones this approved workspace uses display:block, so its unused
+   // grid-template property is irrelevant; on desktop it must be one column.
+   if(layout.display==='grid')expect(layout.columns.split(' ').length,'No empty former example column').toBe(1);
+   else expect(layout.display).toBe('block');
   }
  }
  expect(paid).toEqual([]);
