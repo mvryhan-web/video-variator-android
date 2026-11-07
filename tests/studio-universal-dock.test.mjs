@@ -49,3 +49,27 @@ test('Files and consent are never bypassed, no new paid API or unsupported media
  assert.match(studiojs,/confirm\(freePreview/);
  assert.doesNotMatch(dock,/\.requestSubmit\(/);
 });
+
+
+test('Owner six approved Studio panels reuse six existing native dialogs with premium styling',async()=>{
+ const css=await get('studio-premium-panels.css');
+ assert.match(dock,/studio-premium-panels\\.css/);
+ assert.match(dock,/document\\.body\\.classList\\.add\\('studio-premium-panels'\\)/);
+ for(const s of ['#studioSettingsHub','#modelDialog','#settingsDialog',
+    '.model-provider-mark','.ratio-choices','.composer-setting-choices','#musicOptions']){
+  assert.ok(css.includes(s),'premium existing control '+s);
+ }
+ assert.match(css,/#ffbf52/); // muted gold accent
+ assert.match(css,/#40e6e9/); // turquoise accent
+ assert.match(css,/aria-pressed="true"/);
+ assert.match(dock,/new MutationObserver\\(labelProviders\\)/);
+ assert.match(dock,/card\\.dataset\\.modelId/);
+ assert.match(dock,/b\\.disabled=true/);
+ assert.match(dock,/nativeSettings\\.dataset\\.studioKind!=='video'/);
+ assert.match(dock,/for\\(const label of \\['1:1','2:3','3:2','9:16','16:9'\\]\\)/);
+ assert.match(dock,/extra visual slots mirror Image Settings/);
+ assert.doesNotMatch(dock,/\\.requestSubmit\\(|fetch\\(|\\/api\\/studio\\/jobs|\\/api\\/stripe\\//);
+ assert.match(studiojs,/for\\(const r of m\\?\\.ratios\\|\\|\\[\\]\\)/);
+ assert.match(studiojs,/\\$\\('ratio'\\)\\.value=r/);
+ assert.match(pop,/hub\\.append\\(heading,close,picker,model,format\\)/);
+});
