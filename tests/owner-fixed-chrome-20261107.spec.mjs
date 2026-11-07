@@ -594,6 +594,19 @@ test('only Home video carousel purple outlines disappear without changing carous
   await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
   const carousel=page.locator('#homeHeroCarousel');
   await expect(carousel).toHaveCount(1);
+  // The actual purple frame came from jarvix-action-design.css applying
+  // .j-action-workspace .hero, NOT the nested cinematic element.
+  await expect.poll(()=>page.evaluate(()=>Boolean(
+   document.body.classList.contains('j-action-workspace') &&
+   document.querySelector('link[href="jarvix-action-design.css"]')?.sheet
+  )),{timeout:12000}).toBe(true);
+  const outerWrapper=page.locator('body.home-neon.j-action-workspace #workspace > .hero');
+  await expect(outerWrapper).toHaveCount(1);
+  const frame=await outerWrapper.evaluate(el=>{
+   const v=getComputedStyle(el);
+   return {top:v.borderTopWidth,right:v.borderRightWidth,bottom:v.borderBottomWidth,left:v.borderLeftWidth,shadow:v.boxShadow};
+  });
+  expect(frame).toEqual({top:'0px',right:'0px',bottom:'0px',left:'0px',shadow:'none'});
   const outer=page.locator('#workspace > .hero > .hero-stage.hero-stage-cinematic');
   await expect(outer).toHaveCount(1);
   const outerStyle=await outer.evaluate(el=>{
