@@ -52,14 +52,15 @@ test('V3 tour voice and real actions: spoken Photo section matches opened Image 
     route.fulfill({status:200,contentType:'audio/wav',body:makeWav()});
    });
    try{
-    await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});
+    await page.addInitScript(()=>{localStorage.setItem('deepsyq_home_language','ru');});
+   await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});
     if(viewport.width>760){await page.locator('#dsTakeTour').focus();await page.keyboard.press('Enter');}
     else await page.locator('#dsTakeTour').click();
     await page.locator('.ds-tour-controls').waitFor({state:'visible'});
     assert.equal(await page.locator('.ds-tour-caption,.ds-tour-label').count(),0,'No overlaid transcript or step label');
     assert.equal(await page.locator('#jarvixTourOverlay').count(),0);
     await page.waitForURL(/generate-studio\.html\?studio=image/,{timeout:20000});
-    assert.equal(spoken[0],'Привет! Я JARVIX, ваш AI-помощник. Добро пожаловать в DEEPSYQ. Покажу основные возможности платформы.'.replace('JARVIX','JARVIX'));
+    assert.equal(spoken[0],'Привет! Я JARVIX, ваш AI-помощник. Добро пожаловать в DEEPSYQ. Покажу основные возможности платформы.');
     assert.ok(spoken.includes('Изображения.'),'Navigation announces Image before real click');
     await page.locator('#creator.jarvis-tour-spotlight').waitFor({timeout:15000});
     assert.ok(spoken.includes('Создавайте по описанию или добавьте фотографию.'));
@@ -78,9 +79,10 @@ test('V3 missing owner voice pauses safely; never switches to a different narrat
    await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
    await page.route('**/media/jarvix/tour-v3/manifest.json',route=>route.fulfill({status:404,body:''}));
    await page.route('**/api/jarvix/voice-config',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({configured:false,speechModelInstalled:false})}));
+   await page.addInitScript(()=>{localStorage.setItem('deepsyq_home_language','ru');});
    await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});
    await page.locator('#dsTakeTour').click();
-   await page.locator('.ds-tour-controls[data-error]').waitFor({timeout:12000});
+   await page.locator('.ds-tour-controls[data-error*="unavailable"]').waitFor({timeout:12000});
    assert.equal(await page.getByRole('button',{name:'Continue',exact:true}).isVisible(),true);
    assert.equal(await page.locator('.ds-tour-caption').count(),0);
    assert.equal(new URL(page.url()).pathname,'/deepsyq.html');
