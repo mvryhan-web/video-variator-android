@@ -94,3 +94,46 @@ test('mobile header reference: orb centered, brand centered, login above action 
   }
  }
 });
+
+test('stage04 sidebar icons remain identical and never revert to font glyphs across pages and widths',async({page})=>{
+ test.setTimeout(110000);
+ await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+ let paid=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio\/jobs|payments|stripe)\b/.test(r.url()))paid++;});
+ const expected=new Map([
+  ['deepsyq.html','home'],
+  ['generate-studio.html?studio=image','image'],
+  ['generate-studio.html?studio=video','video'],
+  ['generate-studio.html?studio=audio','audio'],
+  ['ai-apps.html','apps'],['canvas.html','canvas'],
+  ['free-tools.html','tools'],['index.html','legacy'],
+  ['my-creations.html','history'],['pricing.html','pricing']
+ ]);
+ const signatures=[];
+ for(const width of [1365,390]){
+  await page.setViewportSize({width,height:844});
+  for(const route of ['deepsyq.html','ai-apps.html','canvas.html','my-creations.html','generate-studio.html?studio=image','pricing.html']){
+   await page.goto('/'+route,{waitUntil:'domcontentloaded'});
+   await expect.poll(()=>page.evaluate(()=>document.body.dataset.mobileShell),{timeout:9000}).toBe('ready');
+   const nav=page.locator(route==='deepsyq.html'?'#sidebar nav':'#dsSiteSidebar nav');
+   await expect(nav).toHaveCount(1);
+   const state=await nav.evaluate(el=>Array.from(el.querySelectorAll('a[href]')).flatMap(a=>{
+    const key=a.querySelector(':scope > [data-canonical-icon]');
+    return key?[{href:a.getAttribute('href'),key:key.dataset.canonicalIcon,
+      svg:key.querySelector('svg')?.outerHTML||'',text:a.textContent?.trim()}]:[];
+   }));
+   for(const [href,key] of expected){
+    const matching=state.filter(x=>x.href===href);
+    expect(matching.length,route+' missing or duplicated '+href).toBe(1);
+    expect(matching[0].key,route+' changed icon '+href).toBe(key);
+    expect(matching[0].svg,route+' icon is not SVG '+href).toContain('<svg');
+   }
+   expect(await nav.locator('a').filter({hasText:/^Assets$/i}).count()).toBe(0);
+   const fingerprint=state.filter(x=>expected.has(x.href))
+     .map(x=>[x.href,x.key,x.svg.replace(/ data-[^=]+="[^"]+"/g,'')]);
+   if(signatures.length)expect(fingerprint).toEqual(signatures[0]);
+   else signatures.push(fingerprint);
+  }
+ }
+ expect(paid).toBe(0);
+});

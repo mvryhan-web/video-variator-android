@@ -1,3 +1,4 @@
+import {applyCanonicalNavIcons} from './deepsyq-canonical-nav-icons.js';
 // Owner mobile reference, 2026-11-05. Keep existing buttons and their handlers.
 export function drawerSwipe(start, end, open, width) {
   if (!start || Math.abs(end.y - start.y) > 45 || end.time - start.time > 700) return null;
@@ -218,6 +219,7 @@ if (typeof document !== 'undefined') {
  const deadline=setTimeout(resolve,750);const done=()=>{clearTimeout(deadline);resolve();};
   const boot = () => {
     setupMobileShell();
+    applyCanonicalNavIcons(); // Icons only; unchanged route handlers and labels.
     if (document.body.dataset.mobileShell) {done();return;}
     const ready = new MutationObserver(() => {
       setupMobileShell();
