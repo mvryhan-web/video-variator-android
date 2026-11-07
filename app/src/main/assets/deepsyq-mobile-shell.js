@@ -1,5 +1,6 @@
 import {applyCanonicalNavIcons} from './deepsyq-canonical-nav-icons.js';
 import {installApprovedJarvixOrb} from './jarvix-approved-orb.js';
+import {installUnifiedPlatformHeader} from './deepsyq-unified-platform-header.js';
 // Owner mobile reference, 2026-11-05. Keep existing buttons and their handlers.
 export function drawerSwipe(start, end, open, width) {
   if (!start || Math.abs(end.y - start.y) > 45 || end.time - start.time > 700) return null;
@@ -242,6 +243,12 @@ if (typeof document !== 'undefined') {
     setupMobileShell();
     applyCanonicalNavIcons(); // Icons only; unchanged route handlers and labels.
     installApprovedJarvixOrb(); // Stage07: same approved orb art in existing controls, no new UI actions.
+    if(!document.querySelector('link[href="deepsyq-unified-platform-header.css"]')){
+      const style=document.createElement('link');style.rel='stylesheet';style.href='deepsyq-unified-platform-header.css';
+      style.addEventListener('load',()=>window.dispatchEvent(new Event('resize')),{once:true});
+      document.head.append(style);
+    }
+    installUnifiedPlatformHeader(); // Exactly one owner toolbar; reuses existing actions and layout.
     if (document.body.dataset.mobileShell) {done();return;}
     const ready = new MutationObserver(() => {
       setupMobileShell();
