@@ -52,3 +52,28 @@ for(const [label,width,height] of [['desktop',1365,900],['mobile',390,844]]){
   expect(paid).toBe(0);
  });
 }
+
+
+test('mobile header reference: orb centered, brand centered, login above action row, no clipping',async({page})=>{
+ test.setTimeout(90000);
+ for(const width of [320,390,430]){
+  await page.setViewportSize({width,height:844});
+  for(const route of ['deepsyq.html','generate-studio.html?studio=image','pricing.html']){
+   await page.goto('/'+route,{waitUntil:'domcontentloaded'});
+   await expect.poll(()=>page.evaluate(()=>document.body.dataset.mobileShell),{timeout:9000}).toBe('ready');
+   const result=await page.evaluate(()=>{
+    const rect=selector=>{const x=document.querySelector(selector)?.getBoundingClientRect();return x?{left:x.left,right:x.right,top:x.top,bottom:x.bottom,width:x.width,height:x.height,center:(x.left+x.right)/2}:null;};
+    return {width:innerWidth,logo:rect('.ds-mobile-brand'),orb:rect('#topJarvisBtn'),login:rect('#topLogin'),header:rect('header.ds-mobile-header'),controls:rect('.ds-mobile-controls'),overflow:document.documentElement.scrollWidth>innerWidth+1};
+   });
+   expect(result.logo,route+' logo missing').toBeTruthy();
+   expect(result.orb,route+' orb missing').toBeTruthy();
+   expect(Math.abs(result.logo.center-width/2),route+' brand off center').toBeLessThanOrEqual(3);
+   expect(Math.abs(result.orb.center-width/2),route+' JARVIX off center').toBeLessThanOrEqual(3);
+   expect(result.login.top,route+' login moved into lower row').toBeLessThan(56);
+   expect(result.login.right,route+' login overflows right edge').toBeLessThanOrEqual(width+1);
+   expect(result.header.top,route+' header not fixed at top').toBeGreaterThanOrEqual(-2);
+   expect(result.header.bottom,route+' header clipped').toBeGreaterThan(105);
+   expect(result.overflow,route+' document horizontal overflow').toBe(false);
+  }
+ }
+});
