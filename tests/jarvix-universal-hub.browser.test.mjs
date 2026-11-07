@@ -57,19 +57,21 @@ try{
     assert.match(await page.locator('.j-active-mode').innerText(),/Video/);
     assert.equal(await page.locator('#jPlus').innerText(),'+');
     assert.equal(await page.locator('#jPlusMenu').isVisible(),false);
-    if(l.page==='jarvix-chat.html'){
-     await page.locator('.j-settings-shortcut').click();
-     assert.equal(await page.locator('#jSettingsMenu .j-settings-tile').count(),3);
-     assert.equal(await page.locator('#jSettingsMenu').isVisible(),true);
-     await page.screenshot({path:folder+'/'+l.name+'-settings.png',fullPage:false});
-     const pageBeforeSettings=new URL(page.url()).pathname;
-     await page.locator('#jSettingsMenu .j-settings-tile').first().click();
-     assert.equal(new URL(page.url()).pathname,pageBeforeSettings,'JARVIX Chat settings still select in place');
-     assert.match(await page.locator('.j-active-mode').innerText(),/Image/);
-     assert.equal(await page.locator('#jSettingsMenu').isVisible(),false);
-    }else{
-     assert.equal(await page.locator('#jSettingsMenu').count(),0,'Home uses its former real Studio settings shortcut');
-    }
+    // Both Home and JARVIX Chat must open native Studio Settings in place,
+    // never the discarded three-card mode selector, never a redirect.
+    assert.equal(await page.locator('#jSettingsMenu').count(),0);
+    const chatOrHomeBefore=new URL(page.url()).pathname;
+    await page.locator('.j-settings-shortcut').click();
+    const inlineNative=page.frameLocator('#homeStudioSettingsFrame');
+    await inlineNative.locator('#studioSettingsHub[open]').waitFor({timeout:22000});
+    await page.locator('#homeStudioSettingsHost[data-ready="true"]').waitFor({timeout:22000});
+    assert.equal(new URL(page.url()).pathname,chatOrHomeBefore);
+    assert.match(await page.locator('#homeStudioSettingsFrame').getAttribute('src'),/studio=video&settings=1/);
+    for(const id of ['studioTypePicker','modelButton','settingsButton'])
+      assert.equal(await inlineNative.locator('#studioSettingsHub #'+id).count(),1,id+' native control');
+    await page.screenshot({path:folder+'/'+l.name+'-settings.png',fullPage:false});
+    await inlineNative.locator('#studioSettingsHub > button:nth-child(2)').click();
+    await page.locator('#homeStudioSettingsHost').waitFor({state:'hidden',timeout:12000});
     await page.locator('#jPlus').click();
     const chooserPromise=page.waitForEvent('filechooser');
     await page.locator('#jAttach').click();
