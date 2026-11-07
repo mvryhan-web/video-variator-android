@@ -62,6 +62,6 @@ body.home-neon #homeHeroCarousel .hero-film-credit :is(strong, small) {
     padding-inline: 20px !important;
   }
   body.home-neon #workspace > .hero {
-    margin-top: 16px !important;
+    margin-top: 20px !important;
   }
 }
