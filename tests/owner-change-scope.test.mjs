@@ -46,7 +46,7 @@ test('protected UI needs a precise owner comment, not a generic issue or PR',()=
 
 test('deploy candidate must equal merged DEV and preserve currently LIVE TEST',()=>{
  assert.deepEqual(deployContract(dev,dev,dev,()=>true),[]);
- assert.match(deployContract(head,dev,dev,()=>true).join(' '),/not the exact merged/);
+ assert.match(deployContract(head,dev,dev,()=>true).join(' '),/candidate must equal latest merged/);
  assert.match(deployContract(dev,head,dev,()=>false).join(' '),/TEST has changes not in DEV/);
 });
 
