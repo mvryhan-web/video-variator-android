@@ -86,16 +86,20 @@ function speakBeats(beats,current){
  next();
 }
 async function play(){
- if(!state)return;clearAudio();const current=turn,step=tourPlan(state.language)[state.index],target=new URL(step.url,location.href);render();
+ if(!state)return;clearAudio();activeFocus='';const current=turn,step=tourPlan(state.language)[state.index],target=new URL(step.url,location.href);render();
  if(target.pathname!==location.pathname||target.search!==location.search){
   if(state.phase==='paused')return;
+  if(state.navAnnounced!==state.index){speakNavigation(step,target,current);return;}
   const link=showNavigation(step.url);
-  navTimer=setTimeout(()=>{if(current!==turn||!state||state.phase!=='playing')return;save();link?link.click():location.assign(target.href);},1100);return;
+  navTimer=setTimeout(()=>{if(current!==turn||!state||state.phase!=='playing')return;link?link.click():location.assign(target.href);},350);return;
  }
- if(state.index===0){closeNavigation();}else{closeNavigation();spotlight(step);}
+ closeNavigation();
  pauseJarvisRecognition();if(state.phase==='paused')return;
  const waitKey=location.pathname+location.search+':'+state.index;if(stepWaitKey!==waitKey){stepWaitKey=waitKey;stepWaitStart=Date.now();}
- if(state.index!==0&&!document.querySelector(step.target)&&Date.now()-stepWaitStart<5000){waitTimer=setTimeout(()=>{if(current===turn&&state)void play();},100);return;}
+ if(!document.querySelector(step.target)){
+  if(Date.now()-stepWaitStart<5000){waitTimer=setTimeout(()=>{if(current===turn&&state)void play();},150);return;}
+  blocked(current,'Tour control unavailable');return;
+ }
  if(step.narration==='section'){
   spotlight(step);
   void speakOwnerSpeech(sectionNarration(step.title,state.language),state.language,{start:()=>updateJarvisState('speaking'),complete:()=>advance(current),fallback:()=>blocked(current,'Voice service unavailable'),error:()=>blocked(current,'Voice service unavailable')});return;
