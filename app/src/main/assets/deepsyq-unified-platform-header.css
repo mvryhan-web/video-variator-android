@@ -79,13 +79,16 @@
     padding: 6px 14px !important;
     background: rgba(4, 10, 24, 0.88) !important;
     border: 1.5px solid #00f2fe !important;
-    /* Home owner markup: remove only the two crossed-out neon end caps. */
-    border-inline-color: transparent !important;
     border-radius: 9999px !important;
     box-shadow: 0 0 18px rgba(0, 242, 254, 0.45), inset 0 0 8px rgba(0, 242, 254, 0.2) !important;
     box-sizing: border-box !important;
     margin: 0 !important;
     gap: 12px !important;
+  }
+
+  /* Only Home: hide the thin side rails marked by the owner; retain the upper/lower cyan strokes. */
+  body.home-neon .ds-header-cockpit {
+    border-inline-color: transparent !important;
   }
 
   /* Inside pods: Left and Right button groups */
