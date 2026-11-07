@@ -57,16 +57,19 @@ try{
     assert.match(await page.locator('.j-active-mode').innerText(),/Video/);
     assert.equal(await page.locator('#jPlus').innerText(),'+');
     assert.equal(await page.locator('#jPlusMenu').isVisible(),false);
-    await page.locator('.j-settings-shortcut').click();
-    assert.equal(await page.locator('#jSettingsMenu .j-settings-tile').count(),3);
-    assert.equal(await page.locator('#jSettingsMenu').isVisible(),true);
-    await page.screenshot({path:folder+'/'+l.name+'-settings.png',fullPage:false});
-    // New owner rule: settings choice selects mode IN PLACE, never redirects.
-    const pageBeforeSettings=new URL(page.url()).pathname;
-    await page.locator('#jSettingsMenu .j-settings-tile').first().click();
-    assert.equal(new URL(page.url()).pathname,pageBeforeSettings);
-    assert.match(await page.locator('.j-active-mode').innerText(),/Image/);
-    assert.equal(await page.locator('#jSettingsMenu').isVisible(),false);
+    if(l.page==='jarvix-chat.html'){
+     await page.locator('.j-settings-shortcut').click();
+     assert.equal(await page.locator('#jSettingsMenu .j-settings-tile').count(),3);
+     assert.equal(await page.locator('#jSettingsMenu').isVisible(),true);
+     await page.screenshot({path:folder+'/'+l.name+'-settings.png',fullPage:false});
+     const pageBeforeSettings=new URL(page.url()).pathname;
+     await page.locator('#jSettingsMenu .j-settings-tile').first().click();
+     assert.equal(new URL(page.url()).pathname,pageBeforeSettings,'JARVIX Chat settings still select in place');
+     assert.match(await page.locator('.j-active-mode').innerText(),/Image/);
+     assert.equal(await page.locator('#jSettingsMenu').isVisible(),false);
+    }else{
+     assert.equal(await page.locator('#jSettingsMenu').count(),0,'Home uses its former real Studio settings shortcut');
+    }
     await page.locator('#jPlus').click();
     const chooserPromise=page.waitForEvent('filechooser');
     await page.locator('#jAttach').click();
@@ -80,6 +83,15 @@ try{
     await assets.click();
     await page.waitForURL('**/my-creations.html',{timeout:12000});
     assert.ok((await page.title()).includes('My Creations'));
+    if(l.page==='deepsyq.html'){
+     await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded',timeout:30000});
+     await page.waitForSelector('#homeQuickForm .j-settings-shortcut',{timeout:16000});
+     // Mode chosen with Universal Hub is preserved; the old Home gear opens real Studio Settings.
+     await page.locator('#homeQuickForm .j-settings-shortcut').click();
+     await page.waitForURL('**/generate-studio.html?studio=video&settings=1',{timeout:16000});
+     assert.equal(new URL(page.url()).searchParams.get('settings'),'1');
+     assert.equal(new URL(page.url()).searchParams.get('studio'),'video');
+    }
     assert.equal(errors.length,0,'console runtime errors: '+errors.join('; '));
    }finally{await context.close();}
   });
