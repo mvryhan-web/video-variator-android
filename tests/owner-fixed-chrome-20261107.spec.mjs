@@ -742,3 +742,62 @@ test('Home only: remove marked neon side hairlines and show cinematic media with
  }
  expect(paid).toBe(0);
 });
+
+test('Neon screenshot: fresh Home style removes actual rails, masks and credit gradient',async({page})=>{
+ test.setTimeout(120000);
+ let paid=0;
+ page.on('request',r=>{
+  if(r.method()==='POST'&&['/api/studio/jobs','/api/payments','/api/stripe'].some(p=>r.url().includes(p)))paid++;
+ });
+ for(const width of [390,1365]){
+  await page.setViewportSize({width,height:900});
+  const response=await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+  expect(response.status()).toBe(200);
+  await expect(page.locator('link[href="deepsyq-home-neon-cinema-fix-20261107.css"]')).toHaveCount(1);
+  await page.evaluate(()=>document.documentElement.setAttribute('data-site-theme','neon'));
+  await expect(page.locator('#homeHeroCarousel')).toHaveCount(1);
+  await expect(page.locator('#homeHeroCarousel .hero-neighbor')).toHaveCount(2);
+  await expect(page.locator('#homeHeroPrevious,#homeHeroNext')).toHaveCount(2);
+  await expect(page.locator('#inspirationHeroVideo')).toHaveCount(1);
+  if(width>760)await expect(page.locator('.ds-header-cockpit')).toHaveCount(1);
+  const s=await page.evaluate(()=>{
+   const css=(q,pseudo)=>{const el=document.querySelector(q);return el?getComputedStyle(el,pseudo):null;};
+   const side=css('body.home-neon #sidebar');
+   const extra=css('body.home-neon .ds-site-sidebar');
+   const cockpit=css('body.home-neon .ds-header-cockpit');
+   const mask=css('#homeHeroCarousel','::after');
+   const sideMask=css('#homeHeroCarousel .hero-neighbor','::after');
+   const credit=css('#homeHeroCarousel .hero-film-credit');
+   const main=css('#inspirationHeroVideo');
+   const neighbor=css('#homeHeroCarousel .hero-neighbor video');
+   return {
+    sideBorder:side?.borderRightColor,
+    extraBorder:extra?.borderRightColor,
+    pod:cockpit?{left:cockpit.borderLeftColor,right:cockpit.borderRightColor,top:cockpit.borderTopColor,bottom:cockpit.borderBottomColor}:null,
+    mask:mask?{display:mask.display,content:mask.content}:null,
+    sideMask:sideMask?{display:sideMask.display,content:sideMask.content}:null,
+    creditBackground:credit?.backgroundImage,
+    mainFilter:main?.filter,
+    sideFilter:neighbor?.filter,
+    sideOpacity:neighbor?.opacity
+   };
+  });
+  const clearColor='rgba(0, 0, 0, 0)';
+  expect(s.sideBorder,'Neon sidebar bright vertical line').toBe(clearColor);
+  if(s.extraBorder)expect(s.extraBorder,'Neon site-shell right border').toBe(clearColor);
+  if(width>760){
+   expect(s.pod).not.toBeNull();
+   expect(s.pod.left,'cockpit left neon end').toBe(clearColor);
+   expect(s.pod.right,'cockpit right neon end').toBe(clearColor);
+   expect(s.pod.top,'retain upper neon stroke').not.toBe(clearColor);
+   expect(s.pod.bottom,'retain lower neon stroke').not.toBe(clearColor);
+  }
+  expect(s.mask?.display,'carousel dark film layer').toBe('none');
+  expect(s.sideMask?.display,'preview dark film layer').toBe('none');
+  expect(s.creditBackground,'bottom dark gradient must not remain').toBe('none');
+  expect(s.mainFilter).toBe('brightness(1.18) saturate(1.04)');
+  expect(s.sideFilter).toBe('brightness(1.18) saturate(1.04)');
+  expect(s.sideOpacity).toBe('1');
+ }
+ expect(paid).toBe(0);
+});
