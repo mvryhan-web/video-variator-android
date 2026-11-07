@@ -1,30 +1,34 @@
 /* Owner 2026-11-07 Cockpit Header CSS: exact match to media_1794074488180_596c4603.jpg */
-@media(min-width:761px){
+@media (min-width: 761px) {
   header.ds-unified-header,
-  header.top.ds-stable-header {
+  header.top.ds-stable-header,
+  header.top {
     display: flex !important;
     align-items: center !important;
-    justify-content: space-between !important;
+    justify-content: center !important;
     position: sticky !important;
     top: 0 !important;
-    height: 84px !important;
-    min-height: 84px !important;
-    padding: 0 28px !important;
+    height: 80px !important;
+    min-height: 80px !important;
+    padding: 0 20px !important;
     background: rgba(3, 8, 22, 0.94) !important;
-    border-bottom: 1px solid rgba(20, 117, 155, 0.35) !important;
-    box-shadow: 0 0 24px rgba(0, 107, 177, 0.22) !important;
+    border-bottom: 1px solid rgba(0, 242, 254, 0.22) !important;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.6) !important;
     backdrop-filter: blur(16px) !important;
     -webkit-backdrop-filter: blur(16px) !important;
     z-index: 500 !important;
     box-sizing: border-box !important;
     max-width: none !important;
+    margin: 0 !important;
   }
 
   /* Hide raw unused old header actions on desktop when unified */
-  header.ds-unified-header > :not(.top-brand):not(.ds-mobile-brand):not(.ds-unified-actions) {
+  header.ds-unified-header > :not(.top-brand):not(.ds-mobile-brand):not(.ds-unified-actions),
+  header.top > :not(.top-brand):not(.ds-mobile-brand):not(.ds-unified-actions) {
     display: none !important;
   }
 
+  /* Brand on left */
   .top-brand, .ds-mobile-brand {
     display: inline-flex !important;
     align-items: center !important;
@@ -35,6 +39,8 @@
     font-weight: 800 !important;
     letter-spacing: -0.5px !important;
     flex-shrink: 0 !important;
+    position: absolute !important;
+    left: 24px !important;
   }
 
   .top-brand img, .ds-mobile-brand img {
@@ -43,162 +49,176 @@
     display: block !important;
   }
 
+  /* Cockpit container */
   .ds-header-cockpit {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 14px !important;
-    margin: 0 auto !important;
     position: relative !important;
-    flex-shrink: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 18px !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
   }
 
+  /* Glowing Capsules / Pods */
   .ds-header-pod {
     display: inline-flex !important;
     align-items: center !important;
-    gap: 9px !important;
-    padding: 5px 10px !important;
-    background: rgba(4, 12, 28, 0.75) !important;
-    border: 1.5px solid rgba(0, 234, 255, 0.7) !important;
-    border-radius: 999px !important;
-    box-shadow: 0 0 16px rgba(0, 234, 255, 0.4), inset 0 0 12px rgba(177, 56, 255, 0.18) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
+    gap: 10px !important;
+    padding: 6px 14px !important;
+    background: rgba(4, 10, 24, 0.88) !important;
+    border: 1.5px solid #00f2fe !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 0 16px rgba(0, 242, 254, 0.45), inset 0 0 8px rgba(0, 242, 254, 0.2) !important;
     box-sizing: border-box !important;
-    position: relative !important;
-  }
-
-  /* Outer glowing rail frame accent */
-  .ds-header-pod::before {
-    content: '';
-    position: absolute;
-    top: -5px; bottom: -5px; left: 12px; right: 12px;
-    border-top: 1px solid rgba(0, 234, 255, 0.35);
-    border-bottom: 1px solid rgba(0, 234, 255, 0.35);
-    pointer-events: none;
-    border-radius: 999px;
-    opacity: 0.65;
+    flex-shrink: 0 !important;
   }
 
   .ds-pod-btn {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 7px 16px !important;
-    border-radius: 999px !important;
-    font: 600 13px system-ui, -apple-system, sans-serif !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 6px 14px !important;
+    border-radius: 9999px !important;
+    background: #060e20 !important;
+    color: #fff !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
     text-decoration: none !important;
-    white-space: nowrap !important;
     cursor: pointer !important;
+    white-space: nowrap !important;
     box-sizing: border-box !important;
-    transition: transform 0.15s ease, box-shadow 0.15s ease !important;
-  }
-
-  .ds-pod-btn:hover {
-    transform: translateY(-1px) scale(1.02) !important;
-  }
-
-  /* 1. Hamburger Menu [ ≡ ] */
-  .ds-pod-menu {
-    width: 36px !important;
-    min-width: 36px !important;
-    height: 36px !important;
-    padding: 0 !important;
-    border-radius: 11px !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    background: rgba(14, 22, 42, 0.8) !important;
-    color: #fff !important;
-    font-size: 20px !important;
-    line-height: 1 !important;
-  }
-
-  /* 2. Tour [ ▷ Экскурсия ] */
-  .ds-pod-tour {
-    border: 1px solid rgba(0, 234, 255, 0.55) !important;
-    background: rgba(8, 16, 36, 0.8) !important;
-    color: #f0f8ff !important;
-    box-shadow: 0 0 10px rgba(0, 234, 255, 0.25) !important;
-  }
-
-  /* 3. Everyday Tools [ 🗂 Everyday Tools ] */
-  .ds-pod-tools {
-    border: 1.5px solid #a855f7 !important;
-    background: rgba(18, 12, 40, 0.85) !important;
-    color: #fff !important;
-    box-shadow: 0 0 14px rgba(168, 85, 247, 0.65), inset 0 0 8px rgba(0, 240, 255, 0.25) !important;
-  }
-
-  /* Center Orb */
-  .ds-pod-center-orb {
+    transition: all 0.2s ease !important;
     position: static !important;
     transform: none !important;
-    margin: 0 4px !important;
-    flex-shrink: 0 !important;
-    display: inline-flex !important;
+    margin: 0 !important;
   }
 
-  /* 4. AI Credits [ ⚡ AI Credits ] */
-  .ds-pod-credit {
-    border: 1.5px solid #00f0ff !important;
-    background: rgba(4, 20, 38, 0.85) !important;
+  /* Menu hamburger */
+  .ds-pod-menu {
+    width: 38px !important;
+    min-width: 38px !important;
+    padding: 0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    border-radius: 12px !important;
+    font-size: 18px !important;
+    background: #091224 !important;
     color: #fff !important;
-    box-shadow: 0 0 12px rgba(0, 240, 255, 0.55) !important;
   }
 
-  /* 5. Pricing [ 👑 Тарифы ] */
+  /* Tour button */
+  .ds-pod-tour {
+    border: 1px solid rgba(255, 255, 255, 0.45) !important;
+    color: #ffffff !important;
+  }
+  .ds-pod-tour:hover {
+    border-color: #00f2fe !important;
+    box-shadow: 0 0 10px rgba(0, 242, 254, 0.5) !important;
+  }
+
+  /* Everyday Tools: bright purple neon glow border */
+  .ds-pod-tools {
+    border: 1.5px solid #a855f7 !important;
+    box-shadow: 0 0 14px rgba(168, 85, 247, 0.65) !important;
+    color: #ffffff !important;
+  }
+  .ds-pod-tools:hover {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.9) !important;
+  }
+
+  /* Center Orb container: RELATIVE positioning context for inner absolute orb elements */
+  body.home-neon.j-action-workspace header.top.ds-stable-header #topJarvisBtn,
+  header.ds-unified-header #topJarvisBtn,
+  #topJarvisBtn.ds-pod-center-orb {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    display: grid !important;
+    place-items: center !important;
+    margin: 0 !important;
+    width: 68px !important;
+    height: 68px !important;
+    min-width: 68px !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    z-index: 10 !important;
+    flex-shrink: 0 !important;
+    cursor: pointer !important;
+  }
+  #topJarvisBtn.ds-pod-center-orb .jarvis-name {
+    display: none !important;
+  }
+
+  /* Ensure approved orb is fully centered */
+  #topJarvisBtn.ds-pod-center-orb > .jarvis-mini-orb {
+    position: relative !important;
+    inset: auto !important;
+    width: 64px !important;
+    height: 64px !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+
+  /* AI Credits: bright cyan neon glow border */
+  .ds-pod-credit {
+    border: 1.5px solid #00f2fe !important;
+    box-shadow: 0 0 14px rgba(0, 242, 254, 0.65) !important;
+    color: #ffffff !important;
+  }
+  .ds-pod-credit:hover {
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.9) !important;
+  }
+
+  /* Pricing / Тарифы: magenta glow border */
   .ds-pod-pricing {
     border: 1.5px solid #d946ef !important;
-    background: rgba(28, 10, 42, 0.85) !important;
-    color: #fff !important;
-    box-shadow: 0 0 12px rgba(217, 70, 239, 0.55) !important;
+    box-shadow: 0 0 14px rgba(217, 70, 239, 0.6) !important;
+    color: #ffffff !important;
+  }
+  .ds-pod-pricing:hover {
+    box-shadow: 0 0 20px rgba(217, 70, 239, 0.85) !important;
   }
 
-  /* 6. Language [ RU ⌵ ] */
+  /* Language select */
   .ds-pod-lang-wrap {
-    position: relative !important;
     display: inline-flex !important;
     align-items: center !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    background: rgba(10, 18, 38, 0.85) !important;
-    border-radius: 999px !important;
-    padding: 0 10px !important;
-    height: 34px !important;
-    box-sizing: border-box !important;
+    margin: 0 !important;
   }
   .ds-pod-lang-wrap select {
-    background: transparent !important;
-    border: 0 !important;
-    color: #f1f5f9 !important;
-    font: 600 12px system-ui !important;
-    cursor: pointer !important;
-    outline: none !important;
     appearance: none !important;
     -webkit-appearance: none !important;
-    padding-right: 14px !important;
-  }
-  .ds-pod-lang-wrap::after {
-    content: '⌵';
-    position: absolute;
-    right: 7px;
-    pointer-events: none;
-    font-size: 10px;
-    color: #94a3b8;
-  }
-
-  /* 7. Login [ 👤 Войти ] */
-  .ds-pod-login {
-    border: 0 !important;
-    background: linear-gradient(135deg, #e839ff 0%, #7038ff 50%, #00dbed 100%) !important;
+    background: #060e20 !important;
     color: #fff !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    border-radius: 9999px !important;
+    padding: 7px 24px 7px 12px !important;
+    font-size: 13px !important;
     font-weight: 700 !important;
-    padding: 8px 22px !important;
-    box-shadow: 0 0 16px rgba(232, 57, 255, 0.7), 0 0 8px rgba(0, 219, 237, 0.4) !important;
+    cursor: pointer !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23ffffff' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 8px center !important;
+    box-sizing: border-box !important;
   }
-}
 
-@media(max-width:760px){
-  /* Keep mobile layout intact */
-  header.ds-unified-header .ds-header-cockpit {
-    display: none !important;
+  /* Log in / Войти: bright magenta to cyan gradient */
+  .ds-pod-login {
+    background: linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #06b6d4 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 16px rgba(236, 72, 153, 0.5) !important;
+  }
+  .ds-pod-login:hover {
+    box-shadow: 0 0 24px rgba(236, 72, 153, 0.8) !important;
   }
 }
