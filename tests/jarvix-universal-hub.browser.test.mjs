@@ -106,7 +106,7 @@ try{
      await native.locator('#modelDialog[open]').waitFor({state:'hidden',timeout:12000});
      await native.locator('#studioSettingsHub #settingsButton').click();
      await native.locator('#settingsDialog[open]').waitFor({timeout:12000});
-     await native.locator('#settingsDialog [data-close="settingsDialog"]').click();
+     await native.locator('#settingsDialog [data-t="done"]').click();
      await native.locator('#settingsDialog[open]').waitFor({state:'hidden',timeout:12000});
      assert.equal(await native.locator('#studioSettingsHub[open]').count(),1,'parent hub stays open after model and format panels');
      const embeddedHeader=await native.locator('body>.topbar').evaluate(el=>({
