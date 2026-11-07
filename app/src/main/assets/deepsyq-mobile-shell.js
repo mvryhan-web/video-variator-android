@@ -25,6 +25,45 @@ function setupMobileShell() {
   if (!header || !sidebar || !toggle) return;
   document.body.dataset.mobileShell = 'ready';
   header.classList.add('ds-stable-header');sidebar.classList.add('ds-stable-sidebar');
+  // GO stage02: one stable header on every route. Sticky is clipped when an
+  // inner page container is short (e.g. Everyday Tools), so use a measured
+  // desktop fixed header and a flow spacer. Mobile keeps its existing fixed
+  // header and original safe-area spacer. Do not move/replace any controls.
+  const chromeSlot=document.createElement('div');
+  chromeSlot.className='ds-desktop-header-spacer';
+  chromeSlot.setAttribute('aria-hidden','true');
+  header.before(chromeSlot);
+  let chromeFrame=0;
+  const sizePinnedHeader=()=>{
+    if(matchMedia('(max-width:760px)').matches){
+      header.classList.remove('ds-hard-fixed');chromeSlot.hidden=true;
+      header.style.removeProperty('--ds-chrome-left');
+      header.style.removeProperty('--ds-chrome-width');
+      return;
+    }
+    chromeSlot.hidden=false;
+    const box=chromeSlot.getBoundingClientRect();
+    const h=Math.max(48,Math.ceil(header.getBoundingClientRect().height)||68);
+    const left=Math.round(box.width?box.left:header.getBoundingClientRect().left);
+    const width=Math.round(box.width||header.parentElement?.getBoundingClientRect().width||innerWidth-left);
+    chromeSlot.style.height=h+'px';
+    if(width>0){
+      header.style.setProperty('--ds-chrome-left',left+'px');
+      header.style.setProperty('--ds-chrome-width',width+'px');
+      header.classList.add('ds-hard-fixed');
+    }
+  };
+  const queuePin=()=>{
+    if(chromeFrame)cancelAnimationFrame(chromeFrame);
+    chromeFrame=requestAnimationFrame(()=>{chromeFrame=0;sizePinnedHeader();});
+  };
+  window.addEventListener('resize',queuePin);
+  window.addEventListener('pageshow',queuePin);
+  new ResizeObserver(queuePin).observe(chromeSlot);
+  // Pin immediately as well as after paint; WebKit can defer first animation
+  // frame when its emulated mobile viewport is being resized during testing.
+  sizePinnedHeader();
+  queuePin();
   if (!document.querySelector('link[href="deepsyq-mobile-shell.css"]')) {const css=document.createElement('link');css.rel='stylesheet';css.href='deepsyq-mobile-shell.css';document.head.append(css);}
 
   // Only the global header search is removed; template/tool searches remain useful.
