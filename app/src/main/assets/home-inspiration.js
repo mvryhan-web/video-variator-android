@@ -83,13 +83,11 @@ function openInspirationDetail(item,opener,{minimal=false}={}){
    if(!expanded)requestAnimationFrame(refreshPromptMore);
   };
   headingPrompt.textContent='Prompt:';
-  if(item.kind==='image'){
-   const promptControls=detailEl('div','inspiration-detail-prompt-controls');
-   copyPrompt=detailEl('button','inspiration-detail-copy','Copy prompt');
-   copyPrompt.type='button';copyPrompt.setAttribute('aria-label','Copy prompt');
-   promptControls.append(promptMore,copyPrompt);
-   sidebar.append(headingPrompt,prompt,promptControls);
-  }else sidebar.append(headingPrompt,prompt,promptMore);
+  const promptControls=detailEl('div','inspiration-detail-prompt-controls');
+  copyPrompt=detailEl('button','inspiration-detail-copy','Copy prompt');
+  copyPrompt.type='button';copyPrompt.setAttribute('aria-label','Copy prompt');
+  promptControls.append(promptMore,copyPrompt);
+  sidebar.append(headingPrompt,prompt,promptControls);
  }else sidebar.append(heading,kindLine,description,headingPrompt,prompt);
  function refreshPromptMore(){
   if(!minimal||!promptMore||prompt.classList.contains('is-expanded'))return;
@@ -148,39 +146,50 @@ function openInspirationDetail(item,opener,{minimal=false}={}){
  if(copyPrompt)copyPrompt.onclick=copyCurrentPrompt;
  if(minimal){actions.append(clone);sidebar.append(feedback,actions);}
  else{actions.append(clone,use,copy,create);sidebar.append(note,feedback,actions);}
- // The carousel is image-only. Existing video, Canvas and Agent
- // details retain their player, modal and button behavior.
- if(minimal&&item.kind==='image'){
-  const pictures=items.filter(candidate=>candidate.kind==='image'&&candidate.actionTarget==='studio'&&candidate.previewUrl);
-  let index=pictures.findIndex(candidate=>candidate.id===item.id);
-  if(index>=0&&pictures.length>1){
+ // One carousel per media kind. The selected media, prompt and Studio handoff
+ // always share currentItem. Never mix images and videos in a single sequence.
+ if(minimal&&(item.kind==='image'||item.kind==='video')){
+  const slides=items.filter(candidate=>candidate.kind===item.kind&&candidate.actionTarget==='studio'&&candidate.previewUrl);
+  let index=slides.findIndex(candidate=>candidate.id===item.id);
+  if(index>=0&&slides.length>1){
    const count=detailEl('span','inspiration-detail-count');
    count.setAttribute('role','status');count.setAttribute('aria-live','polite');
    toolbar.append(count);
    const previous=detailEl('button','inspiration-detail-arrow inspiration-detail-prev','‹');
    const next=detailEl('button','inspiration-detail-arrow inspiration-detail-next','›');
    for(const button of [previous,next])button.type='button';
-   previous.setAttribute('aria-label','Previous image');
-   next.setAttribute('aria-label','Next image');
+   previous.setAttribute('aria-label',item.kind==='video'?'Previous video':'Previous image');
+   next.setAttribute('aria-label',item.kind==='video'?'Next video':'Next image');
    imageArea.append(previous,next);
-   const changeImage=delta=>{
-    index=(index+delta+pictures.length)%pictures.length;
-    currentItem=pictures[index];
-    media.src=currentItem.previewUrl;media.alt=currentItem.title;
+   const changeSlide=delta=>{
+    index=(index+delta+slides.length)%slides.length;
+    currentItem=slides[index];
+    if(media.tagName==='VIDEO'){
+     media.pause();
+     media.removeAttribute('src');
+     media.removeAttribute('poster');
+     if(currentItem.previewPosterUrl)media.poster=currentItem.previewPosterUrl;
+     media.src=currentItem.previewUrl;
+     media.setAttribute('aria-label',currentItem.title+' full video preview');
+     media.load();
+     void media.play().catch(()=>{});
+    }else{
+     media.src=currentItem.previewUrl;media.alt=currentItem.title;
+    }
     dialog.setAttribute('aria-label',currentItem.title+' inspiration details');
     prompt.textContent=currentItem.prompt||'No prompt available.';
     prompt.classList.remove('is-expanded');
     promptMore.textContent='Show more';
     promptMore.setAttribute('aria-expanded','false');
-    count.textContent=(index+1)+' / '+pictures.length;
+    count.textContent=(index+1)+' / '+slides.length;
     const support=studioHandoffSupport(currentItem);
     clone.disabled=Boolean(support&&!support.supported);
     feedback.textContent='';feedback.hidden=true;
     promptMore.hidden=true;
     requestAnimationFrame(refreshPromptMore);
    };
-   previous.onclick=()=>changeImage(-1);
-   next.onclick=()=>changeImage(1);
+   previous.onclick=()=>changeSlide(-1);
+   next.onclick=()=>changeSlide(1);
    let touchX=null,touchY=null;
    imageArea.addEventListener('touchstart',event=>{
     if(event.touches.length!==1){touchX=null;return;}
@@ -191,16 +200,16 @@ function openInspirationDetail(item,opener,{minimal=false}={}){
     const dx=event.changedTouches[0].clientX-touchX;
     const dy=event.changedTouches[0].clientY-touchY;
     touchX=null;touchY=null;
-    if(Math.abs(dx)>48&&Math.abs(dx)>Math.abs(dy)*1.3)changeImage(dx<0?1:-1);
+    if(Math.abs(dx)>48&&Math.abs(dx)>Math.abs(dy)*1.3)changeSlide(dx<0?1:-1);
    },{passive:true});
    imageArea.addEventListener('touchcancel',()=>{touchX=null;touchY=null;},{passive:true});
    dialog.addEventListener('keydown',event=>{
     if(event.altKey||event.ctrlKey||event.metaKey||/^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName))return;
     if(event.key==='ArrowLeft'||event.key==='ArrowRight'){
-     event.preventDefault();changeImage(event.key==='ArrowRight'?1:-1);
+     event.preventDefault();changeSlide(event.key==='ArrowRight'?1:-1);
     }
    });
-   count.textContent=(index+1)+' / '+pictures.length;
+   count.textContent=(index+1)+' / '+slides.length;
   }
  }
  layout.append(stage,sidebar);dialog.append(layout);

@@ -235,7 +235,7 @@ test('Mobile Inspiration image carousel keeps photo, prompt, copy and Clone & Tr
  expect(paid).toEqual([]);
 });
 
-test('Inspiration keeps image carousel out of video detail and single-image gallery',async({page})=>{
+test('Inspiration single-image and single-video detail keeps arrows absent; video now copies prompt',async({page})=>{
  test.setTimeout(60000);
  await page.route('**/api/config',r=>r.fulfill({json:{features:{inspiration:true},plans:{}}}));
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[video,image],categories:[],ratios:[]}}));
@@ -250,7 +250,110 @@ test('Inspiration keeps image carousel out of video detail and single-image gall
  await page.getByRole('button',{name:'View Original cinematic video inspiration'}).click();
  dialog=page.locator('dialog.inspiration-detail-minimal');
  await expect(dialog.locator('video')).toHaveCount(1);
- await expect(dialog.getByRole('button',{name:'Copy prompt'})).toHaveCount(0);
- await expect(dialog.getByRole('button',{name:'Next image'})).toHaveCount(0);
+ await expect(dialog.getByRole('button',{name:'Copy prompt'})).toBeVisible();
+ await expect(dialog.getByRole('button',{name:'Next video'})).toHaveCount(0);
  await expect(dialog.locator('.inspiration-detail-prompt')).toHaveText(video.prompt);
+});
+
+test('Owner mobile Inspiration video carousel swaps player, poster, prompt, copy and Clone & Try; chevrons unframed',async({page})=>{
+ test.setTimeout(115000);
+ const videos=[
+  {...video,id:'video-a',title:'First cinematic video',prompt:'Exact prompt for video A',previewUrl:'/media/home/owner-20261018/v01.mp4',previewPosterUrl:'/media/inspiration/openai-20261021/image-01-orbital-muse.webp'},
+  {...video,id:'video-b',title:'Second cinematic video',prompt:'Exact prompt for video B',previewUrl:'/media/home/owner-20261018/v02.mp4',previewPosterUrl:'/media/inspiration/openai-20261021/image-04-soft-signal.webp'},
+  {...video,id:'video-c',title:'Third cinematic video',prompt:'Exact prompt for video C',previewUrl:'/media/home/owner-20261018/v03.mp4',previewPosterUrl:null}
+ ];
+ const paid=[];
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:studio|billing|ai-wallet|payments|stripe)/.test(r.url()))paid.push(r.url());});
+ await page.addInitScript(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{
+  writeText:async value=>{window.__videoPromptCopied=value;}
+ }}));
+ await page.route('**/api/config',r=>r.fulfill({json:{features:{inspiration:true},plans:{}}}));
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[image,...videos],categories:[],ratios:[]}}));
+ await page.setViewportSize({width:390,height:850});
+ await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ await page.getByRole('button',{name:'View First cinematic video inspiration'}).click();
+ const dialog=page.locator('dialog.inspiration-detail-minimal');
+ await expect(dialog).toBeVisible();
+ const player=dialog.locator('video.inspiration-detail-media');
+ const next=dialog.getByRole('button',{name:'Next video'});
+ const previous=dialog.getByRole('button',{name:'Previous video'});
+ const copy=dialog.getByRole('button',{name:'Copy prompt'});
+ await expect(player).toHaveAttribute('src',videos[0].previewUrl);
+ await expect(player).toHaveAttribute('poster',videos[0].previewPosterUrl);
+ await expect(player).toHaveAttribute('controls','');
+ await expect(dialog.locator('.inspiration-detail-count')).toHaveText('1 / 3');
+ await expect(copy).toBeVisible();
+ const row=await dialog.evaluate(d=>{
+  const m=d.querySelector('.inspiration-detail-more').getBoundingClientRect();
+  const c=d.querySelector('.inspiration-detail-copy').getBoundingClientRect();
+  return {moreX:m.x,copyX:c.x};
+ });
+ expect(row.moreX).toBeLessThan(row.copyX);
+ for(const arrow of [previous,next]){
+  const style=await arrow.evaluate(el=>{
+   const s=getComputedStyle(el);
+   return {border:s.borderTopWidth,background:s.backgroundColor,shadow:s.boxShadow,filter:s.backdropFilter};
+  });
+  expect(style.border).toBe('0px');
+  expect(style.background).toBe('rgba(0, 0, 0, 0)');
+  expect(style.shadow).toBe('none');
+  expect(style.filter).toBe('none');
+ }
+ await copy.click();
+ await expect.poll(()=>page.evaluate(()=>window.__videoPromptCopied)).toBe(videos[0].prompt);
+ await next.click();
+ await expect(player).toHaveAttribute('src',videos[1].previewUrl);
+ await expect(player).toHaveAttribute('poster',videos[1].previewPosterUrl);
+ await expect(dialog.locator('.inspiration-detail-count')).toHaveText('2 / 3');
+ await expect(dialog.locator('.inspiration-detail-prompt')).toHaveText(videos[1].prompt);
+ await copy.click();
+ await expect.poll(()=>page.evaluate(()=>window.__videoPromptCopied)).toBe(videos[1].prompt);
+ await previous.click();
+ await expect(player).toHaveAttribute('src',videos[0].previewUrl);
+ await previous.click();
+ await expect(dialog.locator('.inspiration-detail-count')).toHaveText('3 / 3');
+ await expect(player).toHaveAttribute('src',videos[2].previewUrl);
+ await expect(player).not.toHaveAttribute('poster');
+ await expect(dialog.locator('.inspiration-detail-prompt')).toHaveText(videos[2].prompt);
+ await page.keyboard.press('ArrowRight');
+ await expect(player).toHaveAttribute('src',videos[0].previewUrl);
+ await dialog.locator('.inspiration-detail-image-area').evaluate(area=>{
+  const e=(name,x,y)=>{
+   const ev=new Event(name,{bubbles:true,cancelable:true});
+   const touch={clientX:x,clientY:y};
+   Object.defineProperty(ev,'touches',{value:name==='touchstart'?[touch]:[]});
+   Object.defineProperty(ev,'changedTouches',{value:[touch]});
+   area.dispatchEvent(ev);
+  };
+  e('touchstart',280,210);e('touchend',90,215);
+ });
+ await expect(player).toHaveAttribute('src',videos[1].previewUrl);
+ await expect(dialog.locator('.inspiration-detail-prompt')).toHaveText(videos[1].prompt);
+ await page.route('**/generate-studio.html?**',r=>r.fulfill({contentType:'text/html',body:'<p>Studio handoff</p>'}));
+ await dialog.getByRole('button',{name:'Clone & Try'}).click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=video/);
+ const handoff=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('deepsyq_template_start')));
+ expect(handoff.promptTemplate).toBe(videos[1].prompt);
+ expect(handoff.id).toBe(videos[1].id);
+ expect(paid).toEqual([]);
+});
+
+test('Inspiration image carousel arrows remain bare chevrons without boxes',async({page})=>{
+ const images=[
+  {...image,id:'unframed-a',title:'Unframed A'},
+  {...image,id:'unframed-b',title:'Unframed B'}
+ ];
+ await page.route('**/api/config',r=>r.fulfill({json:{features:{inspiration:true},plans:{}}}));
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:images,categories:[],ratios:[]}}));
+ await page.setViewportSize({width:390,height:850});
+ await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ await page.getByRole('button',{name:'View Unframed A inspiration'}).click();
+ const dialog=page.locator('dialog.inspiration-detail-minimal');
+ for(const arrow of [dialog.getByRole('button',{name:'Previous image'}),dialog.getByRole('button',{name:'Next image'})]){
+  await expect(arrow).toBeVisible();
+  const style=await arrow.evaluate(el=>{const s=getComputedStyle(el);return {border:s.borderTopWidth,bg:s.backgroundColor,shadow:s.boxShadow};});
+  expect(style.border).toBe('0px');expect(style.bg).toBe('rgba(0, 0, 0, 0)');expect(style.shadow).toBe('none');
+ }
+ await dialog.getByRole('button',{name:'Next image'}).click();
+ await expect(dialog.locator('.inspiration-detail-count')).toHaveText('2 / 2');
 });

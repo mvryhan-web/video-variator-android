@@ -118,6 +118,9 @@
 .ds-desktop-actions :is(a,button){min-height:38px;padding:8px 12px;border:1px solid #7e58c9;border-radius:12px;background:linear-gradient(125deg,#231534,#09172c);color:#f0edff;font:600 12px system-ui;text-decoration:none;cursor:pointer;box-sizing:border-box}
 .ds-stable-header{view-transition-name:ds-header}.ds-stable-sidebar{view-transition-name:ds-sidebar}
 @view-transition{navigation:auto}
+/* Owner: desktop header must never flash during cross-page Studio/JARVIX navigation.
+   Keep mobile transitions and all existing lower composer mode highlights unchanged. */
+@media(min-width:761px){@view-transition{navigation:none}}
 ::view-transition-group(ds-header),::view-transition-group(ds-sidebar),::view-transition-group(ds-orb),::view-transition-group(ds-menu){animation:none}
 ::view-transition-old(ds-header),::view-transition-old(ds-sidebar),::view-transition-old(ds-orb),::view-transition-old(ds-menu){display:none}
 ::view-transition-new(ds-header),::view-transition-new(ds-sidebar),::view-transition-new(ds-orb),::view-transition-new(ds-menu){animation:none;mix-blend-mode:normal}
