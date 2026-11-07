@@ -296,3 +296,18 @@ body.ds-tour-active #luminaTermsModal.is-open{visibility:hidden!important;opacit
    width:66px!important;height:66px!important;min-width:66px!important;min-height:66px!important;
  }
 }
+
+/* Owner 07 Nov: mobile header button swap only.
+   Keep existing Tools, JARVIX, Pricing and Tour handlers and shell geometry. */
+@media(max-width:760px){
+ html body.ds-mobile-layout .ds-mobile-control-left .ds-header-credit{
+  white-space:nowrap!important;overflow-wrap:normal!important;
+  font-size:clamp(10px,2.85vw,12px)!important;letter-spacing:-.01em!important;
+  border-color:#12d4f2!important;color:#eafcff!important;
+  box-shadow:0 0 10px #00d4f844,inset 0 0 7px #046ba333!important;
+ }
+ html body.ds-mobile-layout .ds-mobile-control-right .ds-header-tour{
+  border-color:#9b65f1!important;color:#f3ecff!important;
+  box-shadow:0 0 10px #a34afb44,inset 0 0 7px #5b259433!important;
+ }
+}
