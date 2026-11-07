@@ -50,3 +50,18 @@ body.home-neon .hero-stage.hero-stage-cinematic #homeHeroCarousel :is(
 body.home-neon #homeHeroCarousel .hero-film-credit :is(strong, small) {
   text-shadow: 0 2px 10px rgba(0, 4, 18, .85);
 }
+
+
+/* Owner 7 Nov: keep the Home frame flush with the desktop cockpit.
+   Header controls have 20px side gutters; Home formerly used 22px.
+   Reserve clearance above the first section so Recommended's neon halo
+   cannot visually cross the bottom line of the 76px sticky header.
+   Do not change film geometry, navigation or the mobile header. */
+@media (min-width: 761px) {
+  body.home-neon #workspace {
+    padding-inline: 20px !important;
+  }
+  body.home-neon #workspace > .hero {
+    margin-top: 16px !important;
+  }
+}
