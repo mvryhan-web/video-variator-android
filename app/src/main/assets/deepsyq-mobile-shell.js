@@ -113,7 +113,10 @@ function setupMobileShell() {
   const pricing = document.getElementById('topPricing') || link(copy()[1], 'pricing.html', '');
   if(!pricing.id){pricing.id='topPricing';desktopActions.append(pricing);}
   const login = document.getElementById('topLogin') || link(copy()[2], 'deepsyq.html?panel=login', '');
-  if(!document.getElementById('topLogin'))desktopActions.append(login);
+  // Give the existing synthesized account link the same stable hook as Home.
+  // This does not create a duplicate or change login's click/navigation action.
+  if(!login.id)login.id='topLogin';
+  if(!login.isConnected)desktopActions.append(login);
   desktopActions.prepend(tools);
   if(document.body.classList.contains('j-action-workspace')){
     const apps=link('✦ AI Apps','ai-apps.html','ds-header-apps');desktopActions.append(apps);
