@@ -21,7 +21,8 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await expect(page.locator('.hero-stage')).not.toContainText('beyond limits');
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
  await expect(page.locator('#sidebar nav a[href="canvas.html"]')).toContainText('Canvas');
- await expect(page.locator('#studioStatus')).toContainText('owner preview');
+ await expect(page.locator('#studioStatus')).toHaveCount(0); // Owner removed the entire obsolete Studio availability label.
+ await expect(page.locator('.hero')).not.toContainText('Open a studio to see the available models.');
  await expect(page.locator('.plan')).toHaveCount(4);
  await expect(page.locator('.trial-plan .plan-action')).toHaveAttribute('href','pricing.html#plans');
  await expect(page.locator('.lifetime-disclaimer')).toContainText('does not provide unlimited AI generation');
