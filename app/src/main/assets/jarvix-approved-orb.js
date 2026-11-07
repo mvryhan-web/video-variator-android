@@ -1,6 +1,19 @@
 // GO stage07: reuse approved JARVIX orb SVG from PR #559.
 // Visual elements only. No new buttons, voices, routes, paid AI jobs.
-let seq=0;
+let seq=0,voiceBound=false,voiceLevel=0,voiceTick=0;
+// The orb reacts to the existing audio playback meter; no simulated speech pulses.
+function syncVoiceAppearance(){
+ const button=document.getElementById('topJarvisBtn');
+ const mode=button?.classList.contains('is-listening')?'listening':button?.classList.contains('is-speaking')?'speaking':'idle';
+ const level=mode==='speaking'?voiceLevel:0;
+ const shift=level>0?Math.sin(voiceTick*.42)*level*2:0;
+ for(const orb of document.querySelectorAll('.jarvis-mini-orb.jv-approved-orb')){
+  orb.dataset.jvMode=mode;
+  orb.style.setProperty('--jv-voice-level',String(level));
+  orb.style.setProperty('--jv-core-shift',shift.toFixed(2)+'px');
+ }
+}
+
 function createOrbSvg(){
  const id='jvApprovedOrb'+(++seq);
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
@@ -36,6 +49,11 @@ function createOrbSvg(){
  gold.classList.add('jv-orange-light');
  gold.innerHTML='<circle class="jv-warm-in" cx="80" cy="80" r="53" fill="none" stroke="#ff9c2b" stroke-width="2.5" stroke-dasharray="14 10 6 8" opacity=".78"/><circle class="jv-warm-out" cx="80" cy="80" r="68" fill="none" stroke="#ff9c2b" stroke-width="1.25" stroke-dasharray="5 14 8 15" opacity=".46"/>';
  svg.append(gold);
+ // Hidden at rest: highlights move only when actual JARVIX PCM is audible.
+ const reactive=document.createElementNS(ns,'g');
+ reactive.classList.add('jv-voice-reactive');
+ reactive.innerHTML='<g class="jv-voice-side-glints"><ellipse cx="34" cy="80" rx="5" ry="17" fill="#6ed7fa" opacity=".7"/><ellipse cx="126" cy="80" rx="5" ry="17" fill="#cb68f4" opacity=".7"/></g><g class="jv-voice-core-shift"><ellipse cx="80" cy="80" rx="8" ry="10" fill="#c7f9ff" opacity=".55"/></g>';
+ svg.append(reactive);
  return svg;
 }
 function decorate(slot){
@@ -64,15 +82,26 @@ export function mountApprovedJarvixOrb(root=document){
 export function installApprovedJarvixOrb(){
  if(!document.getElementById('jvApprovedOrbStyles')){
   const css=document.createElement('link');css.id='jvApprovedOrbStyles';
-  css.rel='stylesheet';css.href='jarvix-approved-orb.css?v=stage08';
+  css.rel='stylesheet';css.href='jarvix-approved-orb.css?v=stage09';
   document.head.append(css);
  }
  mountApprovedJarvixOrb();
+ if(!voiceBound){
+  voiceBound=true;
+  window.addEventListener('jarvix:voice-level',event=>{
+   const value=Number(event.detail?.level);
+   voiceLevel=Number.isFinite(value)?Math.min(1,Math.max(0,value)):0;
+   voiceTick++;
+   syncVoiceAppearance();
+  });
+ }
+ syncVoiceAppearance();
  const observer=new MutationObserver(records=>{
   if(records.some(record=>[...record.addedNodes].some(node=>node.nodeType===Node.ELEMENT_NODE&&!node.closest?.('.jv-approved-orb')))){
    mountApprovedJarvixOrb();
   }
+  if(records.some(record=>record.type==='childList'||(record.type==='attributes'&&record.target.id==='topJarvisBtn')))syncVoiceAppearance();
  });
- observer.observe(document.body,{subtree:true,childList:true});
+ observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
  return observer;
 }
