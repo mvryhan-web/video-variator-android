@@ -14,6 +14,28 @@ function createOrbSvg(){
  +'<g class="ds-orbit-spin"><circle cx="80" cy="80" r="65" fill="none" stroke="#08d7ff" stroke-dasharray="30 6 2 7"/><ellipse cx="80" cy="80" rx="77" ry="20" fill="none" stroke="#04edff" stroke-width="2" transform="rotate(-12 80 80)"/><ellipse cx="80" cy="80" rx="72" ry="24" fill="none" stroke="#d43eff" stroke-width="1.5" transform="rotate(22 80 80)"/></g>'
  +'<g class="ds-orbit-reverse"><ellipse cx="80" cy="80" rx="45" ry="62" fill="none" stroke="#a449ff"/><circle cx="80" cy="18" r="2.5" fill="#fff"/><circle cx="38" cy="111" r="2" fill="#03f2ff"/></g>'
  +'<path d="m80 52 5 22 17 6-17 5-5 23-5-23-17-5 17-6Z" fill="#fff"/><path d="M80 28v104M28 80h104" stroke="#86ffff" opacity=".6"/>';
+ // Stage08: separate the approved magenta ellipse from the clockwise group,
+ // so its direction never changes when the voice state changes.
+ const pink=svg.querySelector('.ds-orbit-spin ellipse[stroke="#d43eff"]');
+ const counter=svg.querySelector('.ds-orbit-reverse');
+ if(pink&&counter)counter.append(pink);
+ const ns='http://www.w3.org/2000/svg';
+ const blueBack=document.createElementNS(ns,'g');
+ blueBack.classList.add('jv-blue-behind');
+ blueBack.innerHTML='<ellipse cx="80" cy="80" rx="22" ry="41" fill="none" stroke="#1474ca" stroke-width="1.2" opacity=".46" transform="rotate(40 80 80)"/>';
+ const core=svg.querySelector('circle[cx="80"][cy="80"]');
+ if(core)svg.insertBefore(blueBack,core);
+ const blueFront=document.createElementNS(ns,'g');
+ blueFront.classList.add('jv-blue-front');
+ blueFront.innerHTML='<ellipse cx="80" cy="80" rx="24" ry="40" fill="none" stroke="#7eefff" stroke-width="1.15" opacity=".55" transform="rotate(-38 80 80)"/>';
+ const star=svg.querySelector('path[d^="m80 52"]');
+ if(star)svg.insertBefore(blueFront,star);
+ // One gold/orange tint leaking toward the center inside cyan slots and
+ // outward at pink slots. No arbitrary new sphere or movement of its shell.
+ const gold=document.createElementNS(ns,'g');
+ gold.classList.add('jv-orange-light');
+ gold.innerHTML='<circle class="jv-warm-in" cx="80" cy="80" r="53" fill="none" stroke="#ff9c2b" stroke-width="2.5" stroke-dasharray="14 10 6 8" opacity=".78"/><circle class="jv-warm-out" cx="80" cy="80" r="68" fill="none" stroke="#ff9c2b" stroke-width="1.25" stroke-dasharray="5 14 8 15" opacity=".46"/>';
+ svg.append(gold);
  return svg;
 }
 function decorate(slot){
