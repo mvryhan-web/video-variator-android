@@ -43,12 +43,18 @@ test('V3 tour voice and real actions: spoken Photo section matches opened Image 
  await preview(32605,async(browser,base)=>{
   for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
    const page=await browser.newPage({viewport});
-   const spoken=[];let paid=0;
+   const spoken=[],idleBetweenClips=[];let paid=0;
    page.on('request',req=>{
     if(req.method()==='POST'&&/\/api\/(?:billing|checkout|studio\/jobs|wallet|generation)/.test(new URL(req.url()).pathname))paid++;
    });
    await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
-   await page.route('**/media/jarvix/tour-v3/*.mp3',route=>{const name=route.request().url().split('/').pop().split('?')[0];spoken.push(words.get(name));return route.fulfill({status:200,contentType:'audio/wav',body:makeWav(.25)});});
+   await page.route('**/media/jarvix/tour-v3/*.mp3',async route=>{
+    const name=route.request().url().split('/').pop().split('?')[0],phrase=words.get(name);
+    spoken.push(phrase);
+    if(phrase==='Создавайте по описанию или добавьте фотографию.')
+     idleBetweenClips.push(await page.locator('#topJarvisBtn').evaluate(el=>({speaking:el.classList.contains('is-speaking'),tourSpeaking:el.classList.contains('ds-tour-speaking')})));
+    return route.fulfill({status:200,contentType:'audio/wav',body:makeWav(.25)});
+   });
    await page.route('**/api/jarvix/voice-config',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({configured:true,speechModelInstalled:true,speechSource:'self-hosted',engine:'VoxCPM2'})}));
    await page.route('**/api/jarvix/tts',route=>{
     const payload=route.request().postDataJSON();
@@ -69,6 +75,7 @@ test('V3 tour voice and real actions: spoken Photo section matches opened Image 
     await page.locator('#creator.jarvis-tour-spotlight').waitFor({timeout:15000});
     assert.ok(spoken.includes('Создавайте по описанию или добавьте фотографию.'));
     assert.ok(spoken.every(Boolean),'All recorded phrases must be present in manifest');
+    assert.deepEqual(idleBetweenClips,[{speaking:false,tourSpeaking:false}], 'JARVIX orb must be idle between the destination title and its first voice beat');
     await page.locator('[data-tour="stop"]').click();
     assert.equal(await page.locator('.ds-tour-controls').count(),0);
     assert.equal(paid,0,'Tour must not submit any paid generation, Stripe or billing request');

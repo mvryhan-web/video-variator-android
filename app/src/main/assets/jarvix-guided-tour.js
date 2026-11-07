@@ -17,7 +17,10 @@ function save(){try{state?sessionStorage.setItem(TOUR_KEY,JSON.stringify(state))
 export function isTourActive(){return !!state||!!read();}
 function setTourSpeaking(active){
  tourSpeaking=Boolean(active);
- document.getElementById('topJarvisBtn')?.classList.toggle('ds-tour-speaking',tourSpeaking&&state?.phase==='playing');
+ const playing=tourSpeaking&&state?.phase==='playing';
+ document.getElementById('topJarvisBtn')?.classList.toggle('ds-tour-speaking',Boolean(playing));
+ // The original orb state, not only the Tour decoration, must be silent between clips.
+ updateJarvisState(playing?'speaking':'idle');
 }
 function clearAudio(){turn++;clearTimeout(navTimer);clearTimeout(waitTimer);setTourSpeaking(false);stopOwnerSpeech();if(audio){audio.onended=null;audio.onplay=null;audio.onerror=null;audio.ontimeupdate=null;audio.pause();audio.remove();audio=null;}}
 const navElements=()=>({sidebar:document.querySelector('#sidebar,#dsSiteSidebar,.shell>.sidebar'),toggle:document.querySelector('#menu,.ds-site-mobile-toggle,.vu-nav-toggle,#menuBtn')});
@@ -143,8 +146,10 @@ async function speakV3(text,current,complete,beat=null){
   if(current!==turn||!state||state.phase!=='playing')return;
   let spoken=false,ended=false;
   const began=()=>{
-   if(spoken||current!==turn||!state||state.phase!=='playing')return;
-   spoken=true;setTourSpeaking(true);updateJarvisState('speaking');
+   if(current!==turn||!state||state.phase!=='playing')return;
+   setTourSpeaking(true);
+   if(spoken)return;
+   spoken=true;
    if(beat)cueV3(beat);
   };
   const done=()=>{
@@ -168,8 +173,9 @@ async function speakV3(text,current,complete,beat=null){
    // The existing pinned VoxCPM2 narrator is the ONLY permitted live fallback.
    // Missing voice service must not silently switch to an unrelated system voice.
    void speakOwnerSpeech(text,state.language,{
-    start:()=>updateJarvisState('speaking'),
-    phase:phase=>{if(phase==='playing')began();},
+    // A TTS preflight is not sound; light the sphere only while audio is playing.
+    start:()=>{},
+    phase:phase=>{if(phase==='playing')began();else if(phase==='generating')setTourSpeaking(false);},
     complete:done,
     fallback:()=>blocked(current,'Owner VoxCPM2 voice unavailable'),
     error:()=>blocked(current,'Owner VoxCPM2 voice unavailable')
