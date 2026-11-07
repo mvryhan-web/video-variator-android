@@ -24,7 +24,7 @@ export function createPgDailyQuota(pool,{secret,now=()=>Date.now(),env=process.e
  let initialization;
  const hash=(kind,text)=>createHmac('sha256',secret).update(kind+'\0'+String(text)).digest('hex');
  async function ready(){
-  if(!initialization)initialization=pool.query('CREATE TABLE IF NOT EXISTS jarvix_free_daily (quota_key VARCHAR(64) NOT NULL, day DATE NOT NULL, used INT NOT NULL CHECK (used >= 0), PRIMARY KEY(quota_key,day))').catch(e=>{initialization=null;throw e;});
+  if(!initialization)initialization=pool.query('SELECT 1 FROM jarvix_quota.jarvix_free_daily LIMIT 1').catch(e=>{initialization=null;throw e;});
   await initialization;
  }
  return {async reserve({identity,ip,provider}){
@@ -37,7 +37,7 @@ export function createPgDailyQuota(pool,{secret,now=()=>Date.now(),env=process.e
    await client.query('BEGIN');let remaining=null;
    for(let i=0;i<scopes.length;i++){
     const [key,cap]=scopes[i];
-    const q=await client.query('INSERT INTO jarvix_free_daily (quota_key,day,used) VALUES ($1,$2,1) ON CONFLICT(quota_key,day) DO UPDATE SET used=jarvix_free_daily.used+1 WHERE jarvix_free_daily.used<$3 RETURNING used',[key,day,cap]);
+    const q=await client.query('INSERT INTO jarvix_quota.jarvix_free_daily (quota_key,day,used) VALUES ($1,$2,1) ON CONFLICT(quota_key,day) DO UPDATE SET used=jarvix_free_daily.used+1 WHERE jarvix_free_daily.used<$3 RETURNING used',[key,day,cap]);
     if(!q.rows.length){await client.query('ROLLBACK');ended=true;return {allowed:false,remaining:0,resetAt};}
     if(i===0)remaining=FREE_DAILY_LIMIT-Number(q.rows[0].used);
    }
