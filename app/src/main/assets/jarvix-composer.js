@@ -1,8 +1,11 @@
 import {bindVoiceInput} from './jarvix-voice-input.js';
 import {decorateComposer} from './jarvix-composer-design.js';
+import {openHomeStudioSettings} from './home-studio-settings.js';
 import {validateAttachments} from './jarvix-conversations.js';
 export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
- decorateComposer(form,{settingsTarget:()=>{location.assign('generate-studio.html?studio='+(['image','video','audio'].includes(mode)?mode:'image')+'&settings=1');}});
+ decorateComposer(form,{settingsTarget:()=>{const selected=['image','video','audio'].includes(mode)?mode:'image';
+  if(form.id==='homeQuickForm')openHomeStudioSettings({gear:form.querySelector('.j-settings-shortcut'),mode:selected});
+  else location.assign('generate-studio.html?studio='+selected+'&settings=1');}});
  if(innerWidth<361)input.placeholder='Message…';
  let mode='auto',files=[];
  try{const stored=sessionStorage.getItem('jarvix_composer_mode');if(['image','video','audio'].includes(stored))mode=stored;}catch{}
