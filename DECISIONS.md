@@ -1,3 +1,15 @@
+## D25 / OWNER 2026-11-07 — ТОЛЬКО АДМИНИСТРАТОР / ПРАВИЛО «СОБРАННОЙ МАШИНЫ»
+
+**Действует немедленно; отменяет старые разрешения Antigravity работать и публиковать.** Только **администратор** разрабатывает и публикует изменения DEEPSYQ на изолированном TEST. **Antigravity прекращает все задачи, изменения кода и публикации.** Координатор P может проверять, вести правила и отчёты, но сам не редактирует функции сайта и не публикует. Старый код всех исполнителей сохраняем. Реальное ограничение доступа GitHub/Render владелец должен включить отдельно.
+
+**Принцип:** сайт — уже собранный автомобиль. Попросили поменять кнопки — меняются *только кнопки*, не меняются фары, сиденья, электронные регулировки, поведение остальных элементов. Попросили форму сидений — меняется только форма, механизм регулировки и все другие части остаются как были. Любая задача = минимальная точечная правка последней утверждённой версии сайта. Соседние функции даже в том же файле запрещено менять. Не восстанавливать старые файлы целиком, не переписывать страницу и не «улучшать» то, чего не просили.
+
+**Требование по утреннему релизу 07.11.2026:** администратор проверяет TEST-коммит PR #559 `4de99be9` относительно последнего утверждённого Studio baseline `8c5f527e` (PR #560–#562). Сохраняет лишь изменения, которые владелец действительно заказывал сегодня, а все посторонние переделки (особенно наложенные кнопки и изменённые настройки Image/Video/Audio) возвращает к ранее согласованному состоянию **точечно**. Не откатывать целиком вчерашний коммит или весь проект, иначе исчезнут нужные сегодняшние работы. Перед публикацией: сверка DEV ↔ текущий LIVE TEST, ревью diff, реальные тесты мобильного и ПК; администратор публикует только согласованный объединённый HEAD DEV на TEST. PROD/main не трогать.
+
+Полные инструкции: [OWNER_CHANGE_CONTROL_20261107.md](docs/OWNER_CHANGE_CONTROL_20261107.md). Источник требования владельца: [Issue #233](https://github.com/mvryhan-web/video-variator-android/issues/233#issuecomment-6704526345). Это решение имеет приоритет над D24/D23.
+
+---
+
 ## D24 / OWNER 2026-11-07 — STRICT TASK SCOPE / REVIEW / DEPLOY
 
 **For P, Administrator, Antigravity and future agents.** Only change precisely what the owner requested; preserve all other current DEV functionality and confirmed visual design. Every PR declares exact allowed files, baseline SHA, protected-feature approval, relevant browser regression tests. For Studio Settings specifically retain approved persistent parent hub, selected model/ratio, Done and X behavior, aspect previews, anchored popover. No old-code wholesale restores, no unrelated refactors. Latest DEV must contain all prior accepted changes. Publish only the exact merged current DEV SHA to isolated TEST after checks, never a standalone PR branch; verify actual TEST output. Main/production still frozen. GitHub `deepsyq-platform` protection is currently disabled: owner must activate Rulesets and genuine separate reviewer/deploy credentials. See [D24 enforcement policy](docs/OWNER_CHANGE_CONTROL_20261107.md); this decision supersedes older broad admin/executor autonomy.

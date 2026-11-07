@@ -1,6 +1,51 @@
-# OWNER D24 — 2026-11-07 — No unrelated edits, no isolated preview overwrite
+# OWNER D25 — 2026-11-07 — ONE CAR, ONE ADMINISTRATOR, SURGICAL REPAIR
 
-**Binding for P, Administrator, Google Antigravity, and any future coding assistant.** This owner decision supersedes earlier general permission to "tidy", "improve", "polish", "restore from my branch", or deploy a personal worktree without explicit scope. Existing deployed and owner-approved behavior is the starting point, not disposable material.
+**This is the CURRENT binding rule. It overrides D24/D23 wherever older rules imply that Antigravity, P or other agents may develop/publish application features.**
+
+## Who does what now
+
+- **Administrator — sole application developer and sole owner-authorized TEST publisher.** Takes only the owner's specific requests, implements code, verifies, merges and publishes accepted integrated DEV. Administrator is still subject to owner approvals, all CI/lock rules and the TEST-only limit.
+- **Antigravity — retired from ALL DEEPSYQ tasks, code edits and deployments, effective immediately.** No new assignments, PRs or deploys; do not delete their existing code, files, histories or contributions.
+- **P — coordination, independent checking, documentation/governance updates and status reports only.** Not a second application coder or publisher under D25. Other retired agents/Jules remain retired. PROD/main remains frozen.
+- This file changes the workflow policy; to actually revoke write/deploy ability the owner must separately configure GitHub repository roles/Rulesets and Render team/service permissions.
+
+## The owner's assembled-car principle (non-negotiable)
+
+Imagine DEEPSYQ is an assembled car built over several weeks. The owner wants different dashboard buttons — replace ONLY those buttons. The seats, rear lights, windows, steering wheel, mechanics and existing button functions stay exactly as they were. If owner wants a different seat shape, change ONLY seat shape: electric adjustment, position memory and every other working system remain unchanged. **A task is a minimal delta, not a rebuild.**
+
+Translate this to code:
+1. Identify the exact visible element, approved behavior and requested change **before** editing. Record allowed file(s), specific functions/lines and unchanged neighboring behavior.
+2. Work from the current integrated approved code. A file containing the target element is not automatically permission to rewrite the full file, move unrelated controls, change shared styles, alter callbacks, redesign dialogs, change translations or restore old components.
+3. Preserve all approved code and assets, selected model/aspect, saved work, page visuals and behavior. If a user asks for a color or shape, do not change the function. If a user asks for a function, do not redesign it unless explicitly instructed.
+4. Review exact diff BEFORE merge. Any extra file, hunk or behavioral change is a regression until justified by the owner. Separate unavoidable neighboring changes into a new requested task; otherwise remove **only** the unintended edits.
+5. A release is the **entire last accepted site plus the requested delta only**. Merge the approved minimal change into current DEV, not a personal branch snapshot. Compare actual TEST LIVE commit with DEV; retain other accepted work; never overwrite it accidentally. Publish only merged reviewed latest `deepsyq-platform` SHA to TEST, by Administrator only.
+6. Validate desktop and mobile, normal use and neighboring behavior. For Studio Settings confirm persistent parent panel until X, model/ratio selections preserved, correct ratio-frame proportions, popover placement beside gear and simplified Video Settings. Nothing else may change.
+
+## Administrator's mandatory repair of the morning TEST publication
+
+On 2026-11-07 TEST was deployed from the **unmerged** PR #559 SHA `4de99be9fa74999ece8284804e6f06c7b3697feb`, 4 commits ahead of the prior DEV baseline `8c5f527ebf6e572d30cd8983d5a9adc234fd7b6d`. The comparison has **14 changed files**, including `generate-studio.html`, `generate-studio.js`, `studio-composer-popovers.js`, `deepsyq-mobile-shell.js` and JARVIX sources. Owner reports unintended added/overlapping buttons and changed previously accepted Image, Video and Audio Studio Settings.
+
+**Administrator must repair this before the next feature release:**
+- Compare the exact LIVE TEST #559 tree, the previous approved baseline (#560–#562), the current DEV HEAD, and the actual owner assignments for the morning. Identify which changes were explicitly requested. Do not assume every new line in #559 is authorized or that every line is wrong.
+- **Keep all authorized morning enhancements exactly as approved. Restore only unrelated/unrequested edits** to their earlier approved code and UI. Especially restore the Studio Settings design/interactions and remove accidental duplicate/overlapping buttons, preserving every earlier working behavior.
+- Do NOT reset the entire repo to yesterday, revert PR #559 wholesale, replace whole CSS/JS/HTML files with earlier snapshots, delete history, discard approved JARVIX features or modify unrelated functionality.
+- Produce precise per-file before/after diff, screenshots before and after (desktop/mobile), and run no-spend UI regression tests across Image, Video and Audio, their model choices, ratios, parent Settings hub, Done and X, and shared navigation.
+- Integrate corrected minimal changes into latest `deepsyq-platform` alongside D25 rules. Never publish a detached or stale PR branch; run exact-SHA preflight and only publish the **complete reconciled DEV** to isolated TEST. Confirm LIVE exact commit and actually open the page to verify the final UI.
+- If not possible to distinguish requested from unrequested changes, make an exact comparison for owner approval first; DO NOT guess and DO NOT publish.
+
+## Mandatory after every new task
+
+The Administrator reports: (a) what the owner requested; (b) exact changed files/functions; (c) what was intentionally left unchanged; (d) tests, screenshots and result; (e) exact reviewed DEV and LIVE TEST SHA. Never report DONE from a mere commit, PR or Render status.
+
+**Security / access gap:** `deepsyq-platform` is not yet protected by GitHub Rulesets. Repository owner must enable mandatory PR/required checks/owner reviewer and remove Antigravity write/bypass permissions; also revoke Antigravity's Render deploy rights and give only Administrator the permitted TEST deployment role. Code instructions do not themselves revoke API tokens or deployment access.
+
+**Owner decision:** https://github.com/mvryhan-web/video-variator-android/issues/233#issuecomment-6704526345
+
+---
+
+# OWNER D24 — 2026-11-07 — Historical detailed change-control (superseded by D25 for roles)
+
+**Historical D24 scope detail: D25 above is the active role rule; Administrator alone handles code and TEST deployment, P is governance-only, Antigravity is retired.** This owner decision supersedes earlier general permission to "tidy", "improve", "polish", "restore from my branch", or deploy a personal worktree without explicit scope. Existing deployed and owner-approved behavior is the starting point, not disposable material.
 
 ## Rule 1 — Start with the actual owner task
 
