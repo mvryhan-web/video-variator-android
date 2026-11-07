@@ -46,20 +46,21 @@ export function installUnifiedPlatformHeader(){
  const group=document.createElement('div');group.className='ds-unified-actions';
  const left=document.createElement('div');left.className='ds-unified-actions-left';
  const right=document.createElement('div');right.className='ds-unified-actions-right';
- left.append(tour,tools);
+ left.append(tools);
  let credit=header.querySelector('.ds-header-credit');
  if(!credit){
-  credit=link('⚡ '+dictionary().credits+': —','pricing.html#credits','ds-header-credit ds-unified-credit');
+  credit=link('AI Credit','pricing.html#credits','ds-header-credit ds-unified-credit');
+  credit.setAttribute('aria-label','AI Credit');
   const readBalance=async()=>{
    let token='';try{token=localStorage.getItem('vv_token')||'';}catch{}
-   credit.textContent='⚡ '+dictionary().credits+': —';
+   credit.textContent='AI Credit';credit.removeAttribute('title');
    if(!token)return;
    try{
     const response=await fetch('/api/ai-wallet/balance',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
     if(!response.ok)return;
     const data=await response.json();
     if(token===localStorage.getItem('vv_token')&&Number.isSafeInteger(data.available)&&data.available>=0)
-      credit.textContent='⚡ '+dictionary().credits+': '+data.available.toLocaleString(locale());
+      credit.title='Available AI credits: '+data.available.toLocaleString(locale());
    }catch{}
   };
   void readBalance();
@@ -82,7 +83,11 @@ export function installUnifiedPlatformHeader(){
  language.value=locale();
  const languageWrap=document.createElement('label');languageWrap.className='ds-unified-language';
  languageWrap.append(language);
- right.append(credit,pricing,languageWrap,login);
+ // Keep the JARVIX sphere centered: Credit to its left; Tour to its right.
+ credit.textContent='AI Credit';
+ credit.setAttribute('aria-label','AI Credit');
+ left.append(credit);
+ right.append(tour,pricing,languageWrap,login);
  group.append(left,right);header.append(group);
  header.classList.add('ds-unified-header');
  document.body.classList.add('ds-unified-platform');
