@@ -153,3 +153,44 @@ test('full V3 19-step route stays synchronized and never sends paid requests',as
   }finally{await page.close();}
  });
 });
+
+
+test('real owner MP3 continues after document navigation to Image without a second tap',async()=>{
+ await preview(32608,async(browser,base)=>{
+  for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
+   const page=await browser.newPage({viewport});
+   const playback=[];
+   page.on('console',m=>{if(m.text().startsWith('TOUR_AUDIO_DIAG'))playback.push(m.text());});
+   try{
+    await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
+    await page.addInitScript(()=>{
+     localStorage.setItem('deepsyq_home_language','ru');
+     const original=HTMLMediaElement.prototype.play;
+     HTMLMediaElement.prototype.play=function(...args){
+      const isOwnerTour=String(this.currentSrc||this.src||'').includes('/media/jarvix/tour-v3/');
+      const result=original.apply(this,args);
+      if(isOwnerTour)Promise.resolve(result).then(
+       ()=>console.log('TOUR_AUDIO_DIAG PLAY_OK '+location.pathname+location.search),
+       err=>console.log('TOUR_AUDIO_DIAG PLAY_REJECTED '+location.pathname+location.search+' '+err.name)
+      );
+      return result;
+     };
+    });
+    await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});
+    await page.locator('#dsTakeTour').click();
+    await page.waitForURL(/generate-studio\.html\?studio=image/,{timeout:30000});
+    let heard=false;
+    try{
+     await page.waitForFunction(()=>{
+      const a=document.querySelector('#dsTourAudio');
+      return a&&a.currentTime>0.10&&!a.paused;
+     },null,{timeout:12000});
+     heard=true;
+    }catch{}
+    const state=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('deepsyq_guided_tour_v6')||'null'));
+    assert.equal(heard,true,'Owner MP3 did not actually play on Image after navigation: '+JSON.stringify({viewport,state,playback}));
+    await page.locator('[data-tour="stop"]').click();
+   }finally{await page.close();}
+  }
+ });
+});
