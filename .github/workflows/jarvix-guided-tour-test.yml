@@ -9,6 +9,7 @@ on:
       - 'app/src/main/assets/jarvix-tour-v3-script.js'
       - 'app/src/main/assets/jarvix-tour-v3-audio.js'
       - 'scripts/generate_jarvix_tour_v3.mjs'
+      - 'scripts/generate_jarvix_tour_v3_local.py'
       - 'tests/jarvix-tour-v3.test.mjs'
       - 'app/src/main/assets/jarvix-tour-plan.js'
       - 'app/src/main/assets/deepsyq-mobile-shell.css'
@@ -24,6 +25,7 @@ on:
       - 'app/src/main/assets/jarvix-tour-v3-script.js'
       - 'app/src/main/assets/jarvix-tour-v3-audio.js'
       - 'scripts/generate_jarvix_tour_v3.mjs'
+      - 'scripts/generate_jarvix_tour_v3_local.py'
       - 'tests/jarvix-tour-v3.test.mjs'
       - 'app/src/main/assets/jarvix-tour-plan.js'
       - 'app/src/main/assets/deepsyq-mobile-shell.css'
@@ -48,6 +50,8 @@ jobs:
         run: node --check app/src/main/assets/jarvis-core.js && node --check app/src/main/assets/jarvix-guided-tour.js && node --check app/src/main/assets/jarvix-tour-plan.js && node --check app/src/main/assets/jarvix-tour-v3-script.js && node --check app/src/main/assets/jarvix-tour-v3-audio.js && node --check scripts/generate_jarvix_tour_v3.mjs && node --check tests/jarvix-tour-v3.test.mjs && node --check tests/jarvix-guided-tour.test.mjs && node --check tests/jarvix-tour-plan.test.mjs
       - name: Check four-language narration/action timing contract
         run: node --test tests/jarvix-tour-plan.test.mjs
+      - name: Validate offline owner-voice generator syntax
+        run: python3 -m py_compile scripts/generate_jarvix_tour_v3_local.py
       - name: Validate exact approved V3 phrases and unchanged JARVIX narrator
         run: node --test tests/jarvix-tour-v3.test.mjs
       - name: Click visible tour header button, verify overlay and exit, no paid calls
