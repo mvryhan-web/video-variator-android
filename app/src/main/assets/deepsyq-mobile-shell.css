@@ -231,3 +231,16 @@
    height:100dvh!important;max-height:100dvh!important;overflow-y:auto!important;
  }
 }
+
+/* The subtitle is the actual recorded or synthesized JARVIX utterance.
+   It is outside the transport row so longer languages do not move Pause/Stop. */
+.ds-tour-controls .ds-tour-caption{position:absolute;top:calc(100% + 9px);right:0;width:max-content;max-width:min(430px,calc(100vw - 24px));padding:10px 14px;border:1px solid #3184d5;border-radius:12px;background:#061329f2;color:#f0f8ff;box-shadow:0 6px 24px #0009;font:500 13px/1.45 system-ui;text-align:left;overflow-wrap:break-word;pointer-events:none}
+.ds-tour-controls .ds-tour-caption:empty{display:none}
+@media(max-width:760px){.ds-tour-controls .ds-tour-caption{max-width:calc(100vw - 20px);width:315px;padding:8px 10px;font-size:12px}}
+@media(prefers-reduced-motion:reduce){.jarvis-tour-spotlight{animation:none!important}}
+
+
+/* During a read-only tour, an unaccepted Studio terms overlay must not block JARVIX
+   transport controls. Its original visibility returns when Stop removes the class.
+   No consent is ever accepted, stored or bypassed for an actual generation. */
+body.ds-tour-active #luminaTermsModal.is-open{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
