@@ -24,27 +24,48 @@ export function mountStudioUniversalDock({form,nav,gear}){
   document.head.append(skin);
  }
  const nativeModels=$('modelChoices');
- const brandFor=(card)=>{
-  const label=(card.querySelector('strong')?.textContent||'').toLowerCase();
-  const id=(card.dataset.modelId||'').toLowerCase();
-  const name=label+' '+id;
-  if(/nano.?banana|\bveo\b|google/.test(name))return ['google','G','Google'];
-  if(/seedream|seedance|bytedance|byteplus/.test(name))return ['bytedance','Seed','ByteDance Seed'];
-  if(/chatgpt|gpt.?image|openai/.test(name))return ['openai','AI','OpenAI'];
-  return ['other','AI','Model provider'];
+ // Model-specific TEXT identification until verified, redistributable official
+ // artwork exists. Badges must never pose as official model/provider logos.
+ const brandFor=card=>{
+  const title=(card.querySelector('strong')?.textContent||'').trim();
+  const id=(card.dataset.modelId||'').trim();
+  const name=(title+' '+id).toLowerCase();
+  const number=pattern=>name.match(pattern)?.[1]||'';
+  if(/nano[\s_-]*banana/.test(name)){
+   const v=number(/nano[\s_-]*banana[\s_-]*(\d+)/);
+   return {vendor:'google',family:'nano-banana',badge:'NB'+v,provider:'Google'};
+  }
+  if(/seedream/.test(name)){
+   const v=number(/seedream[\s_-]*(\d+(?:[.\s_-]\d+)?)/).replace(/[\s_-]/g,'.');
+   return {vendor:'bytedance',family:'seedream',badge:'SR'+v,provider:'ByteDance Seed'};
+  }
+  if(/seedance/.test(name)){
+   const v=number(/seedance[\s_-]*(\d+(?:[.\s_-]\d+)?)/).replace(/[\s_-]/g,'.');
+   return {vendor:'bytedance',family:'seedance',badge:'SE'+v,provider:'ByteDance Seed'};
+  }
+  if(/\bveo\b/.test(name)){
+   const v=number(/\bveo[\s_-]*(\d+(?:[.\s_-]\d+)?)/).replace(/[\s_-]/g,'.');
+   return {vendor:'google',family:'veo',badge:'V'+v,provider:'Google'};
+  }
+  if(/chatgpt|gpt[\s_-]*image|openai/.test(name))
+   return {vendor:'openai',family:'gpt-image',badge:'GPT',provider:'OpenAI'};
+  return {vendor:'other',family:'other',badge:'AI',provider:''};
  };
  const labelProviders=()=>{
   if(!nativeModels)return;
   for(const card of nativeModels.querySelectorAll('.model-card')){
-   // The old generic first-letter badge was the Russian status letter "П".
-   // Brand text is honest fallback; do NOT invent model-specific thumbnails.
    const mark=card.querySelector('.model-provider-mark');
-   if(!mark)continue; // Model renderer may still be inserting it.
-   const [brand,label,providerName]=brandFor(card);
-   if(mark.dataset.vendor===brand)continue;
-   mark.dataset.vendor=brand;
-   mark.textContent=label;
-   mark.setAttribute('title',providerName+' · model provider');
+   if(!mark)continue; // Original Studio renderer adds native mark later.
+   const identity=brandFor(card);
+   const signature=identity.vendor+'|'+identity.family+'|'+identity.badge;
+   if(mark.dataset.modelIdentity===signature)continue;
+   mark.dataset.modelIdentity=signature;
+   mark.dataset.vendor=identity.vendor;
+   mark.dataset.modelFamily=identity.family;
+   mark.textContent=identity.badge;
+   const title=(card.querySelector('strong')?.textContent||'').trim();
+   mark.title=(identity.provider?identity.provider+' · ':'')+title+
+    ' — model-family text badge, not an official image';
   }
  };
  if(nativeModels){
@@ -61,22 +82,34 @@ export function mountStudioUniversalDock({form,nav,gear}){
   if(!nativeSettings||!ratioTiles)return;
   ratioTiles.querySelectorAll('.premium-unavailable-ratio').forEach(el=>el.remove());
   if(nativeSettings.dataset.studioKind!=='video'||!nativeSettings.open)return;
-  const supported=new Set([...ratioTiles.querySelectorAll('button[aria-label]')].map(el=>el.getAttribute('aria-label')));
-  for(const label of ['1:1','2:3','3:2','9:16','16:9']){
-   if(supported.has(label))continue;
-   const b=make('button','premium-unavailable-ratio');
-   b.type='button';b.disabled=true;b.setAttribute('aria-disabled','true');
-   b.setAttribute('aria-label',label+' — unavailable for this model');
-   b.setAttribute('title','This video model does not support '+label);
-   const drawing=make('span','ratio-drawing');
-   const [w,h]=label.split(':').map(Number);
-   const scale=Math.min(46/w,42/h);
-   drawing.style.width=Math.max(1,Math.floor(w*scale))+'px';
-   drawing.style.aspectRatio=w+' / '+h;
-   drawing.setAttribute('aria-hidden','true');
-   const caption=make('span');caption.textContent=label;
-   b.append(drawing,caption);ratioTiles.append(b);
+  const slots=['1:1','2:3','3:2','9:16','16:9'];
+  const nativeButtons=[...ratioTiles.querySelectorAll('button')];
+  const byRatio=new Map(nativeButtons.map(button=>[button.getAttribute('aria-label'),button]));
+  const lang=(document.documentElement.lang||navigator.language||'').toLowerCase();
+  const ru=lang.startsWith('ru');
+  for(const label of slots){
+   let button=byRatio.get(label);
+   if(!button){
+    button=make('button','premium-unavailable-ratio');
+    button.type='button';button.disabled=true;button.setAttribute('aria-disabled','true');
+    const unavailable=ru?'недоступно для выбранной модели':'not supported by this model';
+    button.setAttribute('aria-label',label+' — '+unavailable);
+    button.title=label+' — '+unavailable;
+    const drawing=make('span','ratio-drawing');
+    const [w,h]=label.split(':').map(Number);
+    const scale=Math.min(46/w,42/h);
+    drawing.style.width=Math.max(1,Math.floor(w*scale))+'px';
+    drawing.style.aspectRatio=w+' / '+h;
+    drawing.setAttribute('aria-hidden','true');
+    const caption=make('span');caption.textContent=label;
+    button.append(drawing,caption);
+   }
+   // Reorder real native buttons, never replace their event listeners.
+   ratioTiles.append(button);
   }
+  // Provider-specific ratios outside these five stay available afterwards.
+  for(const button of nativeButtons)if(!slots.includes(button.getAttribute('aria-label')))
+   ratioTiles.append(button);
  };
  if(nativeSettings){
   const ratioViewObserver=new MutationObserver(()=>queueMicrotask(syncVisualRatioGrid));
