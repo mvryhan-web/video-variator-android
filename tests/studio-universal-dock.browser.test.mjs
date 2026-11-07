@@ -70,7 +70,35 @@ try{
      assert.equal(new URL(page.url()).searchParams.get('studio'),choice,'gear must preserve selected mode');
      for(const id of ['studioTypePicker','modelButton','settingsButton'])
       assert.equal(await page.locator('#studioSettingsHub #'+id).count(),1,id+' native settings control');
+     await page.locator('link[data-deepsyq-studio-premium]').waitFor({state:'attached',timeout:12000});
+     assert.equal(await page.locator('body.studio-premium-panels').count(),1,'approved premium skin is scoped to Studio');
+     const hubTheme=await page.locator('#studioSettingsHub').evaluate(el=>({
+       borderRadius:getComputedStyle(el).borderRadius,background:getComputedStyle(el).backgroundImage
+     }));
+     assert.match(hubTheme.background,/gradient/,'parent uses real turquoise/gold panel background');
      await page.screenshot({path:file+'/'+layout.name+'-'+kind+'-settings.png',fullPage:false});
+     await page.locator('#studioSettingsHub #modelButton').click();
+     await page.locator('#modelDialog[open]').waitFor({timeout:12000});
+     assert.ok(await page.locator('#modelDialog .model-card').count()>0,'native real model cards remain present');
+     await page.locator('#modelDialog .model-provider-mark').first().waitFor({timeout:12000});
+     const providerBadge=await page.locator('#modelDialog .model-provider-mark').first().textContent();
+     assert.notEqual(providerBadge?.trim(),'П','old generic connection-letter placeholder removed');
+     await page.screenshot({path:file+'/'+layout.name+'-'+kind+'-premium-models.png',fullPage:false});
+     await page.locator('#modelDialog [data-close="modelDialog"]').click();
+     await page.locator('#studioSettingsHub[open]').waitFor({timeout:12000});
+     await page.locator('#studioSettingsHub #settingsButton').click();
+     await page.locator('#settingsDialog[open]').waitFor({timeout:12000});
+     assert.ok(await page.locator('#settingsDialog .ratio-choices button:not(:disabled)').count()>=1,'native supported ratio choice persists');
+     const nativeOptions=await page.locator('#ratio option').allTextContents();
+     const validButtons=await page.locator('#settingsDialog .ratio-choices button:not(:disabled)').count();
+     assert.equal(validButtons,nativeOptions.length,'never add unsupported selectable video ratios');
+     if(choice==='video'){
+      assert.equal(await page.locator('#settingsDialog .ratio-choices button').count(),5,'visual ratio grid matches Image Settings');
+      assert.equal(await page.locator('#settingsDialog .ratio-choices button:disabled').count(),5-nativeOptions.length,'unsupported ratios visibly disabled');
+     }
+     await page.screenshot({path:file+'/'+layout.name+'-'+kind+'-premium-parameters.png',fullPage:false});
+     await page.locator('#settingsDialog [data-t="done"]').click();
+     await page.locator('#studioSettingsHub[open]').waitFor({timeout:12000});
      await page.locator('#studioSettingsHub > button:nth-child(2)').click();
      await page.locator('#studioSettingsHub[open]').waitFor({state:'hidden',timeout:12000});
      await page.locator('#studioUniversalDock #prompt').fill('Owner interface-only smoke test prompt');
@@ -82,6 +110,32 @@ try{
    });
   }
  }
+ await test('Audio premium panel keeps actual audio modes, language, voice and Done controls',async()=>{
+  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  const page=await context.newPage();const paid=[],errors=[];
+  page.on('pageerror',e=>errors.push(String(e)));
+  page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:studio\/jobs|stripe|payments)\b/.test(r.url()))paid.push(r.url());});
+  try{
+   await page.goto(base+'/generate-studio.html?studio=audio',{waitUntil:'domcontentloaded'});
+   await page.waitForSelector('#studioUniversalDock #studioSettingsToggle',{timeout:20000});
+   await page.locator('#studioUniversalDock #studioSettingsToggle').click();
+   await page.locator('#studioSettingsHub[open]').waitFor({timeout:12000});
+   await page.locator('#studioSettingsHub #settingsButton').click();
+   await page.locator('#settingsDialog[open]').waitFor({timeout:12000});
+   await page.waitForFunction(()=>document.getElementById('settingsDialog')?.dataset.studioKind==='music',{timeout:12000});
+   assert.equal(await page.locator('#settingsDialog').getAttribute('data-studio-kind'),'music');
+   assert.equal(await page.locator('#settingsDialog #musicOptions').isVisible(),true);
+   const modes=await page.locator('#musicMode option').evaluateAll(items=>items.map(x=>x.value));
+   assert.ok(modes.includes('song')&&modes.includes('instrumental'));
+   await page.locator('#musicMode').selectOption('instrumental');
+   assert.equal(await page.locator('#musicMode').inputValue(),'instrumental');
+   await page.screenshot({path:file+'/mobile-premium-audio-settings.png',fullPage:false});
+   await page.locator('#settingsDialog [data-t="done"]').click();
+   assert.equal(await page.locator('#studioSettingsHub[open]').count(),1);
+   assert.deepEqual(paid,[]);
+   assert.deepEqual(errors,[]);
+  }finally{await context.close();}
+ });
  await test('Home gear opens previous existing Studio settings; Universal Hub rail remains unchanged',async()=>{
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   try{
