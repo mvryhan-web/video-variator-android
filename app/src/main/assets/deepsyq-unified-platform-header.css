@@ -7,7 +7,7 @@
   header.ds-platform-header {
     display: flex !important;
     align-items: center !important;
-    justify-content: center !important;
+    justify-content: space-between !important;
     position: sticky !important;
     top: 0 !important;
     height: 76px !important;
@@ -56,8 +56,9 @@
     font-weight: 800 !important;
     letter-spacing: -0.5px !important;
     flex-shrink: 0 !important;
-    position: absolute !important;
-    left: 24px !important;
+    position: relative !important;
+    left: auto !important;
+    margin-right: 16px !important;
   }
 
   .top-brand img, .ds-mobile-brand img {
@@ -66,31 +67,42 @@
     display: block !important;
   }
 
-  /* Cockpit container */
+  /* Cockpit container: wide expanded capsule spanning across the header */
   .ds-header-cockpit {
     display: flex !important;
     align-items: center !important;
-    justify-content: center !important;
+    justify-content: space-between !important;
     position: relative !important;
     width: 100% !important;
     max-width: 100% !important;
-    gap: 16px !important;
+    min-height: 54px !important;
+    padding: 6px 14px !important;
+    background: rgba(4, 10, 24, 0.88) !important;
+    border: 1.5px solid #00f2fe !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 0 18px rgba(0, 242, 254, 0.45), inset 0 0 8px rgba(0, 242, 254, 0.2) !important;
     box-sizing: border-box !important;
-    margin: 0 auto !important;
+    margin: 0 !important;
+    gap: 12px !important;
   }
 
-  /* Dual Glowing Capsules / Pods */
+  /* Inside pods: Left and Right button groups */
   .ds-header-pod {
     display: inline-flex !important;
     align-items: center !important;
     gap: 8px !important;
-    padding: 5px 12px !important;
-    background: rgba(4, 10, 24, 0.88) !important;
-    border: 1.5px solid #00f2fe !important;
-    border-radius: 9999px !important;
-    box-shadow: 0 0 16px rgba(0, 242, 254, 0.45), inset 0 0 8px rgba(0, 242, 254, 0.2) !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     box-sizing: border-box !important;
-    flex-shrink: 0 !important;
+    flex: 1 1 0 !important;
+  }
+  .ds-header-pod-left {
+    justify-content: flex-start !important;
+  }
+  .ds-header-pod-right {
+    justify-content: flex-end !important;
   }
 
   .ds-pod-btn {
@@ -161,15 +173,15 @@
     transform: none !important;
     display: grid !important;
     place-items: center !important;
-    margin: 0 !important;
+    margin: 0 16px !important;
     width: 68px !important;
     height: 68px !important;
     min-width: 68px !important;
     border-radius: 50% !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    z-index: 10 !important;
+    background: radial-gradient(circle, rgba(0, 242, 254, 0.25) 0%, rgba(4, 10, 24, 0.95) 70%) !important;
+    border: 2px solid #00f2fe !important;
+    box-shadow: 0 0 22px rgba(0, 242, 254, 0.75), inset 0 0 10px rgba(0, 242, 254, 0.4) !important;
+    z-index: 20 !important;
     flex-shrink: 0 !important;
     cursor: pointer !important;
   }
@@ -244,5 +256,28 @@
   }
   .ds-pod-login:hover {
     box-shadow: 0 0 26px rgba(217, 70, 239, 0.9) !important;
+  }
+    /* Expand interface across full screen without compression */
+  body.ds-unified-platform .content {
+    width: auto !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+  }
+  body.ds-unified-platform :is(main, footer) {
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+  }
+  body.deepsyq-sitewide-shell :is(main, footer) {
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+  }
+  main.ws-page {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 16px clamp(16px, 2.5vw, 40px) 48px !important;
+    box-sizing: border-box !important;
   }
 }

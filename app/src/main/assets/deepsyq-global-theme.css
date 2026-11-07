@@ -64,7 +64,7 @@ html:not([data-theme="light"]) :is(.app-card,.card,.price-card,.hub-tile,.cp-fea
 html:not([data-theme="light"]) :is(a,button,input,select,textarea,summary):focus-visible {outline:3px solid var(--ds-focus);outline-offset:3px}
 html:not([data-theme="light"]) :is(.home-hero-carousel,.hero-stage,.inspiration-hero-feature) {border-radius:16px}
 body.deepsyq-sitewide-shell {padding-left:204px}
-body.deepsyq-sitewide-shell :is(main,footer) {max-width:min(1240px,100%)}
+body.deepsyq-sitewide-shell :is(main,footer) {width:100%;max-width:none;box-sizing:border-box}
 .ds-site-sidebar {
  position:fixed;inset:0 auto 0 0;width:204px;z-index:101;
  display:flex;flex-direction:column;gap:12px;padding:22px 13px 14px;
