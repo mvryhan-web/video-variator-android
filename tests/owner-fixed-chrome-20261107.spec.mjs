@@ -753,7 +753,7 @@ test('Neon screenshot: fresh Home style removes actual rails, masks and credit g
   await page.setViewportSize({width,height:900});
   const response=await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
   expect(response.status()).toBe(200);
-  await expect(page.locator('link[href="deepsyq-home-neon-cinema-fix-20261107.css"]')).toHaveCount(1);
+  await expect(page.locator('link[href^="deepsyq-home-neon-cinema-fix-20261107.css"]')).toHaveCount(1);
   await page.evaluate(()=>document.documentElement.setAttribute('data-site-theme','neon'));
   await expect(page.locator('#homeHeroCarousel')).toHaveCount(1);
   // Assert the playable-film state, not the empty placeholder that hides overlays by default.
@@ -801,5 +801,51 @@ test('Neon screenshot: fresh Home style removes actual rails, masks and credit g
   expect(s.sideFilter).toBe('brightness(1.18) saturate(1.04)');
   expect(s.sideOpacity).toBe('1');
  }
+ expect(paid).toBe(0);
+});
+
+test('Home header and first film align at desktop edges with visible clearance',async({page})=>{
+ test.setTimeout(100000);
+ let paid=0;
+ page.on('request',r=>{if(r.method()==='POST'&&['/api/studio/jobs','/api/stripe','/api/payments'].some(p=>r.url().includes(p)))paid++;});
+ for(const width of [1024,1365]){
+  await page.setViewportSize({width,height:900});
+  const response=await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+  expect(response.status()).toBe(200);
+  await expect(page.locator('.ds-header-cockpit')).toHaveCount(1);
+  await expect(page.locator('#workspace > .hero .hero-stage-cinematic')).toHaveCount(1);
+  const shape=await page.evaluate(()=>{
+   const header=document.querySelector('.content > header');
+   const cockpit=document.querySelector('.ds-header-cockpit');
+   const hero=document.querySelector('#workspace > .hero');
+   const stage=hero?.querySelector('.hero-stage-cinematic');
+   const recommended=hero?.querySelector('.home-hero-recommended');
+   const main=document.getElementById('workspace');
+   const bounds=el=>{const b=el.getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom};};
+   return {header:bounds(header),cockpit:bounds(cockpit),hero:bounds(hero),stage:bounds(stage),badge:bounds(recommended),
+    workspacePaddingLeft:getComputedStyle(main).paddingLeft,
+    workspacePaddingRight:getComputedStyle(main).paddingRight,
+    heroMarginTop:getComputedStyle(hero).marginTop,
+    pageOverflow:document.documentElement.scrollWidth-innerWidth};
+  });
+  expect(shape.workspacePaddingLeft,'left gutter matches cockpit').toBe('20px');
+  expect(shape.workspacePaddingRight,'right gutter matches cockpit').toBe('20px');
+  expect(shape.heroMarginTop,'hero clearance').toBe('16px');
+  expect(Math.abs(shape.stage.left-shape.cockpit.left),'left lines align').toBeLessThanOrEqual(2);
+  expect(Math.abs(shape.stage.right-shape.cockpit.right),'right lines align').toBeLessThanOrEqual(2);
+  expect(shape.hero.top-shape.header.bottom,'Home content below header').toBeGreaterThanOrEqual(28);
+  expect(shape.badge.top-shape.header.bottom,'Recommended remains below the header glow').toBeGreaterThanOrEqual(25);
+  expect(shape.pageOverflow,'no new horizontal overflow').toBeLessThanOrEqual(1);
+ }
+ // The fixed mobile header and the pre-existing small-screen padding are not touched.
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#homeHeroCarousel')).toHaveCount(1);
+ const mobile=await page.evaluate(()=>({
+  padding:getComputedStyle(document.getElementById('workspace')).paddingLeft,
+  horizontalOverflow:document.documentElement.scrollWidth-innerWidth
+ }));
+ expect(mobile.padding).toBe('12px');
+ expect(mobile.horizontalOverflow).toBeLessThanOrEqual(1);
  expect(paid).toBe(0);
 });
