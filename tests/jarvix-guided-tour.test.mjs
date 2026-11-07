@@ -7,7 +7,7 @@ test('TEST guided tour greets before opening navigation and supports pause/conti
   for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
    const page=await browser.newPage({viewport});let submittedJobs=0;page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(billing|studio\/jobs|jarvix\/chat)/.test(r.url()))submittedJobs++;});
    await page.route('https://accounts.google.com/gsi/client',r=>r.fulfill({contentType:'application/javascript',body:''}));
-   await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});await page.locator('#dsTakeTour').click();
+   await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});if(viewport.width>760){await page.locator('#dsTakeTour').focus();await page.keyboard.press('Enter');}else await page.locator('#dsTakeTour').click();
    await page.locator('.ds-tour-controls').waitFor({state:'visible'});
    assert.equal(await page.locator('#jarvixTourOverlay').count(),0);
    assert.equal(await page.locator('#topJarvisBtn').evaluate(e=>e.classList.contains('ds-tour-speaking')),true);
@@ -64,7 +64,8 @@ test('synced guide announces navigation before clicking and tracks the exact spo
   assert.equal(new URL(page.url()).pathname,'/deepsyq.html','intro remains on Home; no premature click');
   await page.waitForURL(/generate-studio\.html\?studio=image/,{timeout:15000});
   const spot=page.locator('#settingsButton.jarvis-tour-spotlight');
-  await spot.waitFor({timeout:8000});
+  await spot.waitFor({state:'visible',timeout:8000});
+  assert.equal(await page.locator('#studioSettingsHub').evaluate(dialog=>dialog.open),true,'Read-only settings are actually shown');
   assert.equal(await page.locator('.ds-tour-controls').count(),1);
   assert.match(await page.locator('.ds-tour-caption').textContent(),/Describe your idea/);
   await page.getByRole('button',{name:'Stop',exact:true}).click();
