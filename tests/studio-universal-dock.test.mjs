@@ -64,7 +64,7 @@ test('Owner six approved Studio panels reuse six existing native dialogs with pr
  assert.match(css,/aria-pressed="true"/);
  assert.match(dock,/new MutationObserver\(labelProviders\)/);
  assert.match(dock,/card\.dataset\.modelId/);
- assert.match(dock,/b\.disabled=true/);
+ assert.match(dock,/button\.disabled=true/);
  assert.match(dock,/nativeSettings\.dataset\.studioKind!=='video'/);
  assert.match(dock,/for\(const label of \['1:1','2:3','3:2','9:16','16:9'\]\)/);
  assert.match(dock,/extra visual slots mirror Image Settings/);
