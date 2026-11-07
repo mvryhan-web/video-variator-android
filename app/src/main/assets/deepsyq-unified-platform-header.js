@@ -18,18 +18,19 @@ function link(text,href,cls){
  const el=document.createElement('a');el.textContent=text;el.href=href;el.className=cls;return el;
 }
 export function installUnifiedPlatformHeader(){
+ // Approved Home and the VU-specific platform wrapper are never restructured.
+ if(document.body.classList.contains('home-neon')||document.body.classList.contains('ds-embedded-uniquifier'))return;
  // On a narrow viewport the already approved mobile shell owns the controls.
- // Do not remove them from its mobile left/right slots during initial boot.
+ // On widening, allow its media-query change handler to restore controls first.
  if(matchMedia('(max-width:760px)').matches){
   const onWiden=()=>{
    if(matchMedia('(max-width:760px)').matches)return;
    window.removeEventListener('resize',onWiden);
-   installUnifiedPlatformHeader();
+   requestAnimationFrame(()=>installUnifiedPlatformHeader());
   };
   window.addEventListener('resize',onWiden);
   return;
  }
- if(document.body.classList.contains('home-neon')||document.body.classList.contains('ds-embedded-uniquifier'))return;
  if(document.body.dataset.dsUnifiedPlatform==='ready')return;
  const header=document.querySelector('header.ds-stable-header');
  const sidebar=document.querySelector('#dsSiteSidebar.ds-stable-sidebar');
