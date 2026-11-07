@@ -64,7 +64,7 @@ export function mountApprovedJarvixOrb(root=document){
 export function installApprovedJarvixOrb(){
  if(!document.getElementById('jvApprovedOrbStyles')){
   const css=document.createElement('link');css.id='jvApprovedOrbStyles';
-  css.rel='stylesheet';css.href='jarvix-approved-orb.css?v=stage07';
+  css.rel='stylesheet';css.href='jarvix-approved-orb.css?v=stage08';
   document.head.append(css);
  }
  mountApprovedJarvixOrb();
