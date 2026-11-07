@@ -606,7 +606,7 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
  await expect(page.locator('#appsFeature')).toBeVisible();
  await expect(page.locator('#inspirationPreview')).toHaveCount(1);
  const inDocumentOrder=await page.evaluate(()=>{
-  const nodes=[document.getElementById('homeQuickBar'),document.getElementById('createWithDeepsyq'),document.querySelector('.home-feature-triptych'),document.getElementById('inspirationPreview'),document.getElementById('canvasFeature'),document.getElementById('agentFeature'),document.getElementById('appsFeature')];
+  const nodes=[document.getElementById('homeQuickBar'),document.getElementById('createWithDeepsyq'),document.querySelector('.home-feature-triptych'),document.getElementById('canvasFeature'),document.getElementById('agentFeature'),document.getElementById('appsFeature'),document.getElementById('pricing'),document.getElementById('inspirationPreview')];
   return nodes.every((node,i)=>node&&(i===nodes.length-1||Boolean(node.compareDocumentPosition(nodes[i+1])&Node.DOCUMENT_POSITION_FOLLOWING)));
  });
  expect(inDocumentOrder).toBe(true);

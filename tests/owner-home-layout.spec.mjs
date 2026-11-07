@@ -32,6 +32,10 @@ test('Owner neon layout: reference section order, real card images and mobile bo
  await expect(page.locator('.home-hero-recommended')).toContainText('Recommended');
  await expect(page.locator('.home-create-copy strong')).toHaveText(['Image','Video','Audio','AI Agent','AI Apps','Canvas']);
  await expect(page.locator('.inspiration-video-label')).toHaveCount(0);
+ // Owner: the complete Inspiration gallery is the final Home section before legal footer.
+ await expect.poll(()=>page.locator('#inspirationPreview').evaluate(el=>el.nextElementSibling?.matches('footer.home-footer'))).toBe(true);
+ await expect(page.locator('#inspirationPreview .inspiration-home-tabs button[data-inspiration-kind]')).toHaveCount(3);
+ await expect(page.locator('a[href="deepsyq.html#inspirationPreview"]')).not.toHaveCount(0);
  await expect.poll(()=>page.locator('#inspirationPreview').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
  for(const width of [1448,390,320]){
   await page.setViewportSize({width,height:1086});
@@ -39,7 +43,7 @@ test('Owner neon layout: reference section order, real card images and mobile bo
   await expect.poll(()=>page.locator('.home-feature-spotlight>img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
   // Check settled bounds and report exact overflowing cards if a layout regresses.
   await expect.poll(()=>page.evaluate(()=>{
-   const ids=['homeHeroCarousel','homeQuickBar','createWithDeepsyq','inspirationPreview','canvasFeature'];
+   const ids=['homeHeroCarousel','homeQuickBar','createWithDeepsyq','canvasFeature','everydayTools','pricing','inspirationPreview'];
    const tops=ids.map(id=>document.getElementById(id).getBoundingClientRect().top);
    const offenders=[...document.querySelectorAll('.home-compose-modes,.home-create-grid,.home-create-card,.home-feature-triptych,.home-feature-spotlight,#homeQuickBar')].flatMap(el=>{const r=el.getBoundingClientRect();return r.left>=-1&&r.right<=innerWidth+1?[]:[{class:el.className,left:r.left,right:r.right,viewport:innerWidth}];});
    return {ordered:tops.every((v,i)=>i===0||v>tops[i-1]),offenders};
