@@ -1,4 +1,5 @@
 import {decorateComposer} from './jarvix-composer-design.js';
+import {mountStudioUniversalDock} from './studio-universal-dock.js';
 // Presentation adapter only: existing Studio buttons/selects remain authoritative.
 // No provider requests, prices, capabilities or generation state are defined here.
 document.addEventListener('DOMContentLoaded',()=>{
@@ -148,6 +149,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(activePanel===hub){activePanel=null;activeAnchor=null;}
  });
  controls.prepend(gear);
- decorateComposer($('creator'));if(new URLSearchParams(location.search).get('settings')==='1'){hub.showModal();prepare(hub,gear);position(hub,gear);}
+ decorateComposer($('creator'));mountStudioUniversalDock({form:$('creator'),nav,gear});if(new URLSearchParams(location.search).get('settings')==='1'){hub.showModal();prepare(hub,gear);position(hub,gear);}
 
 });
