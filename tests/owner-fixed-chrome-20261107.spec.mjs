@@ -373,3 +373,20 @@ test('JARVIX removes any late-injected old orb nodes without touching owner imag
  await expect(orb.locator('.jv-owner-upload-orb')).toHaveCount(5);
  await expect(page.locator('#topJarvisBtn')).toHaveCount(1);
 });
+
+
+test('owner JARVIX original sphere has no outer football-shaped pseudo overlay',async({page})=>{
+ test.setTimeout(60000);
+ const css=await page.request.get('/jarvix-action-design.css');
+ expect(css.ok()).toBe(true);
+ expect(await css.text()).not.toContain('body.j-action-workspace #topJarvisBtn::after{display:block');
+ for(const width of [390,1365]){
+  await page.setViewportSize({width,height:900});
+  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+  const orb=page.locator('#topJarvisBtn');
+  await expect(orb).toHaveCount(1);
+  await expect.poll(()=>orb.evaluate(el=>getComputedStyle(el,'::after').display)).toBe('none');
+  await expect.poll(()=>orb.locator('.jv-owner-photo-test').count()).toBe(1);
+  await expect(orb.locator('svg.ds-reference-orb, .jarvis-ring')).toHaveCount(0);
+ }
+});
