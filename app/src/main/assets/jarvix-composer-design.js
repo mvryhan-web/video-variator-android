@@ -1,3 +1,4 @@
+import {createCanonicalIcon} from './deepsyq-canonical-nav-icons.js';
 // Shared presentation only: existing submission and permission handlers stay in charge.
 export function decorateComposer(form,{settingsTarget=null}={}){
  if(!form||form.dataset.neonComposer)return;
@@ -6,12 +7,39 @@ export function decorateComposer(form,{settingsTarget=null}={}){
  const ru=(localStorage.getItem('deepsyq_home_language')||document.documentElement.lang).startsWith('ru');
  const make=(tag,label)=>{const el=document.createElement(tag);el.textContent=label;return el;};
  const rail=make('nav','');rail.className='j-mode-rail';rail.setAttribute('aria-label',ru?'Режимы и инструменты':'Creation modes and tools');
- for(const [label,href,icon] of [['JARVIX','jarvix-chat.html','◉'],['Image','generate-studio.html?studio=image','▧'],['Video','generate-studio.html?studio=video','▷'],['Audio','generate-studio.html?studio=audio','♫'],['Tools','free-tools.html','▱'],['Video Uniquifier','index.html','▦']]){const a=make('a',icon+' '+label);a.href=href;const u=new URL(href,location.href);if(u.pathname===location.pathname&&u.search===location.search)a.setAttribute('aria-current','page');if(form.id==='creator'&&['Image','Video','Audio'].includes(label))a.onclick=e=>{const kind=label==='Audio'?'music':label.toLowerCase();const button=document.querySelector('[data-kind="'+kind+'"]');if(button){e.preventDefault();button.click();for(const link of rail.querySelectorAll('a'))link.removeAttribute('aria-current');a.setAttribute('aria-current','page');}};rail.append(a);}
+ for(const [label,href,iconKey] of [['JARVIX','jarvix-chat.html',null],['Image','generate-studio.html?studio=image','image'],['Video','generate-studio.html?studio=video','video'],['Audio','generate-studio.html?studio=audio','audio'],['Tools','free-tools.html','tools'],['Video Uniquifier','index.html','legacy']]){
+  const a=make('a',label);a.href=href;
+  if(iconKey){const art=make('span','');art.className='j-rail-icon';art.setAttribute('aria-hidden','true');art.append(createCanonicalIcon(iconKey));a.prepend(art);}
+  else a.prepend(document.createTextNode('◉ ')); // Stage07 replaces this with approved JARVIX sphere.
+  const u=new URL(href,location.href);
+  if(u.pathname===location.pathname&&u.search===location.search)a.setAttribute('aria-current','page');
+  if(form.id==='creator'&&['Image','Video','Audio'].includes(label))a.onclick=e=>{
+   const kind=label==='Audio'?'music':label.toLowerCase();
+   const button=document.querySelector('[data-kind="'+kind+'"]');
+   if(button){e.preventDefault();button.click();for(const link of rail.querySelectorAll('a'))link.removeAttribute('aria-current');a.setAttribute('aria-current','page');}
+  };
+  rail.append(a);
+ }
  const dock=form.closest('#homeQuickBar,.j-chat-bottom')||form;
  dock.classList.add('j-neon-dock');dock.append(rail);
  const mic=form.querySelector('#jMic,#studioVoiceBtn');
  const attach=form.querySelector('#jAttach');
- if(attach){const clip=make('button','⌁');clip.type='button';clip.className='j-attach-shortcut';clip.setAttribute('aria-label',ru?'Прикрепить файл':'Attach file');clip.onclick=()=>attach.click();mic?.before(clip);}
- if(settingsTarget){const gear=make('button','☷');gear.type='button';gear.className='j-settings-shortcut';gear.setAttribute('aria-label',ru?'Настройки студии':'Studio settings');gear.setAttribute('aria-haspopup','dialog');gear.onclick=settingsTarget;mic?.after(gear);}
+ if(attach){
+  const clip=make('button','');clip.type='button';clip.className='j-attach-shortcut';clip.setAttribute('aria-label',ru?'Прикрепить файл':'Attach file');
+  clip.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m20 12-8.5 8.5a6 6 0 0 1-8.5-8.5L12 3a4 4 0 0 1 5.7 5.7L8.8 17.6a2 2 0 0 1-2.8-2.8L14 6.7"/></svg>';
+  clip.onclick=()=>attach.click();mic?.before(clip);
+ }
+ const imageChoice=form.querySelector('#jPlusMenu [data-j-mode="image"]');
+ if(imageChoice&&!form.querySelector('.j-image-shortcut')){
+  const imageShortcut=make('button','');imageShortcut.type='button';imageShortcut.className='j-image-shortcut';
+  imageShortcut.setAttribute('aria-label',ru?'Режим изображения':'Image mode');
+  imageShortcut.append(createCanonicalIcon('image'));imageShortcut.onclick=()=>imageChoice.click();
+  const clip=form.querySelector('.j-attach-shortcut');if(clip)clip.before(imageShortcut);else mic?.before(imageShortcut);
+ }
+ if(settingsTarget){
+  const gear=make('button','');gear.type='button';gear.className='j-settings-shortcut';gear.setAttribute('aria-label',ru?'Настройки студии':'Studio settings');gear.setAttribute('aria-haspopup','dialog');
+  gear.innerHTML='<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M9 3v6M15 9v6M8 15v6"/></svg>';
+  gear.onclick=settingsTarget;mic?.after(gear);
+ }
  const plus=form.querySelector('#jPlus');if(plus)plus.classList.add('j-glow-plus');
 }
