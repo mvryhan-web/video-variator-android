@@ -4,6 +4,7 @@ import {spawn} from 'node:child_process';
 import {once} from 'node:events';
 import {chromium} from '@playwright/test';
 import {readFileSync} from 'node:fs';
+import {tourV3Plan} from '../app/src/main/assets/jarvix-tour-v3-script.js';
 const manifest=JSON.parse(readFileSync(new URL('../app/src/main/assets/media/jarvix/tour-v3/manifest.json',import.meta.url),'utf8'));
 const words=new Map(manifest.clips.map(c=>[c.filename,c.text]));
 
@@ -42,12 +43,18 @@ test('V3 tour voice and real actions: spoken Photo section matches opened Image 
  await preview(32605,async(browser,base)=>{
   for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
    const page=await browser.newPage({viewport});
-   const spoken=[];let paid=0;
+   const spoken=[],idleBetweenClips=[];let paid=0;
    page.on('request',req=>{
     if(req.method()==='POST'&&/\/api\/(?:billing|checkout|studio\/jobs|wallet|generation)/.test(new URL(req.url()).pathname))paid++;
    });
    await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
-   await page.route('**/media/jarvix/tour-v3/*.mp3',route=>{const name=route.request().url().split('/').pop().split('?')[0];spoken.push(words.get(name));return route.fulfill({status:200,contentType:'audio/wav',body:makeWav(.25)});});
+   await page.route('**/media/jarvix/tour-v3/*.mp3',async route=>{
+    const name=route.request().url().split('/').pop().split('?')[0],phrase=words.get(name);
+    spoken.push(phrase);
+    if(phrase==='Создавайте по описанию или добавьте фотографию.')
+     idleBetweenClips.push(await page.locator('#topJarvisBtn').evaluate(el=>({speaking:el.classList.contains('is-speaking'),tourSpeaking:el.classList.contains('ds-tour-speaking')})));
+    return route.fulfill({status:200,contentType:'audio/wav',body:makeWav(.25)});
+   });
    await page.route('**/api/jarvix/voice-config',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({configured:true,speechModelInstalled:true,speechSource:'self-hosted',engine:'VoxCPM2'})}));
    await page.route('**/api/jarvix/tts',route=>{
     const payload=route.request().postDataJSON();
@@ -68,6 +75,7 @@ test('V3 tour voice and real actions: spoken Photo section matches opened Image 
     await page.locator('#creator.jarvis-tour-spotlight').waitFor({timeout:15000});
     assert.ok(spoken.includes('Создавайте по описанию или добавьте фотографию.'));
     assert.ok(spoken.every(Boolean),'All recorded phrases must be present in manifest');
+    assert.deepEqual(idleBetweenClips,[{speaking:false,tourSpeaking:false}], 'JARVIX orb must be idle between the destination title and its first voice beat');
     await page.locator('[data-tour="stop"]').click();
     assert.equal(await page.locator('.ds-tour-controls').count(),0);
     assert.equal(paid,0,'Tour must not submit any paid generation, Stripe or billing request');
@@ -100,8 +108,20 @@ test('full V3 19-step route stays synchronized and never sends paid requests',as
  await preview(32607,async(browser,base)=>{
   const page=await browser.newPage({viewport:{width:1280,height:800}});
   const paid=[];
+  const expectedNav=new Map(tourV3Plan('ru').filter(step=>step.navText).map(step=>{
+   const u=new URL(step.url,base+'/');
+   return [step.navText,u.pathname+u.search];
+  }));
+  const heardOn=[];
   page.on('request',req=>{
    if(req.method()==='POST'&&/\/api\/(?:billing|checkout|studio\/jobs|wallet|generation)/.test(new URL(req.url()).pathname))paid.push(req.url());
+   if(/\/media\/jarvix\/tour-v3\/t3_.*\.mp3(?:\?|$)/.test(req.url())){
+    const phrase=words.get(new URL(req.url()).pathname.split('/').pop());
+    if(expectedNav.has(phrase)){
+     const here=new URL(page.url());
+     heardOn.push({phrase,actual:here.pathname+here.search,expected:expectedNav.get(phrase)});
+    }
+   }
   });
   await page.addInitScript(()=>{localStorage.setItem('deepsyq_home_language','ru');});
   await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
@@ -127,7 +147,111 @@ test('full V3 19-step route stays synchronized and never sends paid requests',as
    }
    assert.equal(finished,true,'Tour never reached normal completion: '+last);
    assert.equal(maxStage,18,'Tour must visit the concluding Home stage');
+   assert.equal(heardOn.length,expectedNav.size,'Each destination title must play exactly once');
+   for(const x of heardOn)assert.equal(x.actual,x.expected,x.phrase+' must begin only on its destination');
    assert.deepEqual(paid,[],'Tour must not spend credits, upload or trigger payment');
+  }finally{await page.close();}
+ });
+});
+
+
+test('real owner MP3 continues after document navigation to Image without a second tap',async()=>{
+ await preview(32608,async(browser,base)=>{
+  for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
+   const page=await browser.newPage({viewport});
+   const playback=[],pageErrors=[];
+   page.on('console',m=>{if(m.text().startsWith('TOUR_AUDIO_DIAG'))playback.push(m.text());});
+   page.on('pageerror',e=>pageErrors.push(e.message));
+   try{
+    await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
+    await page.addInitScript(()=>{
+     localStorage.setItem('deepsyq_home_language','ru');
+     const original=HTMLMediaElement.prototype.play;
+     HTMLMediaElement.prototype.play=function(...args){
+      const isOwnerTour=String(this.currentSrc||this.src||'').includes('/media/jarvix/tour-v3/');
+      const result=original.apply(this,args);
+      if(isOwnerTour)Promise.resolve(result).then(
+       ()=>console.log('TOUR_AUDIO_DIAG PLAY_OK '+location.pathname+location.search),
+       err=>console.log('TOUR_AUDIO_DIAG PLAY_REJECTED '+location.pathname+location.search+' '+err.name)
+      );
+      return result;
+     };
+    });
+    const pageResponse=await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});
+    try{await page.locator('#dsTakeTour').waitFor({state:'attached',timeout:12000});}
+    catch{
+     throw Error('Tour button never mounted: '+JSON.stringify({
+      status:pageResponse?.status(),url:page.url(),
+      scripts:await page.locator('script[src]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('src')).slice(0,12)),
+      pageErrors,
+      pageTitle:await page.title()
+     }));
+    }
+    if(viewport.width>760){await page.locator('#dsTakeTour').focus();await page.keyboard.press('Enter');}
+    else await page.locator('#dsTakeTour').click();
+    await page.waitForURL(/generate-studio\.html\?studio=image/,{timeout:30000});
+    let heard=false;
+    try{
+     await page.waitForFunction(()=>{
+      const a=document.querySelector('#dsTourAudio');
+      return a&&a.currentTime>0.10&&!a.paused;
+     },null,{timeout:12000});
+     heard=true;
+    }catch{}
+    const state=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('deepsyq_guided_tour_v6')||'null'));
+    assert.equal(heard,true,'Owner MP3 did not actually play on Image after navigation: '+JSON.stringify({viewport,state,playback,pageErrors}));
+    await page.locator('[data-tour="stop"]').click();
+   }finally{await page.close();}
+  }
+ });
+});
+
+
+test('all 19 Tour V3 stages play every original Russian MP3, never a silent placeholder',async()=>{
+ await preview(32609,async(browser,base)=>{
+  const page=await browser.newPage({viewport:{width:1365,height:900}});
+  const actual=[],paid=[],pageErrors=[];
+  page.on('pageerror',e=>pageErrors.push(e.message));
+  page.on('request',req=>{
+   const url=new URL(req.url());
+   if(req.method()==='POST'&&/\/api\/(?:billing|checkout|studio\/jobs|wallet|generation)/.test(url.pathname))paid.push(url.pathname);
+   if(url.pathname.includes('/media/jarvix/tour-v3/')&&url.pathname.endsWith('.mp3'))
+    actual.push(words.get(url.pathname.split('/').pop()));
+  });
+  try{
+   await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
+   await page.addInitScript(()=>{
+    localStorage.setItem('deepsyq_home_language','ru');
+    const native=HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play=function(...args){
+     // Exercise the REAL encoded files and onended events, but accelerate QA.
+     if(String(this.src||'').includes('/media/jarvix/tour-v3/'))this.playbackRate=4;
+     return native.apply(this,args);
+    };
+   });
+   await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});
+   await page.locator('#dsTakeTour').waitFor({state:'attached',timeout:12000});
+   await page.locator('#dsTakeTour').focus();
+   await page.keyboard.press('Enter');
+   let furthest=0,finished=false,last='none';
+   const deadline=Date.now()+195000;
+   while(Date.now()<deadline){
+    let current;
+    try{current=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('deepsyq_guided_tour_v6')||'null'));}
+    catch{await new Promise(resolve=>setTimeout(resolve,180));continue;}
+    if(current){
+     furthest=Math.max(furthest,current.index);
+     last=current.index+' beat '+current.beat+' '+current.phase+' '+(current.error||'')+' @ '+page.url();
+     if(current.phase==='paused')throw Error('Real owner MP3 stopped: '+last);
+    }else if(furthest>=18){finished=true;break;}
+    await new Promise(resolve=>setTimeout(resolve,180));
+   }
+   assert.ok(finished,'Real MP3 19-stage tour did not finish: '+last+' errors '+JSON.stringify(pageErrors));
+   const expected=manifest.clips.filter(c=>c.language==='ru').map(c=>c.text);
+   assert.equal(expected.length,48);
+   assert.equal(actual.length,48,'Tour must load every one of its 48 RU voice lines exactly once');
+   assert.deepEqual(new Set(actual),new Set(expected),'Every distinct official MP3 must be used');
+   assert.deepEqual(paid,[],'Tour may never generate or spend paid credits');
   }finally{await page.close();}
  });
 });
