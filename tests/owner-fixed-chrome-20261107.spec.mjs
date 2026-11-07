@@ -702,7 +702,7 @@ test('owner latest header: mobile Russian Tour is one line and desktop web posit
 test('Home only: remove marked neon side hairlines and show cinematic media without dark film tint',async({page})=>{
  test.setTimeout(90000);
  let paid=0;
- page.on('request',r=>{if(r.method()==='POST'&&/\\/api\\/(studio\\/jobs|payments|stripe)/.test(r.url()))paid++;});
+ page.on('request',r=>{if(r.method()==='POST'&&['/api/studio/jobs','/api/payments','/api/stripe'].some(x=>r.url().includes(x)))paid++;});
  for(const width of [390,1365]){
   await page.setViewportSize({width,height:900});
   await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
