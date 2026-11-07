@@ -4,11 +4,12 @@ import {readFileSync,existsSync} from 'node:fs';
 const root=new URL('../app/src/main/assets/',import.meta.url);
 const read=p=>readFileSync(new URL(p,root),'utf8');
 const ui=read('video-uniquifier-reference.js'),css=read('video-uniquifier-reference.css'),page=read('index.html'),process=read('app-v4.js');
-test('real Deepsyq approved logo replaces the temporary star without changing sidebar',()=>{
+test('original VU engine uses the existing DEEPSYQ logo and suppresses legacy navigation',()=>{
  assert.ok(existsSync(new URL('deepsyq-logo.png',root)));
- assert.match(ui,/class="vu-logo-image" src="deepsyq-logo\.png"/);
- assert.doesNotMatch(ui,/vu-brandmark">✦/);
- assert.match(css,/\.vu-appbar \.vu-logo \.vu-logo-image/);
+ assert.match(page,/class="ds-embedded-uniquifier deepsyq-sitewide-shell"/);
+ assert.match(page,/deepsyq-site-shell\.js/);
+ assert.match(ui,/if\(!document\.body\.classList\.contains\('ds-embedded-uniquifier'\)\)makeNav\(shell\)/);
+ assert.ok(existsSync(new URL('deepsyq-platform-embedded.css',root)));
 });
 test('two buttons select the real aspectRatio used by the existing video processor',()=>{
  assert.match(ui,/const ratio=\$\('aspectRatio'\)/);
