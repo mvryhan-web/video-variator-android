@@ -24,7 +24,7 @@ test('Modes are selected in existing composer; plus stays plus and selection glo
  assert.match(design,/j-active-mode/);
  assert.match(css,/\.j-mode-rail \.j-active-mode:not\(\[hidden\]\)/);
 });
-test('No new website framework, no invented asset page, upload uses original validation and mic/send unchanged',()=>{
+test('No new website framework, no invented asset page, upload uses original validation and mic/send unchanged',async()=>{
  assert.ok(composer.includes("document.getElementById('jAttach').onclick=()=>fileInput.click()"));
  assert.ok(composer.includes("files=validateAttachments([...files,...fileInput.files])"));
  assert.ok(composer.includes("await voice.stop()"));
