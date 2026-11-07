@@ -1,3 +1,18 @@
+## OWNER D25 — 2026-11-07 — ONE INTEGRATED SITE / ADMINISTRATOR ONLY
+
+**LATEST BINDING OWNER INSTRUCTION; overrides D24/D23 on roles, executor permissions, deployment and scope.**
+**Administrator is the ONLY active DEEPSYQ application developer and the ONLY person authorized by the owner to publish a reviewed integrated update on isolated TEST.** Antigravity MUST STOP ALL DEEPSYQ CODING, TASKS AND DEPLOYMENTS. P may coordinate, audit, maintain governance instructions/checkpoints and review proposed diffs, but must NOT independently change application features or publish. Preserve all historical code, branches, assets, PRs and tests from retired contributors. GitHub/Render credentials still need separate owner-side restriction for hard enforcement.
+
+**THE OWNER'S CAR RULE (exact meaning):** Treat the current approved DEEPSYQ site like a fully assembled car. If asked to change dashboard buttons, change ONLY those buttons — do NOT touch the steering wheel, seats, window controls, lights, underlying wiring or previously implemented behavior. If asked to change seat appearance, do NOT also change the electric adjustment mechanism. On the website, changing a button design never authorizes changing its function, Studio Settings, layout, media, menus, unrelated styles or another page. **Minimal requested delta + the entire previous accepted product preserved.** A shared file may be edited only in the specifically requested lines/functions, never wholesale restored from a stale branch.
+
+**PUBLISHING RULE:** Integrate only explicitly approved task changes into the latest reviewed `deepsyq-platform`, preserve ALL other accepted changes, compare current TEST LIVE SHA to DEV, run scoped and desktop/mobile regression checks, then Administrator alone deploys the exact latest accepted DEV SHA to TEST. No stand-alone PR branch, no old copy, no extra features, no production/main.
+
+**TODAY'S ADMIN INCIDENT — REQUIRED SURGICAL REPAIR:** PR #559 TEST commit `4de99be9fa74999ece8284804e6f06c7b3697feb` included unrequested changes overlapping approved Studio Settings and other UI. Administrator must retain ONLY owner-requested morning changes and restore each unrelated altered element to its last approved state (Studio #560–#562 baseline `8c5f527ebf6e572d30cd8983d5a9adc234fd7b6d`), WITHOUT hard-resetting the whole site or erasing approved newer work. Review 14-file PR diff and owner requests, fix overlapping buttons and verify actual Image/Video/Audio settings, mobile/desktop screens; then release integrated DEV TEST only. If owner intent for a change is unclear, do not assume it was approved.
+
+Read full current D25 addendum in [OWNER_CHANGE_CONTROL_20261107.md](docs/OWNER_CHANGE_CONTROL_20261107.md) and Issue [#233 owner decision](https://github.com/mvryhan-web/video-variator-android/issues/233#issuecomment-6704526345) BEFORE every task. The older D24/D23 active-team references below are historical and superseded where inconsistent.
+
+---
+
 ## OWNER D24 — 2026-11-07 — ADMIN / P / ANTIGRAVITY: NO UNREQUESTED EDITS, NO UNMERGED TEST DEPLOYS
 
 **CURRENT TOP-PRIORITY ORDER.** Every executor, especially Administrator, must first read [OWNER_CHANGE_CONTROL_20261107.md](docs/OWNER_CHANGE_CONTROL_20261107.md) and the newest owner decisions, compare the current DEV HEAD and actual Render TEST deployed SHA, and record **exact authorized paths/functions, preserved components, and tests**. Edit only the requested section. Never replace whole files with an older worktree, silently alter approved Studio Settings, navigation, design, model/popup UX, or unrelated features. New work must include all accepted later commits. A model/JARVIX task does NOT authorize altering Studio settings.
