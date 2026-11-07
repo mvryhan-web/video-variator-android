@@ -363,7 +363,7 @@ async function loadPlanModelCatalog(){
 }
 try{config=await api('/api/config');applyPlatformFeatures();void renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);}catch(_){updateInspirationHero([]);$('paymentStatus').textContent='Plans could not load. Please try again later.';}
 window.addEventListener('load',initGoogle);
-try{const c=await api('/api/studio/config');studioModelMenuConfig=c;if(openModelsKind)renderModelFlyout(openModelsKind);$('studioStatus').textContent=c.ownerOnly?'AI generation is in owner preview. Explore the studios; existing tools remain available.':c.enabled?'Open a studio to see the available models.':'AI generation is not available yet. Existing tools remain available.';}catch(_){$('studioStatus').textContent='Studio availability could not be checked. Existing tools remain available.';}
+try{const c=await api('/api/studio/config');studioModelMenuConfig=c;if(openModelsKind)renderModelFlyout(openModelsKind);}catch(_){/* The model chooser retains its own availability feedback. */}
 // Read-only dashboard overview. Backend user_id scope is authoritative;
 // never render a late private response after a session/account switch.
 let recentCreationsEpoch=0,recentRenderedOwnerToken=null;
