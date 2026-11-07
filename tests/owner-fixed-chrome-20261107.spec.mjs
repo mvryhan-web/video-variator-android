@@ -698,3 +698,47 @@ test('owner latest header: mobile Russian Tour is one line and desktop web posit
  }
  expect(paid).toBe(0);
 });
+
+test('Home only: remove marked neon side hairlines and show cinematic media without dark film tint',async({page})=>{
+ test.setTimeout(90000);
+ let paid=0;
+ page.on('request',r=>{if(r.method()==='POST'&&['/api/studio/jobs','/api/payments','/api/stripe'].some(x=>r.url().includes(x)))paid++;});
+ for(const width of [390,1365]){
+  await page.setViewportSize({width,height:900});
+  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#homeHeroCarousel')).toHaveCount(1);
+  await expect(page.locator('.hero-stage-cinematic .hero-neighbor')).toHaveCount(2);
+  await expect(page.locator('#inspirationHeroVideo')).toHaveCount(1);
+  await expect(page.locator('#homeHeroPrevious,#homeHeroNext')).toHaveCount(2);
+  const styles=await page.evaluate(()=>{
+   const s=(selector,pseudo)=>{const el=document.querySelector(selector);return el?getComputedStyle(el,pseudo):null;};
+   const aside=s('body.home-neon #sidebar');
+   const carousel=s('.hero-stage-cinematic .home-hero-carousel','::after');
+   const film=s('.hero-stage-cinematic .inspiration-hero-feature video');
+   const neighbor=s('.hero-stage-cinematic .hero-neighbor video');
+   const neighborMask=s('.hero-stage-cinematic .hero-neighbor','::after');
+   const pod=s('body.home-neon .ds-header-cockpit');
+   return {
+    asideBorder:aside?.borderRightColor,
+    carouselMask:carousel?.backgroundImage,
+    filmFilter:film?.filter,
+    neighborOpacity:neighbor?.opacity,
+    neighborMaskDisplay:neighborMask?.display,
+    pod:pod?{left:pod.borderLeftColor,right:pod.borderRightColor,top:pod.borderTopColor,bottom:pod.borderBottomColor}:null
+   };
+  });
+  expect(styles.asideBorder,'no left-side Home sidebar hairline').toBe('rgba(0, 0, 0, 0)');
+  expect(styles.carouselMask,'no film-wide dark overlay').toBe('none');
+  expect(styles.filmFilter,'main movie only gently brightened').toBe('brightness(1.08)');
+  expect(styles.neighborOpacity,'side movies retain source brightness').toBe('1');
+  expect(styles.neighborMaskDisplay,'no dark tint above side movies').toBe('none');
+  if(width>760){
+   expect(styles.pod,'desktop owner cockpit remains').not.toBeNull();
+   expect(styles.pod.left,'left side rail removed').toBe('rgba(0, 0, 0, 0)');
+   expect(styles.pod.right,'right side rail removed').toBe('rgba(0, 0, 0, 0)');
+   expect(styles.pod.top,'upper border preserved').not.toBe('rgba(0, 0, 0, 0)');
+   expect(styles.pod.bottom,'lower border preserved').not.toBe('rgba(0, 0, 0, 0)');
+  }
+ }
+ expect(paid).toBe(0);
+});

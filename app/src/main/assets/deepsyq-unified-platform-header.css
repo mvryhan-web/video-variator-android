@@ -86,6 +86,11 @@
     gap: 12px !important;
   }
 
+  /* Only Home: hide the thin side rails marked by the owner; retain the upper/lower cyan strokes. */
+  body.home-neon .ds-header-cockpit {
+    border-inline-color: transparent !important;
+  }
+
   /* Inside pods: Left and Right button groups */
   .ds-header-pod {
     display: inline-flex !important;

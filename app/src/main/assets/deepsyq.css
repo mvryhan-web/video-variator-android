@@ -453,21 +453,27 @@ body button:focus-visible,
  color:var(--home-owner-focus);
 }
 
+/* Owner: remove only the Home sidebar's hairline edge; navigation styling stays unchanged. */
+body.home-neon #sidebar{border-right-color:transparent!important}
+
 /* Owner reference, 18 Oct: smaller 16:9 film with genuine neighboring videos.
    This class is present in the initial HTML; no delayed skin or UI replacement. */
 .hero-stage.hero-stage-cinematic{--film-width:74%;--film-left:13%;display:block;width:100%;min-width:0;min-height:0;aspect-ratio:2.15;border:0;border-radius:16px;background:radial-gradient(ellipse at 50% 100%,#12477945,transparent 62%),#090d19;overflow:hidden;isolation:isolate}
 .hero-stage.hero-stage-cinematic::before{inset:0;background:radial-gradient(ellipse at 50% 8%,#063e783d,transparent 70%)}
 .hero-stage.hero-stage-cinematic::after{display:none}
 .hero-stage-cinematic .home-hero-carousel{inset:0;z-index:2;outline:none;touch-action:pan-y}
-.hero-stage-cinematic .home-hero-carousel::after{inset:0;background:linear-gradient(90deg,#080d19e8,transparent 14%,transparent 86%,#080d19e8);z-index:3;pointer-events:none}
+.hero-stage-cinematic .home-hero-carousel::after{inset:0;background:none;z-index:3;pointer-events:none}
 .hero-stage-cinematic .inspiration-hero-feature{min-height:0;min-width:0;max-height:none;margin:0;inset:auto;left:var(--film-left);top:5%;width:var(--film-width);height:auto;aspect-ratio:16/9;z-index:2;clip-path:url(#homeHeroCurve);background:#03060d;pointer-events:auto}
-.hero-stage-cinematic .inspiration-hero-feature video{object-fit:contain;width:100%;height:100%}
+.hero-stage-cinematic .inspiration-hero-feature video{object-fit:contain;width:100%;height:100%;filter:brightness(1.08)}
 .hero-film-outline{position:absolute;z-index:3;left:var(--film-left);top:5%;width:var(--film-width);height:auto;aspect-ratio:16/9;pointer-events:none;overflow:visible;filter:drop-shadow(0 0 5px #195bffbb)}
 /* Owner: video carousel must have no decorative outer frame. */
 .hero-stage-cinematic .hero-film-outline{display:none}
 .hero-film-outline path{fill:none;stroke:#4fdcfa;stroke-width:1.8;vector-effect:non-scaling-stroke}
 .hero-neighbor{position:absolute;top:50%;width:70%;height:88%;margin-top:-1.5%;overflow:hidden;border:1px solid #7546ee;border-radius:9px;background:#070b17;box-shadow:0 0 20px #7b29ff45;z-index:1;pointer-events:none}
 .hero-stage-cinematic .hero-neighbor{border:0;box-shadow:none}
+/* Owner: preserve true colors in neighboring video previews rather than tinting them. */
+.hero-stage-cinematic .hero-neighbor video{opacity:1}
+.hero-stage-cinematic .hero-neighbor::after{display:none}
 .hero-neighbor[hidden]{display:none}
 .hero-neighbor video{display:block;width:100%;height:100%;object-fit:cover;opacity:.8}
 .hero-neighbor::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#04091611,#04091630)}
