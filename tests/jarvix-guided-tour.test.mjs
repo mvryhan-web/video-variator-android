@@ -64,7 +64,7 @@ test('V3 tour voice and real actions: spoken Photo section matches opened Image 
     assert.ok(spoken.includes('Изображения.'),'Navigation announces Image before real click');
     await page.locator('#creator.jarvis-tour-spotlight').waitFor({timeout:15000});
     assert.ok(spoken.includes('Создавайте по описанию или добавьте фотографию.'));
-    await page.getByRole('button',{name:'Stop',exact:true}).click();
+    await page.locator('[data-tour="stop"]').click();
     assert.equal(await page.locator('.ds-tour-controls').count(),0);
     assert.equal(paid,0,'Tour must not submit any paid generation, Stripe or billing request');
    }finally{await page.close();}
@@ -86,7 +86,7 @@ test('V3 missing owner voice pauses safely; never switches to a different narrat
    assert.equal(await page.locator('[data-tour="continue"]').evaluate(el=>el.hidden),false,'Continue must be enabled after a safe pause');
    assert.equal(await page.locator('.ds-tour-caption').count(),0);
    assert.equal(new URL(page.url()).pathname,'/deepsyq.html');
-   await page.getByRole('button',{name:'Stop',exact:true}).click();
+   await page.locator('[data-tour="stop"]').click();
   }finally{await page.close();}
  });
 });
