@@ -1,3 +1,11 @@
+## OWNER D24 — 2026-11-07 — ADMIN / P / ANTIGRAVITY: NO UNREQUESTED EDITS, NO UNMERGED TEST DEPLOYS
+
+**CURRENT TOP-PRIORITY ORDER.** Every executor, especially Administrator, must first read [OWNER_CHANGE_CONTROL_20261107.md](docs/OWNER_CHANGE_CONTROL_20261107.md) and the newest owner decisions, compare the current DEV HEAD and actual Render TEST deployed SHA, and record **exact authorized paths/functions, preserved components, and tests**. Edit only the requested section. Never replace whole files with an older worktree, silently alter approved Studio Settings, navigation, design, model/popup UX, or unrelated features. New work must include all accepted later commits. A model/JARVIX task does NOT authorize altering Studio settings.
+
+**Mandatory PR scope and deploy safety:** use the OWNER_SCOPE PR template, `owner-change-scope` CI, relevant UI browser tests and owner review for protected files. No direct DEV pushes by executors. **TEST deployment must use exact latest merged `deepsyq-platform` SHA; never deploy a separate PR branch**, even when ahead of DEV. No auto publication of concurrent, unreviewed mixed-scope work. Real Render LIVE + real page validation required before DONE. MAIN/production remains frozen. GitHub branch protection is **currently disabled**, so the owner must also enable Rulesets; CI/doc rules alone cannot prevent direct pushes or manual Render deployments. Full binding rule and incident evidence in the linked doc.
+
+---
+
 ## OWNER D23 — 2026-11-06 — GOOGLE JULES 1/2/3 RETIRED IMMEDIATELY / KEEP ALL CODE
 
 **Latest owner instruction overrides every older Jules dispatch, continuation, cutoff (including 11 Nov), monitoring and handoff instruction below.** Google Jules 1, 2 and 3 are **not active DEEPSYQ executors**. Do not issue, re-label, re-dispatch, revive, wait for, or ask any of them to complete work. Do not run Jules-specific automation. **Active team is ONLY P, Administrator and Google Antigravity.** Unfinished functionality goes into P's ordinary backlog, never a Jules assignment.
