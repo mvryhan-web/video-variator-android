@@ -10,6 +10,11 @@ on:
       - 'app/src/main/assets/jarvix-composer.js'
       - 'app/src/main/assets/jarvix-voice-input.js'
       - 'app/src/main/assets/jarvix-chat.css'
+      - 'app/src/main/assets/jarvix-composer-design.js'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/jarvix-chat.html'
+      - 'tests/jarvix-universal-hub.test.mjs'
+      - 'tests/jarvix-universal-hub.browser.test.mjs'
       - 'tests/jarvix-voice-input.test.mjs'
       - 'tests/jarvix-bottom-dock.test.mjs'
       - 'tests/jarvix-free-llm.test.mjs'
@@ -47,9 +52,40 @@ jobs:
           node --check server/deepsyq-preview.js
           node --check app/src/main/assets/jarvix-chat.js
           node --check app/src/main/assets/jarvix-composer.js
+          node --check app/src/main/assets/jarvix-composer-design.js
+          node --check tests/jarvix-universal-hub.test.mjs
+          node --check tests/jarvix-universal-hub.browser.test.mjs
           node --check app/src/main/assets/jarvix-voice-input.js
           node --check tests/jarvix-voice-input.test.mjs
           node --check tests/jarvix-bottom-dock.test.mjs
           node --check tests/jarvix-free-llm.test.mjs
       - name: Zero-spend free LLM, voice and preview isolation
-        run: node --test tests/jarvix-free-llm.test.mjs tests/jarvix-local-voice.test.mjs tests/jarvix-chat-preview.test.mjs tests/jarvix-speech-draft.test.mjs tests/jarvix-voice-input.test.mjs tests/jarvix-bottom-dock.test.mjs
+        run: node --test tests/jarvix-free-llm.test.mjs tests/jarvix-local-voice.test.mjs tests/jarvix-chat-preview.test.mjs tests/jarvix-speech-draft.test.mjs tests/jarvix-voice-input.test.mjs tests/jarvix-bottom-dock.test.mjs tests/jarvix-universal-hub.test.mjs
+
+  universal-hub-browser:
+    name: Owner Universal Hub desktop/mobile browser and screenshots
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      DATABASE_URL: ''
+      JARVIX_QUOTA_DATABASE_URL: ''
+      JARVIX_FREE_LLM_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Universal Hub existing Home/Chat and real upload/Assets navigation
+        run: node --test tests/jarvix-universal-hub.browser.test.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owner-universal-hub-mobile-desktop
+          path: artifacts/jarvix-universal-hub/*.png
+          retention-days: 14

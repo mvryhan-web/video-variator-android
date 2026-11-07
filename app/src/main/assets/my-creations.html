@@ -299,7 +299,8 @@ main.ws-page{width:100%;max-width:1500px;margin:0 auto;padding:12px clamp(12px,1
   $('searchInput').oninput = () => loadCards();
   $('typeSelect').onchange = () => loadCards();
   $('statusSelect').onchange = () => loadCards();
-  $('includeArchived').onchange = () => loadCards();
+  // Optional archived filter is absent from this page's markup.
+  $('includeArchived')?.addEventListener('change', () => loadCards());
 
   loadCards();
 </script>

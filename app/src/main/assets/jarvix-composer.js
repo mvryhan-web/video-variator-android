@@ -5,10 +5,22 @@ export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
  decorateComposer(form,{settingsTarget:()=>{location.assign('generate-studio.html?studio='+(['image','video','audio'].includes(mode)?mode:'image')+'&settings=1');}});
  if(innerWidth<361)input.placeholder='Message…';
  let mode='auto',files=[];
+ try{const stored=sessionStorage.getItem('jarvix_composer_mode');if(['image','video','audio'].includes(stored))mode=stored;}catch{}
+ const reportMode=()=>form.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode},bubbles:true}));
  const plus=document.getElementById('jPlus'),menu=document.getElementById('jPlusMenu'),fileInput=document.getElementById('jFiles'),attachments=document.getElementById('jAttachments'),mic=document.getElementById('jMic');
  function render(){attachments.replaceChildren();files.forEach((f,i)=>{const b=document.createElement('button');b.type='button';b.textContent=f.name+' ×';b.setAttribute('aria-label','Remove '+f.name);b.onclick=()=>{files.splice(i,1);render();};attachments.append(b);});}
- plus.onclick=()=>{menu.hidden=!menu.hidden;plus.setAttribute('aria-expanded',String(!menu.hidden));};
- menu.querySelectorAll('[data-j-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.jMode;onMode(mode);for(const item of menu.querySelectorAll('[data-j-mode]'))item.setAttribute('aria-pressed',String(item===b));plus.textContent=mode==='auto'?'+':mode[0].toUpperCase();menu.hidden=true;plus.setAttribute('aria-expanded','false');input.focus();});
+ plus.onclick=()=>{menu.hidden=!menu.hidden;plus.setAttribute('aria-expanded',String(!menu.hidden));
+  const settings=form.querySelector('#jSettingsMenu'),gear=form.querySelector('.j-settings-shortcut');
+  if(settings&&!menu.hidden){settings.hidden=true;gear?.setAttribute('aria-expanded','false');}
+ };
+ menu.querySelectorAll('[data-j-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.jMode;onMode(mode);
+  try{sessionStorage.setItem('jarvix_composer_mode',mode);}catch{}
+  for(const item of menu.querySelectorAll('[data-j-mode]'))item.setAttribute('aria-pressed',String(item===b));
+  // The + remains a plus: selected mode is indicated only by the shared lower badge.
+  plus.textContent='+';menu.hidden=true;plus.setAttribute('aria-expanded','false');reportMode();input.focus();
+ });
+ for(const item of menu.querySelectorAll('[data-j-mode]'))item.setAttribute('aria-pressed',String(item.dataset.jMode===mode));
+ reportMode();
  document.getElementById('jAttach').onclick=()=>fileInput.click();fileInput.onchange=()=>{try{files=validateAttachments([...files,...fileInput.files]);render();}catch(e){onError(e.message);}fileInput.value='';menu.hidden=true;plus.setAttribute('aria-expanded','false');};
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){menu.hidden=true;plus.setAttribute('aria-expanded','false');}});
  document.addEventListener('pointerdown',e=>{if(!form.contains(e.target)){menu.hidden=true;plus.setAttribute('aria-expanded','false');}});
