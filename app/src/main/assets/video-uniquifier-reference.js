@@ -92,7 +92,10 @@ function build(){
  const dash=$('dashboardView'),shell=document.querySelector('.shell'),workspace=dash?.querySelector('.workspace'),hero=dash?.querySelector('.hero');
  if(!dash||!shell||!workspace||!hero||document.body.classList.contains('vu-reference'))return;
  document.body.classList.add('vu-reference');
- makeNav(shell);
+
+ // On the AI platform the original Video Uniquifier app provides processing ONLY.
+ // Never construct its old toolbar, sidebar, promo and upgrade navigation.
+ if(!document.body.classList.contains('ds-embedded-uniquifier'))makeNav(shell);
  const title=$('heroTitle'),p=hero.querySelector('[data-i18n="heroText"]');
  if(p)p.remove();
  if(title){
