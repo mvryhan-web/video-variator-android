@@ -28,7 +28,7 @@ export function mountStudioUniversalDock({form,nav,gear}){
   const label=(card.querySelector('strong')?.textContent||'').toLowerCase();
   const id=(card.dataset.modelId||'').toLowerCase();
   const name=label+' '+id;
-  if(/nano.?banana|\\bveo\\b|google/.test(name))return ['google','Google'];
+  if(/nano.?banana|\bveo\b|google/.test(name))return ['google','Google'];
   if(/seedream|seedance|bytedance|byteplus/.test(name))return ['bytedance','Seed'];
   if(/chatgpt|gpt.?image|openai/.test(name))return ['openai','OpenAI'];
   return ['other','AI'];
@@ -39,7 +39,7 @@ export function mountStudioUniversalDock({form,nav,gear}){
    // The old generic first-letter badge was the Russian status letter "П".
    // Brand text is honest fallback; do NOT invent model-specific thumbnails.
    const mark=card.querySelector('.model-provider-mark');
-   if(!mark)return; // Model renderer may still be inserting it.
+   if(!mark)continue; // Model renderer may still be inserting it.
    const [brand,label]=brandFor(card);
    if(mark.dataset.vendor===brand)continue;
    mark.dataset.vendor=brand;
