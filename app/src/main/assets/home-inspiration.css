@@ -189,3 +189,54 @@ html .inspiration-detail-dialog .inspiration-detail-close:focus-visible{
   max-height:min(28dvh,225px);
  }
 }
+
+/* Inspiration image detail only: mobile left "Show more", right "Copy prompt".
+   The original Clone & Try stays full width on the bottom. */
+.inspiration-detail-minimal .inspiration-detail-prompt-controls{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:12px;min-height:28px;flex:0 0 auto;
+}
+.inspiration-detail-minimal .inspiration-detail-prompt-controls .inspiration-detail-more{
+ align-self:center;margin:0;min-width:0;
+}
+.inspiration-detail-minimal .inspiration-detail-copy{
+ margin-left:auto;min-height:30px;padding:4px 0 4px 9px;
+ border:0;border-radius:0;background:transparent;
+ color:#5be3e8;font:inherit;font-size:12px;font-weight:700;
+ cursor:pointer;white-space:nowrap;
+}
+.inspiration-detail-minimal .inspiration-detail-copy:hover{color:#ffe1a0}
+.inspiration-detail-minimal .inspiration-detail-copy:focus-visible{
+ outline:2px solid #ffd18a;outline-offset:2px;
+}
+.inspiration-detail-minimal .inspiration-detail-image-area{position:relative;touch-action:pan-y}
+.inspiration-detail-minimal .inspiration-detail-arrow{
+ position:absolute;z-index:2;top:50%;transform:translateY(-50%);
+ display:grid;place-items:center;
+ width:42px;height:46px;min-width:42px;
+ padding:0;border:1px solid #55c7cc80;border-radius:13px;
+ color:#efffff;background:#091524bf;
+ font-size:32px;line-height:1;cursor:pointer;
+ backdrop-filter:blur(8px);
+}
+.inspiration-detail-minimal .inspiration-detail-prev{left:12px}
+.inspiration-detail-minimal .inspiration-detail-next{right:12px}
+.inspiration-detail-minimal .inspiration-detail-arrow:hover{
+ border-color:#ffd07c;color:#ffd07c;background:#0b1929ee;
+}
+.inspiration-detail-minimal .inspiration-detail-arrow:focus-visible{
+ outline:2px solid #ffd07c;outline-offset:2px;
+}
+.inspiration-detail-minimal .inspiration-detail-count{
+ margin-left:auto;color:#a9bed3;font-size:11px;letter-spacing:.025em;
+ font-variant-numeric:tabular-nums;
+}
+@media(max-width:460px){
+ .inspiration-detail-minimal .inspiration-detail-arrow{width:38px;min-width:38px;height:44px;font-size:29px;border-radius:11px}
+ .inspiration-detail-minimal .inspiration-detail-prev{left:7px}
+ .inspiration-detail-minimal .inspiration-detail-next{right:7px}
+ .inspiration-detail-minimal .inspiration-detail-prompt-controls{gap:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .inspiration-detail-minimal .inspiration-detail-arrow{transition:none}
+}
