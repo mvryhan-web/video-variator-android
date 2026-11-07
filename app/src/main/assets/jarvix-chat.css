@@ -38,41 +38,9 @@ body:has(#homeQuickForm[data-jarvix-chat]){padding-bottom:calc(var(--jarvix-comp
 @media(prefers-reduced-motion:reduce){.jarvix-compose .j-voice-waves span{animation:none;height:12px}.jarvix-compose .j-voice-waves span:nth-child(even){height:6px}}
 
 
-/* OWNER-LOCK 2026-11-07: canonical DEEPSYQ bottom JARVIX dock.
-   The same approved controls/geometry are used in Home and JARVIX Chat.
-   Reference: desktop 1670x941 and portrait mobile 941x1672, 9:16.
-   Design/layout only. Never change button handlers, Studio or billing. */
-:where(#homeQuickBar,.j-chat-bottom).j-neon-dock{
- box-sizing:border-box;
- display:flex;
- flex-direction:column;
- gap:9px;
- min-width:0;
- padding:14px 18px 12px;
- border:2px solid transparent;
- border-radius:38px;
- color:#eff8ff;
- background:linear-gradient(115deg,#07112cee,#090827f5) padding-box,
-  linear-gradient(105deg,#04dbff,#3b70ff 25%,#bb38ff 67%,#2deaff 100%) border-box;
- box-shadow:0 0 0 2px #168cff18,0 0 15px #00d4ff68,0 0 22px #9c25ff4c,
-  inset 0 0 20px #152b6e77;
- isolation:isolate;
-}
-#homeQuickBar:has(#homeQuickForm[data-jarvix-chat]){
- position:fixed!important;
- width:min(1230px,calc(100vw - 360px))!important;
- max-width:none!important;
- left:calc(260px + (100vw - 260px)/2 - 50px)!important;
- right:auto!important;
- bottom:clamp(18px,7vh,72px)!important;
- transform:translateX(-50%)!important;
- z-index:55;
- margin:0!important;
-}
-body.sidebar-collapsed #homeQuickBar:has(#homeQuickForm[data-jarvix-chat]){
- left:50%!important;
- width:min(1230px,calc(100vw - 36px))!important;
-}
+/* Owner correction 2026-11-07: ONLY the existing UPPER composer controls.
+   The lower JARVIX/Image/Video/Audio/Tools/Video Uniquifier rail remains
+   exactly as implemented before PR #590. No extra rail styles or waveform. */
 /* Keep the two rows separate; never allow a send circle to escape the top row. */
 :where(#homeQuickForm,#jChatForm).j-neon-composer{
  box-sizing:border-box;
@@ -189,98 +157,8 @@ body.sidebar-collapsed #homeQuickBar:has(#homeQuickForm[data-jarvix-chat]){
  :is(.j-image-shortcut,.j-attach-shortcut,#jMic,.j-settings-shortcut):hover{
  background:#1d346555!important;
 }
-/* Canonical shortcut row; it is appended by decorateComposer() to the dock. */
-.j-neon-dock > .j-mode-rail{
- box-sizing:border-box;
- display:flex!important;
- flex-direction:row!important;
- flex-wrap:nowrap!important;
- align-items:center!important;
- justify-content:flex-start;
- gap:10px;
- min-width:0;
- width:100%;
- margin:0!important;
- padding:5px 3px 0!important;
- overflow-x:auto;
- overflow-y:hidden;
- scrollbar-width:none;
- -webkit-overflow-scrolling:touch;
-}
-.j-neon-dock > .j-mode-rail::-webkit-scrollbar{display:none}
-.j-neon-dock > .j-mode-rail a{
- box-sizing:border-box;
- display:inline-flex!important;
- align-items:center;
- justify-content:center;
- gap:7px!important;
- flex:0 0 auto;
- min-height:42px;
- padding:7px 15px!important;
- margin:0!important;
- border:1px solid #a64af5!important;
- border-radius:999px!important;
- background:linear-gradient(120deg,#0b1639,#0b1025)!important;
- box-shadow:0 0 9px #a546e94c,inset 0 0 9px #3d30bf38;
- color:#f3f6ff!important;
- font-size:14px!important;
- font-weight:500;
- line-height:1.15;
- letter-spacing:0;
- white-space:nowrap;
- text-decoration:none;
-}
-.j-neon-dock > .j-mode-rail a:first-child{
- border-color:#0ee9f7!important;
- color:#22eafa!important;
- box-shadow:0 0 10px #00eaff94,inset 0 0 8px #00b4ff4d!important;
- font-weight:700;
- letter-spacing:.04em;
-}
-.j-neon-dock > .j-mode-rail a:nth-child(5){position:relative;margin-left:19px!important}
-.j-neon-dock > .j-mode-rail a:nth-child(5)::before{
- content:"";
- position:absolute;
- width:1px;
- height:27px;
- background:#7976e7a8;
- transform:translateX(-18px);
-}
-.j-neon-dock > .j-mode-rail .j-rail-icon{
- display:inline-flex;
- align-items:center;
- justify-content:center;
- width:20px;
- height:20px;
- flex:0 0 20px;
-}
-.j-neon-dock > .j-mode-rail .j-rail-icon svg{display:block;width:20px;height:20px}
-.j-neon-dock > .j-mode-rail::after{
- content:"";
- display:block;
- align-self:center;
- flex:0 0 94px;
- width:94px;
- height:31px;
- margin-left:auto;
- background:linear-gradient(90deg,#00dfff,#c22eff,#02f4ff);
- clip-path:polygon(0 44%,4% 44%,4% 32%,9% 32%,9% 49%,14% 49%,14% 38%,19% 38%,19% 12%,24% 12%,24% 50%,29% 50%,29% 28%,34% 28%,34% 62%,39% 62%,39% 0,44% 0,44% 70%,49% 70%,49% 24%,54% 24%,54% 82%,59% 82%,59% 30%,64% 30%,64% 64%,69% 64%,69% 37%,74% 37%,74% 56%,79% 56%,79% 35%,84% 35%,84% 48%,89% 48%,89% 41%,100% 41%,100% 59%,89% 59%,89% 54%,84% 54%,84% 65%,79% 65%,79% 45%,74% 45%,74% 63%,69% 63%,69% 38%,64% 38%,64% 74%,59% 74%,59% 18%,54% 18%,54% 76%,49% 76%,49% 30%,44% 30%,44% 100%,39% 100%,39% 37%,34% 37%,34% 72%,29% 72%,29% 50%,24% 50%,24% 88%,19% 88%,19% 62%,14% 62%,14% 51%,9% 51%,9% 68%,4% 68%,4% 56%,0 56%);
- filter:drop-shadow(0 0 6px #c74aff);
-}
+
 @media(max-width:760px){
- #homeQuickBar:has(#homeQuickForm[data-jarvix-chat]),
- body.sidebar-collapsed #homeQuickBar:has(#homeQuickForm[data-jarvix-chat]){
-  left:50%!important;
-  width:calc(100vw - 20px)!important;
-  max-width:none!important;
-  bottom:calc(14px + env(safe-area-inset-bottom,0px))!important;
-  transform:translateX(-50%)!important;
- }
- :where(#homeQuickBar,.j-chat-bottom).j-neon-dock{
-  padding:10px 9px 12px;
-  border-radius:29px;
-  gap:10px;
- }
  :where(#homeQuickForm,#jChatForm).j-neon-composer{
   gap:5px!important;
   padding:3px 2px!important;
@@ -315,35 +193,8 @@ body.sidebar-collapsed #homeQuickBar:has(#homeQuickForm[data-jarvix-chat]){
   width:20px;
   height:20px;
  }
- .j-neon-dock > .j-mode-rail{
-  gap:5px;
-  padding:2px 1px 0!important;
-  justify-content:space-between;
- }
- .j-neon-dock > .j-mode-rail a{
-  flex:0 1 auto;
-  min-height:35px;
-  min-width:0;
-  gap:4px!important;
-  padding:6px 8px!important;
-  font-size:clamp(9px,2.5vw,12px)!important;
-  line-height:1.12;
- }
- .j-neon-dock > .j-mode-rail a:nth-child(5){margin-left:6px!important}
- .j-neon-dock > .j-mode-rail a:nth-child(5)::before{height:22px;transform:translateX(-9px)}
- .j-neon-dock > .j-mode-rail .j-rail-icon{
-  width:16px;height:16px;flex-basis:16px;
- }
- .j-neon-dock > .j-mode-rail .j-rail-icon svg{width:16px;height:16px}
- .j-neon-dock > .j-mode-rail a:last-of-type{
-  max-width:105px;
-  white-space:normal;
-  text-align:center;
- }
- .j-neon-dock > .j-mode-rail::after{display:none}
 }
 @media(max-width:390px){
- :where(#homeQuickBar,.j-chat-bottom).j-neon-dock{padding:9px 7px 11px}
  :where(#homeQuickForm,#jChatForm).j-neon-composer{gap:3px!important}
  :where(#homeQuickForm,#jChatForm).j-neon-composer :is(#jPlus,.j-send){
   flex-basis:44px!important;width:44px!important;height:44px!important;
@@ -353,11 +204,7 @@ body.sidebar-collapsed #homeQuickBar:has(#homeQuickForm[data-jarvix-chat]){
   :is(.j-image-shortcut,.j-attach-shortcut,#jMic,.j-settings-shortcut){
   flex-basis:28px;min-width:28px;width:28px;padding:3px!important;
  }
- .j-neon-dock > .j-mode-rail{gap:3px}
- .j-neon-dock > .j-mode-rail a{padding:5px 5px!important;font-size:9px!important}
- .j-neon-dock > .j-mode-rail .j-rail-icon{width:13px;height:13px;flex-basis:13px}
- .j-neon-dock > .j-mode-rail .j-rail-icon svg{width:13px;height:13px}
 }
 @media(prefers-reduced-motion:reduce){
- .j-neon-dock :is(#jPlus,.j-send,.j-mode-rail a){transition:none!important;animation:none!important}
+ :where(#homeQuickForm,#jChatForm).j-neon-composer :is(#jPlus,.j-send){transition:none!important;animation:none!important}
 }
