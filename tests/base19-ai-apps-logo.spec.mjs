@@ -1,23 +1,23 @@
-import {test,expect} from '@playwright/test';
-
-test('BASE #19: AI Apps uses the actual approved Deepsyq image asset, not a placeholder badge',async({page})=>{
+test('BASE #19: AI Apps uses the actual approved Deepsyq image asset, not a placeholder badge',async({page},info)=>{
  let writes=0;
  page.on('request',r=>{if(r.method()==='POST')writes++;});
  await page.goto('/ai-apps.html');
- const brand=page.getByRole('link',{name:'Deepsyq Home',exact:true});
+ // The owner-approved shared shell now presents its canonical logo in the
+ // sidebar on desktop and centered mobile brand on phones. The old direct
+ // header .brand is intentionally hidden by the approved cockpit.
+ const mobile=info.project.name.startsWith('mobile');
+ const brand=page.locator(mobile?'header.ds-mobile-header .ds-mobile-brand':'#dsSiteSidebar .ds-site-brand');
  await expect(brand).toBeVisible();
  await expect(brand).toHaveAttribute('href','deepsyq.html');
- await expect(brand.locator('.brand-name')).toHaveText('Deepsyq');
- const actual=brand.locator('.brand-mark img');
+ await expect(brand).toContainText('Deepsyq');
+ const actual=brand.locator('img');
  await expect(actual).toHaveAttribute('src','deepsyq-logo.png');
  await expect(actual).toBeVisible();
  await expect.poll(()=>actual.evaluate(img=>img.complete&&img.naturalWidth>0&&img.naturalHeight>0)).toBe(true);
  const appearance=await brand.evaluate(anchor=>{
-  const mark=anchor.querySelector('.brand-mark');
-  const img=mark.querySelector('img');
-  return {
-   badgeText:mark.textContent.trim(),
-   backgroundImage:getComputedStyle(mark).backgroundImage,
+  const img=anchor.querySelector('img');
+  return{
+   backgroundImage:getComputedStyle(anchor).backgroundImage,
    imageWidth:Math.round(img.getBoundingClientRect().width),
    imageHeight:Math.round(img.getBoundingClientRect().height),
    anchorVisible:anchor.getBoundingClientRect().width>0,
@@ -25,15 +25,14 @@ test('BASE #19: AI Apps uses the actual approved Deepsyq image asset, not a plac
   };
  });
  expect(appearance).toEqual({
-  badgeText:'',backgroundImage:'none',imageWidth:32,imageHeight:32,
+  backgroundImage:'none',imageWidth:30,imageHeight:30,
   anchorVisible:true,withinViewport:true
  });
- await expect(page.locator('nav[aria-label="Main navigation"] a[aria-current="page"]')).toHaveText('AI Apps');
+ await expect(page.locator('#dsSiteSidebar nav a[aria-current="page"]')).toContainText('AI Apps');
  await expect(page.locator('#appsTitle')).toBeVisible();
  await expect(page.locator('a.skip-link')).toHaveAttribute('href','#appsTitle');
  expect(writes).toBe(0);
 });
-
 
 test('Owner: Deepsyq wordmark follows AI Apps vertical reference on Home and other pages',async({page},info)=>{
  test.setTimeout(85000);
