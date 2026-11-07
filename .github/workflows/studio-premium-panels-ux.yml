@@ -1,0 +1,49 @@
+name: Owner six premium Studio panels no-spend browser acceptance
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/studio-premium-panels.css'
+      - 'app/src/main/assets/studio-universal-dock.js'
+      - 'tests/studio-universal-dock.test.mjs'
+      - 'tests/studio-universal-dock.browser.test.mjs'
+      - '.github/workflows/studio-premium-panels-ux.yml'
+permissions:
+  contents: read
+concurrency:
+  group: premium-studio-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  studio-premium:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Strict native Studio/visual code syntax
+        run: node --check app/src/main/assets/studio-universal-dock.js && node --check tests/studio-universal-dock.test.mjs && node --check tests/studio-universal-dock.browser.test.mjs
+      - name: No-provider, no-paid native panel contracts
+        run: node --test tests/studio-universal-dock.test.mjs
+      - name: Browser dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Six original dialogs — desktop and mobile, no paid API requests
+        run: node --test tests/studio-universal-dock.browser.test.mjs
+        env:
+          NODE_ENV: test
+          OPENAI_API_KEY: ''
+          GEMINI_API_KEY: ''
+          GROQ_API_KEY: ''
+          DATABASE_URL: ''
+          JARVIX_FREE_LLM_ENABLED: 'false'
+      - name: Keep browser screenshots and logs for owner review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-six-studio-panels
+          path: artifacts/studio-universal-dock/
+          if-no-files-found: ignore
+          retention-days: 7
