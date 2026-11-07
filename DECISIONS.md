@@ -1,3 +1,9 @@
+## D24 / OWNER 2026-11-07 — STRICT TASK SCOPE / REVIEW / DEPLOY
+
+**For P, Administrator, Antigravity and future agents.** Only change precisely what the owner requested; preserve all other current DEV functionality and confirmed visual design. Every PR declares exact allowed files, baseline SHA, protected-feature approval, relevant browser regression tests. For Studio Settings specifically retain approved persistent parent hub, selected model/ratio, Done and X behavior, aspect previews, anchored popover. No old-code wholesale restores, no unrelated refactors. Latest DEV must contain all prior accepted changes. Publish only the exact merged current DEV SHA to isolated TEST after checks, never a standalone PR branch; verify actual TEST output. Main/production still frozen. GitHub `deepsyq-platform` protection is currently disabled: owner must activate Rulesets and genuine separate reviewer/deploy credentials. See [D24 enforcement policy](docs/OWNER_CHANGE_CONTROL_20261107.md); this decision supersedes older broad admin/executor autonomy.
+
+---
+
 ## 2026-11-06 — D23: ИЗ КОМАНДЫ УДАЛЕНЫ GOOGLE JULES 1, 2, 3; КОД СОХРАНИТЬ
 
 **Последнее прямое решение владельца, вступает в силу немедленно.** Три Google Jules больше НЕ работают в DEEPSYQ. Ранее установленный срок 11.11.2026 отменён. Любое указание продолжать им работу, возвращать сессии, назначать новые issues, добавлять триггерный label `jules`, проверять ACK либо запускать Jules-автоматизацию утратило силу.
