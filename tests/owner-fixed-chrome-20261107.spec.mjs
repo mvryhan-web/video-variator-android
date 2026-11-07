@@ -830,7 +830,7 @@ test('Home header and first film align at desktop edges with visible clearance',
   });
   expect(shape.workspacePaddingLeft,'left gutter matches cockpit').toBe('20px');
   expect(shape.workspacePaddingRight,'right gutter matches cockpit').toBe('20px');
-  expect(shape.heroMarginTop,'hero clearance').toBe('16px');
+  expect(shape.heroMarginTop,'hero clearance').toBe('20px');
   expect(Math.abs(shape.stage.left-shape.cockpit.left),'left lines align').toBeLessThanOrEqual(2);
   expect(Math.abs(shape.stage.right-shape.cockpit.right),'right lines align').toBeLessThanOrEqual(2);
   expect(shape.hero.top-shape.header.bottom,'Home content below header').toBeGreaterThanOrEqual(28);
