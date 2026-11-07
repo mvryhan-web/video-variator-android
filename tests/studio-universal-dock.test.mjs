@@ -13,7 +13,8 @@ test('All three Studio URLs are same existing studio, and original provider-back
  assert.match(dock,/prompt\.setAttribute\('form','creator'\)/);
  assert.match(dock,/submit\.setAttribute\('form','creator'\)/);
  assert.match(dock,/submit\.replaceChildren\(\)/);
- assert.match(dock,/bar\.append\(plus,menu,prompt,mic,gear,settings,submit\)/);
+ assert.match(dock,/bar\.append\(plus,menu,prompt,mic,gear,submit\)/);
+ assert.doesNotMatch(dock,/jSettingsMenu|j-settings-tile/);
  assert.match(studiojs,/\$\('creator'\)\.onsubmit=async e=>/);
  assert.match(studiojs,/\/api\/studio\/estimate/);
  assert.match(studiojs,/original\.consent/);
@@ -31,7 +32,8 @@ test('Owner Universal Hub is same 8-tile 4x2 menu, one visual dock only',()=>{
 });
 test('Mode selection stays in page, real Studio Settings Hub remains authoritative',()=>{
  assert.match(decorator,/isQuickChat=\['homeQuickForm','jChatForm','creator'\]/);
- assert.match(decorator,/choice\.onclick=\(\)=>\{form\.querySelector\('#jPlusMenu/);
+ assert.doesNotMatch(decorator,/jSettingsMenu|j-settings-tile|choice\.onclick/);
+ assert.match(decorator,/gear\.onclick=settingsTarget/);
  assert.doesNotMatch(decorator,/link\.href='generate-studio\.html\?studio='\+kind/);
  assert.match(dock,/openRealStudioSettings\?\.call\(gear\)/);
  assert.match(dock,/sessionStorage\.setItem\('jarvix_composer_mode',mode\)/);
