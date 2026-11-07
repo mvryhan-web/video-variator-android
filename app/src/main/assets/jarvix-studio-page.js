@@ -280,7 +280,13 @@ import {getJarvixVoice, getJarvixLanguage} from './jarvis-core.js';
         const response=await fetch('/api/jarvix/status');
         if(!response.ok)throw new Error('status unavailable');
         const status=await response.json();
-        if(status.llm?.status==='not_connected')target.textContent=messages[lang]||messages.en;
+        if(status.freeLlm?.enabled&&status.freeLlm.providers?.includes('gemini-free'))target.textContent=({
+          ru:'Gemini Free включена для JARVIX. Доступно до 15 бесплатных сообщений в сутки. Голос зависит от установленных возможностей браузера.',
+          en:'Gemini Free is enabled for JARVIX. Up to 15 free messages per day. Voice availability depends on the browser.',
+          fr:'Gemini Free est activé pour JARVIX. Jusqu’à 15 messages gratuits par jour. La voix dépend du navigateur.',
+          es:'Gemini Free está activado para JARVIX. Hasta 15 mensajes gratis al día. La voz depende del navegador.'
+        })[lang]||messages.en;
+        else if(status.llm?.status==='not_connected')target.textContent=messages[lang]||messages.en;
         else target.textContent=({ru:'Подключение LLM ещё не подтверждено реальным ответом модели.',en:'The LLM connection has not been verified by a model response.',fr:'La connexion au LLM n’a pas encore été vérifiée.',es:'La conexión con el LLM todavía no se ha verificado.'})[lang]||messages.en;
       } catch (_) {
         target.textContent=({ru:'Статус LLM недоступен. Подключение модели не подтверждено.',en:'LLM status is unavailable. Model connection is unverified.',fr:'Le statut du LLM est indisponible. La connexion n’est pas confirmée.',es:'El estado del LLM no está disponible. La conexión no está confirmada.'})[lang]||messages.en;

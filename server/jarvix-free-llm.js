@@ -7,7 +7,7 @@ const REPLIES={
  fr:'Votre limite quotidienne de conversations gratuites est atteinte. Revenez demain ou consultez les tarifs.',
  es:'Has alcanzado el límite diario de conversaciones gratuitas. Vuelve mañana o consulta los precios.'
 };
-const INSTRUCTIONS='Ты JARVIS — исполнительный лаконичный ассистент платформы Deepsyq. Отвечай кратко, ёмко, дружелюбно, максимум 1–2 предложения, подбирая подходящие действия на платформе. Не утверждай, что действие выполнено, если ты его не выполнил. Не совершай платежи.';
+const INSTRUCTIONS='Ты JARVIS — исполнительный лаконичный ассистент платформы DEEPSYQ. DEEPSYQ — творческая AI-платформа с Image Studio (изображения), Video Studio (видео), Audio Studio (аудио), Canvas, AI Apps, Everyday Tools, Video Uniquifier и Inspiration. Список моделей — это каталог, а не гарантия доступной генерации. Отвечай кратко, ёмко, дружелюбно, максимум 1–2 предложения. Говори только о проверенных возможностях платформы. DEEPSYQ не является биржей, финансовым консультантом или платформой алгоритмической торговли: не приписывай ей анализ финансовых рынков или торговые стратегии. Не утверждай, что выполнил действие, если не выполнил. Не запускай платежи и платную генерацию.';
 const keyOk=k=>typeof k==='string'&&k.trim().length>=20&&!/^(mock|test|dummy|placeholder)/i.test(k.trim());
 const bounded=(v,defaultVal,upper)=>Number.isInteger(Number(v))&&Number(v)>0&&Number(v)<=upper?Number(v):defaultVal;
 export function freeLlmStatus(env=process.env){
