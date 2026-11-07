@@ -67,8 +67,11 @@ test('Owner: inspect every Everyday Tools destination, remove only crossed-out E
   const res=await page.goto(new URL(route,'http://localhost/free-tools.html').pathname+new URL(route,'http://localhost/free-tools.html').search,{waitUntil:'domcontentloaded'});
   expect(res.status(),'Everyday Tools '+route+' loads').toBe(200);
   await expect(page.locator('.ds-tool-inspiration')).toHaveCount(0);
-  await expect(page.locator('.utility-workspace,.collage-workspace')).not.toContainText('Example inspiration');
-  await expect(page.locator('.utility-workspace,.collage-workspace')).not.toContainText('Choose your own photos to create a downloadable result.');
+  const toolWorkspaceCopy=await page.locator('.utility-workspace,.collage-workspace').allTextContents();
+  for(const copy of toolWorkspaceCopy){
+   expect(copy).not.toContain('Example inspiration');
+   expect(copy).not.toContain('Choose your own photos to create a downloadable result.');
+  }
   await expect(page.locator('.utility-workspace img[src*="01-crystal-orchard"],.collage-workspace img[src*="01-crystal-orchard"]')).toHaveCount(0);
   if(route.includes('mobile-utility.html')){
    await expect(page.locator('#utilityFiles')).toHaveCount(1);
