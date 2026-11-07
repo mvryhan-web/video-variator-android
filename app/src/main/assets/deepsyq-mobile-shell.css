@@ -238,3 +238,9 @@
 .ds-tour-controls .ds-tour-caption:empty{display:none}
 @media(max-width:760px){.ds-tour-controls .ds-tour-caption{max-width:calc(100vw - 20px);width:315px;padding:8px 10px;font-size:12px}}
 @media(prefers-reduced-motion:reduce){.jarvis-tour-spotlight{animation:none!important}}
+
+
+/* During a read-only tour, an unaccepted Studio terms overlay must not block JARVIX
+   transport controls. Its original visibility returns when Stop removes the class.
+   No consent is ever accepted, stored or bypassed for an actual generation. */
+body.ds-tour-active #luminaTermsModal.is-open{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
