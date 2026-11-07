@@ -1,0 +1,53 @@
+name: Owner D24 - exact change scope and Studio contract
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+  push:
+    branches: [deepsyq-platform]
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: 'Exact proposed TEST deployment commit'
+        required: true
+        type: string
+      current_test_live_sha:
+        description: 'Exact TEST LIVE SHA from Render, not a guess'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: owner-change-scope-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  owner-change-scope:
+    name: owner-change-scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate policy scripts and tests
+        run: |
+          node --check scripts/owner-change-scope.mjs
+          node --check tests/owner-change-scope.test.mjs
+          node --test tests/owner-change-scope.test.mjs
+      - name: Verify PR file scope and preserve approved Studio UX
+        if: github.event_name == 'pull_request'
+        run: node scripts/owner-change-scope.mjs pr
+      - name: Audit DEV pushes for Studio contract regressions
+        if: github.event_name == 'push'
+        run: node scripts/owner-change-scope.mjs push
+      - name: No-deploy preflight: candidate must be exact DEV and contain TEST
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          TEST_DEPLOY_CANDIDATE: ${{ inputs.candidate_sha }}
+          CURRENT_RENDER_LIVE_SHA: ${{ inputs.current_test_live_sha }}
+        run: node scripts/owner-change-scope.mjs deploy "$TEST_DEPLOY_CANDIDATE" "$CURRENT_RENDER_LIVE_SHA"

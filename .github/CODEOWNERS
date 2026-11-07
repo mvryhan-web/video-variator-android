@@ -7,3 +7,30 @@
 /app/src/main/assets/media/pricing/ @mvryhan-web
 /docs/PRICING_OWNER_ART_LOCK.json @mvryhan-web
 /tests/pricing-owner-art-lock.mjs @mvryhan-web
+
+# OWNER D24 2026-11-07 — shared UI, Studio Settings and release guard
+# Owner approval is enforced ONLY when GitHub requires CODEOWNERS review.
+# A shared GitHub identity cannot independently approve its own changes.
+/AGENTS.md @mvryhan-web
+/DECISIONS.md @mvryhan-web
+/docs/OWNER_CHANGE_CONTROL_20261107.md @mvryhan-web
+/docs/OWNER_REVIEW_PATHS.json @mvryhan-web
+/.github/CODEOWNERS @mvryhan-web
+/.github/copilot-instructions.md @mvryhan-web
+/.github/pull_request_template.md @mvryhan-web
+/.github/workflows/owner-change-scope.yml @mvryhan-web
+/.github/workflows/owner-final-page-design-lock.yml @mvryhan-web
+/scripts/owner-change-scope.mjs @mvryhan-web
+/tests/owner-change-scope.test.mjs @mvryhan-web
+/app/src/main/assets/generate-studio.html @mvryhan-web
+/app/src/main/assets/generate-studio.js @mvryhan-web
+/app/src/main/assets/generate-studio.css @mvryhan-web
+/app/src/main/assets/studio-composer-popovers.js @mvryhan-web
+/app/src/main/assets/studio-composer-popovers.css @mvryhan-web
+/app/src/main/assets/studio-quickstart.css @mvryhan-web
+/app/src/main/assets/deepsyq.html @mvryhan-web
+/app/src/main/assets/deepsyq-site-shell.js @mvryhan-web
+/app/src/main/assets/deepsyq-mobile-shell.js @mvryhan-web
+/app/src/main/assets/my-creations.html @mvryhan-web
+/app/src/main/assets/video-history.html @mvryhan-web
+/app/src/main/assets/jarvis-core.js @mvryhan-web

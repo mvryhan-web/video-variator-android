@@ -9,3 +9,30 @@ jobs:
         with:
           node-version: 22
       - run: node tests/owner-final-page-design-lock.mjs
+
+  owner-change-scope:
+    name: owner-change-scope
+    if: (github.event_name == 'pull_request' && github.base_ref == 'deepsyq-platform') || (github.event_name == 'push' && github.ref == 'refs/heads/deepsyq-platform')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Guard syntax and focused unit tests
+        run: |
+          node --check scripts/owner-change-scope.mjs
+          node --test tests/owner-change-scope.test.mjs
+      - name: Require latest DEV and owner-scoped PR file list
+        if: github.event_name == 'pull_request'
+        run: node scripts/owner-change-scope.mjs pr
+      - name: Report Studio contract on DEV
+        if: github.event_name == 'push'
+        run: node scripts/owner-change-scope.mjs push
