@@ -40,4 +40,6 @@ test('Owner header swap: Credit replaces only upper AI Apps and Tour moves right
  assert.doesNotMatch(unified,/AI Credits: —|credits\+': —'/);
  assert.match(css,/\.ds-mobile-control-left \.ds-header-credit/);
  assert.match(css,/white-space:nowrap!important/);
+ assert.match(css,/\.ds-mobile-control-right #dsTakeTour\{/);
+ assert.match(css,/position:static!important;inset:auto!important/);
 });
