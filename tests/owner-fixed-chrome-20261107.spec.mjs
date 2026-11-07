@@ -238,20 +238,20 @@ test('stage07 approved JARVIX orb reused in header, nav and composer without dup
    await page.goto('/'+route,{waitUntil:'domcontentloaded'});
    const top=page.locator('#topJarvisBtn');
    await expect(top).toHaveCount(1);
-   await expect(top.locator('.jarvis-mini-orb.jv-approved-orb > svg.ds-reference-orb')).toHaveCount(1);
-   await expect(top.locator('svg.ds-reference-orb')).toHaveAttribute('viewBox','0 0 160 160');
+   const photo=top.locator('.jarvis-mini-orb.jv-owner-photo-test');
+   await expect(photo).toHaveCount(1);
+   await expect(photo.locator('.jv-owner-upload-orb')).toHaveCount(5);
+   await expect(top.locator('svg.ds-reference-orb')).toHaveCount(0);
    await expect(top.locator('.jarvis-ring:visible')).toHaveCount(0);
-   const artwork=await page.locator('.jarvis-mini-orb.jv-approved-orb > svg.ds-reference-orb').evaluateAll(nodes=>nodes.map(x=>x.querySelector('radialGradient')?.id));
-   expect(artwork.every(Boolean)).toBe(true);
-   expect(new Set(artwork).size).toBe(artwork.length);
+   await expect.poll(()=>photo.locator('.jv-owner-layer-base').evaluate(node=>node.complete&&node.naturalWidth===1254)).toBe(true);
    const rail=page.locator('.j-mode-rail');
    if(await rail.count()){
     const jarvix=rail.locator('a[href="jarvix-chat.html"]');
     await expect(jarvix).toHaveCount(1);
-    await expect(jarvix.locator('.jv-approved-orb > svg.ds-reference-orb')).toHaveCount(1);
+    await expect(jarvix.locator('.jv-owner-photo-test > .jv-owner-layer-base')).toHaveCount(1);
     await expect(jarvix).toContainText('JARVIX');
    }
-   const nav=page.locator('.ds-site-jarvix-btn .jv-approved-orb > svg.ds-reference-orb, #sidebar .nav-entry .jv-approved-orb > svg.ds-reference-orb');
+   const nav=page.locator('.ds-site-jarvix-btn .jv-owner-photo-test > .jv-owner-layer-base, #sidebar .nav-entry .jv-owner-photo-test > .jv-owner-layer-base');
    if(await page.locator('.ds-site-jarvix-btn,#sidebar .nav-entry a[aria-label="JARVIX"]').count())await expect(nav.first()).toBeAttached();
    expect(await page.locator('#topJarvisBtn').count()).toBe(1);
   }
@@ -260,46 +260,44 @@ test('stage07 approved JARVIX orb reused in header, nav and composer without dup
 });
 
 
-test('stage08 JARVIX orbit directions, halo duration and stable shell size',async({page})=>{
+test('owner original-photo cyan clockwise, pink counterclockwise, inner orbits upward, halo breathing and stable size',async({page})=>{
  test.setTimeout(90000);
  await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
  let paid=0;
- page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio\/jobs|payments|stripe)\b/.test(r.url()))paid++;});
+ page.on('request',r=>{if(r.method()==='POST'&&/\\/api\\/(studio\\/jobs|payments|stripe)\\b/.test(r.url()))paid++;});
  for(const width of [390,1365]){
   await page.setViewportSize({width,height:900});
   await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
-  const svg=page.locator('#topJarvisBtn .jv-approved-orb svg.ds-reference-orb');
-  await expect(svg).toHaveCount(1);
-  const result=await svg.evaluate(node=>{
-   const css=selector=>getComputedStyle(node.querySelector(selector));
-   const halo=getComputedStyle(node.parentElement,'::before');
-   const shell=node.getBoundingClientRect(),host=node.closest('#topJarvisBtn').getBoundingClientRect();
-   return {cyan:css('.ds-orbit-spin').animationName,
-    pink:css('.ds-orbit-reverse').animationName,
-    blueBack:css('.jv-blue-behind').animationName,
-    blueFront:css('.jv-blue-front').animationName,
-    goldIn:css('.jv-warm-in').animationName,
-    goldOut:css('.jv-warm-out').animationName,
-    halo:halo.animationName,haloDuration:halo.animationDuration,
-    shell:{width:shell.width,height:shell.height},host:{width:host.width,height:host.height}};
+  const orb=page.locator('#topJarvisBtn .jarvis-mini-orb.jv-owner-photo-test');
+  await expect(orb).toHaveCount(1);
+  const metrics=await orb.evaluate(el=>{
+   const css=part=>getComputedStyle(el.querySelector('.jv-owner-layer-'+part));
+   const shell=el.getBoundingClientRect(),button=el.closest('#topJarvisBtn').getBoundingClientRect();
+   return {cyan:css('cyan').animationName,pink:css('pink').animationName,
+    blue:css('inner').animationName,orange:css('orange').animationName,
+    halo:css('base').animationName,haloDuration:css('base').animationDuration,
+    baseFilter:css('base').filter,legacySvg:el.querySelectorAll('svg.ds-reference-orb').length,
+    pseudoBefore:getComputedStyle(el,'::before').content,
+    shell:{width:shell.width,height:shell.height},button:{width:button.width,height:button.height}};
   });
-  expect(result.cyan).toContain('jv-ring-clockwise');
-  expect(result.pink).toContain('jv-ring-counterclockwise');
-  expect(result.blueBack).toContain('jv-blue-up');
-  expect(result.blueFront).toContain('jv-blue-up');
-  expect(result.goldIn).toContain('jv-warm-leak-in');
-  expect(result.goldOut).toContain('jv-warm-leak-out');
-  expect(result.halo).toContain('jv-halo-breath');
-  expect(result.haloDuration).toBe('5s');
-  await page.waitForTimeout(300);
-  const later=await svg.evaluate(node=>{
-   const shell=node.getBoundingClientRect(),host=node.closest('#topJarvisBtn').getBoundingClientRect();
-   return {shell:{width:shell.width,height:shell.height},host:{width:host.width,height:host.height}};
-  });
-  expect(later.shell.width).toBeCloseTo(result.shell.width,1);
-  expect(later.shell.height).toBeCloseTo(result.shell.height,1);
-  expect(later.host.width).toBeCloseTo(result.host.width,1);
-  expect(later.host.height).toBeCloseTo(result.host.height,1);
+  expect(metrics.cyan).toContain('jv-photo-cyan-clockwise');
+  expect(metrics.pink).toContain('jv-photo-pink-counterclockwise');
+  expect(metrics.blue).toContain('jv-photo-blue-orbits-up');
+  expect(metrics.orange).toContain('jv-photo-original-orange-flow');
+  expect(metrics.halo).toContain('jv-photo-original-halo-breath');
+  expect(metrics.haloDuration).toBe('5s');
+  expect(metrics.baseFilter).toBe('none');
+  expect(metrics.legacySvg).toBe(0);
+  expect(metrics.pseudoBefore).toBe('none');
+  const original=await orb.locator('.jv-owner-layer-cyan').evaluate(el=>getComputedStyle(el).transform);
+  await page.waitForTimeout(650);
+  const next=await orb.locator('.jv-owner-layer-cyan').evaluate(el=>getComputedStyle(el).transform);
+  expect(next).not.toBe(original);
+  const later=await orb.evaluate(el=>{const r=el.getBoundingClientRect(),b=el.closest('#topJarvisBtn').getBoundingClientRect();return {shell:{width:r.width,height:r.height},button:{width:b.width,height:b.height}};});
+  expect(later.shell.width).toBeCloseTo(metrics.shell.width,1);
+  expect(later.shell.height).toBeCloseTo(metrics.shell.height,1);
+  expect(later.button.width).toBeCloseTo(metrics.button.width,1);
+  expect(later.button.height).toBeCloseTo(metrics.button.height,1);
  }
  expect(paid).toBe(0);
 });
@@ -320,9 +318,10 @@ test('owner-uploaded JARVIX sphere replaces visual orb on TEST; original SVG rem
    await expect(photo).toHaveCount(1);
    await expect.poll(()=>photo.evaluate(img=>img.complete&&img.naturalWidth===1254&&img.naturalHeight===1254),{timeout:25000}).toBe(true);
    await expect.poll(()=>headerOrb.evaluate(el=>el.classList.contains('jv-owner-photo-test'))).toBe(true);
-   await expect(headerOrb.locator('svg.ds-reference-orb')).toHaveCount(1);
-   const oldHidden=await headerOrb.locator('svg.ds-reference-orb').evaluate(svg=>getComputedStyle(svg).visibility==='hidden');
-   expect(oldHidden).toBe(true);
+   await expect(headerOrb.locator('svg.ds-reference-orb')).toHaveCount(0);
+   await expect(headerOrb.locator('img.jv-owner-upload-orb')).toHaveCount(5);
+   const mask=await photo.evaluate(img=>getComputedStyle(img).maskImage);
+   expect(mask).toContain('radial-gradient');
    const src=await photo.getAttribute('src');
    expect(src).toContain('/760ea0b9-ba7d-4982-97f2-9bb59a6b0979.png');
    await expect.poll(()=>page.evaluate(()=>[...document.querySelectorAll('.jarvis-mini-orb.jv-approved-orb')]
