@@ -97,7 +97,11 @@ try{
      assert.match(await page.locator('#homeStudioSettingsFrame').getAttribute('src'),/studio=video&settings=1/);
      for(const id of ['studioTypePicker','modelButton','settingsButton'])
        assert.equal(await native.locator('#studioSettingsHub #'+id).count(),1,'real native Studio control: '+id);
-     assert.equal(await native.locator('body>.topbar').evaluate(el=>getComputedStyle(el).display),'none','embedded Studio header must not duplicate Home');
+     const embeddedHeader=await native.locator('body>.topbar').evaluate(el=>({
+      display:getComputedStyle(el).display,style:el.getAttribute('style'),
+      bodyId:document.body.id,hasPresentation:!!document.getElementById('homeNativeStudioSettingsPresentation')
+     }));
+     assert.equal(embeddedHeader.display,'none','embedded Studio header must not duplicate Home: '+JSON.stringify(embeddedHeader));
      assert.equal(await native.locator('body>.studio-shell').evaluate(el=>getComputedStyle(el).display),'none','embedded Studio layout and second bottom dock must be hidden');
      await page.screenshot({path:folder+'/'+l.name+'-native-studio-settings.png',fullPage:false});
      await native.locator('#studioSettingsHub > button:nth-child(2)').click();
