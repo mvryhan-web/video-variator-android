@@ -353,3 +353,50 @@ body.ds-tour-active #luminaTermsModal.is-open{visibility:hidden!important;opacit
  }
  html body.ds-mobile-layout .ds-mobile-control-right{gap:2px!important}
 }
+
+/* Owner 2026-11-07: one mobile wordmark centered on its TEXT, level with Login.
+   Shrink only the common shell's empty header area; preserve every control,
+   original logo/orb asset, click handler, sibling layout and desktop chrome. */
+@media (max-width:760px) {
+ html {scroll-padding-top:calc(130px + var(--ds-mobile-safe-top))!important}
+ html body.ds-mobile-layout header.ds-mobile-header,
+ html body.j-action-workspace.ds-mobile-layout header.ds-mobile-header {
+  height:calc(126px + var(--ds-mobile-safe-top))!important;
+  min-height:calc(126px + var(--ds-mobile-safe-top))!important;
+ }
+ html body.ds-mobile-layout .ds-mobile-header-spacer,
+ html body.j-action-workspace.ds-mobile-layout .ds-mobile-header-spacer {
+  height:calc(126px + var(--ds-mobile-safe-top))!important;
+ }
+ html body.ds-mobile-layout .ds-mobile-brand {
+  top:calc(20px + var(--ds-mobile-safe-top))!important;
+  left:50%!important;
+  /* Center the WORD itself: compensate half of the existing 30px icon + 8px gap. */
+  transform:translateX(calc(-50% - 19px))!important;
+ }
+ html body.ds-mobile-layout:has(.ds-tour-controls) .ds-mobile-brand {
+  /* During Tour, the existing logo is 23px and the existing gap is 4px. */
+  transform:translateX(calc(-50% - 13.5px))!important;
+ }
+ html body.ds-mobile-layout .ds-mobile-menu,
+ html body.j-action-workspace.ds-mobile-layout .ds-mobile-menu {
+  top:calc(16px + var(--ds-mobile-safe-top))!important;
+ }
+ html body.ds-mobile-layout .ds-mobile-controls #topLogin,
+ html body.j-action-workspace.ds-mobile-layout .ds-mobile-controls #topLogin {
+  top:calc(21px + var(--ds-mobile-safe-top))!important;
+ }
+ html body.ds-mobile-layout .ds-mobile-controls,
+ html body.j-action-workspace.ds-mobile-layout .ds-mobile-controls {
+  top:calc(65px + var(--ds-mobile-safe-top))!important;
+ }
+ html body.ds-mobile-layout #topJarvisBtn,
+ html body.j-action-workspace.ds-mobile-layout #topJarvisBtn {
+  top:calc(94px + var(--ds-mobile-safe-top))!important;
+  width:64px!important;height:64px!important;
+  min-width:64px!important;min-height:64px!important;
+ }
+ html body.j-action-workspace.ds-mobile-layout .jarvix-chat {
+  height:calc(var(--j-viewport,100dvh) - 126px - var(--ds-mobile-safe-top))!important;
+ }
+}
