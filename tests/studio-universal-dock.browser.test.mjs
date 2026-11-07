@@ -90,9 +90,15 @@ try{
    assert.equal(await page.locator('#homeQuickBar .j-mode-rail a').count(),2);
    assert.equal(await page.locator('#homeQuickForm #jSettingsMenu').count(),0);
    await page.locator('#homeQuickForm .j-settings-shortcut').click();
-   await page.waitForURL('**/generate-studio.html?studio=image&settings=1',{timeout:16000});
-   assert.equal(new URL(page.url()).searchParams.get('studio'),'image');
-   assert.equal(new URL(page.url()).searchParams.get('settings'),'1');
+   const native=page.frameLocator('#homeStudioSettingsFrame');
+   await native.locator('#studioSettingsHub[open]').waitFor({timeout:22000});
+   assert.equal(new URL(page.url()).pathname,'/deepsyq.html','real settings appear over existing Home');
+   assert.match(await page.locator('#homeStudioSettingsFrame').getAttribute('src'),/studio=image&settings=1/);
+   assert.equal(await native.locator('#studioSettingsHub #studioTypePicker').count(),1);
+   assert.equal(await native.locator('#studioSettingsHub #modelButton').count(),1);
+   assert.equal(await native.locator('#studioSettingsHub #settingsButton').count(),1);
+   await native.locator('#studioSettingsHub > button:nth-child(2)').click();
+   await page.locator('#homeStudioSettingsFrame').waitFor({state:'detached',timeout:12000});
   }finally{await context.close();}
  });
 }finally{
