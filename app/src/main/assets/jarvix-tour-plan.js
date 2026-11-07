@@ -25,9 +25,9 @@ export function tourPlan(language='en') {
 // We never click Create, Generate, checkout, consent or upload controls in a tour.
 const RECORDED_CUES=Object.freeze({
  Home:[{at:0,target:'#homeQuickBar'}],
- Image:[{at:0,target:'#creator'},{at:.46,target:'#modelButton'},{at:.78,target:'#settingsButton'}],
- Video:[{at:0,target:'#referenceBox,#creator'},{at:.43,target:'#modelButton'},{at:.74,target:'#creator'}],
- Audio:[{at:0,target:'#creator'},{at:.48,target:'#modelButton'},{at:.77,target:'#settingsButton'}],
+ Image:[{at:0,target:'#creator'},{at:.46,target:'#modelButton',action:'showSettings'},{at:.78,target:'#settingsButton',action:'showSettings'}],
+ Video:[{at:0,target:'#referenceBox,#creator'},{at:.43,target:'#modelButton',action:'showSettings'},{at:.74,target:'#creator',action:'hideSettings'}],
+ Audio:[{at:0,target:'#creator'},{at:.48,target:'#modelButton',action:'showSettings'},{at:.77,target:'#settingsButton',action:'showSettings'}],
  'AI Apps':[{at:0,target:'.app-card:first-child'}],
  Canvas:[{at:0,target:'#quickCreateForm'},{at:.70,target:'#quickCreateSubmit'}],
  Tools:[{at:0,target:'#etGallery>a:first-child'}],
