@@ -315,16 +315,18 @@ try{
 
  // Owner 2026-11-07: desktop top chrome does not blink on Home -> Image/Video/Audio/JARVIX.
  // A native pagereveal viewTransition would briefly hide the old shared header.
- await test('Desktop page changes keep the top chrome steady while lower modes still switch',async()=>{
+ await test('Desktop page changes retain the old visible header snapshot while lower modes switch',async()=>{
   const context=await browser.newContext({viewport:{width:1365,height:900}});
   await context.addInitScript(()=>{
    // Existing no-spend Studio tests preaccept onboarding in the isolated test context.
    // Otherwise the first Image entry opens a modal over the sidebar navigation.
    try{localStorage.setItem('deepsyq_lumina_terms_accepted','true');}catch{}
-   // The outgoing page may fire pagereveal before Playwright resumes on navigation.
-   // Do not depend on late-observed events to test the header transition policy.
+   // Capture browser's actual cross-document transition, not just the CSS rule.
    document.addEventListener('pagereveal',event=>{
-    window.__deepsyqNavHadTransition=!!event.viewTransition;
+    const wasActive=!!event.viewTransition;
+    let oldHeaderSnapshot='unknown';
+    try{oldHeaderSnapshot=getComputedStyle(document.documentElement,'::view-transition-old(ds-header)').display;}catch{}
+    window.__deepsyqNavProbe={wasActive,oldHeaderSnapshot};
    },{once:true});
   });
   const page=await context.newPage(),paid=[];
@@ -353,24 +355,28 @@ try{
     await page.waitForFunction(()=>{
      const sheet=[...document.styleSheets].find(s=>s.href?.endsWith('/deepsyq-mobile-shell.css'));
      if(!sheet)return false;
-     try{return [...sheet.cssRules].some(rule=>rule.conditionText?.includes('min-width: 761px')
-      &&rule.cssText.includes('@view-transition')&&rule.cssText.includes('navigation: none'));}
+     try{return [...sheet.cssRules].some(rule=>rule.cssText.startsWith('@view-transition')
+      &&rule.cssText.includes('navigation: auto'));}
      catch{return false;}
     },null,{timeout:15000});
     const state=await page.evaluate(()=>{
      const header=document.querySelector('header.ds-stable-header');
      const rect=header?.getBoundingClientRect(),css=header&&getComputedStyle(header);
      const sheet=[...document.styleSheets].find(s=>s.href?.endsWith('/deepsyq-mobile-shell.css'));
-     const blocked=[...sheet.cssRules].some(rule=>rule.conditionText?.includes('min-width: 761px')
-      &&rule.cssText.includes('@view-transition')&&rule.cssText.includes('navigation: none'));
-     return {transition:window.__deepsyqNavHadTransition,desktopTransitionDisabled:blocked,
+     const enabled=[...sheet.cssRules].some(rule=>rule.cssText.startsWith('@view-transition')
+      &&rule.cssText.includes('navigation: auto'));
+     const blocker=[...document.querySelectorAll('link[rel="stylesheet"]')]
+      .filter(link=>/deepsyq-mobile-shell|deepsyq-unified-platform-header|jarvix-action-design/.test(link.href))
+      .every(link=>link.blocking.contains('render'));
+     return {probe:window.__deepsyqNavProbe||null,enabled,blocker,
       position:css?.position,top:rect?.top,width:rect?.width,
       hasLeft:!!header?.querySelector('.ds-header-pod-left'),
       hasRight:!!header?.querySelector('.ds-header-pod-right'),
       hasOrb:!!header?.querySelector('#topJarvisBtn')};
     });
-    assert.equal(state.desktopTransitionDisabled,true,label+' must opt out of cross-document header transitions');
-    if(typeof state.transition==='boolean')assert.equal(state.transition,false,label+' view transition must be absent');
+    assert.equal(state.enabled,true,label+' desktop cross-document transition must be enabled');
+    assert.equal(state.blocker,true,label+' critical header CSS must be render-blocking');
+    assert.equal(state.probe?.wasActive,true,label+' must retain old header snapshot across page load');
     assert.equal(state.position,'fixed',label+' top header must stay fixed');
     assert.ok(Math.abs(state.top)<=3,label+' header top must remain stable');
     assert.equal(state.hasLeft,true,label+' left header actions preserved');
