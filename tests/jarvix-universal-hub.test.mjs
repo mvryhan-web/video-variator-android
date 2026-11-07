@@ -31,15 +31,18 @@ test('No new website framework, no invented asset page, upload uses original val
  assert.match(home,/href="my-creations\.html"/);
  assert.match(design,/\[data-j-icon\]/);
  assert.ok(!css.includes('.j-mode-rail::after'));
- assert.match(css,/\.jarvix-compose \.j-settings-menu/);
- // Home gear returns to the prior real Studio settings destination; Chat remains in-page.
- assert.match(design,/if\(isQuickChat&&form\.id!=='homeQuickForm'\)/);
- assert.match(composer,/openHomeStudioSettings\(\{gear:form\.querySelector\('\.j-settings-shortcut'\),mode:selected\}\)/);
- assert.match(composer,/form\.id==='homeQuickForm'/);
- assert.match(composer,/\['image','video','audio'\]\.includes\(mode\)\?mode:'image'/);
- assert.match(composer,/import \{openHomeStudioSettings\} from '\.\/home-studio-settings\.js'/);
+ // The prohibited secondary Image/Video/Audio gear chooser must be absent
+ // from Home, JARVIX Chat and native Studio. "+" remains the one mode picker.
+ assert.doesNotMatch(design,/jSettingsMenu|j-settings-tile|j-settings-menu/);
+ assert.doesNotMatch(design,/if\(isQuickChat&&form\.id!=='homeQuickForm'\)/);
  assert.match(design,/gear\.onclick=settingsTarget/);
- assert.match(design,/choice\.onclick=\(\)=>\{form\.querySelector\('#jPlusMenu/);
+ assert.match(composer,/openHomeStudioSettings\(\{gear:form\.querySelector\('\.j-settings-shortcut'\),mode:selected\}\)/);
+ assert.doesNotMatch(composer,/location\.assign\('generate-studio\.html/);
+ assert.match(composer,/import \{openHomeStudioSettings\} from '\.\/home-studio-settings\.js'/);
+ assert.match(composer,/\['image','video','audio'\]\.includes\(mode\)\?mode:'image'/);
+ const dock=await get('studio-universal-dock.js');
+ assert.doesNotMatch(dock,/jSettingsMenu|j-settings-tile/);
+ assert.match(dock,/openRealStudioSettings\?\.call\(gear\)/);
  assert.doesNotMatch(design,/link\.href='generate-studio\.html\?studio='/);
  for(const html of [home,chat])assert.match(html,/class="j-send-plane"/);
  const overlay=await get('home-studio-settings.js');
