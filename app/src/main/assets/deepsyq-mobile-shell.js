@@ -17,7 +17,7 @@ export function headerAccount(token, lang='en') {
 function setupMobileShell() {
   if(/\/(?:deepsyq|jarvix-chat|generate-studio)\.html$/.test(location.pathname)||location.pathname==='/'){
     document.body.classList.add('j-action-workspace');
-    if(!document.querySelector('link[href="jarvix-action-design.css"]')){const css=document.createElement('link');css.rel='stylesheet';css.href='jarvix-action-design.css';document.head.append(css);}
+    if(!document.querySelector('link[href="jarvix-action-design.css"]')){const css=document.createElement('link');css.rel='stylesheet';css.href='jarvix-action-design.css';if(matchMedia('(min-width:761px)').matches)css.setAttribute('blocking','render');document.head.append(css);}
   }
 
   if (document.body.dataset.mobileShell) return;
@@ -69,7 +69,7 @@ function setupMobileShell() {
   // frame when its emulated mobile viewport is being resized during testing.
   sizePinnedHeader();
   queuePin();
-  if (!document.querySelector('link[href="deepsyq-mobile-shell.css"]')) {const css=document.createElement('link');css.rel='stylesheet';css.href='deepsyq-mobile-shell.css';document.head.append(css);}
+  if (!document.querySelector('link[href="deepsyq-mobile-shell.css"]')) {const css=document.createElement('link');css.rel='stylesheet';css.href='deepsyq-mobile-shell.css';if(matchMedia('(min-width:761px)').matches)css.setAttribute('blocking','render');document.head.append(css);}
 
   // Only the global header search is removed; template/tool searches remain useful.
   document.querySelectorAll('.home-global-search, .vu-search').forEach(el => el.remove());
@@ -272,6 +272,7 @@ if (typeof document !== 'undefined') {
     installApprovedJarvixOrb(); // Stage07: same approved orb art in existing controls, no new UI actions.
     if(!document.querySelector('link[href="deepsyq-unified-platform-header.css"]')){
       const style=document.createElement('link');style.rel='stylesheet';style.href='deepsyq-unified-platform-header.css';
+      if(matchMedia('(min-width:761px)').matches)style.setAttribute('blocking','render');
       style.addEventListener('load',()=>window.dispatchEvent(new Event('resize')),{once:true});
       document.head.append(style);
     }

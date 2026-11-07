@@ -118,12 +118,25 @@
 .ds-desktop-actions :is(a,button){min-height:38px;padding:8px 12px;border:1px solid #7e58c9;border-radius:12px;background:linear-gradient(125deg,#231534,#09172c);color:#f0edff;font:600 12px system-ui;text-decoration:none;cursor:pointer;box-sizing:border-box}
 .ds-stable-header{view-transition-name:ds-header}.ds-stable-sidebar{view-transition-name:ds-sidebar}
 @view-transition{navigation:auto}
-/* Owner: desktop header must never flash during cross-page Studio/JARVIX navigation.
-   Keep mobile transitions and all existing lower composer mode highlights unchanged. */
-@media(min-width:761px){@view-transition{navigation:none}}
+/* Owner correction: a full-page navigation must retain the old desktop header
+   snapshot until the destination header is ready. Disabling cross-document
+   transitions caused the reported flash on every sidebar click. */
 ::view-transition-group(ds-header),::view-transition-group(ds-sidebar),::view-transition-group(ds-orb),::view-transition-group(ds-menu){animation:none}
 ::view-transition-old(ds-header),::view-transition-old(ds-sidebar),::view-transition-old(ds-orb),::view-transition-old(ds-menu){display:none}
 ::view-transition-new(ds-header),::view-transition-new(ds-sidebar),::view-transition-new(ds-orb),::view-transition-new(ds-menu){animation:none;mix-blend-mode:normal}
+@media(min-width:761px){
+ ::view-transition-group(ds-header),::view-transition-group(ds-sidebar),::view-transition-group(ds-orb){
+  animation:none!important;z-index:20!important;
+ }
+ ::view-transition-old(ds-header),::view-transition-old(ds-sidebar),::view-transition-old(ds-orb){
+  display:block!important;animation:none!important;opacity:1!important;
+  mix-blend-mode:normal!important;z-index:2!important;
+ }
+ ::view-transition-new(ds-header),::view-transition-new(ds-sidebar),::view-transition-new(ds-orb){
+  display:block!important;animation:none!important;opacity:1!important;
+  mix-blend-mode:normal!important;z-index:1!important;
+ }
+}
 .ds-tour-controls{position:fixed;z-index:720;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;max-width:calc(100vw - 24px);padding:10px 12px;border:1px solid #6d62c6;border-radius:18px;background:#071426f5;box-shadow:0 0 22px #06799766;color:#eef7ff;font:12px system-ui}
 .ds-tour-controls button{min-height:44px;padding:8px 13px;border:1px solid #6e69bf;border-radius:12px;background:#182541;color:#fff;font:600 12px system-ui;cursor:pointer}
 .ds-tour-controls button[hidden]{display:none}.ds-tour-label{min-width:0;max-width:180px;overflow-wrap:anywhere}
