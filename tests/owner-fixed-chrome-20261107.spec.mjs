@@ -493,7 +493,8 @@ test('mobile secondary header preserves existing mobile buttons without duplicat
  await expect(page.locator('#dsTakeTour')).toHaveCount(1);
  await expect(page.locator('.ds-header-tools')).toHaveCount(1);
  await expect(page.locator('#topLogin')).toHaveCount(1);
- await expect(page.locator('.ds-mobile-control-left #dsTakeTour')).toHaveCount(1);
+ await expect(page.locator('.ds-mobile-control-right #dsTakeTour')).toHaveCount(1);
+ await expect(page.locator('.ds-mobile-control-left .ds-header-credit')).toHaveCount(1);
  await expect(page.locator('.ds-mobile-control-left .ds-header-tools')).toHaveCount(1);
  await expect(page.locator('.ds-mobile-control-right #topLogin')).toHaveCount(1);
 });
