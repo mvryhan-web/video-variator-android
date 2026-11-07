@@ -63,8 +63,11 @@ function decorate(slot){
   const fail=()=>{
    for(const layer of layers)layer.remove();
    slot.classList.remove('jv-owner-photo-test');
-   // Failure fallback only; NEVER overlay the owner's photo with SVG.
-   slot.append(createOrbSvg());
+   // Failure fallback only; remove the unrequested outer/inner SVG arcs.
+   // Keep original SVG factory unchanged for an intentional full rollback.
+   const fallback=createOrbSvg();
+   fallback.querySelectorAll('ellipse').forEach(arc=>arc.remove());
+   slot.append(fallback);
   };
   layers[0].addEventListener('load',()=>{
    if(layers[0].naturalWidth===1254&&layers[0].naturalHeight===1254){

@@ -330,3 +330,18 @@ test('owner-uploaded JARVIX sphere replaces visual orb on TEST; original SVG rem
  }
  expect(paid).toBe(0);
 });
+
+test('owner JARVIX no unrequested arcs even when original photo URL fails',async({page})=>{
+ test.setTimeout(60000);
+ await page.route('**/760ea0b9-ba7d-4982-97f2-9bb59a6b0979.png',route=>route.abort('failed'));
+ for(const width of [390,1365]){
+  await page.setViewportSize({width,height:900});
+  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+  const orb=page.locator('#topJarvisBtn .jarvis-mini-orb.jv-approved-orb').first();
+  await expect(orb).toHaveCount(1);
+  const fallback=orb.locator('svg.ds-reference-orb');
+  await expect(fallback).toHaveCount(1);
+  await expect(fallback.locator('ellipse')).toHaveCount(0);
+  await expect(orb.locator('.jv-owner-upload-orb')).toHaveCount(0);
+ }
+});
