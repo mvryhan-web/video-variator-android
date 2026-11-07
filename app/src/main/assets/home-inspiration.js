@@ -37,6 +37,7 @@ function detailEl(tag,className,text){
 function openInspirationDetail(item,opener,{minimal=false}={}){
  for(const v of previewVideos)v.pause();
  if(inspirationDetail?.open)inspirationDetail.close();
+ let currentItem=item; // Current carousel slide; source gallery data remains unchanged.
  const dialog=detailEl('dialog','inspiration-detail-dialog');
  dialog.setAttribute('aria-label',item.title+' inspiration details');
  const layout=detailEl('div','inspiration-detail-layout');
@@ -66,7 +67,7 @@ function openInspirationDetail(item,opener,{minimal=false}={}){
  const description=detailEl('p','inspiration-detail-description',item.description||'Owner-approved Deepsyq inspiration.');
  const headingPrompt=detailEl('h3','inspiration-detail-heading','Prompt');
  const prompt=detailEl('p','inspiration-detail-prompt',item.prompt||'No prompt available.');
- let promptMore=null,promptResizeObserver=null;
+ let promptMore=null,copyPrompt=null,promptResizeObserver=null;
  if(minimal){
   dialog.classList.add('inspiration-detail-minimal');
   prompt.id='inspiration-detail-current-prompt';
@@ -82,7 +83,13 @@ function openInspirationDetail(item,opener,{minimal=false}={}){
    if(!expanded)requestAnimationFrame(refreshPromptMore);
   };
   headingPrompt.textContent='Prompt:';
-  sidebar.append(headingPrompt,prompt,promptMore);
+  if(item.kind==='image'){
+   const promptControls=detailEl('div','inspiration-detail-prompt-controls');
+   copyPrompt=detailEl('button','inspiration-detail-copy','Copy prompt');
+   copyPrompt.type='button';copyPrompt.setAttribute('aria-label','Copy prompt');
+   promptControls.append(promptMore,copyPrompt);
+   sidebar.append(headingPrompt,prompt,promptControls);
+  }else sidebar.append(headingPrompt,prompt,promptMore);
  }else sidebar.append(heading,kindLine,description,headingPrompt,prompt);
  function refreshPromptMore(){
   if(!minimal||!promptMore||prompt.classList.contains('is-expanded'))return;
@@ -116,12 +123,12 @@ function openInspirationDetail(item,opener,{minimal=false}={}){
   clone.disabled=true;use.disabled=true;create.disabled=true;
   note.textContent=support.reason;
  }
- clone.onclick=()=>openTarget(item,'clone',feedback);
- use.onclick=()=>openTarget(item,'prompt',feedback);
- create.onclick=()=>openTarget(item,'create',feedback);
+ clone.onclick=()=>openTarget(currentItem,'clone',feedback);
+ use.onclick=()=>openTarget(currentItem,'prompt',feedback);
+ create.onclick=()=>openTarget(currentItem,'create',feedback);
  // Copy must work independently of whether a Studio provider is enabled.
- copy.onclick=async()=>{
-  const value=String(item.prompt||'');
+ const copyCurrentPrompt=async()=>{
+  const value=String(currentItem.prompt||'');
   if(!value){feedback.textContent='No prompt available to copy.';feedback.hidden=false;return;}
   let copied=false;
   try{
@@ -137,8 +144,65 @@ function openInspirationDetail(item,opener,{minimal=false}={}){
   feedback.textContent=copied?'Prompt copied to clipboard.':'Clipboard is unavailable. Select the prompt text above to copy it.';
   feedback.hidden=false;
  };
+ copy.onclick=copyCurrentPrompt;
+ if(copyPrompt)copyPrompt.onclick=copyCurrentPrompt;
  if(minimal){actions.append(clone);sidebar.append(feedback,actions);}
  else{actions.append(clone,use,copy,create);sidebar.append(note,feedback,actions);}
+ // The carousel is image-only. Existing video, Canvas and Agent
+ // details retain their player, modal and button behavior.
+ if(minimal&&item.kind==='image'){
+  const pictures=items.filter(candidate=>candidate.kind==='image'&&candidate.actionTarget==='studio'&&candidate.previewUrl);
+  let index=pictures.findIndex(candidate=>candidate.id===item.id);
+  if(index>=0&&pictures.length>1){
+   const count=detailEl('span','inspiration-detail-count');
+   count.setAttribute('role','status');count.setAttribute('aria-live','polite');
+   toolbar.append(count);
+   const previous=detailEl('button','inspiration-detail-arrow inspiration-detail-prev','‹');
+   const next=detailEl('button','inspiration-detail-arrow inspiration-detail-next','›');
+   for(const button of [previous,next])button.type='button';
+   previous.setAttribute('aria-label','Previous image');
+   next.setAttribute('aria-label','Next image');
+   imageArea.append(previous,next);
+   const changeImage=delta=>{
+    index=(index+delta+pictures.length)%pictures.length;
+    currentItem=pictures[index];
+    media.src=currentItem.previewUrl;media.alt=currentItem.title;
+    dialog.setAttribute('aria-label',currentItem.title+' inspiration details');
+    prompt.textContent=currentItem.prompt||'No prompt available.';
+    prompt.classList.remove('is-expanded');
+    promptMore.textContent='Show more';
+    promptMore.setAttribute('aria-expanded','false');
+    count.textContent=(index+1)+' / '+pictures.length;
+    const support=studioHandoffSupport(currentItem);
+    clone.disabled=Boolean(support&&!support.supported);
+    feedback.textContent='';feedback.hidden=true;
+    promptMore.hidden=true;
+    requestAnimationFrame(refreshPromptMore);
+   };
+   previous.onclick=()=>changeImage(-1);
+   next.onclick=()=>changeImage(1);
+   let touchX=null,touchY=null;
+   imageArea.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1){touchX=null;return;}
+    touchX=event.touches[0].clientX;touchY=event.touches[0].clientY;
+   },{passive:true});
+   imageArea.addEventListener('touchend',event=>{
+    if(touchX===null||!event.changedTouches.length)return;
+    const dx=event.changedTouches[0].clientX-touchX;
+    const dy=event.changedTouches[0].clientY-touchY;
+    touchX=null;touchY=null;
+    if(Math.abs(dx)>48&&Math.abs(dx)>Math.abs(dy)*1.3)changeImage(dx<0?1:-1);
+   },{passive:true});
+   imageArea.addEventListener('touchcancel',()=>{touchX=null;touchY=null;},{passive:true});
+   dialog.addEventListener('keydown',event=>{
+    if(event.altKey||event.ctrlKey||event.metaKey||/^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName))return;
+    if(event.key==='ArrowLeft'||event.key==='ArrowRight'){
+     event.preventDefault();changeImage(event.key==='ArrowRight'?1:-1);
+    }
+   });
+   count.textContent=(index+1)+' / '+pictures.length;
+  }
+ }
  layout.append(stage,sidebar);dialog.append(layout);
  const previousOverflow=document.body.style.overflow;
  dialog.addEventListener('close',()=>{
