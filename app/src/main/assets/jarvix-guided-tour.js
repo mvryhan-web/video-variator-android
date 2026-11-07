@@ -4,7 +4,7 @@ import {TOUR_KEY,tourAction,tourCues,cueAt,tourNavigationClip,planNarrationBeats
 import {tourV3Plan as tourPlan} from './jarvix-tour-v3-script.js';
 import {getTourV3Recording} from './jarvix-tour-v3-audio.js';
 let audio=null,turn=0,bar=null,state=null,navTimer=null,waitTimer=null,stepWaitKey=null,stepWaitStart=0,activeFocus='',tourSettingsOpened=false;
-let transcriptPromise=null,tourSpeaking=false;
+let transcriptPromise=null,tourSpeaking=false,cueTimer=null;
 const clipTranscript=file=>{
  transcriptPromise ||= fetch('media/jarvix/clips/manifest.json',{signal:AbortSignal.timeout(5000)})
   .then(r=>r.ok?r.json():null).then(data=>new Map((data?.clips||[]).map(item=>[item.url.split('/').pop().split('?')[0],item.text]))).catch(()=>new Map());
@@ -22,7 +22,7 @@ function setTourSpeaking(active){
  // The original orb state, not only the Tour decoration, must be silent between clips.
  updateJarvisState(playing?'speaking':'idle');
 }
-function clearAudio(){turn++;clearTimeout(navTimer);clearTimeout(waitTimer);setTourSpeaking(false);stopOwnerSpeech();if(audio){audio.onended=null;audio.onplay=null;audio.onplaying=null;audio.onwaiting=null;audio.onpause=null;audio.onerror=null;audio.ontimeupdate=null;audio.pause();audio.remove();audio=null;}}
+function clearAudio(){turn++;clearTimeout(navTimer);clearTimeout(waitTimer);clearTimeout(cueTimer);setTourSpeaking(false);stopOwnerSpeech();if(audio){audio.onended=null;audio.onplay=null;audio.onplaying=null;audio.onwaiting=null;audio.onpause=null;audio.onerror=null;audio.ontimeupdate=null;audio.pause();audio.remove();audio=null;}}
 const navElements=()=>({sidebar:document.querySelector('#sidebar,#dsSiteSidebar,.shell>.sidebar'),toggle:document.querySelector('#menu,.ds-site-mobile-toggle,.vu-nav-toggle,#menuBtn')});
 function menuOpen(){return document.body.classList.contains('ds-mobile-drawer-open')||document.body.classList.contains('ds-site-nav-open')||document.body.classList.contains('menu-open')||document.body.classList.contains('vu-nav-open');}
 function showNavigation(url){
@@ -112,31 +112,128 @@ function speakBeats(beats,current){
 // Approved V3: all speech uses the existing JARVIX owner voice, never browser TTS.
 // A beat is complete only once its spoken recording ends, then the next action starts.
 const v3DialogsOpened=new Set();
-function closeV3Dialogs(){
- for(const id of v3DialogsOpened){
-  const dialog=document.getElementById(id);
-  if(dialog?.open)dialog.close();
+function closeTourChild(id){
+ const dialog=document.getElementById(id);
+ const wasOpen=Boolean(dialog?.open);
+ if(wasOpen){
+  // Close the actual child with its X while the parent is still hidden;
+  // restoring a parent before its open child closes caused stacked dialogs.
+  const x=dialog.querySelector('[data-close="'+id+'"]');
+  x?.click();
+  if(dialog.open)dialog.close();
  }
- v3DialogsOpened.clear();
- closeTourSettings();
+ v3DialogsOpened.delete(id);
+ if(wasOpen)document.getElementById('studioSettingsHub')?.style.removeProperty('visibility');
+}
+function closeV3Dialogs(){
+ for(const id of ['modelDialog','settingsDialog'])closeTourChild(id);
+ for(const id of [...v3DialogsOpened])closeTourChild(id);
+ const hub=document.getElementById('studioSettingsHub');
+ if(hub?.open&&tourSettingsOpened){
+  hub.style.removeProperty('visibility');
+  hub.querySelector('button[aria-label]')?.click();
+  if(hub.open)hub.close();
+ }
+ v3DialogsOpened.clear();tourSettingsOpened=false;
+}
+function studioTourMode(step){
+ return step.title==='Video'?'video':step.title==='Audio'?'audio':null;
+}
+function enterStudioFromPlus(step,target,current){
+ const mode=studioTourMode(step);
+ if(!mode||location.pathname!==target.pathname||!location.pathname.endsWith('/generate-studio.html'))return false;
+ const kind=mode==='audio'?'music':mode;
+ const real=document.querySelector('.studio-nav [data-kind="'+kind+'"]');
+ if(real?.getAttribute('aria-pressed')==='true'){
+  // Studio's native select() changes its live state but intentionally does not
+  // change the URL; keep browser back/refresh + narration route in sync.
+  if(location.search!==target.search)history.replaceState(null,'',target.href);
+  return false;
+ }
+ const plus=document.getElementById('jPlus');
+ const menu=document.getElementById('jPlusMenu');
+ const choice=menu?.querySelector('[data-j-mode="'+mode+'"]');
+ if(!plus||!menu||!choice||!real){
+  const key='studio-plus:'+step.title;
+  if(stepWaitKey!==key){stepWaitKey=key;stepWaitStart=Date.now();}
+  if(Date.now()-stepWaitStart<5000)
+   waitTimer=setTimeout(()=>{if(current===turn&&state?.phase==='playing')void play();},150);
+  else blocked(current,'Studio menu unavailable');
+  return true;
+ }
+ closeV3Dialogs();
+ spotlight({target:'#jPlus'});
+ if(menu.hidden)plus.click();
+ if(menu.hidden){blocked(current,'Studio menu unavailable');return true;}
+ navTimer=setTimeout(()=>{
+  if(current!==turn||state?.phase!=='playing')return;
+  spotlight({target:'#jPlusMenu [data-j-mode="'+mode+'"]'});
+  navTimer=setTimeout(()=>{
+   if(current!==turn||state?.phase!=='playing')return;
+   choice.click(); // Native Universal Hub selects existing Studio mode. No Generate/paid API.
+   if(real.getAttribute('aria-pressed')!=='true'){blocked(current,'Studio mode unavailable');return;}
+   if(location.search!==target.search)history.replaceState(null,'',target.href);
+   navTimer=setTimeout(()=>{if(current===turn&&state?.phase==='playing')void play();},120);
+  },180);
+ },180);
+ return true;
 }
 function cueV3(beat){
+ const currentStep=state&&tourPlan(state.language)[state.index];
+ if(currentStep&&studioTourMode(currentStep)){
+  // Video and Audio use the REAL + menu and the REAL gear/X handlers.
+  // Only one settings window is visible: the parent hub is temporarily
+  // invisible while a child popover is displayed, without changing Studio UI.
+  if(beat.action==='openModel'||beat.action==='openSettings'){
+   closeTourChild('modelDialog');closeTourChild('settingsDialog');
+   const hub=document.getElementById('studioSettingsHub'),gear=document.getElementById('studioSettingsToggle');
+   if(!hub||!gear){spotlight(beat);return;}
+   hub.style.removeProperty('visibility');
+   spotlight({target:'#studioSettingsToggle'});
+   if(!hub.open){
+    gear.click();
+    tourSettingsOpened=hub.open;
+    if(hub.open&&hub.matches(':modal')){hub.close();hub.show();}
+   }
+   const id=beat.action==='openModel'?'modelDialog':'settingsDialog';
+   const button=document.getElementById(beat.action==='openModel'?'modelButton':'settingsButton');
+   const started=turn;
+   // A short, audio-relative cue exposes the highlighted gear before the
+   // native child menu appears. For tiny QA clips it stays below their duration.
+   const delay=Math.min(170,Math.max(15,(Number(audio?.duration)||1)*125));
+   clearTimeout(cueTimer);cueTimer=setTimeout(()=>{
+    if(started!==turn||state?.phase!=='playing'||!hub.open||!button)return;
+    spotlight({target:'#'+button.id});
+    button.click();
+    const panel=document.getElementById(id);
+    if(panel?.open){
+     v3DialogsOpened.add(id);
+     if(panel.matches(':modal')){panel.close();panel.show();}
+     // Prevent the parent and child from looking like stacked windows.
+     hub.style.visibility='hidden';
+     spotlight({target:'#'+id});
+    }
+   },delay);
+   return;
+  }
+  if(beat.action==='closeSettings')closeV3Dialogs();
+  spotlight(beat);
+  return;
+ }
+ // Keep the previously approved Image and all other sections unchanged.
  if(beat.action==='openModel'||beat.action==='openSettings'){
   const hub=document.getElementById('studioSettingsHub');
   if(hub&&!hub.open){hub.show();tourSettingsOpened=true;}
   const name=beat.action==='openModel'?'modelButton':'settingsButton';
-  // Only open approved, existing read-only selector panels. No model is selected.
   const button=document.getElementById(name);
   const expected=beat.action==='openModel'?'modelDialog':'settingsDialog';
   if(button?.getClientRects().length){
    const dialog=document.getElementById(expected);
    if(dialog&&!dialog.open)v3DialogsOpened.add(expected);
    button.click();
-   // Existing Studio opens modal panels. During the tour they must be
-   // non-modal, otherwise Pause/Stop behind the top layer cannot be used.
    if(dialog?.open&&dialog.matches(':modal')){dialog.close();dialog.show();}
   }
- } else if(beat.action==='closeSettings')closeV3Dialogs();
+ }else if(beat.action==='closeSettings')closeV3Dialogs();
  const shown=spotlight(beat);
  if(!shown&&beat.action==='openSettings')spotlight({target:'#studioSettingsToggle,#settingsButton'});
 }
@@ -188,6 +285,10 @@ async function speakV3(text,current,complete,beat=null){
 }
 function playV3(step,target,current){
  if(!state||state.phase!=='playing')return;
+ // Image is the original entry page. Video and Audio are demonstrated by
+ // the EXISTING Universal Hub '+' and selected in-place, never by a reload
+ // that could cut the final syllable of a recorded owner voice.
+ if(enterStudioFromPlus(step,target,current))return;
  if(target.pathname!==location.pathname||target.search!==location.search){
   // Navigate FIRST: title MP3 must not announce a section on the previous page.
   closeV3Dialogs();

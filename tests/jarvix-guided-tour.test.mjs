@@ -255,3 +255,63 @@ test('all 19 Tour V3 stages play every original Russian MP3, never a silent plac
   }finally{await page.close();}
  });
 });
+
+
+test('Video and Audio Tour use the actual + menu, real Settings gear and X, without reloading Studio',async()=>{
+ await preview(32610,async(browser,base)=>{
+  for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
+   const page=await browser.newPage({viewport});
+   const paid=[];
+   page.on('request',req=>{
+    if(req.method()==='POST'&&/\/api\/(?:billing|checkout|studio\/jobs|wallet|generation)/.test(new URL(req.url()).pathname))paid.push(req.url());
+   });
+   await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
+   await page.route('**/media/jarvix/tour-v3/*.mp3',route=>route.fulfill({status:200,contentType:'audio/wav',body:makeWav(.65)}));
+   await page.route('**/api/jarvix/voice-config',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({configured:true,speechModelInstalled:true,speechSource:'self-hosted',engine:'VoxCPM2'})}));
+   await page.addInitScript(()=>localStorage.setItem('deepsyq_home_language','ru'));
+   try{
+    await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});
+    await page.locator('#dsTakeTour').click();
+    await page.waitForURL(/generate-studio\.html\?studio=image/,{timeout:20000});
+    await page.locator('#jPlus').waitFor({state:'visible',timeout:10000});
+    await page.evaluate(()=>{
+     window.__tourSameDocument=Symbol('studio-document');
+     window.__tourStudioEvents=[];
+     document.addEventListener('click',event=>{
+      const match=event.target.closest('#jPlus,[data-j-mode],#studioSettingsToggle,[data-close],#studioSettingsHub button[aria-label]');
+      if(!match)return;
+      const hub=document.getElementById('studioSettingsHub');
+      window.__tourStudioEvents.push({
+       target:match.dataset.jMode?'choose-'+match.dataset.jMode:match.id||match.dataset.close||match.getAttribute('aria-label'),
+       at:location.search,
+       parentHidden:hub?.style.visibility==='hidden'
+      });
+     },true);
+    });
+    await page.waitForURL(/generate-studio\.html\?studio=video/,{timeout:25000});
+    assert.equal(await page.locator('.studio-nav [data-kind="video"]').getAttribute('aria-pressed'),'true');
+    await page.waitForURL(/generate-studio\.html\?studio=audio/,{timeout:25000});
+    assert.equal(await page.locator('.studio-nav [data-kind="music"]').getAttribute('aria-pressed'),'true');
+    const persistent=await page.evaluate(()=>Boolean(window.__tourSameDocument));
+    assert.equal(persistent,true,'Video/Audio must change using Universal Hub without a document navigation');
+    await page.waitForFunction(()=>{
+     const s=JSON.parse(sessionStorage.getItem('deepsyq_guided_tour_v6')||'null');
+     return s?.index===3&&s.beat>=3;
+    },null,{timeout:25000});
+    const events=await page.evaluate(()=>window.__tourStudioEvents);
+    assert.ok(events.filter(e=>e.target==='jPlus').length>=2,'Both Video and Audio transitions must click the genuine +');
+    assert.ok(events.some(e=>e.target==='choose-video'),'Video must come from the actual + menu');
+    assert.ok(events.some(e=>e.target==='choose-audio'),'Audio must come from the actual + menu');
+    assert.ok(events.filter(e=>e.target==='studioSettingsToggle').length>=2,'Settings gear must be clicked on both sections');
+    assert.ok(events.some(e=>e.target==='modelDialog'),'Model panel must close through its real X');
+    assert.ok(events.some(e=>e.target==='settingsDialog'),'Settings panel must close through its real X before changing mode');
+    assert.ok(events.filter(e=>['modelDialog','settingsDialog'].includes(e.target)&&e.at!=='?studio=image').every(e=>e.parentHidden),
+      'Video/Audio must hide parent hub while the nested model/settings window is visible; Image remains unchanged');
+    assert.equal(await page.locator('#studioSettingsHub').evaluate(h=>h.open),false,
+      'Audio Studio must close the settings parent with X before leaving the section');
+    assert.deepEqual(paid,[],'Demonstration must not submit paid generation or checkout');
+    await page.locator('[data-tour="stop"]').click();
+   }finally{await page.close();}
+  }
+ });
+});
