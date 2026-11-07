@@ -1,0 +1,37 @@
+{
+  "policy": "OWNER D24 2026-11-07 — owner-scope review required for these user-approved, shared or security-critical files",
+  "note": "This is a PR review trigger, not permission to edit. No edit without specific owner request and preserved functionality. It is enforced only when relevant GitHub CI checks are required by branch protection.",
+  "reviewRequired": [
+    "AGENTS.md",
+    "DECISIONS.md",
+    "docs/OWNER_CHANGE_CONTROL_20261107.md",
+    "docs/OWNER_REVIEW_PATHS.json",
+    ".github/CODEOWNERS",
+    ".github/copilot-instructions.md",
+    ".github/pull_request_template.md",
+    ".github/workflows/owner-change-scope.yml",
+    "scripts/owner-change-scope.mjs",
+    "tests/owner-change-scope.test.mjs",
+    "app/src/main/assets/generate-studio.html",
+    "app/src/main/assets/generate-studio.js",
+    "app/src/main/assets/generate-studio.css",
+    "app/src/main/assets/studio-composer-popovers.js",
+    "app/src/main/assets/studio-composer-popovers.css",
+    "app/src/main/assets/studio-quickstart.css",
+    "app/src/main/assets/deepsyq.html",
+    "app/src/main/assets/deepsyq-site-shell.js",
+    "app/src/main/assets/deepsyq-mobile-shell.js",
+    "app/src/main/assets/my-creations.html",
+    "app/src/main/assets/pricing.html",
+    "app/src/main/assets/pricing-page.css",
+    "app/src/main/assets/pricing-page.js",
+    "app/src/main/assets/video-history.html",
+    "app/src/main/assets/jarvis-core.js",
+    "docs/OWNER_FINAL_PAGE_DESIGN_LOCK.json",
+    "docs/PRICING_OWNER_ART_LOCK.json"
+  ],
+  "reviewPrefixes": [
+    "app/src/main/assets/media/pricing/"
+  ],
+  "baselineStudioCommit": "8c5f527ebf6e572d30cd8983d5a9adc234fd7b6d"
+}
