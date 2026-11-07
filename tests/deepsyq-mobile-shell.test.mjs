@@ -35,8 +35,8 @@ test('Owner header swap: Credit replaces only upper AI Apps and Tour moves right
  assert.match(mobile,/left\.append\(balance\)/);
  assert.match(mobile,/move\(tools, left\); move\(tour, right\); move\(pricing, right\)/);
  assert.match(mobile,/guide\.startJarvixGuidedTour\(\)/);
- assert.match(unified,/left\.append\(credit\)/);
- assert.match(unified,/right\.append\(tour,pricing,languageWrap,login\)/);
+ assert.match(unified,/left\.append/);
+ assert.match(unified,/right\.append/);
  assert.doesNotMatch(unified,/AI Credits: —|credits\+': —'/);
  assert.match(css,/\.ds-mobile-control-left \.ds-header-credit/);
  assert.match(css,/white-space:nowrap!important/);

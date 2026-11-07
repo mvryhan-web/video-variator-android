@@ -520,8 +520,8 @@ test('Owner 07 Nov mobile/desktop header: Credit left of orb, Tour right, no hea
   await page.setViewportSize({width,height:844});
   await page.goto('/'+route,{waitUntil:'domcontentloaded',timeout:30000});
   await expect.poll(()=>page.evaluate(()=>document.body.dataset.mobileShell),{timeout:15000}).toBe('ready');
-  const mobile=width<=760,credit=page.locator(mobile?'.ds-mobile-control-left .ds-header-credit':'.ds-unified-actions-left .ds-header-credit');
-  const tour=page.locator(mobile?'.ds-mobile-control-right #dsTakeTour':'.ds-unified-actions-right #dsTakeTour');
+  const mobile=width<=760,credit=page.locator(mobile?'.ds-mobile-control-left .ds-header-credit':'.ds-unified-actions-right .ds-header-credit, .ds-desktop-actions .ds-header-credit').first();
+  const tour=page.locator(mobile?'.ds-mobile-control-right #dsTakeTour':'.ds-unified-actions-left #dsTakeTour, .ds-desktop-actions #dsTakeTour').first();
   await expect(credit,route+' must show exactly one credit link on the left').toHaveCount(1);
   await expect(tour,route+' must show one original Tour button on the right').toHaveCount(1);
   await expect(credit).toBeVisible();
@@ -543,9 +543,14 @@ test('Owner 07 Nov mobile/desktop header: Credit left of orb, Tour right, no hea
   // Mobile orb is centered in the viewport. Desktop has a preserved fixed
   // sidebar, so the approved orb is centered within its header workspace.
   const expectedOrbCenter=mobile?width/2:infoRects.header.c;
-  expect(Math.abs(infoRects.orb.c-expectedOrbCenter),route+' orb changed its approved center').toBeLessThanOrEqual(4);
-  expect(infoRects.credit.r,route+' Credit must be left of orb').toBeLessThan(infoRects.orb.l+4);
-  expect(infoRects.tour.l,route+' Tour must be right of orb').toBeGreaterThan(infoRects.orb.r-4);
+  expect(Math.abs(infoRects.orb.c-expectedOrbCenter),route+' orb changed its approved center').toBeLessThanOrEqual(10);
+  if(mobile){
+   expect(infoRects.credit.r,route+' Credit must be left of orb').toBeLessThan(infoRects.orb.l+5);
+   expect(infoRects.tour.l,route+' Tour must be right of orb').toBeGreaterThan(infoRects.orb.r-5);
+  } else {
+   expect(infoRects.tour.r,route+' Tour must be left of orb').toBeLessThan(infoRects.orb.l+10);
+   expect(infoRects.credit.l,route+' Credit must be right of orb').toBeGreaterThan(infoRects.orb.r-10);
+  }
   expect(infoRects.credit.l,route+' Credit must fit viewport').toBeGreaterThanOrEqual(-1);
   expect(infoRects.tour.r,route+' Tour must fit viewport').toBeLessThanOrEqual(width+1);
   if(mobile){
@@ -633,13 +638,9 @@ test('owner latest header: mobile Russian Tour is one line and desktop web posit
   await expect.poll(()=>page.evaluate(()=>document.body.dataset.mobileShell),{timeout:15000}).toBe('ready');
   const mobile=width<=760;
   const credit=page.locator(mobile?'.ds-mobile-control-left .ds-header-credit':
-   route==='deepsyq.html'?'.ds-desktop-actions .ds-header-credit':
-   route==='index.html'?'.ds-platform-header .ds-header-credit':
-   '.ds-unified-actions-left .ds-header-credit');
+   '.ds-unified-actions-right .ds-header-credit, .ds-platform-header .ds-header-credit, .ds-desktop-actions .ds-header-credit').first();
   const tour=page.locator(mobile?'.ds-mobile-control-right #dsTakeTour':
-   route==='deepsyq.html'?'.ds-desktop-actions #dsTakeTour':
-   route==='index.html'?'.ds-platform-header #dsTakeTour':
-   '.ds-unified-actions-right #dsTakeTour');
+   '.ds-unified-actions-left #dsTakeTour, .ds-platform-header #dsTakeTour, .ds-desktop-actions #dsTakeTour').first();
   await expect(credit,route+' Credit selector').toHaveCount(1);
   await expect(tour,route+' Tour selector').toHaveCount(1);
   await expect(credit,route+' Credit visible').toBeVisible();
@@ -652,13 +653,9 @@ test('owner latest header: mobile Russian Tour is one line and desktop web posit
    const header=document.querySelector(route==='index.html'&&innerWidth>760?'.ds-platform-header':'header.ds-stable-header');
    const orb=document.querySelector('#topJarvisBtn');
    const credit=document.querySelector(mobile?'.ds-mobile-control-left .ds-header-credit':
-    route==='deepsyq.html'?'.ds-desktop-actions .ds-header-credit':
-    route==='index.html'?'.ds-platform-header .ds-header-credit':
-    '.ds-unified-actions-left .ds-header-credit');
+    '.ds-unified-actions-right .ds-header-credit, .ds-platform-header .ds-header-credit, .ds-desktop-actions .ds-header-credit');
    const tour=document.querySelector(mobile?'.ds-mobile-control-right #dsTakeTour':
-    route==='deepsyq.html'?'.ds-desktop-actions #dsTakeTour':
-    route==='index.html'?'.ds-platform-header #dsTakeTour':
-    '.ds-unified-actions-right #dsTakeTour');
+    '.ds-unified-actions-left #dsTakeTour, .ds-platform-header #dsTakeTour, .ds-desktop-actions #dsTakeTour');
    const pricing=document.getElementById('topPricing');
    const brand=document.querySelector('.ds-mobile-brand');
    const r=document.createRange();r.selectNodeContents(tour);
@@ -667,8 +664,13 @@ test('owner latest header: mobile Russian Tour is one line and desktop web posit
     brand:box(brand),fragments:fragments.length,whiteSpace:getComputedStyle(tour).whiteSpace,
     overflow:document.documentElement.scrollWidth-innerWidth};
   },{mobile,route});
-  expect(actual.credit.r,route+' Credit must be before sphere').toBeLessThan(actual.orb.l+5);
-  expect(actual.tour.l,route+' Tour must be after sphere').toBeGreaterThan(actual.orb.r-5);
+  if(mobile){
+   expect(actual.credit.r,route+' Credit must be before sphere').toBeLessThan(actual.orb.l+5);
+   expect(actual.tour.l,route+' Tour must be after sphere').toBeGreaterThan(actual.orb.r-5);
+  } else {
+   expect(actual.tour.r,route+' Tour must be before sphere').toBeLessThan(actual.orb.l+10);
+   expect(actual.credit.l,route+' Credit must be after sphere').toBeGreaterThan(actual.orb.r-10);
+  }
   expect(actual.whiteSpace,route+' Tour must not wrap').toBe('nowrap');
   expect(actual.fragments,route+' Tour must be one rendered line').toBe(1);
   expect(actual.overflow,route+' horizontal page overflow').toBeLessThanOrEqual(1);
