@@ -46,6 +46,45 @@ function render(){
 }
 function advance(current){if(current!==turn||!state||state.phase!=='playing')return;state=tourAction(state,'ended');save();if(state)void play();else{clearAudio();document.querySelectorAll('.jarvis-tour-spotlight,.ds-tour-drawer-target').forEach(e=>e.classList.remove('jarvis-tour-spotlight','ds-tour-drawer-target'));activeFocus='';updateJarvisState('idle');render();window.dispatchEvent(new Event('jarvix:tour-ended'));}}
 function blocked(current,message='Audio unavailable'){if(current!==turn||!state)return;state={...state,phase:'paused',error:message};save();render();updateJarvisState('idle');}
+
+function speakNavigation(step,target,current){
+ const link=showNavigation(step.url);
+ const file=tourNavigationClip(step.title,state.index,state.language);
+ const navigate=()=>{
+  if(current!==turn||!state||state.phase!=='playing')return;
+  state.navAnnounced=state.index;state.position=0;save();
+  navTimer=setTimeout(()=>{
+   if(current!==turn||!state||state.phase!=='playing')return;
+   if(link&&new URL(link.href).pathname===target.pathname&&new URL(link.href).search===target.search)link.click();
+   else location.assign(target.href);
+  },350);
+ };
+ if(!file){navTimer=setTimeout(navigate,1100);return;}
+ audio=new Audio(file);const clip=audio;clip.id='dsTourAudio';clip.hidden=true;document.body.append(clip);
+ clip.onloadedmetadata=()=>{if(state?.position)clip.currentTime=Math.min(state.position,Math.max(0,(clip.duration||0)-.1));};
+ clip.onplay=()=>{pauseJarvisRecognition();updateJarvisState('speaking');};
+ clip.onended=navigate;clip.onerror=()=>blocked(current,'Navigation voice unavailable');
+ captionForClip(file,current);
+ void clip.play().catch(()=>blocked(current,'Press Continue'));
+}
+function speakBeats(beats,current){
+ let index=Math.min(state?.beat||0,Math.max(0,beats.length-1));
+ const next=()=>{
+  if(current!==turn||!state||state.phase!=='playing')return;
+  const beat=beats[index];
+  if(!beat){advance(current);return;}
+  caption(beat.text);
+  // Highlight the precise control only when its associated phrase starts playing.
+  void speakOwnerSpeech(beat.text,state.language,{
+   phase:phase=>{if(current===turn&&phase==='playing')spotlight(beat);if(current===turn&&bar)bar.dataset.narration=phase;},
+   start:()=>{if(current===turn)updateJarvisState('speaking');},
+   complete:()=>{if(current!==turn||!state||state.phase!=='playing')return;state.beat=++index;save();next();},
+   fallback:()=>blocked(current,'Voice service unavailable'),
+   error:()=>blocked(current,'Voice service unavailable')
+  });
+ };
+ next();
+}
 async function play(){
  if(!state)return;clearAudio();const current=turn,step=tourPlan(state.language)[state.index],target=new URL(step.url,location.href);render();
  if(target.pathname!==location.pathname||target.search!==location.search){
