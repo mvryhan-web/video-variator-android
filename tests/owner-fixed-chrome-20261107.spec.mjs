@@ -526,10 +526,14 @@ test('Owner 07 Nov mobile/desktop header: Credit left of orb, Tour right, no hea
    return {viewport:innerWidth,orb:rect('#topJarvisBtn'),
     credit:rect(scope+' .ds-header-credit'),tour:rect(scope+' #dsTakeTour'),
     tools:rect(scope+' .ds-header-tools'),price:rect(scope+' #topPricing'),
+    header:rect('header.ds-stable-header'),
     overflow:document.documentElement.scrollWidth>innerWidth+1};
   },mobile);
   expect(infoRects.orb,route+' missing JARVIX orb').toBeTruthy();
-  expect(Math.abs(infoRects.orb.c-width/2),route+' orb must remain centered').toBeLessThanOrEqual(4);
+  // Mobile orb is centered in the viewport. Desktop has a preserved fixed
+  // sidebar, so the approved orb is centered within its header workspace.
+  const expectedOrbCenter=mobile?width/2:infoRects.header.c;
+  expect(Math.abs(infoRects.orb.c-expectedOrbCenter),route+' orb changed its approved center').toBeLessThanOrEqual(4);
   expect(infoRects.credit.r,route+' Credit must be left of orb').toBeLessThan(infoRects.orb.l+4);
   expect(infoRects.tour.l,route+' Tour must be right of orb').toBeGreaterThan(infoRects.orb.r-4);
   expect(infoRects.credit.l,route+' Credit must fit viewport').toBeGreaterThanOrEqual(-1);
