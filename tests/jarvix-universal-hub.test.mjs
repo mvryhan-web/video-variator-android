@@ -34,12 +34,20 @@ test('No new website framework, no invented asset page, upload uses original val
  assert.match(css,/\.jarvix-compose \.j-settings-menu/);
  // Home gear returns to the prior real Studio settings destination; Chat remains in-page.
  assert.match(design,/if\(isQuickChat&&form\.id!=='homeQuickForm'\)/);
- assert.match(composer,/location\.assign\('generate-studio\.html\?studio='/);
+ assert.match(composer,/openHomeStudioSettings\(\{gear:form\.querySelector\('\.j-settings-shortcut'\),mode:selected\}\)/);
+ assert.match(composer,/form\.id==='homeQuickForm'/);
  assert.match(composer,/\['image','video','audio'\]\.includes\(mode\)\?mode:'image'/);
+ assert.match(composer,/import \{openHomeStudioSettings\} from '\.\/home-studio-settings\.js'/);
  assert.match(design,/gear\.onclick=settingsTarget/);
  assert.match(design,/choice\.onclick=\(\)=>\{form\.querySelector\('#jPlusMenu/);
  assert.doesNotMatch(design,/link\.href='generate-studio\.html\?studio='/);
  for(const html of [home,chat])assert.match(html,/class="j-send-plane"/);
+ const overlay=await get('home-studio-settings.js');
+ assert.match(overlay,/generate-studio\.html/);
+ assert.match(overlay,/settings','1'/);
+ assert.match(overlay,/studioSettingsHub/);
+ assert.match(overlay,/homeStudioSettingsFrame/);
+ assert.doesNotMatch(overlay,/\/api\/studio\/jobs|requestSubmit\(|fetch\('/);
 });
 
 test('existing My Creations Assets destination tolerates missing optional archived filter',async()=>{
