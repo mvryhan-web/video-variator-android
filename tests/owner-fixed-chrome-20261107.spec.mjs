@@ -352,7 +352,7 @@ test('owner image module contains no legacy SVG builder or fallback',async({page
  const moduleSource=await response.text();
  expect(moduleSource).not.toContain('function createOrbSvg');
  expect(moduleSource).not.toContain('slot.append(createOrbSvg');
- expect(moduleSource).toContain('jv-owner-layer-cyan');
+ expect(moduleSource).toContain("const parts=['base','inner','cyan','orange','pink']");
 });
 
 test('JARVIX removes any late-injected old orb nodes without touching owner image or controls',async({page})=>{
