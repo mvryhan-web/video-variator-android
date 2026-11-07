@@ -318,6 +318,9 @@ try{
  await test('Desktop page changes keep the top chrome steady while lower modes still switch',async()=>{
   const context=await browser.newContext({viewport:{width:1365,height:900}});
   await context.addInitScript(()=>{
+   // Existing no-spend Studio tests preaccept onboarding in the isolated test context.
+   // Otherwise the first Image entry opens a modal over the sidebar navigation.
+   try{localStorage.setItem('deepsyq_lumina_terms_accepted','true');}catch{}
    // The outgoing page may fire pagereveal before Playwright resumes on navigation.
    // Do not depend on late-observed events to test the header transition policy.
    document.addEventListener('pagereveal',event=>{
