@@ -125,6 +125,9 @@ function cueV3(beat){
    const dialog=document.getElementById(expected);
    if(dialog&&!dialog.open)v3DialogsOpened.add(expected);
    button.click();
+   // Existing Studio opens modal panels. During the tour they must be
+   // non-modal, otherwise Pause/Stop behind the top layer cannot be used.
+   if(dialog?.open&&dialog.matches(':modal')){dialog.close();dialog.show();}
   }
  } else if(beat.action==='closeSettings')closeV3Dialogs();
  const shown=spotlight(beat);
