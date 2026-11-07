@@ -1,5 +1,9 @@
 // GO stage07: reuse approved JARVIX orb SVG from PR #559.
 // Visual elements only. No new buttons, voices, routes, paid AI jobs.
+// Temporary owner photo test. The original SVG below stays untouched for one-flag rollback.
+// Exact owner-uploaded PNG (2026-11-07); not the assistant-generated replacement.
+const OWNER_SPHERE_TEST_ENABLED=true;
+const OWNER_SPHERE_TEST_URL='https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/760ea0b9-ba7d-4982-97f2-9bb59a6b0979.png';
 let seq=0;
 function createOrbSvg(){
  const id='jvApprovedOrb'+(++seq);
@@ -41,7 +45,19 @@ function createOrbSvg(){
 function decorate(slot){
  if(slot.classList.contains('jv-approved-orb'))return;
  slot.classList.add('jv-approved-orb');
- slot.append(createOrbSvg());
+ slot.append(createOrbSvg()); // Preserved original, used automatically when photo is disabled or fails.
+ if(OWNER_SPHERE_TEST_ENABLED){
+  const photo=document.createElement('img');
+  photo.className='jv-owner-upload-orb';
+  photo.alt='';
+  photo.setAttribute('aria-hidden','true');
+  photo.decoding='async';
+  photo.referrerPolicy='no-referrer';
+  photo.addEventListener('load',()=>slot.classList.add('jv-owner-photo-test'),{once:true});
+  photo.addEventListener('error',()=>photo.remove(),{once:true});
+  photo.src=OWNER_SPHERE_TEST_URL;
+  slot.append(photo);
+ }
  const header=slot.closest('#topJarvisBtn');
  if(header)header.classList.add('jv-approved-orb-button');
 }
@@ -64,7 +80,7 @@ export function mountApprovedJarvixOrb(root=document){
 export function installApprovedJarvixOrb(){
  if(!document.getElementById('jvApprovedOrbStyles')){
   const css=document.createElement('link');css.id='jvApprovedOrbStyles';
-  css.rel='stylesheet';css.href='jarvix-approved-orb.css?v=stage08';
+  css.rel='stylesheet';css.href='jarvix-approved-orb.css?v=owner-photo-test-20261107';
   document.head.append(css);
  }
  mountApprovedJarvixOrb();
