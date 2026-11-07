@@ -222,6 +222,51 @@ try{
    }
   }
  });
+ // Owner 2026-11-07: middle mobile spotlight uses original JARVIX orb/link.
+ await test('Mobile Home center JARVIX card opens clean chat',async()=>{
+  for(const width of [390,320]){
+   const context=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true});
+   await context.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+   const page=await context.newPage(),paid=[];
+   page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:studio\/jobs|stripe|payments)\b/.test(r.url()))paid.push(r.url());});
+   try{
+    await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded',timeout:30000});
+    const cards=page.locator('#createWithDeepsyq .home-feature-triptych .home-feature-spotlight');
+    assert.deepEqual((await cards.allTextContents()).map(s=>s.trim()),['Canvas','JARVIX','AI Apps']);
+    const agent=page.locator('#createWithDeepsyq .home-spotlight-agent');
+    assert.equal(await agent.getAttribute('href'),'jarvix-chat.html');
+    assert.equal(await agent.getAttribute('aria-label'),'JARVIX chat');
+    const orb=agent.locator('.home-spotlight-jarvix-orb.jarvis-mini-orb');
+    await orb.waitFor({state:'visible',timeout:16000});
+    await page.waitForFunction(()=>document.querySelector('.home-spotlight-jarvix-orb')?.classList.contains('jv-approved-orb'),null,{timeout:15000});
+    const actual=await agent.evaluate(el=>{
+     const orb=el.querySelector('.home-spotlight-jarvix-orb'),title=el.querySelector('.home-spotlight-jarvix-title'),r=el.getBoundingClientRect();
+     return {title:title.textContent.trim(),titleDisplay:getComputedStyle(title).display,
+      titleVisibility:getComputedStyle(title).visibility,orbDisplay:getComputedStyle(orb).display,
+      approved:orb.classList.contains('jv-approved-orb'),left:r.left,right:r.right};
+    });
+    assert.equal(actual.title,'JARVIX');
+    assert.notEqual(actual.titleDisplay,'none');
+    assert.equal(actual.titleVisibility,'visible');
+    assert.notEqual(actual.orbDisplay,'none');
+    assert.equal(actual.approved,true);
+    assert.ok(actual.left>=-1&&actual.right<=width+1,'mobile spotlight fits viewport');
+    await page.screenshot({path:file+'/owner-mobile-jarvix-'+width+'.png',fullPage:false});
+    await agent.click();
+    await page.waitForURL('**/jarvix-chat.html',{timeout:20000});
+    assert.ok(!(await page.locator('body').innerText()).includes('Text, images, video and audio — one conversation.'));
+    for(const kind of ['image','video','audio']){
+     await page.goto(base+'/generate-studio.html?studio='+kind,{waitUntil:'domcontentloaded'});
+     await page.waitForSelector('#studioUniversalDock #jPlus',{timeout:20000});
+     assert.ok(!(await page.locator('body').innerText()).includes('Text, images, video and audio — one conversation.'),kind+' page must remain clean');
+    }
+    assert.equal(paid.length,0);
+   }finally{await context.close();}
+  }
+  const chatSource=await (await import('node:fs/promises')).readFile(
+   new URL('../app/src/main/assets/jarvix-chat.js',import.meta.url),'utf8');
+  assert.ok(!chatSource.includes('Text, images, video and audio — one conversation.'));
+ });
 }finally{
  await browser?.close();server.kill('SIGTERM');
  if(server.exitCode===null&&server.signalCode===null)await once(server,'exit');
