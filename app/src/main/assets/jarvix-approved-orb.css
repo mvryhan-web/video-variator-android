@@ -5,41 +5,25 @@
  background:transparent!important;border-color:transparent!important;
  box-shadow:none!important;overflow:visible!important;
 }
-.jarvis-mini-orb.jv-approved-orb>.jarvis-core,
-.jarvis-mini-orb.jv-approved-orb>.jarvis-ring{display:none!important}
-.jarvis-mini-orb.jv-approved-orb>.ds-reference-orb{
- display:block!important;position:absolute!important;inset:0!important;
- width:100%!important;height:100%!important;max-width:none!important;
- overflow:visible;filter:drop-shadow(0 0 3px #10d9ff90);
- pointer-events:none;transform:none!important;
-}
 #topJarvisBtn.jv-approved-orb-button{
  background:transparent!important;border-color:transparent!important;
  box-shadow:none!important;overflow:visible!important;
 }
 #topJarvisBtn.jv-approved-orb-button::before,
 #topJarvisBtn.jv-approved-orb-button::after{display:none!important}
-#topJarvisBtn.jv-approved-orb-button>.jarvis-mini-orb.jv-approved-orb>.ds-reference-orb{
- inset:-25%!important;width:150%!important;height:150%!important;
- filter:drop-shadow(0 0 7px #0ee7ffaa);
-}
 .j-mode-rail .jv-rail-mini-orb{
  display:inline-block!important;flex:none;
  width:19px!important;height:19px!important;
  margin-right:4px;vertical-align:middle;pointer-events:none;
 }
-.j-mode-rail .jv-rail-mini-orb>.ds-reference-orb{
- width:100%!important;height:100%!important;
-}
 /* Owner 2026-11-07: animate ONLY pixels from their uploaded original PNG.
    No legacy SVG orbit, synthetic glow, shadow, halo, graphics or new colors.
    The source image's existing blue/cyan/pink/orange portions are isolated by
    concentric radial masks and moved; same PNG in every image layer. */
-.jarvis-mini-orb.jv-owner-photo-test::before,
-.jarvis-mini-orb.jv-owner-photo-test::after{
+.jarvis-mini-orb.jv-approved-orb::before,
+.jarvis-mini-orb.jv-approved-orb::after{
  content:none!important;display:none!important;animation:none!important;
 }
-.jarvis-mini-orb.jv-owner-photo-test>.ds-reference-orb{display:none!important}
 .jarvis-mini-orb.jv-approved-orb>.jv-owner-upload-orb{display:none!important}
 .jarvis-mini-orb.jv-owner-photo-test>.jv-owner-upload-orb{
  display:block!important;
@@ -96,48 +80,3 @@
  }
 }
 
-/* Only stage07 appearance. Opposing ring motion and live voice reactions
-   are developed and tested separately in stages08/09. */
-
-/* GO stage08: the owner-specified continuous motion. Orb shell size is fixed. */
-.jv-approved-orb>.ds-reference-orb .ds-orbit-spin{
- transform-box:view-box;transform-origin:80px 80px;
- animation:jv-ring-clockwise 16s linear infinite;
-}
-.jv-approved-orb>.ds-reference-orb .ds-orbit-reverse{
- transform-box:view-box;transform-origin:80px 80px;
- animation:jv-ring-counterclockwise 20s linear infinite;
-}
-.jv-approved-orb>.ds-reference-orb .jv-blue-behind{
- animation:jv-blue-up 12s ease-in-out infinite alternate;
-}
-.jv-approved-orb>.ds-reference-orb .jv-blue-front{
- animation:jv-blue-up 12s ease-in-out infinite alternate-reverse;
-}
-.jv-approved-orb>.ds-reference-orb .jv-warm-in{
- animation:jv-warm-leak-in 11s ease-in-out infinite;
-}
-.jv-approved-orb>.ds-reference-orb .jv-warm-out{
- animation:jv-warm-leak-out 13s ease-in-out infinite;
-}
-.jarvis-mini-orb.jv-approved-orb::before{
- content:'';position:absolute;inset:-8%;border-radius:50%;
- background:radial-gradient(circle,transparent 47%,#05e6e71d 58%,#10f5ff48 70%,transparent 83%);
- filter:blur(3px);opacity:.4;pointer-events:none;
- animation:jv-halo-breath 5s ease-in-out infinite;
-}
-@keyframes jv-ring-clockwise{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes jv-ring-counterclockwise{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
-@keyframes jv-blue-up{from{transform:translateY(3px);opacity:.48}to{transform:translateY(-3px);opacity:.8}}
-@keyframes jv-warm-leak-in{0%,100%{stroke-dashoffset:0;opacity:.44}50%{stroke-dashoffset:8;opacity:.82}}
-@keyframes jv-warm-leak-out{0%,100%{stroke-dashoffset:0;opacity:.52}50%{stroke-dashoffset:-8;opacity:.25}}
-@keyframes jv-halo-breath{0%,100%{opacity:.30}50%{opacity:.78}}
-@media(prefers-reduced-motion:reduce){
- .jv-approved-orb>.ds-reference-orb .ds-orbit-spin,
- .jv-approved-orb>.ds-reference-orb .ds-orbit-reverse,
- .jv-approved-orb>.ds-reference-orb .jv-blue-behind,
- .jv-approved-orb>.ds-reference-orb .jv-blue-front,
- .jv-approved-orb>.ds-reference-orb .jv-warm-in,
- .jv-approved-orb>.ds-reference-orb .jv-warm-out,
- .jarvis-mini-orb.jv-approved-orb::before{animation:none!important}
-}
