@@ -347,6 +347,19 @@ try{
     // Image/Video/Audio anchors intentionally switch modes without navigating.
     const sidebarRoute=page.locator('#sidebar a[href="'+target+'"], #dsSiteSidebar a[href="'+target+'"]').first();
     await sidebarRoute.waitFor({state:'visible',timeout:20000});
+    // pageswap fires from the still-loaded source page before unloading, unlike
+    // pagereveal which can precede a destination script's first event handler.
+    await page.evaluate(()=>{
+     sessionStorage.removeItem('__ownerHeaderOutgoingTransition');
+     window.addEventListener('pageswap',event=>{
+      const header=document.querySelector('header.ds-stable-header');
+      sessionStorage.setItem('__ownerHeaderOutgoingTransition',JSON.stringify({
+       active:!!event.viewTransition,
+       name:header?getComputedStyle(header).viewTransitionName:null,
+       headerPresent:!!header
+      }));
+     },{once:true});
+    });
     await Promise.all([
      page.waitForURL('**/'+target,{timeout:30000}),
      sidebarRoute.click()
@@ -369,7 +382,9 @@ try{
       .filter(link=>/\/(?:deepsyq-unified-platform-header|jarvix-action-design)\.css$/.test(new URL(link.href).pathname));
      // deepsyq-mobile-shell.css is already render-blocking from the static HTML head.
      const blocker=injected.length===2&&injected.every(link=>link.blocking?.contains('render'));
-     return {probe:window.__deepsyqNavProbe||null,enabled,blocker,
+     let outgoing=null;
+     try{outgoing=JSON.parse(sessionStorage.getItem('__ownerHeaderOutgoingTransition')||'null');}catch{}
+     return {probe:window.__deepsyqNavProbe||null,enabled,blocker,outgoing,
       pageRevealSupported:('onpagereveal' in window)||('PageRevealEvent' in window),
       position:css?.position,top:rect?.top,width:rect?.width,
       hasLeft:!!header?.querySelector('.ds-header-pod-left'),
@@ -378,10 +393,10 @@ try{
     });
     assert.equal(state.enabled,true,label+' desktop cross-document transition must be enabled');
     assert.equal(state.blocker,true,label+' critical header CSS must be render-blocking');
-    console.log('owner-header-transition-probe',label,JSON.stringify({supported:state.pageRevealSupported,probe:state.probe}));
-    // Headless Chromium may not expose pagereveal; only enforce it where supported.
-    if(state.pageRevealSupported)assert.equal(state.probe?.wasActive,true,
-      label+' supported browser must retain old header snapshot across page load');
+    console.log('owner-header-transition-probe',label,JSON.stringify({outgoing:state.outgoing,probe:state.probe}));
+    assert.equal(state.outgoing?.headerPresent,true,label+' outgoing header exists for transition');
+    assert.equal(state.outgoing?.name,'ds-header',label+' outgoing header snapshot named ds-header');
+    assert.equal(state.outgoing?.active,true,label+' browser must retain outgoing header during cross-document navigation');
     assert.equal(state.position,'fixed',label+' top header must stay fixed');
     assert.ok(Math.abs(state.top)<=3,label+' header top must remain stable');
     assert.equal(state.hasLeft,true,label+' left header actions preserved');
