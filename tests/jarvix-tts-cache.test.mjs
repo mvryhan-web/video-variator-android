@@ -24,6 +24,9 @@ test('private cache uses deterministic text/language/voice/visitor hash and veri
  assert.equal(await cache.read('ЁЖ','ru',subject),null);
  await cache.write('ЁЖ','ru',subject,wav);
  assert.deepEqual(await cache.read('ёж','ru',subject),wav);
+ const differentWav=Buffer.from(wav);differentWav[20]=101;
+ await cache.write('ёж','ru',subject,differentWav);
+ assert.deepEqual(await cache.read('ёж','ru',subject),wav,'existing cached voice may not be overwritten');
  assert.deepEqual(await createJarvixTtsCache(config).read('ёж','ru',subject),wav);
  assert.equal(await cache.read('ёж','ru',other),null);
  await assert.rejects(cache.write('bad','en',subject,Buffer.from('not wav')),/INVALID_TTS_CACHE_WAV/);
