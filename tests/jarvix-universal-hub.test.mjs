@@ -32,7 +32,10 @@ test('No new website framework, no invented asset page, upload uses original val
  assert.match(design,/\[data-j-icon\]/);
  assert.ok(!css.includes('.j-mode-rail::after'));
  assert.match(css,/\.jarvix-compose \.j-settings-menu/);
- // Owner now requires local mode choice, not redirecting the entire chat to Studio.
+ // Home gear returns to the prior real Studio settings destination; Chat remains in-page.
+ assert.match(design,/if\(isQuickChat&&form\.id!=='homeQuickForm'\)/);
+ assert.match(composer,/location\.assign\('generate-studio\.html\?studio='/);
+ assert.match(design,/gear\.onclick=settingsTarget/);
  assert.match(design,/choice\.onclick=\(\)=>\{form\.querySelector\('#jPlusMenu/);
  assert.doesNotMatch(design,/link\.href='generate-studio\.html\?studio='/);
  for(const html of [home,chat])assert.match(html,/class="j-send-plane"/);
