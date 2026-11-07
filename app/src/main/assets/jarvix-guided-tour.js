@@ -102,6 +102,103 @@ function speakBeats(beats,current){
  };
  next();
 }
+// Approved V3: all speech uses the existing JARVIX owner voice, never browser TTS.
+// A beat is complete only once its spoken recording ends, then the next action starts.
+const v3DialogsOpened=new Set();
+function closeV3Dialogs(){
+ for(const id of v3DialogsOpened){
+  const dialog=document.getElementById(id);
+  if(dialog?.open)dialog.close();
+ }
+ v3DialogsOpened.clear();
+ closeTourSettings();
+}
+function cueV3(beat){
+ if(beat.action==='openModel'||beat.action==='openSettings'){
+  const hub=document.getElementById('studioSettingsHub');
+  if(hub&&!hub.open){hub.show();tourSettingsOpened=true;}
+  const name=beat.action==='openModel'?'modelButton':'settingsButton';
+  // Only open approved, existing read-only selector panels. No model is selected.
+  const button=document.getElementById(name);
+  const expected=beat.action==='openModel'?'modelDialog':'settingsDialog';
+  if(button?.getClientRects().length){
+   const dialog=document.getElementById(expected);
+   if(dialog&&!dialog.open)v3DialogsOpened.add(expected);
+   button.click();
+  }
+ } else if(beat.action==='closeSettings')closeV3Dialogs();
+ const shown=spotlight(beat);
+ if(!shown&&beat.action==='openSettings')spotlight({target:'#studioSettingsToggle,#settingsButton'});
+}
+async function speakV3(text,current,complete,beat=null){
+ try{
+  const voice=await getTourV3Recording(text,state?.language||'en');
+  if(current!==turn||!state||state.phase!=='playing')return;
+  let spoken=false,ended=false;
+  const began=()=>{
+   if(spoken||current!==turn||!state||state.phase!=='playing')return;
+   spoken=true;updateJarvisState('speaking');
+   if(beat)cueV3(beat);
+  };
+  const done=()=>{
+   if(ended||current!==turn||!state||state.phase!=='playing')return;
+   ended=true;complete();
+  };
+  if(voice){
+   audio=new Audio(voice);const clip=audio;clip.id='dsTourAudio';clip.hidden=true;document.body.append(clip);
+   clip.onplay=began;
+   clip.onended=()=>{clip.remove();if(audio===clip)audio=null;done();};
+   clip.onerror=()=>blocked(current,'Owner voice recording unavailable');
+   void clip.play().catch(()=>blocked(current,'Press Continue'));
+  }else{
+   // The existing pinned VoxCPM2 narrator is the ONLY permitted live fallback.
+   // Missing voice service must not silently switch to an unrelated system voice.
+   void speakOwnerSpeech(text,state.language,{
+    start:()=>updateJarvisState('speaking'),
+    phase:phase=>{if(phase==='playing')began();},
+    complete:done,
+    fallback:()=>blocked(current,'Owner VoxCPM2 voice unavailable'),
+    error:()=>blocked(current,'Owner VoxCPM2 voice unavailable')
+   });
+  }
+ }catch{blocked(current,'Owner voice recording unavailable');}
+}
+function playV3(step,target,current){
+ if(!state||state.phase!=='playing')return;
+ const navigate=()=>{
+  if(current!==turn||!state||state.phase!=='playing')return;
+  closeV3Dialogs();
+  state.navAnnounced=state.index;state.position=0;save();
+  const link=showNavigation(step.url);
+  navTimer=setTimeout(()=>{
+   if(current!==turn||!state||state.phase!=='playing')return;
+   if(link&&new URL(link.href).pathname===target.pathname&&new URL(link.href).search===target.search)link.click();
+   else location.assign(target.href);
+  },120);
+ };
+ if(target.pathname!==location.pathname||target.search!==location.search){
+  if(step.navText&&state.navAnnounced!==state.index){
+   showNavigation(step.url);void speakV3(step.navText,current,navigate);return;
+  }
+  navigate();return;
+ }
+ closeNavigation();pauseJarvisRecognition();
+ const index=Math.min(state.beat||0,step.beats.length);
+ if(index===step.beats.length){closeV3Dialogs();advance(current);return;}
+ const beat=step.beats[index];
+ if(!document.querySelector(beat.target)){
+  const key=location.pathname+location.search+':v3:'+state.index+':'+index;
+  if(stepWaitKey!==key){stepWaitKey=key;stepWaitStart=Date.now();}
+  if(Date.now()-stepWaitStart<5000){
+   waitTimer=setTimeout(()=>{if(current===turn&&state)void play();},150);
+  }else blocked(current,'Tour control unavailable');
+  return;
+ }
+ void speakV3(beat.text,current,()=>{
+  if(current!==turn||!state||state.phase!=='playing')return;
+  state.beat=index+1;state.position=0;save();void play();
+ },beat);
+}
 async function play(){
  if(!state)return;clearAudio();activeFocus='';const current=turn,step=tourPlan(state.language)[state.index],target=new URL(step.url,location.href);render();
  if(step.narration==='v3'){playV3(step,target,current);return;}
@@ -158,7 +255,7 @@ export function startJarvixGuidedTour(){
 }
 export function pauseJarvixGuidedTour(){if(!state)return;state={...tourAction(state,'pause'),position:audio?.currentTime||state.position||0};clearAudio();save();updateJarvisState('idle');render();}
 export function continueJarvixGuidedTour(){if(!state)return;unlockOwnerSpeech();state={...tourAction(state,'continue'),error:null};save();void play();}
-export function stopJarvixGuidedTour(){closeTourSettings();clearAudio();state=null;save();stopAllSpeech();pauseJarvisRecognition();closeNavigation();activeFocus='';window.dispatchEvent(new Event('jarvix:tour-ended'));document.querySelectorAll('.jarvis-tour-spotlight').forEach(e=>e.classList.remove('jarvis-tour-spotlight'));updateJarvisState('idle');render();}
+export function stopJarvixGuidedTour(){closeV3Dialogs();clearAudio();state=null;save();stopAllSpeech();pauseJarvisRecognition();closeNavigation();activeFocus='';window.dispatchEvent(new Event('jarvix:tour-ended'));document.querySelectorAll('.jarvis-tour-spotlight').forEach(e=>e.classList.remove('jarvis-tour-spotlight'));updateJarvisState('idle');render();}
 export function resumeJarvixGuidedTour(){state=read();if(!state)return false;void play();return true;}
 if(typeof window!=='undefined'){
  window.addEventListener('keydown',e=>{if(e.key==='Escape'&&isTourActive())stopJarvixGuidedTour();});
