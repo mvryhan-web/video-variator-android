@@ -1,5 +1,5 @@
-// GO stage07: reuse approved JARVIX orb SVG from PR #559.
-// Visual elements only. No new buttons, voices, routes, paid AI jobs.
+// Owner-directed JARVIX original image only. No legacy orb or backup rendering.
+// Visual element only; JARVIX voice, routes and functions unchanged.
 // Original owner-uploaded JARVIX sphere; no legacy SVG or backup artwork.
 const OWNER_SPHERE_TEST_URL='https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/760ea0b9-ba7d-4982-97f2-9bb59a6b0979.png';
 function decorate(slot){
