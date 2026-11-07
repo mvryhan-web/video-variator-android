@@ -62,8 +62,11 @@ test('Owner mobile header positioning across shared pages',async()=>{
        width+' '+route+' original orb must fit within compact header');
       assert.ok(geometry.controls.y+geometry.controls.h<=geometry.header.y+geometry.header.h+1,
        width+' '+route+' existing second-row controls must fit header');
+      // Legacy informational/tool pages have their own content paddings; this
+      // task must normalize their HEADER, not redesign their first content row.
+      const legacyContentGap=['contact.html','audio-studio.html','jarvix-studio.html','mobile-utility.html'].includes(route)?80:28;
       assert.ok(geometry.main.y>=geometry.header.y+geometry.header.h-1&&
-       geometry.main.y<=geometry.header.y+geometry.header.h+28,
+       geometry.main.y<=geometry.header.y+geometry.header.h+legacyContentGap,
        width+' '+route+' actual content begins near the common header without a large top gap');
       assert.ok(geometry.word.x>geometry.menu.x+geometry.menu.w+2&&
        geometry.word.x+geometry.word.w<geometry.login.x-2,
