@@ -10,8 +10,12 @@ const labels={
  es:{credits:'Créditos IA',login:'Acceder'}
 };
 const locale=()=>{
- try{return (localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang')||document.documentElement.lang||'en').slice(0,2).toLowerCase();}
- catch{return 'en';}
+ try{
+  const saved=localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang');
+  if(['ru','en','fr','es'].includes(saved))return saved;
+ }catch(_){}
+ const doc=document.documentElement.lang.split('-')[0].toLowerCase();
+ return ['ru','en','fr','es'].includes(doc)?doc:'en';
 };
 const dictionary=()=>labels[locale()]||labels.en;
 function link(text,href,cls){
@@ -75,10 +79,14 @@ export function installUnifiedPlatformHeader(){
    const option=document.createElement('option');option.value=l;option.textContent=l.toUpperCase();language.append(option);
   }
   language.addEventListener('change',()=>{
-   try{localStorage.setItem('deepsyq_home_language',language.value);}catch{}
+   try{
+    localStorage.setItem('deepsyq_home_language',language.value);
+    localStorage.setItem('deepsyq_lang',language.value);
+   }catch{}
    window.dispatchEvent(new Event('deepsyq:lang'));
   });
   window.addEventListener('deepsyq:lang',()=>{language.value=locale();});
+  window.addEventListener('storage',e=>{if(e.key==='deepsyq_home_language'||e.key==='deepsyq_lang')language.value=locale();});
  }
  language.value=locale();
  const languageWrap=document.createElement('label');languageWrap.className='ds-unified-language';
