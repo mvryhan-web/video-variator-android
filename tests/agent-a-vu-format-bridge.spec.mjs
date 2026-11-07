@@ -18,7 +18,8 @@ test('Video format buttons drive the existing engine select and official Deepsyq
  await page.locator('#aspectRatio').evaluate(el=>{el.value='9:16';el.dispatchEvent(new Event('change',{bubbles:true}));});
  await expect(vertical).toHaveAttribute('aria-pressed','true');
  await expect(horizontal).toHaveAttribute('aria-pressed','false');
- const logo=page.locator('.vu-appbar .vu-logo-image');
+ await expect(page.locator('.vu-appbar,.vu-side-nav')).toHaveCount(0);
+ const logo=page.locator('#dsSiteSidebar .ds-site-brand img');
  await expect(logo).toBeVisible();
  await expect(logo).toHaveAttribute('src','deepsyq-logo.png');
  await expect(logo).toHaveJSProperty('complete',true);
