@@ -1,7 +1,7 @@
 import {getJarvixLanguage,stopAllSpeech,pauseJarvisRecognition,updateJarvisState,suspendJarvisForTour} from './jarvis-core.js';
 import {speakOwnerSpeech,stopOwnerSpeech,unlockOwnerSpeech} from './jarvix-owner-speech.js';
 import {TOUR_KEY,tourPlan,tourAction,tourCues,cueAt,tourNavigationClip,planNarrationBeats,sectionNarrationBeats} from './jarvix-tour-plan.js';
-let audio=null,turn=0,bar=null,state=null,navTimer=null,waitTimer=null,stepWaitKey=null,stepWaitStart=0,activeFocus='';
+let audio=null,turn=0,bar=null,state=null,navTimer=null,waitTimer=null,stepWaitKey=null,stepWaitStart=0,activeFocus='',tourSettingsOpened=false;
 let transcriptPromise=null;
 const clipTranscript=file=>{
  transcriptPromise ||= fetch('media/jarvix/clips/manifest.json',{signal:AbortSignal.timeout(5000)})
@@ -26,8 +26,19 @@ function showNavigation(url){
  link?.classList.add('ds-tour-drawer-target');link?.scrollIntoView({block:'nearest'});return link;
 }
 function closeNavigation(){if(document.body.classList.contains('ds-mobile-layout')&&menuOpen())navElements().toggle?.click();document.querySelectorAll('.ds-tour-drawer-target').forEach(e=>e.classList.remove('ds-tour-drawer-target'));}
+function closeTourSettings(){
+ if(!tourSettingsOpened)return;
+ const hub=document.getElementById('studioSettingsHub');if(hub?.open)hub.close();
+ tourSettingsOpened=false;
+}
 function spotlight(step){
- const targets=[...document.querySelectorAll(step.target||'')];
+ if(step.action==='showSettings'){
+  const hub=document.getElementById('studioSettingsHub');
+  // show(), not showModal(): Pause/Stop remain accessible during the read-only demonstration.
+  if(hub&&!hub.open){hub.show();tourSettingsOpened=true;}
+ }else if(step.action==='hideSettings')closeTourSettings();
+ const targets=[...document.querySelectorAll(step.target||'')].filter(el=>el.getClientRects().length);
+ if(!targets.length&&step.action==='showSettings')return spotlight({target:'#studioSettingsToggle'});
  if(!targets.length)return false;
  if(activeFocus===step.target&&targets[0].classList.contains('jarvis-tour-spotlight'))return true;
  document.querySelectorAll('.jarvis-tour-spotlight').forEach(e=>e.classList.remove('jarvis-tour-spotlight'));
@@ -44,10 +55,11 @@ function render(){
  bar.querySelector('[data-tour="pause"]').hidden=state.phase==='paused';bar.querySelector('[data-tour="continue"]').hidden=state.phase!=='paused';
  bar.dataset.error=state.error||'';document.getElementById('topJarvisBtn')?.classList.toggle('ds-tour-speaking',state.phase==='playing');
 }
-function advance(current){if(current!==turn||!state||state.phase!=='playing')return;state=tourAction(state,'ended');save();if(state)void play();else{clearAudio();document.querySelectorAll('.jarvis-tour-spotlight,.ds-tour-drawer-target').forEach(e=>e.classList.remove('jarvis-tour-spotlight','ds-tour-drawer-target'));activeFocus='';updateJarvisState('idle');render();window.dispatchEvent(new Event('jarvix:tour-ended'));}}
+function advance(current){if(current!==turn||!state||state.phase!=='playing')return;closeTourSettings();state=tourAction(state,'ended');save();if(state)void play();else{clearAudio();document.querySelectorAll('.jarvis-tour-spotlight,.ds-tour-drawer-target').forEach(e=>e.classList.remove('jarvis-tour-spotlight','ds-tour-drawer-target'));activeFocus='';updateJarvisState('idle');render();window.dispatchEvent(new Event('jarvix:tour-ended'));}}
 function blocked(current,message='Audio unavailable'){if(current!==turn||!state)return;state={...state,phase:'paused',error:message};save();render();updateJarvisState('idle');}
 
 function speakNavigation(step,target,current){
+ closeTourSettings();
  const link=showNavigation(step.url);
  const file=tourNavigationClip(step.title,state.index,state.language);
  let clip=null;
@@ -142,7 +154,7 @@ export function startJarvixGuidedTour(){
 }
 export function pauseJarvixGuidedTour(){if(!state)return;state={...tourAction(state,'pause'),position:audio?.currentTime||state.position||0};clearAudio();save();updateJarvisState('idle');render();}
 export function continueJarvixGuidedTour(){if(!state)return;unlockOwnerSpeech();state={...tourAction(state,'continue'),error:null};save();void play();}
-export function stopJarvixGuidedTour(){clearAudio();state=null;save();stopAllSpeech();pauseJarvisRecognition();closeNavigation();activeFocus='';window.dispatchEvent(new Event('jarvix:tour-ended'));document.querySelectorAll('.jarvis-tour-spotlight').forEach(e=>e.classList.remove('jarvis-tour-spotlight'));updateJarvisState('idle');render();}
+export function stopJarvixGuidedTour(){closeTourSettings();clearAudio();state=null;save();stopAllSpeech();pauseJarvisRecognition();closeNavigation();activeFocus='';window.dispatchEvent(new Event('jarvix:tour-ended'));document.querySelectorAll('.jarvis-tour-spotlight').forEach(e=>e.classList.remove('jarvis-tour-spotlight'));updateJarvisState('idle');render();}
 export function resumeJarvixGuidedTour(){state=read();if(!state)return false;void play();return true;}
 if(typeof window!=='undefined'){
  window.addEventListener('keydown',e=>{if(e.key==='Escape'&&isTourActive())stopJarvixGuidedTour();});
