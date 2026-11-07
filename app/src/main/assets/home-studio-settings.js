@@ -92,16 +92,20 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   // through the settings frame. Their real DOM remains for native handlers.
   doc.body.id='homeNativeStudioFrameBody';
   const hideUnrelated=()=>{
+   if(doc.body.id!=='homeNativeStudioFrameBody')doc.body.id='homeNativeStudioFrameBody';
    for(const child of [...doc.body.children]){
     if(['DIALOG','SCRIPT','STYLE'].includes(child.tagName))continue;
-    child.style.setProperty('display','none','important');
+    if(child.style.getPropertyValue('display')!=='none'||
+       child.style.getPropertyPriority('display')!=='important')
+      child.style.setProperty('display','none','important');
    }
   };
   hideUnrelated();
-  // The existing site shell may insert a header asynchronously after load.
-  // Apply this same narrow visibility contract to late direct-body nodes.
+  // Desktop site-shell may reset header display/style after the initial load.
+  // Reassert only the isolated frame's no-second-page contract; observe
+  // late direct children and style changes, never alter the real Home DOM.
   const bodyObserver=new frame.contentWindow.MutationObserver(hideUnrelated);
-  bodyObserver.observe(doc.body,{childList:true});
+  bodyObserver.observe(doc.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style','id','class']});
   const style=doc.createElement('style');
   style.id='homeNativeStudioSettingsPresentation';
   style.textContent=`
