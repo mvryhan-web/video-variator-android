@@ -114,15 +114,16 @@ function speakBeats(beats,current){
 const v3DialogsOpened=new Set();
 function closeTourChild(id){
  const dialog=document.getElementById(id);
- if(dialog?.open){
-  // Use the existing, owner-approved X handler, not a detached programmatic overlay.
+ const wasOpen=Boolean(dialog?.open);
+ if(wasOpen){
+  // Close the actual child with its X while the parent is still hidden;
+  // restoring a parent before its open child closes caused stacked dialogs.
   const x=dialog.querySelector('[data-close="'+id+'"]');
   x?.click();
   if(dialog.open)dialog.close();
  }
  v3DialogsOpened.delete(id);
- const hub=document.getElementById('studioSettingsHub');
- if(hub)hub.style.removeProperty('visibility');
+ if(wasOpen)document.getElementById('studioSettingsHub')?.style.removeProperty('visibility');
 }
 function closeV3Dialogs(){
  for(const id of ['modelDialog','settingsDialog'])closeTourChild(id);
