@@ -14,6 +14,8 @@ import {buildJarvixSiteKnowledge,clearSession,getOrCreateSession,processTurnWith
 import {generateFreeImage,generateTrialVideo,generateFreeAudio,checkDailyQuota,incrementDailyQuota,studioJobs} from './free-ai-provider.js';
 
 import {installLocalVoice} from './jarvix-local-voice.js';
+import {Pool} from 'pg';
+import {createFreeJarvix,createPgDailyQuota} from './jarvix-free-llm.js';
 
 const app=express();
 const port=Number(process.env.PORT||31990);
@@ -239,8 +241,11 @@ app.get('/api/studio/jobs', (req, res) => {
     .slice(0, 30);
   res.json({ ok: true, jobs: list, items: list });
 });
-// Jarvix's DEV-preview brain is deterministic and local-only. It has no provider
-// credentials, external AI calls, paid generation, or persistent user profile.
+// A free LLM can start only with verified FREE plan credentials AND durable
+// transactional quota DB. Otherwise the existing local JARVIX stays active.
+const freeDb=process.env.JARVIX_FREE_LLM_ENABLED==='true'&&process.env.JARVIX_QUOTA_DATABASE_URL&&process.env.JARVIX_QUOTA_HASH_SECRET
+ ? new Pool({connectionString:process.env.JARVIX_QUOTA_DATABASE_URL,max:3,connectionTimeoutMillis:3500,idleTimeoutMillis:10000}) : null;
+const freeJarvix=createFreeJarvix({quotaStore:freeDb?createPgDailyQuota(freeDb,{secret:process.env.JARVIX_QUOTA_HASH_SECRET}):null});
 const jarvixRequests=new Map();
 function allowJarvixRequest(req){
  const now=Date.now(),key=String(req.ip||req.socket?.remoteAddress||'unknown').slice(0,80);
@@ -251,16 +256,27 @@ function allowJarvixRequest(req){
  return state.count<=20;
 }
 function validSessionId(value){return typeof value==='string'&&/^[\w-]{1,80}$/.test(value);}
-app.post('/api/jarvix/chat',(req,res)=>{
+app.post('/api/jarvix/chat',async(req,res)=>{
  if(!allowJarvixRequest(req))return res.status(429).json({error:'JARVIX_RATE_LIMIT'});
  const body=req.body||{},message=typeof body.message==='string'?body.message.trim():'';
  if(!message||message.length>2000)return res.status(400).json({error:'INVALID_MESSAGE'});
- const sessionId=validSessionId(body.sessionId)?body.sessionId:validSessionId(body.conversationId)?body.conversationId:`preview-${randomUUID()}`;
+ const sessionId=validSessionId(body.sessionId)?body.sessionId:validSessionId(body.conversationId)?body.conversationId:'preview-'+randomUUID();
  const language=['ru','en','es','fr'].includes(body.language)?body.language:'ru';
  const scope=jarvixSessionScope(req,res,sessionId);
  const session=getOrCreateSession(scope.privateId);
- const result=processTurnWithMockBrain(message,session,language);
- res.json({ok:true,reply:result.reply,action:result.action,entities:result.entities,compiledPrompt:result.compiledPrompt,studioHandoff:result.studioHandoff,sessionId:scope.clientId,conversationId:scope.clientId,language,provider:result.provider,audioUrl:null});
+ const live=await freeJarvix.respond({message,language,identity:scope.quotaSubject,ip:req.ip||req.socket?.remoteAddress,
+  history:session.history,provider:['gemini','gpt-oss'].includes(body.provider)?body.provider:undefined});
+ const result=live||processTurnWithMockBrain(message,session,language);
+ if(live&&!live.limitReached){
+  session.history.push({role:'user',content:message,timestamp:Date.now()},{role:'assistant',content:live.reply,timestamp:Date.now()});
+  if(session.history.length>24)session.history.splice(0,session.history.length-24);
+ }
+ res.json({ok:true,reply:result.reply,action:result.action||null,
+  entities:result.entities||{...session.accumulatedPrompt},compiledPrompt:result.compiledPrompt??null,
+  studioHandoff:result.studioHandoff||null,sessionId:scope.clientId,conversationId:scope.clientId,
+  language,provider:result.provider,audioUrl:null,freeDailyLimit:live?.freeDailyLimit||15,
+  remaining:live?.remaining??null,limitReached:live?.limitReached===true,
+  resetAt:live?.resetAt||null,pricingUrl:live?.pricingUrl||null});
 });
 app.post('/api/jarvix/reset',(req,res)=>{
  const sid=req.body?.sessionId||req.body?.conversationId;
@@ -268,7 +284,7 @@ app.post('/api/jarvix/reset',(req,res)=>{
  clearSession(jarvixSessionScope(req,res,sid).privateId);res.json({ok:true});
 });
 installLocalVoice(app);
-app.get('/api/jarvix/status',(_req,res)=>res.json(getJarvixRuntimeStatus({previewOnly:true})));
+app.get('/api/jarvix/status',(_req,res)=>res.json({...getJarvixRuntimeStatus({previewOnly:true}),freeLlm:freeJarvix.status()}));
 app.get('/api/jarvix/site-map',(_req,res)=>res.json({ok:true,pages:buildJarvixSiteKnowledge()}));
 // Read-only preview of the owner's approved bundled media. This is the same
 // Inspiration response consumed by Home, without production DB/admin writes.
