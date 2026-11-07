@@ -14,7 +14,11 @@ test('owner correction: existing shared LOWER navigation untouched, no invented 
  assert.doesNotMatch(css,/:where\(#homeQuickBar,\.j-chat-bottom\)\.j-neon-dock/);
  assert.doesNotMatch(css,/bottom:clamp\(18px,7vh,72px\)/);
  assert.match(navigation,/dock\.classList\.add\('j-neon-dock'\);dock\.append\(rail\)/);
- for(const label of ['JARVIX','Image','Video','Audio','Tools','Video Uniquifier'])assert.ok(navigation.includes("'"+label+"'"),label);
+ assert.match(navigation,/\['JARVIX','jarvix-chat\.html'/);
+ assert.match(navigation,/\['Video Uniquifier','index\.html'/);
+ assert.match(navigation,/j-active-mode/);
+ for(const label of ['Image','Video','Audio','Tools'])assert.ok(navigation.includes("'"+label+"'"),label);
+
 });
 test('owner correction: UPPER plus/send circles, SVG and mic stop preserved on both Home and Chat',()=>{
  for(const page of [home,chat]){

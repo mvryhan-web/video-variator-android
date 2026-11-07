@@ -208,3 +208,86 @@ body:has(#homeQuickForm[data-jarvix-chat]){padding-bottom:calc(var(--jarvix-comp
 @media(prefers-reduced-motion:reduce){
  :where(#homeQuickForm,#jChatForm).j-neon-composer :is(#jPlus,.j-send){transition:none!important;animation:none!important}
 }
+
+
+/* Owner-approved Universal Hub (#3), scoped to the existing + menu.
+   No new bar, no change to the approved circular +/Send or chat functionality. */
+.jarvix-compose .j-plus-menu.j-hub-menu{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;
+ box-sizing:border-box;width:min(590px,calc(100vw - 28px));min-width:0;max-width:calc(100vw - 28px);
+ padding:15px 14px 17px;left:0;right:auto;bottom:calc(100% + 14px);
+ max-height:min(330px,50dvh);overflow-y:auto;overflow-x:hidden;
+ border:2px solid transparent;border-radius:25px;
+ background:linear-gradient(135deg,#060d24f8,#151137fc) padding-box,
+ linear-gradient(125deg,#03eaff,#d444ff 52%,#00c8fc) border-box;
+ box-shadow:0 12px 35px #000c,0 0 23px #9f36f75c,0 0 20px #06d2ff4c;
+}
+.jarvix-compose .j-plus-menu.j-hub-menu[hidden],.jarvix-compose .j-settings-menu[hidden]{display:none!important}
+.jarvix-compose .j-hub-menu .j-hub-tile{
+ appearance:none;box-sizing:border-box;min-width:0;min-height:91px;height:auto;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;
+ margin:0;padding:12px 5px 10px;border:1px solid #298fdb;border-radius:17px;
+ background:linear-gradient(155deg,#122452,#070e29);box-shadow:inset 0 0 12px #145dd74d,0 0 10px #1272dc29;
+ color:#eef8ff;text-decoration:none;text-align:center;font:inherit;cursor:pointer;
+ transition:filter .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+.jarvix-compose .j-hub-menu .j-hub-tile:nth-child(2),
+.jarvix-compose .j-hub-menu .j-hub-tile:nth-child(5){
+ border-color:#b83df1;background:linear-gradient(145deg,#281049,#0d1033);box-shadow:inset 0 0 12px #8a24ff55,0 0 12px #8d2cff3b;
+}
+.jarvix-compose .j-hub-menu .j-hub-tile:nth-child(3),
+.jarvix-compose .j-hub-menu .j-hub-tile:nth-child(7){
+ border-color:#12dae2;background:linear-gradient(145deg,#064653,#081533);box-shadow:inset 0 0 15px #08c7de50,0 0 10px #05cdec40;
+}
+.jarvix-compose .j-hub-menu .j-hub-tile:nth-child(4),
+.jarvix-compose .j-hub-menu .j-hub-tile:nth-child(8){border-color:#b99a3e;box-shadow:inset 0 0 13px #a77e2055,0 0 8px #ba8a2c40}
+.jarvix-compose .j-hub-menu .j-hub-tile:is(:hover,:focus-visible),
+.jarvix-compose .j-hub-menu .j-hub-tile[aria-pressed="true"]{
+ border-color:#58f3ff;box-shadow:inset 0 0 18px #188ef376,0 0 14px #22dbff9a;filter:brightness(1.1)
+}
+.jarvix-compose .j-hub-glyph{display:grid;place-items:center;width:30px;height:30px;color:#6ee7ff;flex:0 0 30px}
+.jarvix-compose .j-hub-glyph svg{width:29px;height:29px;max-width:100%}
+.jarvix-compose .j-hub-tile:nth-child(2) .j-hub-glyph,
+.jarvix-compose .j-hub-tile:nth-child(5) .j-hub-glyph{color:#e58bff}
+.jarvix-compose .j-hub-tile:nth-child(3) .j-hub-glyph,
+.jarvix-compose .j-hub-tile:nth-child(7) .j-hub-glyph{color:#41ffe8}
+.jarvix-compose .j-hub-tile:nth-child(4) .j-hub-glyph,
+.jarvix-compose .j-hub-tile:nth-child(8) .j-hub-glyph{color:#ffdb78}
+.jarvix-compose .j-hub-tile strong{font-size:clamp(10px,1.9vw,14px);font-weight:600;white-space:normal;line-height:1.1;overflow-wrap:normal}
+.jarvix-compose .j-settings-menu{
+ position:absolute;z-index:72;bottom:calc(100% + 14px);right:0;
+ box-sizing:border-box;width:min(380px,calc(100vw - 28px));max-width:calc(100vw - 28px);
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:14px;
+ border:2px solid transparent;border-radius:23px;
+ background:linear-gradient(140deg,#07132dfc,#11112ffc) padding-box,
+ linear-gradient(110deg,#03d8f7,#b946ff,#03eaff) border-box;
+ box-shadow:0 15px 35px #000a,0 0 20px #18d5fa4d,0 0 15px #ab38fa5c;
+}
+.jarvix-compose .j-settings-tile{
+ min-width:0;min-height:87px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;
+ border:1px solid #7a68d7;border-radius:16px;background:linear-gradient(145deg,#1e1745,#091a36);
+ color:#f5f9ff;text-decoration:none;font-size:13px;font-weight:650;line-height:1.1;
+ box-shadow:inset 0 0 12px #8a40ff42;
+}
+.jarvix-compose .j-settings-tile svg{width:28px;height:28px;color:#79e9ff}
+.jarvix-compose .j-settings-tile:nth-child(2){border-color:#bd52ff}
+.jarvix-compose .j-settings-tile:nth-child(3){border-color:#16dfdc}
+.jarvix-compose .j-settings-tile:is(:hover,:focus-visible){outline:1px solid #4cf0ff;outline-offset:2px;box-shadow:0 0 13px #31e4ff8e}
+.j-mode-rail .j-active-mode:not([hidden]){box-sizing:border-box;display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:6px;min-height:35px;
+ padding:6px 12px;margin:0;border:1px solid #24d5ff;border-radius:999px;
+ background:linear-gradient(110deg,#172358,#08162f);box-shadow:0 0 13px #05b4ff85,inset 0 0 12px #08c9ff35;color:#e9fcff;
+ font-size:13px;font-weight:700;white-space:nowrap;
+}
+.j-mode-rail .j-active-mode[hidden]{display:none!important}
+.j-mode-rail .j-active-mode svg{width:17px;height:17px;color:#31e7ff}
+@media(max-width:760px){
+ .jarvix-compose .j-plus-menu.j-hub-menu{gap:6px;padding:10px 8px 12px;max-height:min(300px,45dvh);border-radius:22px}
+ .jarvix-compose .j-hub-menu .j-hub-tile{min-height:76px;padding:9px 2px;gap:7px;border-radius:13px}
+ .jarvix-compose .j-hub-glyph{width:23px;height:23px;flex-basis:23px}
+ .jarvix-compose .j-hub-glyph svg{width:23px;height:23px}
+ .jarvix-compose .j-hub-tile strong{font-size:clamp(9px,2.45vw,12px)}
+ .jarvix-compose .j-settings-menu{gap:6px;padding:10px}
+ .jarvix-compose .j-settings-tile{min-height:73px;font-size:12px;gap:7px}
+ .j-mode-rail .j-active-mode:not([hidden]){min-height:30px;font-size:11px;padding:5px 9px}
+}
+@media(prefers-reduced-motion:reduce){.jarvix-compose .j-hub-tile{transition:none!important}}
