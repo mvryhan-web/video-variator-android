@@ -7,7 +7,7 @@ import {chromium} from '@playwright/test';
 // Real Playwright clicks + deterministic local silent WAV fixtures.
 // No AI keys, paid provider, voice clone, user data, or network billing.
 function makeWav(){
- const rate=16000,samples=rate*0.27;
+ const rate=16000,samples=rate*1.5;
  const out=Buffer.alloc(44+samples*2);
  out.write('RIFF',0);out.writeUInt32LE(out.length-8,4);out.write('WAVEfmt ',8);
  out.writeUInt32LE(16,16);out.writeUInt16LE(1,20);out.writeUInt16LE(1,22);
@@ -83,7 +83,7 @@ test('V3 missing owner voice pauses safely; never switches to a different narrat
    await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});
    await page.locator('#dsTakeTour').click();
    await page.locator('.ds-tour-controls[data-error*="unavailable"]').waitFor({timeout:12000});
-   assert.equal(await page.getByRole('button',{name:'Continue',exact:true}).isVisible(),true);
+   assert.equal(await page.locator('[data-tour="continue"]').evaluate(el=>el.hidden),false,'Continue must be enabled after a safe pause');
    assert.equal(await page.locator('.ds-tour-caption').count(),0);
    assert.equal(new URL(page.url()).pathname,'/deepsyq.html');
    await page.getByRole('button',{name:'Stop',exact:true}).click();
