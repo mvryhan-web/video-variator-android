@@ -373,3 +373,16 @@ test('JARVIX removes any late-injected old orb nodes without touching owner imag
  await expect(orb.locator('.jv-owner-upload-orb')).toHaveCount(5);
  await expect(page.locator('#topJarvisBtn')).toHaveCount(1);
 });
+
+
+test('owner original JARVIX orb has no extra tilted football ellipse overlay',async({page})=>{
+ test.setTimeout(60000);
+ for(const width of [390,1365]){
+  await page.setViewportSize({width,height:900});
+  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+  const orb=page.locator('#topJarvisBtn');
+  await expect(orb.locator('.jv-owner-photo-test')).toHaveCount(1);
+  await expect.poll(()=>orb.evaluate(el=>getComputedStyle(el,'::after').display)).toBe('none');
+  await expect(orb.locator('.jv-owner-upload-orb')).toHaveCount(5);
+ }
+});
