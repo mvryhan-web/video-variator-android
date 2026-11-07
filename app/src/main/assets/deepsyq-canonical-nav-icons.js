@@ -19,6 +19,20 @@ const paths=Object.freeze({
  pricing:'<path d="M12 2v20M17 7c-1.5-2-8-2-9 1-2 4 9 3 9 7-1 4-8 4-10 1"/>'
 });
 export const iconKeys=Object.freeze(Object.keys(paths));
+export function createCanonicalIcon(key){
+ if(!paths[key])return null;
+ const svg=document.createElementNS(namespace,'svg');
+ svg.setAttribute('viewBox','0 0 24 24');
+ svg.setAttribute('width','20');svg.setAttribute('height','20');
+ svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');
+ svg.setAttribute('stroke-width','1.75');svg.setAttribute('stroke-linecap','round');
+ svg.setAttribute('stroke-linejoin','round');svg.setAttribute('focusable','false');
+ svg.setAttribute('aria-hidden','true');
+ // Static checked-in SVG paths: never user-controlled markup.
+ svg.innerHTML=paths[key];
+ return svg;
+}
+
 const keyFor=href=>{
  if(!href)return null;
  let u;try{u=new URL(href,document.baseURI);}catch{return null;}
@@ -44,15 +58,7 @@ export function applyCanonicalNavIcons(root=document){
    // Never replace or rebuild navigation: only the old ornamental text glyph.
    if(!holder)continue;
    if(holder.dataset.canonicalIcon===key)continue;
-   const svg=document.createElementNS(namespace,'svg');
-   svg.setAttribute('viewBox','0 0 24 24');
-   svg.setAttribute('width','20');svg.setAttribute('height','20');
-   svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');
-   svg.setAttribute('stroke-width','1.75');svg.setAttribute('stroke-linecap','round');
-   svg.setAttribute('stroke-linejoin','round');svg.setAttribute('focusable','false');
-   svg.setAttribute('aria-hidden','true');
-   // SVG is our checked-in static path catalogue, never user-controlled HTML.
-   svg.innerHTML=paths[key];
+   const svg=createCanonicalIcon(key);
    holder.replaceChildren(svg);
    holder.dataset.canonicalIcon=key;
    holder.style.display='inline-flex';
