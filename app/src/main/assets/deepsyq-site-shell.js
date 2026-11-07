@@ -112,7 +112,7 @@
     { section:'Creation' },
     { label: 'Image', icon: '▧', url:'generate-studio.html?studio=image', key: 'image' },
     { label: 'Video', icon: '▷', url:'generate-studio.html?studio=video', key: 'video' },
-    { label:'Agent',icon:'✦', pending:false, isJarvix: true, key: 'agents' },
+    { label:'Agent',icon:'✦', pending:false, isJarvix: true, url:'jarvix-chat.html', key: 'agents' },
     { label: 'Audio', icon: '♫', url:'generate-studio.html?studio=audio', key: 'audio' },
     { section:'Tools' },
     { label: 'AI Apps', icon: '◇', url:'ai-apps.html', key: 'apps' },
@@ -134,7 +134,7 @@
     (query.get('view') === 'history' ? 'history' :
       query.get('studio') === 'video' ? 'video' :
         ['audio', 'music'].includes(query.get('studio')) ? 'audio' : 'image') :
-    path === 'my-creations.html' ? 'history' : path === 'voice-agent-preview.html' ? 'voice' : path === 'virtual-pet.html' ? 'pet' : path === 'ai-agents.html' ? 'agents' : path === 'canvas.html' ? 'canvas' : path === 'ai-apps.html' ? 'apps' : path === 'inspiration.html' ? 'inspiration' :
+    path === 'jarvix-chat.html' ? 'agents' : path === 'my-creations.html' ? 'history' : path === 'voice-agent-preview.html' ? 'voice' : path === 'virtual-pet.html' ? 'pet' : path === 'ai-agents.html' ? 'agents' : path === 'canvas.html' ? 'canvas' : path === 'ai-apps.html' ? 'apps' : path === 'inspiration.html' ? 'inspiration' :
       ['pricing.html', 'ai-pricing.html'].includes(path) ? 'pricing' :
         ['index.html', 'video-uniquifier.html'].includes(path) ? 'legacy' :
           ['free-tools.html', 'audio-studio.html', 'avatar-studio.html', 'mobile-utility.html',
@@ -200,13 +200,14 @@
     }
     if (entry.isJarvix || entry.key === 'agents') {
       el.className = 'ds-site-jarvix-btn';
-      el.href = '#';
+      el.href = 'jarvix-chat.html';
       el.setAttribute('aria-label', 'JARVIX AI');
-      el.title = 'JARVIX — AI Voice Butler';
+      el.title = 'JARVIX — AI Voice Butler & Chat';
       el.onclick = (e) => {
-        e.preventDefault();
-        const topBtn = document.getElementById('topJarvisBtn');
-        if (topBtn) topBtn.click();
+        if (!e.metaKey && !e.ctrlKey) {
+          e.preventDefault();
+          location.assign('jarvix-chat.html');
+        }
       };
       const orb = document.createElement('span');
       orb.className = 'jarvis-mini-orb';

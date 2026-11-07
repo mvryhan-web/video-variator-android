@@ -666,7 +666,7 @@ export function handleJarvisVoiceCommand(commandText) {
   }
 
   if (/(?:открой|перейди|запусти|open|launch|ouvre|abre)\s+(?:агент|ai[\s-]?агент|agent)/i.test(lower)) {
-    instantOpen('ai-agents.html?from=jarvix');
+    instantOpen('jarvix-chat.html');
     return;
   }
 
