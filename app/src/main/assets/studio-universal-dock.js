@@ -28,10 +28,10 @@ export function mountStudioUniversalDock({form,nav,gear}){
   const label=(card.querySelector('strong')?.textContent||'').toLowerCase();
   const id=(card.dataset.modelId||'').toLowerCase();
   const name=label+' '+id;
-  if(/nano.?banana|\bveo\b|google/.test(name))return ['google','Google'];
-  if(/seedream|seedance|bytedance|byteplus/.test(name))return ['bytedance','Seed'];
-  if(/chatgpt|gpt.?image|openai/.test(name))return ['openai','OpenAI'];
-  return ['other','AI'];
+  if(/nano.?banana|\bveo\b|google/.test(name))return ['google','G','Google'];
+  if(/seedream|seedance|bytedance|byteplus/.test(name))return ['bytedance','Seed','ByteDance Seed'];
+  if(/chatgpt|gpt.?image|openai/.test(name))return ['openai','AI','OpenAI'];
+  return ['other','AI','Model provider'];
  };
  const labelProviders=()=>{
   if(!nativeModels)return;
@@ -40,11 +40,11 @@ export function mountStudioUniversalDock({form,nav,gear}){
    // Brand text is honest fallback; do NOT invent model-specific thumbnails.
    const mark=card.querySelector('.model-provider-mark');
    if(!mark)continue; // Model renderer may still be inserting it.
-   const [brand,label]=brandFor(card);
+   const [brand,label,providerName]=brandFor(card);
    if(mark.dataset.vendor===brand)continue;
    mark.dataset.vendor=brand;
    mark.textContent=label;
-   mark.setAttribute('title',label+' · model provider');
+   mark.setAttribute('title',providerName+' · model provider');
   }
  };
  if(nativeModels){
