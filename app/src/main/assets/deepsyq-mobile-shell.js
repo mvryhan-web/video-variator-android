@@ -137,7 +137,7 @@ function setupMobileShell() {
     balance.setAttribute('aria-label','AI Credit');
     const updateCredit=async()=>{const token=localStorage.getItem('vv_token');balance.textContent='AI Credit';balance.removeAttribute('title');if(!token)return;try{const r=await fetch('/api/ai-wallet/balance',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const data=await r.json();if(token===localStorage.getItem('vv_token')&&Number.isSafeInteger(data.available)&&data.available>=0)balance.title='Available AI credits: '+data.available.toLocaleString();}catch{}};
     void updateCredit();window.addEventListener('storage',e=>{if(e.key==='vv_token')void updateCredit();});
-    const placeExtras=()=>{if(document.body.classList.contains('ds-mobile-layout')){left.append(balance);}else if(!document.getElementById('walletButton'))desktopActions.insertBefore(balance,tour);else balance.remove();};
+    const placeExtras=()=>{if(balance.closest('.ds-header-pod-right'))return;if(document.body.classList.contains('ds-mobile-layout')){left.append(balance);}else if(!document.getElementById('walletButton')){desktopActions.insertBefore(balance,tour);}else balance.remove();};
     new MutationObserver(placeExtras).observe(document.body,{attributes:true,attributeFilter:['class']});placeExtras();
   }
   const reused = [toggle, tools, tour, pricing, login];
@@ -147,6 +147,7 @@ function setupMobileShell() {
     parent.append(el);
   };
   function refresh() {
+    if (document.body.classList.contains("ds-unified-platform")) { return; }
     const labels = copy();
     tools.textContent=document.body.classList.contains('ds-embedded-uniquifier')?'Everyday Tools':labels[0];tour.textContent=labels[3];
     if (!document.getElementById('topPricing')) pricing.textContent = labels[1];
