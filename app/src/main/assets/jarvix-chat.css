@@ -99,19 +99,19 @@ body:has(#homeQuickForm[data-jarvix-chat]){padding-bottom:calc(var(--jarvix-comp
  font-size:32px!important;
  font-weight:350!important;
  color:#fff!important;
- border:2px solid #d661ff!important;
- background:radial-gradient(circle at 50% 45%,#24346e 0%,#0c1535 58%,#19072b 100%)!important;
- box-shadow:0 0 0 2px #ae3dff24,0 0 13px #b328ffb8,0 0 18px #125eff76,
-  inset 0 0 9px #612cff54!important;
+ border:2px solid #ffbf52!important;
+ background:radial-gradient(circle at 50% 45%,#243249 0%,#0c182d 58%,#21180d 100%)!important;
+ box-shadow:0 0 0 2px #ffbf5224,0 0 13px #ec9d3ab2,0 0 18px #bd7e3260,
+  inset 0 0 9px #bb792840!important;
  text-shadow:0 0 5px #fff7!important;
 }
 :where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer .j-send,
 .home-neon #homeQuickForm #homeQuickSubmit{
- border:2px solid #c2a5ff!important;
- background:linear-gradient(135deg,#df39f9 4%,#9147ff 42%,#02d3f2 96%)!important;
- box-shadow:0 0 0 2px #bc4bff1e,0 0 17px #b645ffb8,0 0 18px #03e3f794,
-  inset 0 1px 9px #fff5!important;
- color:#fff!important;
+ border:0!important;
+ border-radius:0!important;
+ background:transparent!important;
+ box-shadow:none!important;
+ color:#ffbf52!important;
  font-size:0!important;
  font-weight:400!important;
  text-align:center!important;
@@ -121,9 +121,9 @@ body:has(#homeQuickForm[data-jarvix-chat]){padding-bottom:calc(var(--jarvix-comp
  width:27px!important;
  height:27px!important;
  flex:0 0 27px;
- stroke:#fff;
+ stroke:currentColor;
  fill:none;
- filter:drop-shadow(0 0 3px #f0faffac);
+ filter:drop-shadow(0 0 3px #ffbf5270);
  transform:none!important;
 }
 :where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer
@@ -316,8 +316,8 @@ body.studio-universal-ready .studio-shell>main{
  display:flex;flex-direction:column;gap:7px;
  padding:9px 12px 11px;border:2px solid transparent;border-radius:32px;
  background:linear-gradient(130deg,#09122aeb,#080c29f5) padding-box,
-  linear-gradient(105deg,#00dfff,#4c69ff 28%,#c244ff 75%,#04dafa) border-box;
- box-shadow:0 0 14px #00dfff67,0 0 18px #953aff57,inset 0 0 16px #183e7845;
+  linear-gradient(105deg,#df9333,#ffca6b 35%,#d67e28 76%,#e4a64b) border-box;
+ box-shadow:0 0 14px #e29e4252,0 0 18px #ffbf523a,inset 0 0 16px #84551e28;
  color:#edf8ff;
 }
 #studioDockControls.jarvix-compose.j-neon-composer{
