@@ -192,7 +192,7 @@ function applyHomeLanguage(code){
  markHomeLogin();
 }
 if(homeLang){
- let saved='en';try{saved=localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang')||'en';}catch(_){}
+ let saved=null;try{saved=localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang');if(!saved){const nav=(navigator.languages?.[0]||navigator.language||'en').toLowerCase();if(nav.startsWith('ru')||nav.startsWith('uk')||nav.startsWith('be'))saved='ru';else if(nav.startsWith('fr'))saved='fr';else if(nav.startsWith('es'))saved='es';else saved='en';}}catch(_){saved='en';}
  applyHomeLanguage(saved);
  homeLang.addEventListener('change',()=>{
    const val=homeLang.value;

@@ -10,7 +10,13 @@
   // Current language resolver
   const getLang = () => {
     try {
-      return localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang') || 'en';
+      const saved = localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang');
+      if (saved) return saved;
+      const raw = (navigator.languages?.[0] || navigator.language || 'en').toLowerCase();
+      if (raw.startsWith('ru') || raw.startsWith('uk') || raw.startsWith('be')) return 'ru';
+      if (raw.startsWith('fr')) return 'fr';
+      if (raw.startsWith('es')) return 'es';
+      return 'en';
     } catch (_) {
       return 'en';
     }
@@ -108,7 +114,7 @@
     { label: 'AI Apps', icon: '◇', url:'ai-apps.html', key: 'apps' },
     { label: 'Canvas', icon: '✎', url:'canvas.html', key: 'canvas' },
     { label: 'Tools', icon: '⊞', url:'free-tools.html', key: 'tools' },
-    { label: 'Video Uniquifier', icon: '▤', url:'index.html', key: 'legacy' },
+    { label: 'Video Uniquifier', icon: '▤', url:'video-uniquifier.html', key: 'legacy' },
     { section:'Library' },
     { label: 'Assets', icon: '▦', url:'generate-studio.html?view=history', key: 'assets' },
     { label: 'My Creations', icon: '▣', url:'generate-studio.html?view=history', key: 'history' },
@@ -128,7 +134,7 @@
         ['audio', 'music'].includes(query.get('studio')) ? 'audio' : 'image') :
     path === 'voice-agent-preview.html' ? 'voice' : path === 'virtual-pet.html' ? 'pet' : path === 'ai-agents.html' ? 'agents' : path === 'canvas.html' ? 'canvas' : path === 'ai-apps.html' ? 'apps' : path === 'inspiration.html' ? 'inspiration' :
       ['pricing.html', 'ai-pricing.html'].includes(path) ? 'pricing' :
-        path === 'index.html' ? 'legacy' :
+        path === 'video-uniquifier.html' ? 'legacy' :
           ['free-tools.html', 'audio-studio.html', 'avatar-studio.html', 'mobile-utility.html',
             'photo-collage.html', 'simple-background-remover.html', 'smart-reminders.html', 'teleprompter.html'].includes(path) ? 'tools' : '';
 
