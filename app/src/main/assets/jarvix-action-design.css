@@ -78,3 +78,17 @@ body.j-action-workspace #homeQuickBar.j-neon-dock:has([data-jarvix-chat]),body.j
   word-break:keep-all!important;
  }
 }
+
+
+/* Owner 2026-11-07: remove ONLY the orphaned amber outline under the real
+   Image/Video/Audio Universal Dock, on desktop and mobile.
+   #creator is the existing live native form for provider, draft and quote
+   handlers; it must stay mounted. Its old j-neon-dock frame is obsolete once
+   #studioUniversalDock is installed. The new visible dock retains its gold rim. */
+body.j-action-workspace.studio-quickstart.studio-universal-ready .studio-shell>main>#creator.composer.j-neon-dock{
+ border:0!important;
+ background:transparent!important;
+ box-shadow:none!important;
+ outline:0!important;
+ backdrop-filter:none!important;
+}
