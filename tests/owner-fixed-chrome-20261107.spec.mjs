@@ -837,7 +837,7 @@ test('Home header and first film align at desktop edges with visible clearance',
   expect(shape.badge.top-shape.header.bottom,'Recommended remains below the header glow').toBeGreaterThanOrEqual(25);
   expect(shape.pageOverflow,'no new horizontal overflow').toBeLessThanOrEqual(1);
  }
- // The fixed mobile header and the pre-existing small-screen padding are not touched.
+ // Desktop edges align to the cockpit; the fixed mobile header and its padding stay untouched.
  await page.setViewportSize({width:390,height:844});
  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
  await expect(page.locator('#homeHeroCarousel')).toHaveCount(1);
