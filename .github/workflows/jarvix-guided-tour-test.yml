@@ -6,6 +6,9 @@ on:
       - 'app/src/main/assets/jarvis-core.js'
       - 'app/src/main/assets/jarvis-core.css'
       - 'app/src/main/assets/jarvix-guided-tour.js'
+      - 'app/src/main/assets/jarvix-tour-plan.js'
+      - 'app/src/main/assets/deepsyq-mobile-shell.css'
+      - 'tests/jarvix-tour-plan.test.mjs'
       - 'tests/jarvix-guided-tour.test.mjs'
       - '.github/workflows/jarvix-guided-tour-test.yml'
   push:
@@ -14,6 +17,9 @@ on:
       - 'app/src/main/assets/jarvis-core.js'
       - 'app/src/main/assets/jarvis-core.css'
       - 'app/src/main/assets/jarvix-guided-tour.js'
+      - 'app/src/main/assets/jarvix-tour-plan.js'
+      - 'app/src/main/assets/deepsyq-mobile-shell.css'
+      - 'tests/jarvix-tour-plan.test.mjs'
       - 'tests/jarvix-guided-tour.test.mjs'
       - '.github/workflows/jarvix-guided-tour-test.yml'
 permissions:
@@ -31,6 +37,8 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
       - name: Verify tour JavaScript syntax
-        run: node --check app/src/main/assets/jarvis-core.js && node --check app/src/main/assets/jarvix-guided-tour.js && node --check tests/jarvix-guided-tour.test.mjs
+        run: node --check app/src/main/assets/jarvis-core.js && node --check app/src/main/assets/jarvix-guided-tour.js && node --check app/src/main/assets/jarvix-tour-plan.js && node --check tests/jarvix-guided-tour.test.mjs && node --check tests/jarvix-tour-plan.test.mjs
+      - name: Check four-language narration/action timing contract
+        run: node --test tests/jarvix-tour-plan.test.mjs
       - name: Click visible tour header button, verify overlay and exit, no paid calls
         run: node --test tests/jarvix-guided-tour.test.mjs
