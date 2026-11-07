@@ -90,14 +90,25 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   }
   // Absolutely no second header, orb, main content or bottom dock may show
   // through the settings frame. Their real DOM remains for native handlers.
-  for(const child of [...doc.body.children]){
-   if(['DIALOG','SCRIPT','STYLE'].includes(child.tagName))continue;
-   child.style.setProperty('display','none','important');
-  }
+  doc.body.id='homeNativeStudioFrameBody';
+  const hideUnrelated=()=>{
+   for(const child of [...doc.body.children]){
+    if(['DIALOG','SCRIPT','STYLE'].includes(child.tagName))continue;
+    child.style.setProperty('display','none','important');
+   }
+  };
+  hideUnrelated();
+  // The existing site shell may insert a header asynchronously after load.
+  // Apply this same narrow visibility contract to late direct-body nodes.
+  const bodyObserver=new frame.contentWindow.MutationObserver(hideUnrelated);
+  bodyObserver.observe(doc.body,{childList:true});
   const style=doc.createElement('style');
   style.id='homeNativeStudioSettingsPresentation';
   style.textContent=`
    html,body{background:transparent!important;overflow:hidden!important;}
+   #homeNativeStudioFrameBody>:not(dialog):not(script):not(style){
+    display:none!important;visibility:hidden!important;pointer-events:none!important;
+   }
    body>:not(dialog):not(script):not(style){visibility:hidden!important;pointer-events:none!important;}
    body>#studioSettingsHub,body>#studioTypeMenu,body>#modelDialog,body>#settingsDialog{
     visibility:visible!important;pointer-events:auto!important;
