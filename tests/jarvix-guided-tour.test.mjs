@@ -159,8 +159,9 @@ test('real owner MP3 continues after document navigation to Image without a seco
  await preview(32608,async(browser,base)=>{
   for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
    const page=await browser.newPage({viewport});
-   const playback=[];
+   const playback=[],pageErrors=[];
    page.on('console',m=>{if(m.text().startsWith('TOUR_AUDIO_DIAG'))playback.push(m.text());});
+   page.on('pageerror',e=>pageErrors.push(e.message));
    try{
     await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
     await page.addInitScript(()=>{
@@ -176,8 +177,18 @@ test('real owner MP3 continues after document navigation to Image without a seco
       return result;
      };
     });
-    await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});
-    await page.locator('#dsTakeTour').click();
+    const pageResponse=await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});
+    try{await page.locator('#dsTakeTour').waitFor({state:'attached',timeout:12000});}
+    catch{
+     throw Error('Tour button never mounted: '+JSON.stringify({
+      status:pageResponse?.status(),url:page.url(),
+      scripts:await page.locator('script[src]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('src')).slice(0,12)),
+      pageErrors,
+      pageTitle:await page.title()
+     }));
+    }
+    if(viewport.width>760){await page.locator('#dsTakeTour').focus();await page.keyboard.press('Enter');}
+    else await page.locator('#dsTakeTour').click();
     await page.waitForURL(/generate-studio\.html\?studio=image/,{timeout:30000});
     let heard=false;
     try{
@@ -188,7 +199,7 @@ test('real owner MP3 continues after document navigation to Image without a seco
      heard=true;
     }catch{}
     const state=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('deepsyq_guided_tour_v6')||'null'));
-    assert.equal(heard,true,'Owner MP3 did not actually play on Image after navigation: '+JSON.stringify({viewport,state,playback}));
+    assert.equal(heard,true,'Owner MP3 did not actually play on Image after navigation: '+JSON.stringify({viewport,state,playback,pageErrors}));
     await page.locator('[data-tour="stop"]').click();
    }finally{await page.close();}
   }
