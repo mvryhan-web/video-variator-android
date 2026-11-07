@@ -122,6 +122,7 @@ try{
    await page.locator('#studioSettingsHub[open]').waitFor({timeout:12000});
    await page.locator('#studioSettingsHub #settingsButton').click();
    await page.locator('#settingsDialog[open]').waitFor({timeout:12000});
+   await page.waitForFunction(()=>document.getElementById('settingsDialog')?.dataset.studioKind==='music',{timeout:12000});
    assert.equal(await page.locator('#settingsDialog').getAttribute('data-studio-kind'),'music');
    assert.equal(await page.locator('#settingsDialog #musicOptions').isVisible(),true);
    const modes=await page.locator('#musicMode option').evaluateAll(items=>items.map(x=>x.value));
