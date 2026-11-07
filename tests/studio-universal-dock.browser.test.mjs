@@ -63,16 +63,16 @@ try{
      assert.equal(new URL(page.url()).searchParams.get('studio'),choice);
      assert.ok((await page.locator('#studioUniversalDock .j-active-mode').innerText()).toLowerCase().includes(choice));
      assert.equal(await page.locator('#studioUniversalDock #jPlus').innerText(),'+');
+     assert.equal(await page.locator('#studioUniversalDock #jSettingsMenu').count(),0,'no secondary mode chooser');
      await page.locator('#studioUniversalDock #studioSettingsToggle').click();
-     assert.equal(await page.locator('#studioUniversalDock #jSettingsMenu .j-settings-tile').count(),3);
-     assert.equal(await page.locator('#studioUniversalDock #jSettingsMenu').isVisible(),true);
+     await page.locator('#studioSettingsHub[open]').waitFor({timeout:12000});
+     assert.equal(new URL(page.url()).pathname,before,'native settings must not redirect');
+     assert.equal(new URL(page.url()).searchParams.get('studio'),choice,'gear must preserve selected mode');
+     for(const id of ['studioTypePicker','modelButton','settingsButton'])
+      assert.equal(await page.locator('#studioSettingsHub #'+id).count(),1,id+' native settings control');
      await page.screenshot({path:file+'/'+layout.name+'-'+kind+'-settings.png',fullPage:false});
-     const settingsChoice=choice==='video'?'audio':'video';
-     await page.locator('#studioUniversalDock #jSettingsMenu [data-j-mode="'+settingsChoice+'"]').click();
-     assert.equal(new URL(page.url()).pathname,before);
-     assert.equal(new URL(page.url()).searchParams.get('studio'),settingsChoice);
-     assert.equal(await page.locator('#studioSettingsHub').isVisible(),true,'existing protected native Studio settings must open');
-     await page.evaluate(()=>{const hub=document.getElementById('studioSettingsHub');if(hub?.open)hub.close();});
+     await page.locator('#studioSettingsHub > button:nth-child(2)').click();
+     await page.locator('#studioSettingsHub[open]').waitFor({state:'hidden',timeout:12000});
      await page.locator('#studioUniversalDock #prompt').fill('Owner interface-only smoke test prompt');
      assert.equal(await page.locator('#prompt').inputValue(),'Owner interface-only smoke test prompt');
      // Explicitly DO NOT submit or click Generate: no paid calls, no free generation.
