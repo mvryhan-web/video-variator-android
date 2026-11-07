@@ -28,10 +28,16 @@
 <script defer src="approved-page-design.js"></script>
 <link rel="stylesheet" href="jarvis-core.css?v=6.0">
 <link rel="stylesheet" href="deepsyq-mobile-shell.css">
+<link rel="stylesheet" href="deepsyq-platform-embedded.css">
+<script defer src="deepsyq-site-shell.js"></script>
 <script type="module" blocking="render" src="deepsyq-mobile-shell.js"></script>
 </head>
-<body>
+<body class="ds-embedded-uniquifier deepsyq-sitewide-shell">
 <a href="deepsyq.html" style="display:block;padding:12px 20px;color:#d2f7ae;background:#15171d">← Deepsyq workspace</a>
+<header class="ds-platform-header" aria-label="Deepsyq site header">
+  <button id="topJarvisBtn" type="button" class="top-jarvis-btn" aria-label="Activate JARVIX AI" title="JARVIX — AI Voice Commander & Compare"><div class="jarvis-mini-orb"></div><span class="jarvis-name">JARVIX</span></button>
+  <label class="ds-platform-language"><span class="sr-only">Language</span><select id="homeLanguage" aria-label="Platform language"><option value="en">EN</option><option value="fr">FR</option><option value="es">ES</option><option value="ru">RU</option></select></label>
+</header>
 <div class="shell">
   <aside class="sidebar">
     <div class="brand"><span class="brandMark"><img src="deepsyq-logo.png" width="36" height="36" alt="" decoding="async"></span><div><b>Deepsyq</b><small data-i18n="brandTag">One video. Many versions.</small></div></div>
@@ -58,7 +64,7 @@
     <header class="topbar">
       <button id="menuBtn" class="iconBtn mobileOnly" aria-label="Menu">☰</button>
       <div class="topTitle"><span class="eyebrow">VIDEO UNIQUIFIER</span><h1 id="pageTitle" data-i18n="navDashboard">Dashboard</h1></div>
-      <button id="topJarvisBtn" type="button" class="top-jarvis-btn" aria-label="Activate JARVIX AI" title="JARVIX — AI Voice Commander & Compare"><div class="jarvis-mini-orb"><span class="jarvis-core"></span><span class="jarvis-ring"></span><span class="jarvis-ring ring-violet"></span></div><span class="jarvis-name">JARVIX</span></button>
+      
       <div class="accountActions">
         <span id="accountChip" class="accountChip" hidden></span>
         <button id="signInBtn" class="ghostBtn" data-i18n="signIn">Sign in</button>
