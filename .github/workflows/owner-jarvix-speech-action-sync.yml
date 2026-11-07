@@ -1,0 +1,48 @@
+name: Owner JARVIX tour speech action synchronization (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/jarvix-tour-plan.js'
+      - 'app/src/main/assets/jarvix-guided-tour.js'
+      - 'app/src/main/assets/deepsyq-mobile-shell.css'
+      - 'tests/jarvix-tour-plan.test.mjs'
+      - 'tests/jarvix-guided-tour.test.mjs'
+      - '.github/workflows/owner-jarvix-speech-action-sync.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/jarvix-tour-plan.js'
+      - 'app/src/main/assets/jarvix-guided-tour.js'
+      - 'tests/jarvix-tour-plan.test.mjs'
+      - '.github/workflows/owner-jarvix-speech-action-sync.yml'
+permissions:
+  contents: read
+jobs:
+  guided-tour-no-spend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Confirm scripts are valid JavaScript
+        run: |
+          node --check app/src/main/assets/jarvix-guided-tour.js
+          node --check app/src/main/assets/jarvix-tour-plan.js
+          node --check tests/jarvix-guided-tour.test.mjs
+      - name: Verify all 4 languages and narration-target mapping
+        run: node --test tests/jarvix-tour-plan.test.mjs
+      - run: npx playwright install --with-deps chromium
+      - name: Verify guided tour starts, pauses and spotlights in time
+        run: node --test tests/jarvix-guided-tour.test.mjs
+        env:
+          NODE_ENV: test
+          STRIPE_SECRET_KEY: ''
+          OPENAI_API_KEY: ''
+          FAL_KEY: ''
+          HF_TOKEN: ''
+          JARVIX_AI_ENABLED: 'false'
