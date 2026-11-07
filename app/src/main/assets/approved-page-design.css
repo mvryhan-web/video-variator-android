@@ -38,13 +38,10 @@ body[data-approved-page="audio-studio"] main{display:grid;grid-template-columns:
 body[data-approved-page="audio-studio"] main>header,body[data-approved-page="audio-studio"] main>.tool-card:has(.ds-approved-hero){grid-column:1/-1}
 body[data-approved-page="audio-studio"] main>.tool-card{margin:0;padding:28px}
 body[data-approved-page="audio-studio"] main>.tool-card:has(.ds-approved-hero){padding:0;border:0;background:none}
-body[data-approved-page="photo-collage"] .collage-workspace,body[data-approved-page="mobile-utility"] .utility-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.9fr);gap:12px 26px;padding:26px}
+body[data-approved-page="photo-collage"] .collage-workspace,body[data-approved-page="mobile-utility"] .utility-workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:12px 26px;padding:26px}
 body[data-approved-page="photo-collage"] .collage-workspace>*,body[data-approved-page="mobile-utility"] .utility-workspace>*{grid-column:1;min-width:0}
 body[data-approved-page="photo-collage"] .collage-workspace>.ds-approved-hero,body[data-approved-page="mobile-utility"] .utility-workspace>.ds-approved-hero{grid-column:1/-1}
-.ds-tool-inspiration{grid-column:2!important;grid-row:3/span 8;align-self:start;border:1px solid #3a5080;background:#0e1a33;border-radius:18px;padding:15px}
-.ds-tool-inspiration img{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;margin:12px 0}.ds-tool-inspiration p{font-size:13px;color:#aebfda;line-height:1.6}
 body[data-approved-page="photo-collage"] #collageResult{grid-column:1/-1}
-body[data-approved-page="photo-collage"] .collage-workspace:has(#collageResult:not([hidden])) .ds-tool-inspiration,body[data-approved-page="mobile-utility"] .utility-workspace:has(#utilityResults:not(:empty)) .ds-tool-inspiration{display:none}
 body[data-approved-page="mobile-utility"] .utility-workspace:has(#utilityResults:not(:empty)) .utility-config{grid-column:1/-1}
 body[data-approved-page="simple-background-remover"] .image-well{min-height:270px;border-radius:16px;border:1px solid #36578a}
 body[data-approved-page="smart-reminders"] main{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
@@ -69,7 +66,7 @@ body[data-approved-page="telegram-free-mini"] main{max-width:1000px}
 @media(max-width:1050px){body[data-approved-page="ai-pricing"] #toolPlans{grid-template-columns:repeat(2,minmax(0,1fr))}.ds-studio-example{height:210px}.ds-approved-copy{max-width:70%}}
 @media(max-width:700px){.ds-approved-hero{min-height:210px;padding:24px 20px;border-radius:17px;margin-bottom:18px}.ds-approved-copy{max-width:100%}.ds-approved-copy h1{letter-spacing:-.6px}.ds-approved-copy p{font-size:14px}.ds-approved-art{width:100%;opacity:.32;mask-image:linear-gradient(90deg,transparent,#000)}
 body[data-approved-page="audio-studio"] main,body[data-approved-page="smart-reminders"] main,body[data-approved-page="photo-collage"] .collage-workspace,body[data-approved-page="mobile-utility"] .utility-workspace,body[data-approved-page="teleprompter"] .teleprompter-workspace{display:block}
-body[data-approved-page="audio-studio"] main>.tool-card,body[data-approved-page="smart-reminders"] main>section{margin:18px 0;padding:20px}.ds-tool-inspiration{margin-top:20px}.ds-tool-inspiration img{aspect-ratio:1.6}
+body[data-approved-page="audio-studio"] main>.tool-card,body[data-approved-page="smart-reminders"] main>section{margin:18px 0;padding:20px}
 body[data-approved-page="teleprompter"] #teleViewport{min-height:320px;margin-top:22px}.ds-studio-examples{gap:8px;grid-template-columns:1.2fr 1fr}.ds-studio-example{height:170px;border-radius:12px}.ds-studio-example:last-child{display:none}
 body[data-approved-page="studio"] .stage:has(#empty:not([hidden])){min-height:285px!important;padding:18px!important}body[data-approved-page="studio"] .composer{padding:15px!important}body[data-approved-page="studio"] #generate{min-width:120px}
 body[data-approved-page="ai-apps"] .apps-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}body[data-approved-page="ai-pricing"] #toolPlans{grid-template-columns:1fr}body[data-approved-page="legacy"] .ds-legacy-banner>*:not(svg){max-width:100%}}
