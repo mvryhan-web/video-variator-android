@@ -887,6 +887,22 @@ body.home-neon{background:#030b18;color:#eff6ff}
 /* Owner 2026-10-25: clean Home labels; benefit copy belongs inside plan cards only.
    Use established Home palette; preserve navigation, photos, videos and CTA actions. */
 .home-neon .home-feature-spotlight>span{justify-content:center;gap:0}
+/* Mobile three-card Home spotlight: owner-approved JARVIX orb, same center link. */
+.home-neon .home-spotlight-agent .home-spotlight-jarvix-orb{display:none!important}
+@media(max-width:760px){
+ .home-neon .home-spotlight-agent>.home-spotlight-jarvix-mark{
+  display:flex;flex-direction:row;align-items:center;gap:10px;
+  max-width:100%;position:relative;z-index:1;
+ }
+ .home-neon .home-spotlight-agent .home-spotlight-jarvix-orb{
+  display:inline-grid!important;place-items:center;
+  flex:0 0 36px;width:36px!important;height:36px!important;
+ }
+ .home-neon .home-spotlight-agent .home-spotlight-jarvix-title{
+  display:inline-block!important;visibility:visible!important;
+  opacity:1!important;white-space:nowrap;
+ }
+}
 .home-neon #agentFeature .creative-example-copy{justify-content:center}
 .home-neon .home-plan-showcase .plan-benefits{gap:10px}
 .home-neon .home-plan-showcase .plan-benefits li{font-size:12px;line-height:1.5}
