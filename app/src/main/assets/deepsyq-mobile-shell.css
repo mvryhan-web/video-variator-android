@@ -353,3 +353,57 @@ body.ds-tour-active #luminaTermsModal.is-open{visibility:hidden!important;opacit
  }
  html body.ds-mobile-layout .ds-mobile-control-right{gap:2px!important}
 }
+
+
+/* OWNER 2026-11-07 — one compact mobile header on every page.
+   Align the WORD "Deepsyq" (not the logo+word group) to viewport center
+   and share the first-row centerline with the existing Login and menu.
+   Older JARVIX workspace rules stretched just Home/Studio/Chat to 156px.
+   Keep the original 74px JARVIX orb/second row and their click handlers.
+   Collapse header AND matching flow spacer together; no desktop changes. */
+@media(max-width:760px){
+ html{scroll-padding-top:calc(132px + var(--ds-mobile-safe-top))!important}
+ html body.ds-mobile-layout header.ds-mobile-header,
+ html body.ds-mobile-layout.j-action-workspace header.ds-mobile-header{
+  height:calc(132px + var(--ds-mobile-safe-top))!important;
+  min-height:calc(132px + var(--ds-mobile-safe-top))!important;
+ }
+ html body.ds-mobile-layout .ds-mobile-header-spacer,
+ html body.ds-mobile-layout.j-action-workspace .ds-mobile-header-spacer{
+  height:calc(132px + var(--ds-mobile-safe-top))!important;
+ }
+ html body.ds-mobile-layout .ds-mobile-brand{
+  position:absolute!important;top:calc(22px + var(--ds-mobile-safe-top))!important;
+  left:50%!important;transform:translateX(-50%)!important;
+  height:36px!important;gap:0!important;z-index:605!important;
+  justify-content:center!important;
+ }
+ /* Taking the logo out of text flow centers the actual word, not the pair.
+    The exact same approved image stays to its left and inside its link. */
+ html body.ds-mobile-layout .ds-mobile-brand img{
+  position:absolute!important;right:calc(100% + 8px)!important;left:auto!important;
+  top:50%!important;transform:translateY(-50%)!important;
+  margin:0!important;
+ }
+ html body.ds-mobile-layout .ds-mobile-menu,
+ html body.ds-mobile-layout.j-action-workspace .ds-mobile-menu{
+  top:calc(20px + var(--ds-mobile-safe-top))!important;
+  height:40px!important;min-height:40px!important;
+ }
+ html body.ds-mobile-layout .ds-mobile-controls,
+ html body.ds-mobile-layout.j-action-workspace .ds-mobile-controls{
+  top:calc(65px + var(--ds-mobile-safe-top))!important;
+  height:58px!important;
+ }
+ html body.ds-mobile-layout .ds-mobile-controls #topLogin,
+ html body.ds-mobile-layout.j-action-workspace .ds-mobile-control-right>#topLogin{
+  top:calc(20px + var(--ds-mobile-safe-top))!important;
+  height:38px!important;min-height:38px!important;
+ }
+ html body.ds-mobile-layout #topJarvisBtn,
+ html body.ds-mobile-layout.j-action-workspace #topJarvisBtn{
+  top:calc(95px + var(--ds-mobile-safe-top))!important;
+ }
+}
+/* On the narrowest phones the approved logo and title still fit between
+   menu and account, without moving either control or changing typography. */
