@@ -312,6 +312,78 @@ try{
    }finally{await context.close();}
   }
  });
+
+ // Owner 2026-11-07: desktop top chrome does not blink on Home -> Image/Video/Audio/JARVIX.
+ // A native pagereveal viewTransition would briefly hide the old shared header.
+ await test('Desktop page changes keep the top chrome steady while lower modes still switch',async()=>{
+  const context=await browser.newContext({viewport:{width:1365,height:900}});
+  await context.addInitScript(()=>{
+   // Existing no-spend Studio tests preaccept onboarding in the isolated test context.
+   // Otherwise the first Image entry opens a modal over the sidebar navigation.
+   try{localStorage.setItem('deepsyq_lumina_terms_accepted','true');}catch{}
+   // The outgoing page may fire pagereveal before Playwright resumes on navigation.
+   // Do not depend on late-observed events to test the header transition policy.
+   document.addEventListener('pagereveal',event=>{
+    window.__deepsyqNavHadTransition=!!event.viewTransition;
+   },{once:true});
+  });
+  const page=await context.newPage(),paid=[];
+  page.on('request',request=>{
+   if(request.method()==='POST'&&/\/api\/(?:studio\/jobs|stripe|payments)\b/.test(request.url()))
+    paid.push(request.url());
+  });
+  try{
+   await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded',timeout:30000});
+   const clicks=[
+    ['generate-studio.html?studio=image','Image'],
+    ['generate-studio.html?studio=video','Video'],
+    ['generate-studio.html?studio=audio','Audio'],
+    ['jarvix-chat.html','JARVIX']
+   ];
+   for(const [target,label] of clicks){
+    // Click the actual left sidebar navigation: the lower Studio rail's
+    // Image/Video/Audio anchors intentionally switch modes without navigating.
+    const sidebarRoute=page.locator('#sidebar a[href="'+target+'"], #dsSiteSidebar a[href="'+target+'"]').first();
+    await sidebarRoute.waitFor({state:'visible',timeout:20000});
+    await Promise.all([
+     page.waitForURL('**/'+target,{timeout:30000}),
+     sidebarRoute.click()
+    ]);
+    await page.waitForSelector('header.ds-stable-header .ds-header-cockpit',{timeout:20000});
+    await page.waitForFunction(()=>{
+     const sheet=[...document.styleSheets].find(s=>s.href?.endsWith('/deepsyq-mobile-shell.css'));
+     if(!sheet)return false;
+     try{return [...sheet.cssRules].some(rule=>rule.conditionText?.includes('min-width: 761px')
+      &&rule.cssText.includes('@view-transition')&&rule.cssText.includes('navigation: none'));}
+     catch{return false;}
+    },null,{timeout:15000});
+    const state=await page.evaluate(()=>{
+     const header=document.querySelector('header.ds-stable-header');
+     const rect=header?.getBoundingClientRect(),css=header&&getComputedStyle(header);
+     const sheet=[...document.styleSheets].find(s=>s.href?.endsWith('/deepsyq-mobile-shell.css'));
+     const blocked=[...sheet.cssRules].some(rule=>rule.conditionText?.includes('min-width: 761px')
+      &&rule.cssText.includes('@view-transition')&&rule.cssText.includes('navigation: none'));
+     return {transition:window.__deepsyqNavHadTransition,desktopTransitionDisabled:blocked,
+      position:css?.position,top:rect?.top,width:rect?.width,
+      hasLeft:!!header?.querySelector('.ds-header-pod-left'),
+      hasRight:!!header?.querySelector('.ds-header-pod-right'),
+      hasOrb:!!header?.querySelector('#topJarvisBtn')};
+    });
+    assert.equal(state.desktopTransitionDisabled,true,label+' must opt out of cross-document header transitions');
+    if(typeof state.transition==='boolean')assert.equal(state.transition,false,label+' view transition must be absent');
+    assert.equal(state.position,'fixed',label+' top header must stay fixed');
+    assert.ok(Math.abs(state.top)<=3,label+' header top must remain stable');
+    assert.equal(state.hasLeft,true,label+' left header actions preserved');
+    assert.equal(state.hasRight,true,label+' right header actions preserved');
+    assert.equal(state.hasOrb,true,label+' approved JARVIX header sphere preserved');
+    const composer=label==='JARVIX'?'.jarvix-chat>.j-chat-bottom.j-neon-dock':
+      '#studioUniversalDock.j-neon-dock';
+    await page.locator(composer+' #jPlus').waitFor({state:'visible',timeout:20000});
+    await page.screenshot({path:file+'/owner-no-desktop-header-blink-'+label.toLowerCase()+'.png',fullPage:false});
+   }
+   assert.equal(paid.length,0,'header navigation must not trigger paid requests');
+  }finally{await context.close();}
+ });
 }finally{
  await browser?.close();server.kill('SIGTERM');
  if(server.exitCode===null&&server.signalCode===null)await once(server,'exit');
