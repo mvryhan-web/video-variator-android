@@ -1,5 +1,5 @@
 // Read-only tour; cached owner clips plus current plan-card narration.
-export const TOUR_KEY='deepsyq_guided_tour_v5';
+export const TOUR_KEY='deepsyq_guided_tour_v6';
 export function tourPlan(language='en') {
  const lang=['ru','en','fr','es'].includes(language)?language:'en';
  const rows=[
