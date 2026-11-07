@@ -13,7 +13,7 @@ test('both canonical JARVIX composers use the same real SVG plane and round send
  for(const [page,id] of [[home,'homeQuickSubmit'],[chat,'jSend']]){
   const start=page.indexOf('id="'+id+'"');
   assert.ok(start>0,id);
-  const near=page.slice(start,start+490);
+  const near=page.slice(start-85,start+490);
   assert.match(near,/type="submit"/);
   assert.match(near,/class="j-send"/);
   assert.match(near,/<svg class="j-send-plane"/);

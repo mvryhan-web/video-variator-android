@@ -13,6 +13,7 @@ on:
       - 'app/src/main/assets/deepsyq.html'
       - 'app/src/main/assets/jarvix-chat.html'
       - 'tests/jarvix-bottom-dock.test.mjs'
+      - 'tests/jarvix-bottom-dock.browser.test.mjs'
       - 'tests/jarvix-voice-input.test.mjs'
       - 'tests/jarvix-free-llm.test.mjs'
       - '.github/workflows/jarvix-free-llm.yml'
@@ -52,6 +53,35 @@ jobs:
           node --check app/src/main/assets/jarvix-voice-input.js
           node --check tests/jarvix-voice-input.test.mjs
           node --check tests/jarvix-bottom-dock.test.mjs
+          node --check tests/jarvix-bottom-dock.browser.test.mjs
           node --check tests/jarvix-free-llm.test.mjs
       - name: Zero-spend free LLM, voice and preview isolation
         run: node --test tests/jarvix-free-llm.test.mjs tests/jarvix-local-voice.test.mjs tests/jarvix-chat-preview.test.mjs tests/jarvix-speech-draft.test.mjs tests/jarvix-voice-input.test.mjs tests/jarvix-bottom-dock.test.mjs
+
+  owner-mobile-desktop-dock:
+    name: Owner bottom dock browser geometry + screenshots
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GEMINI_API_KEY: ''
+      OPENAI_API_KEY: ''
+      GROQ_API_KEY: ''
+      JARVIX_FREE_LLM_ENABLED: 'false'
+      JARVIX_QUOTA_DATABASE_URL: ''
+      DATABASE_URL: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Desktop 1670x941 and mobile 9:16 visual geometry
+        run: node --test tests/jarvix-bottom-dock.browser.test.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owner-jarvix-bottom-dock-reference
+          path: artifacts/jarvix-bottom-dock/*.png
+          retention-days: 14

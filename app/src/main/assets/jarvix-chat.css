@@ -60,11 +60,11 @@ body:has(#homeQuickForm[data-jarvix-chat]){padding-bottom:calc(var(--jarvix-comp
 }
 #homeQuickBar:has(#homeQuickForm[data-jarvix-chat]){
  position:fixed!important;
- width:min(1230px,calc(100vw - 314px))!important;
+ width:min(1230px,calc(100vw - 360px))!important;
  max-width:none!important;
- left:calc(260px + (100vw - 260px)/2)!important;
+ left:calc(260px + (100vw - 260px)/2 - 50px)!important;
  right:auto!important;
- bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;
+ bottom:clamp(18px,7vh,72px)!important;
  transform:translateX(-50%)!important;
  z-index:55;
  margin:0!important;
@@ -237,7 +237,7 @@ body.sidebar-collapsed #homeQuickBar:has(#homeQuickForm[data-jarvix-chat]){
  font-weight:700;
  letter-spacing:.04em;
 }
-.j-neon-dock > .j-mode-rail a:nth-child(5){margin-left:19px!important}
+.j-neon-dock > .j-mode-rail a:nth-child(5){position:relative;margin-left:19px!important}
 .j-neon-dock > .j-mode-rail a:nth-child(5)::before{
  content:"";
  position:absolute;
@@ -273,7 +273,7 @@ body.sidebar-collapsed #homeQuickBar:has(#homeQuickForm[data-jarvix-chat]){
   left:50%!important;
   width:calc(100vw - 20px)!important;
   max-width:none!important;
-  bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;
+  bottom:calc(14px + env(safe-area-inset-bottom,0px))!important;
   transform:translateX(-50%)!important;
  }
  :where(#homeQuickBar,.j-chat-bottom).j-neon-dock{
