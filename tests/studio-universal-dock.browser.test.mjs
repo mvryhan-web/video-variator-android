@@ -279,6 +279,39 @@ try{
    new URL('../app/src/main/assets/jarvix-chat.js',import.meta.url),'utf8');
   assert.ok(!chatSource.includes('Text, images, video and audio — one conversation.'));
  });
+
+ // Owner 2026-11-07: JARVIX Chat composer matches the pre-existing Studio dock width.
+ await test('JARVIX Chat bottom dock matches Studio width without touching chat functions',async()=>{
+  for(const device of [{width:1365,height:900,mobile:false},{width:390,height:844,mobile:true},
+   {width:320,height:700,mobile:true}]){
+   const context=await browser.newContext({viewport:{width:device.width,height:device.height},
+    isMobile:device.mobile,hasTouch:device.mobile,deviceScaleFactor:1});
+   const page=await context.newPage(),paid=[];
+   page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:studio\/jobs|stripe|payments)\b/.test(r.url()))paid.push(r.url());});
+   await context.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+   try{
+    await page.goto(base+'/generate-studio.html?studio=image',{waitUntil:'domcontentloaded',timeout:30000});
+    await page.waitForSelector('#studioUniversalDock.j-neon-dock',{timeout:25000});
+    const reference=await page.locator('#studioUniversalDock.j-neon-dock').boundingBox();
+    assert.ok(reference&&reference.width>0,'native Studio reference dock');
+    await page.goto(base+'/jarvix-chat.html',{waitUntil:'domcontentloaded',timeout:30000});
+    await page.waitForSelector('.jarvix-chat>.j-chat-bottom.j-neon-dock',{timeout:25000});
+    const dock=page.locator('.jarvix-chat>.j-chat-bottom.j-neon-dock');
+    const bounds=await dock.boundingBox();
+    assert.ok(bounds&&bounds.width>0,'chat dock must be present');
+    assert.ok(Math.abs(bounds.width-reference.width)<=2,
+     'JARVIX width must equal Studio '+JSON.stringify({device,chat:bounds.width,studio:reference.width}));
+    assert.ok(bounds.x>=-1&&bounds.x+bounds.width<=device.width+1,'dock within viewport');
+    assert.equal(await dock.locator('#jPlus').count(),1,'one original Plus handler');
+    assert.equal(await dock.locator('#jInput').count(),1,'one original chat input');
+    assert.equal(await dock.locator('#jSend').count(),1,'one original Send handler');
+    await dock.locator('#jPlus').click();
+    assert.equal(await dock.locator('#jPlusMenu .j-hub-tile').count(),8,'original Plus menu preserved');
+    await page.screenshot({path:file+'/owner-jarvix-dock-width-'+device.width+'.png',fullPage:false});
+    assert.equal(paid.length,0,'No paid request during width check');
+   }finally{await context.close();}
+  }
+ });
 }finally{
  await browser?.close();server.kill('SIGTERM');
  if(server.exitCode===null&&server.signalCode===null)await once(server,'exit');
