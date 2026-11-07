@@ -115,6 +115,11 @@
 #sidebar{padding-top:17px;background:linear-gradient(167deg,#201b30 0%,#151820 45%,#13191d 100%);transition:width .18s ease}
 .sidebar-head{display:flex;align-items:center;gap:8px;justify-content:space-between;min-height:44px}
 .sidebar-head .brand{min-width:0;font-size:21px;letter-spacing:-.6px;white-space:nowrap}
+/* Match the AI Apps sidebar wordmark's lower visual center, without moving
+   the Home sidebar navigation, changing the logo or affecting mobile chrome. */
+@media(min-width:761px){
+ body.home-neon #sidebar .sidebar-head > .brand{position:relative;top:8px}
+}
 .sidebar-head .brand-name{overflow:hidden;text-overflow:ellipsis}
 .sidebar-toggle{flex:none;display:grid;place-items:center;width:31px;height:31px;border:1px solid #4a4659;border-radius:9px;background:#292437;color:#e6d9ff;cursor:pointer}
 .sidebar-caption{margin-top:28px!important}

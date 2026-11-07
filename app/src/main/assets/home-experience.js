@@ -501,7 +501,7 @@ if($('homeQuickForm')&&!$('homeQuickForm').hasAttribute('data-jarvix-chat')){
   const prompt=$('homeQuickPrompt').value.trim();
   if(kind==='agent'){
    event.preventDefault();
-   location.assign(prompt ? 'ai-agents.html?topic=' + encodeURIComponent(prompt) : 'ai-agents.html');
+   location.assign(prompt ? 'jarvix-chat.html?prompt=' + encodeURIComponent(prompt) : 'jarvix-chat.html');
    return;
   }
   if(!prompt)return;
@@ -540,7 +540,7 @@ if($('homeQuickForm')&&!$('homeQuickForm').hasAttribute('data-jarvix-chat')){
 
   if(targetKind==='agent'){
     busy=true;button.disabled=true;status.textContent='Opening AI Agents workspace…';
-    const targetUrl = prompt ? 'ai-agents.html?topic=' + encodeURIComponent(prompt) : 'ai-agents.html';
+    const targetUrl = prompt ? 'jarvix-chat.html?prompt=' + encodeURIComponent(prompt) : 'jarvix-chat.html';
     location.assign(targetUrl);
     return;
   }
