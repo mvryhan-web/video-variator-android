@@ -312,6 +312,61 @@ try{
    }finally{await context.close();}
   }
  });
+
+ // Owner 2026-11-07: desktop top chrome does not blink on Home -> Image/Video/Audio/JARVIX.
+ // A native pagereveal viewTransition would briefly hide the old shared header.
+ await test('Desktop page changes keep the top chrome steady while lower modes still switch',async()=>{
+  const context=await browser.newContext({viewport:{width:1365,height:900}});
+  await context.addInitScript(()=>{
+   document.addEventListener('pagereveal',event=>{
+    window.__deepsyqNavHadTransition=!!event.viewTransition;
+    window.__deepsyqNavRevealed=true;
+   },{once:true});
+  });
+  const page=await context.newPage(),paid=[];
+  page.on('request',request=>{
+   if(request.method()==='POST'&&/\/api\/(?:studio\/jobs|stripe|payments)\b/.test(request.url()))
+    paid.push(request.url());
+  });
+  try{
+   await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded',timeout:30000});
+   const clicks=[
+    ['generate-studio.html?studio=image','Image'],
+    ['generate-studio.html?studio=video','Video'],
+    ['generate-studio.html?studio=audio','Audio'],
+    ['jarvix-chat.html','JARVIX']
+   ];
+   for(const [target,label] of clicks){
+    await page.locator('a[href="'+target+'"]').first().waitFor({state:'visible',timeout:20000});
+    await Promise.all([
+     page.waitForURL('**/'+target,{timeout:30000}),
+     page.locator('a[href="'+target+'"]').first().click()
+    ]);
+    await page.waitForSelector('header.ds-stable-header .ds-header-cockpit',{timeout:20000});
+    await page.waitForFunction(()=>window.__deepsyqNavRevealed===true,null,{timeout:10000});
+    const state=await page.evaluate(()=>{
+     const header=document.querySelector('header.ds-stable-header');
+     const rect=header?.getBoundingClientRect(),css=header&&getComputedStyle(header);
+     return {transition:window.__deepsyqNavHadTransition,
+      position:css?.position,top:rect?.top,width:rect?.width,
+      hasLeft:!!header?.querySelector('.ds-header-pod-left'),
+      hasRight:!!header?.querySelector('.ds-header-pod-right'),
+      hasOrb:!!header?.querySelector('#topJarvisBtn')};
+    });
+    assert.equal(state.transition,false,label+' must not launch cross-page header transition');
+    assert.equal(state.position,'fixed',label+' top header must stay fixed');
+    assert.ok(Math.abs(state.top)<=3,label+' header top must remain stable');
+    assert.equal(state.hasLeft,true,label+' left header actions preserved');
+    assert.equal(state.hasRight,true,label+' right header actions preserved');
+    assert.equal(state.hasOrb,true,label+' approved JARVIX header sphere preserved');
+    const composer=label==='JARVIX'?'.jarvix-chat>.j-chat-bottom.j-neon-dock':
+      '#studioUniversalDock.j-neon-dock';
+    await page.locator(composer+' #jPlus').waitFor({state:'visible',timeout:20000});
+    await page.screenshot({path:file+'/owner-no-desktop-header-blink-'+label.toLowerCase()+'.png',fullPage:false});
+   }
+   assert.equal(paid.length,0,'header navigation must not trigger paid requests');
+  }finally{await context.close();}
+ });
 }finally{
  await browser?.close();server.kill('SIGTERM');
  if(server.exitCode===null&&server.signalCode===null)await once(server,'exit');
