@@ -82,17 +82,17 @@ try{
    });
   }
  }
- await test('Home/JARVIX settings choice remains inside current chat, with existing two-link rail',async()=>{
+ await test('Home gear opens previous existing Studio settings; Universal Hub rail remains unchanged',async()=>{
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   try{
    const page=await context.newPage();await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});
    await page.waitForSelector('#homeQuickForm .j-settings-shortcut',{timeout:16000});
-   const pathname=new URL(page.url()).pathname;
-   await page.locator('#homeQuickForm .j-settings-shortcut').click();
-   await page.locator('#homeQuickForm #jSettingsMenu [data-j-mode="image"]').click();
-   assert.equal(new URL(page.url()).pathname,pathname,'Home settings must not redirect');
    assert.equal(await page.locator('#homeQuickBar .j-mode-rail a').count(),2);
-   assert.match(await page.locator('#homeQuickBar .j-active-mode').innerText(),/Image/);
+   assert.equal(await page.locator('#homeQuickForm #jSettingsMenu').count(),0);
+   await page.locator('#homeQuickForm .j-settings-shortcut').click();
+   await page.waitForURL('**/generate-studio.html?studio=image&settings=1',{timeout:16000});
+   assert.equal(new URL(page.url()).searchParams.get('studio'),'image');
+   assert.equal(new URL(page.url()).searchParams.get('settings'),'1');
   }finally{await context.close();}
  });
 }finally{
