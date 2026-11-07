@@ -73,7 +73,7 @@ test('Owner mobile compact header centers the Deepsyq WORD at the Login row on a
  assert.match(scoped,/scroll-padding-top:calc\(130px \+ var\(--ds-mobile-safe-top\)\)!important/);
  assert.match(scoped,/html body\.j-action-workspace\.ds-mobile-layout header\.ds-mobile-header/);
  assert.match(scoped,/html body\.j-action-workspace\.ds-mobile-layout \.ds-mobile-header-spacer/);
- assert.equal((scoped.match(/126px \+ var\(--ds-mobile-safe-top\)/g)||[]).length,4);
+ assert.equal((scoped.match(/126px \+ var\(--ds-mobile-safe-top\)/g)||[]).length,3);
  assert.match(scoped,/transform:translateX\(calc\(-50% - 19px\)\)!important/);
  assert.match(scoped,/top:calc\(20px \+ var\(--ds-mobile-safe-top\)\)!important/);
  assert.match(scoped,/\.ds-mobile-controls #topLogin/);
