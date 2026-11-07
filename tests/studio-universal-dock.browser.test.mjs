@@ -338,10 +338,13 @@ try{
     ['jarvix-chat.html','JARVIX']
    ];
    for(const [target,label] of clicks){
-    await page.locator('a[href="'+target+'"]').first().waitFor({state:'visible',timeout:20000});
+    // Click the actual left sidebar navigation: the lower Studio rail's
+    // Image/Video/Audio anchors intentionally switch modes without navigating.
+    const sidebarRoute=page.locator('#sidebar a[href="'+target+'"], #dsSiteSidebar a[href="'+target+'"]').first();
+    await sidebarRoute.waitFor({state:'visible',timeout:20000});
     await Promise.all([
      page.waitForURL('**/'+target,{timeout:30000}),
-     page.locator('a[href="'+target+'"]').first().click()
+     sidebarRoute.click()
     ]);
     await page.waitForSelector('header.ds-stable-header .ds-header-cockpit',{timeout:20000});
     await page.waitForFunction(()=>{
