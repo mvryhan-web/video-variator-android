@@ -604,3 +604,75 @@ test('only Home video carousel purple outlines disappear without changing carous
   await expect(page.locator('#canvasFeature.landing-feature')).toHaveCount(1);
  }
 });
+
+test('owner latest header: mobile Russian Tour is one line and desktop web positions match phone',async({page},info)=>{
+ test.setTimeout(150000);
+ await page.addInitScript(()=>{localStorage.setItem('deepsyq_home_language','ru');localStorage.setItem('deepsyq_lumina_terms_accepted','true');});
+ let paid=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio\/jobs|stripe|payments)\b/.test(r.url()))paid++;});
+ const cases=[
+  {width:320,route:'deepsyq.html'},
+  {width:390,route:'deepsyq.html'},
+  {width:390,route:'generate-studio.html?studio=image'},
+  {width:390,route:'index.html'},
+  {width:1365,route:'deepsyq.html'},
+  {width:1365,route:'generate-studio.html?studio=image'},
+  {width:1365,route:'index.html'}
+ ];
+ for(const {width,route} of cases){
+  await page.setViewportSize({width,height:844});
+  const response=await page.goto('/'+route,{waitUntil:'domcontentloaded'});
+  expect(response.status(),route+' must load').toBe(200);
+  await expect.poll(()=>page.evaluate(()=>document.body.dataset.mobileShell),{timeout:15000}).toBe('ready');
+  const mobile=width<=760;
+  const credit=page.locator(mobile?'.ds-mobile-control-left .ds-header-credit':
+   route==='deepsyq.html'?'.ds-desktop-actions .ds-header-credit':
+   route==='index.html'?'.ds-platform-header .ds-header-credit':
+   '.ds-unified-actions-left .ds-header-credit');
+  const tour=page.locator(mobile?'.ds-mobile-control-right #dsTakeTour':
+   route==='deepsyq.html'?'.ds-desktop-actions #dsTakeTour':
+   route==='index.html'?'.ds-platform-header #dsTakeTour':
+   '.ds-unified-actions-right #dsTakeTour');
+  await expect(credit,route+' Credit selector').toHaveCount(1);
+  await expect(tour,route+' Tour selector').toHaveCount(1);
+  await expect(credit,route+' Credit visible').toBeVisible();
+  await expect(tour,route+' Tour visible').toBeVisible();
+  await expect(credit).toHaveText('AI Credit');
+  await expect(credit).toHaveAttribute('href','pricing.html#credits');
+  await expect(tour).toHaveText('Экскурсия');
+  const actual=await page.evaluate(({mobile,route})=>{
+   const box=el=>{const r=el?.getBoundingClientRect();return r?{l:r.left,r:r.right,t:r.top,b:r.bottom,c:(r.left+r.right)/2}:null;};
+   const header=document.querySelector(route==='index.html'&&innerWidth>760?'.ds-platform-header':'header.ds-stable-header');
+   const orb=document.querySelector('#topJarvisBtn');
+   const credit=document.querySelector(mobile?'.ds-mobile-control-left .ds-header-credit':
+    route==='deepsyq.html'?'.ds-desktop-actions .ds-header-credit':
+    route==='index.html'?'.ds-platform-header .ds-header-credit':
+    '.ds-unified-actions-left .ds-header-credit');
+   const tour=document.querySelector(mobile?'.ds-mobile-control-right #dsTakeTour':
+    route==='deepsyq.html'?'.ds-desktop-actions #dsTakeTour':
+    route==='index.html'?'.ds-platform-header #dsTakeTour':
+    '.ds-unified-actions-right #dsTakeTour');
+   const pricing=document.getElementById('topPricing');
+   const brand=document.querySelector('.ds-mobile-brand');
+   const r=document.createRange();r.selectNodeContents(tour);
+   const fragments=[...r.getClientRects()].filter(x=>x.width>0);
+   return {header:box(header),orb:box(orb),credit:box(credit),tour:box(tour),pricing:box(pricing),
+    brand:box(brand),fragments:fragments.length,whiteSpace:getComputedStyle(tour).whiteSpace,
+    overflow:document.documentElement.scrollWidth-innerWidth};
+  },{mobile,route});
+  expect(actual.credit.r,route+' Credit must be before sphere').toBeLessThan(actual.orb.l+5);
+  expect(actual.tour.l,route+' Tour must be after sphere').toBeGreaterThan(actual.orb.r-5);
+  expect(actual.whiteSpace,route+' Tour must not wrap').toBe('nowrap');
+  expect(actual.fragments,route+' Tour must be one rendered line').toBe(1);
+  expect(actual.overflow,route+' horizontal page overflow').toBeLessThanOrEqual(1);
+  expect(Math.abs(actual.orb.c-actual.header.c),route+' orb must stay centered in its header').toBeLessThanOrEqual(5);
+  if(mobile){
+   expect(Math.abs(actual.brand.c-width/2),route+' brand must remain horizontally centered').toBeLessThanOrEqual(4);
+   expect(actual.brand.t,route+' lowered brand').toBeGreaterThanOrEqual(15);
+   expect(actual.tour.r,route+' right edge').toBeLessThanOrEqual(width+1);
+   expect(actual.tour.r,route+' Tour/Pricing overlap').toBeLessThanOrEqual(actual.pricing.l+1);
+  }
+  await page.screenshot({path:info.outputPath('header-final-'+width+'-'+route.replace(/[^a-z]/gi,'-')+'.png'),fullPage:false,animations:'disabled'});
+ }
+ expect(paid).toBe(0);
+});

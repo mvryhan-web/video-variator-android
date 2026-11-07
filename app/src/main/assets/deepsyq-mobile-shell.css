@@ -324,3 +324,32 @@ body.ds-tour-active #luminaTermsModal.is-open{visibility:hidden!important;opacit
   flex:1 1 0!important;
  }
 }
+
+/* Owner 07 Nov: the existing Russian Tour label must remain one line.
+   Preserve the same button, event handler and header groups. */
+@media(max-width:760px){
+ html body.ds-mobile-layout .ds-mobile-control-right #dsTakeTour{
+  flex:0 0 auto!important;
+  width:max-content!important;min-width:max-content!important;
+  max-width:100%!important;
+  white-space:nowrap!important;overflow-wrap:normal!important;
+  word-break:keep-all!important;
+  padding-inline:5px!important;
+  text-align:center!important;
+ }
+ /* Lower the existing centered Deepsyq signature without resizing the menu
+    or changing the JARVIX sphere/its uploaded original artwork. */
+ html body.ds-mobile-layout .ds-mobile-brand{
+  top:calc(18px + env(safe-area-inset-top))!important;
+  left:50%!important;transform:translateX(-50%)!important;
+ }
+}
+@media(max-width:360px){
+ html body.ds-mobile-layout .ds-mobile-control-right #dsTakeTour{
+  padding-inline:3px!important;font-size:9px!important;
+ }
+ html body.ds-mobile-layout .ds-mobile-control-right #topPricing{
+  padding-inline:3px!important;font-size:9px!important;
+ }
+ html body.ds-mobile-layout .ds-mobile-control-right{gap:2px!important}
+}

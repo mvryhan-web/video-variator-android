@@ -98,3 +98,20 @@ body.ds-embedded-uniquifier.ds-vu-nav-collapsed .ds-site-mobile-toggle{left:23px
 @media(prefers-reduced-motion:reduce){
  body.ds-embedded-uniquifier #dsSiteSidebar{transition:none!important}
 }
+
+/* Owner 07 Nov: the Video Uniquifier uses the same working DEEPSYQ header
+   button order on desktop. No change to its approved films or processing UI. */
+@media(min-width:761px){
+ html body.ds-embedded-uniquifier .ds-platform-header .ds-header-tools{
+  left:70px!important;
+ }
+ html body.ds-embedded-uniquifier .ds-platform-header .ds-header-credit{
+  left:calc(50% - 155px)!important;right:auto!important;
+  transform:translateY(-50%)!important;white-space:nowrap!important;
+ }
+ html body.ds-embedded-uniquifier .ds-platform-header #dsTakeTour{
+  left:calc(50% + 56px)!important;right:auto!important;
+  transform:translateY(-50%)!important;white-space:nowrap!important;
+  overflow-wrap:normal!important;word-break:keep-all!important;
+ }
+}

@@ -55,3 +55,24 @@ body.j-action-workspace #homeQuickBar.j-neon-dock:has([data-jarvix-chat]),body.j
  .j-action-workspace .j-image-shortcut{min-width:27px!important;padding:3px!important}
  .j-action-workspace .j-image-shortcut svg{width:18px;height:18px}
 }
+
+/* Owner 07 Nov desktop Home: use the mobile-approved left / orb / right
+   action order. Visual positions only; no event-handler or route changes. */
+@media(min-width:761px){
+ body.home-neon.j-action-workspace header.top.ds-stable-header #topJarvisBtn{
+  position:absolute!important;left:50%!important;right:auto!important;
+  top:54%!important;transform:translate(-50%,-50%)!important;
+  z-index:8!important;
+ }
+ body.home-neon.j-action-workspace header.top.ds-stable-header .ds-desktop-actions .ds-header-credit{
+  position:absolute!important;left:calc(50% - 155px)!important;right:auto!important;
+  top:54%!important;transform:translateY(-50%)!important;
+  white-space:nowrap!important;
+ }
+ body.home-neon.j-action-workspace header.top.ds-stable-header .ds-desktop-actions #dsTakeTour{
+  position:absolute!important;left:calc(50% + 56px)!important;right:auto!important;
+  top:54%!important;transform:translateY(-50%)!important;
+  white-space:nowrap!important;overflow-wrap:normal!important;
+  word-break:keep-all!important;
+ }
+}
