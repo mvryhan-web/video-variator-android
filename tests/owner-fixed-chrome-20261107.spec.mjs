@@ -729,7 +729,7 @@ test('Home only: remove marked neon side hairlines and show cinematic media with
   });
   expect(styles.asideBorder,'no left-side Home sidebar hairline').toBe('rgba(0, 0, 0, 0)');
   expect(styles.carouselMask,'no film-wide dark overlay').toBe('none');
-  expect(styles.filmFilter,'main movie only gently brightened').toBe('brightness(1.08)');
+  expect(styles.filmFilter,'main movie brightened without a tint').toBe('brightness(1.18) saturate(1.04)');
   expect(styles.neighborOpacity,'side movies retain source brightness').toBe('1');
   expect(styles.neighborMaskDisplay,'no dark tint above side movies').toBe('none');
   if(width>760){
