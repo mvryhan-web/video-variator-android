@@ -52,3 +52,21 @@ for(const [label,width,height] of [['desktop',1365,900],['mobile',390,844]]){
   expect(paid).toBe(0);
  });
 }
+
+
+test('stage03 existing mobile account button has one stable selector on every shared page',async({page})=>{
+ test.setTimeout(90000);
+ await page.setViewportSize({width:390,height:844});
+ await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+ for(const route of ['deepsyq.html','generate-studio.html?studio=image','pricing.html','my-creations.html','ai-apps.html']){
+  await page.goto('/'+route,{waitUntil:'domcontentloaded'});
+  await expect.poll(()=>page.evaluate(()=>document.body.dataset.mobileShell),{timeout:9000}).toBe('ready');
+  const login=page.locator('#topLogin');
+  await expect(login,route+' missing canonical account control').toHaveCount(1);
+  await expect(login,route+' account control not visible').toBeVisible();
+  expect(await login.evaluate(e=>e.tagName),route).toMatch(/^(A|BUTTON)$/);
+  const bounds=await login.boundingBox();
+  expect(bounds.x,route+' login off left').toBeGreaterThanOrEqual(0);
+  expect(bounds.x+bounds.width,route+' login off right').toBeLessThanOrEqual(391);
+ }
+});
