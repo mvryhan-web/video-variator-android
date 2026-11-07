@@ -264,7 +264,7 @@ test('owner original-photo cyan clockwise, pink counterclockwise, inner orbits u
  test.setTimeout(90000);
  await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
  let paid=0;
- page.on('request',r=>{if(r.method()==='POST'&&/\\/api\\/(studio\\/jobs|payments|stripe)\\b/.test(r.url()))paid++;});
+ page.on('request',r=>{if(r.method()==='POST'&&['/api/studio/jobs','/api/payments','/api/stripe'].some(path=>r.url().includes(path)))paid++;});
  for(const width of [390,1365]){
   await page.setViewportSize({width,height:900});
   await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
@@ -314,7 +314,7 @@ test('owner-uploaded JARVIX sphere replaces visual orb on TEST; original SVG rem
    await page.goto(route,{waitUntil:'domcontentloaded'});
    const headerOrb=page.locator('#topJarvisBtn .jv-approved-orb').first();
    await expect(headerOrb).toHaveCount(1);
-   const photo=headerOrb.locator('img.jv-owner-upload-orb');
+   const photo=headerOrb.locator('img.jv-owner-layer-base');
    await expect(photo).toHaveCount(1);
    await expect.poll(()=>photo.evaluate(img=>img.complete&&img.naturalWidth===1254&&img.naturalHeight===1254),{timeout:25000}).toBe(true);
    await expect.poll(()=>headerOrb.evaluate(el=>el.classList.contains('jv-owner-photo-test'))).toBe(true);
