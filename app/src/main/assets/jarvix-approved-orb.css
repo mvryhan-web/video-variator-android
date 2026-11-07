@@ -61,6 +61,21 @@
  filter:blur(3px);opacity:.4;pointer-events:none;
  animation:jv-halo-breath 5s ease-in-out infinite;
 }
+/* GO stage09: voice glints follow measured decoded speech; never pulse at silence.
+   Listening brightens the centre, but does not interrupt stage08 ring motion. */
+.jv-approved-orb>.ds-reference-orb .jv-voice-reactive{opacity:0;pointer-events:none;transition:opacity .14s ease}
+.jv-approved-orb>.ds-reference-orb .jv-voice-core-shift{transform:translateX(0);transition:transform .1s linear}
+.jv-approved-orb[data-jv-mode="listening"]>.ds-reference-orb>circle:first-of-type{filter:brightness(1.17)}
+.jv-approved-orb[data-jv-mode="speaking"]>.ds-reference-orb .jv-voice-side-glints{
+ opacity:var(--jv-voice-level,0);
+}
+.jv-approved-orb[data-jv-mode="speaking"]>.ds-reference-orb .jv-voice-reactive{
+ opacity:var(--jv-voice-level,0);
+}
+.jv-approved-orb[data-jv-mode="speaking"]>.ds-reference-orb .jv-voice-core-shift{
+ transform:translateX(var(--jv-core-shift,0px));
+}
+
 @keyframes jv-ring-clockwise{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes jv-ring-counterclockwise{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
 @keyframes jv-blue-up{from{transform:translateY(3px);opacity:.48}to{transform:translateY(-3px);opacity:.8}}
