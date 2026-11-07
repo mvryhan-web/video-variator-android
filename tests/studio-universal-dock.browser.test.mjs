@@ -183,7 +183,7 @@ try{
      isMobile:layout.w<761,hasTouch:layout.w<761});
     await context.addInitScript(()=>{localStorage.setItem('deepsyq_lumina_terms_accepted','true');});
     const page=await context.newPage(),paid=[];
-    page.on('request',r=>{if(r.method()==='POST'&&/\\/api\\/(?:studio\\/jobs|stripe|payments)\\b/.test(r.url()))paid.push(r.url());});
+    page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:studio\/jobs|stripe|payments)\b/.test(r.url()))paid.push(r.url());});
     try{
      await page.goto(base+'/'+route,{waitUntil:'domcontentloaded',timeout:30000});
      const studio=route.startsWith('generate-studio');
@@ -191,7 +191,7 @@ try{
       route==='jarvix-chat.html'?'.j-chat-bottom.j-neon-dock':'#homeQuickBar.j-neon-dock';
      const sendSelector=studio?'#generate':route==='jarvix-chat.html'?'#jSend':'#homeQuickSubmit';
      await page.waitForSelector(dockSelector+' #jPlus',{timeout:25000});
-     await page.waitForFunction(()=>getComputedStyle(document.getElementById('jPlus')).borderTopColor==='rgb(255, 191, 82)',{timeout:15000});
+     await page.waitForFunction(()=>getComputedStyle(document.getElementById('jPlus')).borderTopColor==='rgb(255, 191, 82)',null,{timeout:15000});
      const styles=await page.evaluate(({dockSelector,sendSelector})=>{
       const dock=document.querySelector(dockSelector),plus=dock.querySelector('#jPlus'),
        send=dock.querySelector(sendSelector),icon=send?.querySelector('.j-send-plane');
