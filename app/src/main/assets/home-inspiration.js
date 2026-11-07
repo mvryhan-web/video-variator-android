@@ -83,11 +83,13 @@ function openInspirationDetail(item,opener,{minimal=false}={}){
    if(!expanded)requestAnimationFrame(refreshPromptMore);
   };
   headingPrompt.textContent='Prompt:';
-  const promptControls=detailEl('div','inspiration-detail-prompt-controls');
-  copyPrompt=detailEl('button','inspiration-detail-copy','Copy prompt');
-  copyPrompt.type='button';copyPrompt.setAttribute('aria-label','Copy prompt');
-  promptControls.append(promptMore,copyPrompt);
-  sidebar.append(headingPrompt,prompt,promptControls);
+  if(item.kind==='image'){
+   const promptControls=detailEl('div','inspiration-detail-prompt-controls');
+   copyPrompt=detailEl('button','inspiration-detail-copy','Copy prompt');
+   copyPrompt.type='button';copyPrompt.setAttribute('aria-label','Copy prompt');
+   promptControls.append(promptMore,copyPrompt);
+   sidebar.append(headingPrompt,prompt,promptControls);
+  }else sidebar.append(headingPrompt,prompt,promptMore);
  }else sidebar.append(heading,kindLine,description,headingPrompt,prompt);
  function refreshPromptMore(){
   if(!minimal||!promptMore||prompt.classList.contains('is-expanded'))return;
