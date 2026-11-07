@@ -70,7 +70,7 @@ try{
      assert.equal(new URL(page.url()).searchParams.get('studio'),choice,'gear must preserve selected mode');
      for(const id of ['studioTypePicker','modelButton','settingsButton'])
       assert.equal(await page.locator('#studioSettingsHub #'+id).count(),1,id+' native settings control');
-     await page.locator('link[data-deepsyq-studio-premium]').waitFor({timeout:12000});
+     await page.locator('link[data-deepsyq-studio-premium]').waitFor({state:'attached',timeout:12000});
      assert.equal(await page.locator('body.studio-premium-panels').count(),1,'approved premium skin is scoped to Studio');
      const hubTheme=await page.locator('#studioSettingsHub').evaluate(el=>({
        borderRadius:getComputedStyle(el).borderRadius,background:getComputedStyle(el).backgroundImage
