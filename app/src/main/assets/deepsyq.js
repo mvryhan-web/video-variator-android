@@ -203,7 +203,7 @@ function applyHomeLanguage(code){
   ['promoGoPricing','viewPricing'],['inviteTitle','inviteTitle'],['inviteDescription','inviteDescription'],
   ['inviteLinkLabel','inviteLink'],['inviteCopy','copy'],['inviteShare','share'],
   ['inviteClose','close'],['promoClose','close']
- ]){const el=$(id);if(el)el.textContent=v[key];}
+ ]){const el=$(id);if(el){const t=el.querySelector('.ds-pod-text');if(t)t.textContent=v[key];else el.textContent=v[key];}}
  const create=$('createTitle');if(create&&create.firstChild?.nodeType===Node.TEXT_NODE)create.firstChild.textContent=v.createPrefix;
  const quick=$('homeQuickPrompt');if(quick)quick.placeholder=v.prompt;
  const search=$('homeGlobalSearch');if(search)search.placeholder=v.search;
@@ -254,7 +254,7 @@ $('topLogin')?.addEventListener('click',()=>{
  if(localStorage.getItem('vv_token'))location.assign('index.html#profile');
  else openAuth();
 });
-function markHomeLogin(){const b=$('topLogin');if(b)b.textContent=localStorage.getItem('vv_token')?homeLangText().account:homeLangText().login;}
+function markHomeLogin(){const b=$('topLogin');if(b){const t=b.querySelector('.ds-pod-text');const txt=localStorage.getItem('vv_token')?homeLangText().account:homeLangText().login;if(t)t.textContent=txt;else b.textContent=txt;}}
 markHomeLogin();
 // Real owner-approved media only. Playback is disabled for reduced motion/data saver.
 let inspirationVideoObserver=null;
