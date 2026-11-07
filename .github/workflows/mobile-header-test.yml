@@ -8,6 +8,7 @@ on:
       - 'app/src/main/assets/generate-studio.html'
       - 'app/src/main/assets/video-uniquifier-reference.js'
       - 'tests/deepsyq-mobile-shell.test.mjs'
+      - 'tests/mobile-header-alignment.browser.test.mjs'
       - 'app/src/main/assets/jarvix-guided-tour.js'
       - 'app/src/main/assets/jarvix-tour-plan.js'
       - 'tests/jarvix-tour-plan.test.mjs'
@@ -25,3 +26,7 @@ jobs:
           node-version: '22'
       - run: node --test tests/deepsyq-mobile-shell.test.mjs tests/deepsyq-navigation-contract-unit.mjs tests/jarvix-tour-plan.test.mjs tests/jarvix-activation.test.mjs tests/jarvix-recognition-lifecycle.test.mjs tests/jarvix-local-voice.test.mjs tests/studio-consent-preview.test.mjs
       - run: node --check app/src/main/assets/deepsyq-mobile-shell.js
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Real mobile Home/Studio/sitewide header alignment and compact top gap
+        run: node --test tests/mobile-header-alignment.browser.test.mjs
