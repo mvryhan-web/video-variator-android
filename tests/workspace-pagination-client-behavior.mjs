@@ -115,6 +115,7 @@ test('F4 client: logging out immediately clears previous account card memory',as
   setToken(null);
   ids.refreshBtn.onclick();
   assert.equal(ids.cardsGrid.children.length,1);
+  for (const section of ['recent','favorites','completed','drafts']) assert.equal(ids['cnt-'+section].textContent,'0');
   assert.ok(ids.cardsGrid.children[0].innerHTML.includes('Sign in to view your creations'));
   buttons[2].onclick();
   assert.equal(ids.cardsGrid.children.length,1,'must not restore previous users cards on tab switch');
