@@ -8,6 +8,7 @@ on:
       - 'app/src/main/assets/jarvix-chat.css'
       - 'app/src/main/assets/deepsyq-site-shell.js'
       - 'tests/jarvix-activity-drawer.browser.test.mjs'
+      - 'tests/jarvix-activity-preview-smoke.mjs'
       - '.github/workflows/owner-jarvix-activity.yml'
   workflow_dispatch:
 
@@ -58,3 +59,16 @@ jobs:
             --branch="${PREVIEW_BRANCH}" \
             --commit-hash="${{ github.sha }}"
           echo 'Deployment requested for isolated branch preview only; MAIN was not targeted.'
+      - name: Verify real deployed Cloudflare TEST pages in desktop and mobile Chromium
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 640 && github.head_ref == 'owner-jarvix-recent-drawer-20261108' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          JARVIX_TEST_PREVIEW_URL: https://owner-jarvix-recent-drawer-2.deepsyq.pages.dev
+        run: node tests/jarvix-activity-preview-smoke.mjs
+      - name: Keep actual Cloudflare TEST screenshots for owner review
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.number == 640 && github.head_ref == 'owner-jarvix-recent-drawer-20261108'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvix-cloudflare-real-desktop-mobile
+          path: artifacts/jarvix-live-preview/*.png
+          if-no-files-found: ignore
+          retention-days: 7
