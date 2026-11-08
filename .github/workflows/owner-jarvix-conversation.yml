@@ -1,0 +1,60 @@
+name: Owner F2 one JARVIX Chat voice mode TEST only
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/jarvix-conversational-voice.js'
+      - 'app/src/main/assets/jarvix-conversational-voice.css'
+      - 'app/src/main/assets/jarvix-chat.js'
+      - 'app/src/main/assets/jarvix-chat.html'
+      - 'tests/jarvix-conversational-voice.*.mjs'
+      - '.github/workflows/owner-jarvix-conversation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conversational-voice-test-and-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      JARVIX_FREE_LLM_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Test one voice engine, privacy, history and old user mic, zero provider spending
+        run: |
+          node --test \
+            tests/jarvix-conversational-voice.test.mjs \
+            tests/jarvix-voice-input.test.mjs \
+            tests/jarvix-unified-chat.test.mjs \
+            tests/jarvix-action-first.test.mjs \
+            tests/jarvix-local-voice.test.mjs
+      - name: Install browser engines
+        run: npx playwright install --with-deps chromium webkit
+      - name: Desktop Chromium and mobile WebKit mock-provider acceptance
+        run: npx playwright test --config tests/jarvix-conversational-voice.config.mjs
+      - name: Cloudflare TEST branch preview, never production
+        if: github.event_name == 'pull_request' && github.head_ref == 'owner-f2-jarvix-unified-voice-test-20261108'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Cloudflare Pages GitHub secrets unavailable; TEST deploy not attempted."
+            exit 1
+          fi
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq \
+            --branch=owner-f2-jarvix-unified-voice-test-20261108 \
+            --commit-hash="${{ github.event.pull_request.head.sha }}"
