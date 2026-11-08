@@ -9,7 +9,7 @@ on:
       - 'app/src/main/assets/deepsyq-site-shell.js'
       - 'tests/jarvix-activity-drawer.browser.test.mjs'
       - 'tests/jarvix-activity-preview-smoke.mjs'
-      - '.github/workflows/owner-jarvix-activity.yml'
+      - '.github/workflows/owner-unified-jarvix.yml'
   workflow_dispatch:
 
 permissions:
@@ -57,12 +57,13 @@ jobs:
           npx --yes wrangler@4 pages deploy app/src/main/assets \
             --project-name=deepsyq \
             --branch="${PREVIEW_BRANCH}" \
-            --commit-hash="${{ github.sha }}"
+            --commit-hash="${{ github.sha }}" | tee /tmp/jarvix-pages-deploy.log
+          DEPLOY_URL=$(grep -Eo 'https://[a-z0-9-]+\.deepsyq\.pages\.dev' /tmp/jarvix-pages-deploy.log | head -n1)
+          if [[ ! "$DEPLOY_URL" =~ ^https://[a-z0-9-]+\.deepsyq\.pages\.dev$ ]]; then echo '::error::Cannot confirm isolated Cloudflare URL'; exit 1; fi
+          echo "JARVIX_TEST_PREVIEW_URL=${DEPLOY_URL}" >> "$GITHUB_ENV"
           echo 'Deployment requested for isolated branch preview only; MAIN was not targeted.'
       - name: Verify real deployed Cloudflare TEST pages in desktop and mobile Chromium
         if: github.event_name == 'pull_request' && github.event.pull_request.number == 645 && github.head_ref == 'owner-unified-jarvix-main-integration-20261108' && github.event.pull_request.head.repo.full_name == github.repository
-        env:
-          JARVIX_TEST_PREVIEW_URL: https://owner-unified-jarvix-main-integ.deepsyq.pages.dev
         run: node tests/jarvix-activity-preview-smoke.mjs
       - name: Keep actual Cloudflare TEST screenshots for owner review
         if: always() && github.event_name == 'pull_request' && github.event.pull_request.number == 645 && github.head_ref == 'owner-unified-jarvix-main-integration-20261108'
