@@ -8,8 +8,8 @@ export function decorateComposer(form,{settingsTarget=null}={}){
  const make=(tag,label)=>{const el=document.createElement(tag);el.textContent=label;return el;};
  const isQuickChat=['homeQuickForm','jChatForm','creator'].includes(form.id);
  const rail=make('nav','');rail.className='j-mode-rail';rail.setAttribute('aria-label',ru?'Режимы и инструменты':'Creation modes and tools');
- const navItems=isQuickChat?[['JARVIX','jarvix-chat.html',null],['Video Uniquifier','index.html','legacy']]:
- [['JARVIX','jarvix-chat.html',null],['Image','generate-studio.html?studio=image','image'],['Video','generate-studio.html?studio=video','video'],['Audio','generate-studio.html?studio=audio','audio'],['Tools','free-tools.html','tools'],['Video Uniquifier','index.html','legacy']];
+ const navItems=isQuickChat?[['JARVIX','jarvix-chat.html',null]]:
+ [['JARVIX','jarvix-chat.html',null],['Image','generate-studio.html?studio=image','image'],['Video','generate-studio.html?studio=video','video'],['Audio','generate-studio.html?studio=audio','audio'],['Tools','free-tools.html','tools']];
  let activeMode=null;
  for(const [label,href,iconKey] of navItems){
   const a=make('a',label);a.href=href;
