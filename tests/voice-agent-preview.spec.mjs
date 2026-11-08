@@ -237,7 +237,7 @@ test('V6.3: real local RMS responds only while LIVE, mute zeroes, stop closes gr
 });
 
 test('V6.3: no meter or context on permission denial/device absence; pending Stop invalidates stream', async ({ page }) => {
-  await installFakeMediaAdapter(page, { failMode: 'denied', delayMs: 60 });
+  await installFakeMediaAdapter(page, { failMode: 'denied', delayMs: 300 });
   await installFakeAudioContext(page);
   await page.goto('/voice-agent-preview.html');
   await page.click('#enableMicBtn');
@@ -251,7 +251,7 @@ test('V6.3: no meter or context on permission denial/device absence; pending Sto
   await expect.poll(() => page.evaluate(() => window.__VOICE_TEST_STATE__.getUserMediaCalls)).toBe(3);
   await page.click('#stopMicBtn');
   await expect(page.locator('#voiceStateBadge')).toHaveText('IDLE');
-  await page.waitForTimeout(150);
+  await page.waitForTimeout(450);
   await expect(page.locator('#micMeter')).toHaveAttribute('aria-valuenow', '0');
   const state = await page.evaluate(() => ({
     media: window.__VOICE_TEST_STATE__, audio: window.__VOICE_AUDIO_TEST__
