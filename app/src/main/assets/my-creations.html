@@ -196,6 +196,10 @@ main.ws-page{width:100%;max-width:none;margin:0;padding:16px clamp(16px,2.5vw,40
         items: previous.concat(page.items.filter(item => !seen.has(item.id))),
         pageInfo: page.pageInfo
       };
+      const count = $('cnt-' + section);
+      if (count && Number.isSafeInteger(page.pageInfo.total) && page.pageInfo.total >= 0) {
+        count.textContent = String(page.pageInfo.total);
+      }
       if (section === activeSection) renderSection();
     } catch (_) {
       if (generation === loadGeneration && cursor) {
