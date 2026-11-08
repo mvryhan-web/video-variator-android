@@ -116,3 +116,8 @@ jobs:
                   raise SystemExit('BLOCKED: test has no confirmed speech route')
           print('TEST API routes PRESENT, real provider calls intentionally not sent.')
           PY
+      - name: Browser verify ACTUAL published Cloudflare TEST chat (all AI/TTS calls mocked, $0)
+        if: github.event_name == 'pull_request' && github.head_ref == 'owner-f2-jarvix-unified-voice-test-20261108'
+        env:
+          JARVIX_VOICE_REMOTE_TEST_URL: https://owner-f2-jarvix-unified-voic.deepsyq.pages.dev
+        run: npx playwright test --config tests/jarvix-conversational-voice.config.mjs
