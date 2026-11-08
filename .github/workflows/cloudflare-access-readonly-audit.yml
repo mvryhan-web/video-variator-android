@@ -201,7 +201,7 @@ jobs:
           account="${ACCOUNT_1:-${ACCOUNT_2:-${ACCOUNT_3:-${ACCOUNT_4:-}}}}"
           if [[ -z "$token" || ! "$account" =~ ^[a-fA-F0-9]{32}$ ]]; then exit 0; fi
           echo "::add-mask::$token"
-          code=$(curl -sS --connect-timeout 5 --max-time 20 -H "Authorization: Bearer $token" -o /tmp/cf-pages-all.json -w '%{http_code}' "https://api.cloudflare.com/client/v4/accounts/$account/pages/projects?per_page=20") || code=network_error
+          code=$(curl -sS --connect-timeout 5 --max-time 20 -H "Authorization: Bearer $token" -o /tmp/cf-pages-all.json -w '%{http_code}' "https://api.cloudflare.com/client/v4/accounts/$account/pages/projects") || code=network_error
           PROJECTS_HTTP_STATUS="$code" python3 - <<'PY'
           import json,os
           try:
