@@ -40,6 +40,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install pinned dependencies for existing W5.5 route test
+        run: npm ci --ignore-scripts
       - name: Verify actual W5.5 integration on existing W5.6 draft SHA
         run: |
           node --check server/product-watcher/lite-delivery-attempt.js
