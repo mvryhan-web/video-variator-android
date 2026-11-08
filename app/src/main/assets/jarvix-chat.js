@@ -2,7 +2,8 @@ import {ACTION_ROUTES,extractAction,resolveActionModel} from './jarvix-action-pl
 import {downloadResult,mediaExtension} from './jarvix-result-cache.js';
 import {makeId,conversationStore,resolveMode} from './jarvix-conversations.js';
 import {bindComposer,trackViewport} from './jarvix-composer.js';
-import {getJarvixSessionId,getJarvixLanguage,speakJarvis} from './jarvis-core.js';
+import {getJarvixSessionId,getJarvixLanguage,speakJarvis,stopAllSpeech,deactivateJarvisVoice} from './jarvis-core.js';
+import {bindJarvixConversationalVoice} from './jarvix-conversational-voice.js';
 import {saveStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id),status=text=>$('jStatus').textContent=text;
 const store=await conversationStore();let conversation=null,busy=false,epoch=0,controller=null,config=null,urls=[];
@@ -55,7 +56,7 @@ async function processMessage(message){
   if(command?.intent==='GENERATE_MEDIA'&&command.raw_prompt){
    const label=({ru:'Подготовил запрос для Studio. Откройте студию и проверьте модель и стоимость перед созданием. Генерация и списание кредитов не запускаются автоматически.',en:'Your Studio prompt is ready. Open Studio to review the model and cost. No generation or credit charge has started.',fr:'Votre demande est prête dans Studio. Vérifiez le modèle et le coût avant de lancer. Aucun débit automatique.',es:'Tu solicitud está lista para Studio. Revisa el modelo y el coste antes de empezar. No hay cobro automático.'})[getJarvixLanguage()]||'Your Studio prompt is ready.';
    const response={id:makeId(),role:'assistant',text:label,toolAction:{kind:'prepare-studio',target:command.target,url:command.url,prompt:command.raw_prompt,ratio:command.aspect_ratio},createdAt:Date.now()};
-   message.status='sent';conversation.messages.push(response);await save();render();return;
+   message.status='sent';conversation.messages.push(response);await save();render();return response;
   }
   let mode=message.mode==='auto'?'text':resolveMode(message.text,message.mode);
   if(message.mode==='auto'&&mode==='text'&&/измен|сделай.*(ярче|темнее)|ещё|change|brighter|darker|modifier|cambiar/i.test(message.text)){const previous=[...conversation.messages].reverse().find(m=>m.role==='assistant'&&m.jobId);if(previous)mode=previous.kind;}
@@ -81,16 +82,37 @@ async function processMessage(message){
    if(message.voiceAction)speakJarvis({ru:'Запустил',en:'Started',fr:'Lancé',es:'Iniciado'}[getJarvixLanguage()]||'Started');
    answer={id:makeId(),role:'assistant',text:'TEST demonstration result · '+mode,jobId:d.jobId||d.id,status:d.status,kind:mode,demo:true,createdAt:Date.now()};
   }
-  message.status='sent';conversation.messages.push(answer);await save();render();if(answer.jobId)await poll(answer);
+  message.status='sent';conversation.messages.push(answer);await save();render();if(answer.jobId)await poll(answer);return answer;
  }catch(e){message.status=message.status==='sent'?'sent':e.name==='AbortError'?'interrupted':'error';message.error=e.message;await save();if(e.name!=='AbortError'){
    status(e.message);if(message.voiceAction)speakJarvis(/credit|balance/i.test(e.message)?'Недостаточно кредитов':'Уточните промпт');const link=node('button','Open request in Studio');link.type='button';link.onclick=async()=>{const mode=resolveMode(message.text,message.mode),kind=mode==='audio'?'music':mode==='text'?'image':mode;const files=(message.files||[]).filter(f=>['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024);try{await saveStudioHandoff({kind,prompt:message.text,files,source:'jarvix-chat'});location.assign('generate-studio.html?studio='+(kind==='music'?'audio':kind));}catch(e){status(e.message);}};$('jStatus').append(link);
   }if(e.name==='AbortError')throw e;}
 }
-const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();const m={id:makeId(),role:'user',text,mode,files,status:'pending',createdAt:Date.now()};if(!conversation.messages.length)conversation.title=text.slice(0,60);conversation.messages.push(m);await save();composer.clear();render();await run(()=>processMessage(m));}catch(e){status(e.message);}}});
+async function sendCurrentChatTurn({text,mode='auto',files=[]}){
+ if(busy)throw Error('JARVIX_BUSY');
+ store.guard();
+ const m={id:makeId(),role:'user',text,mode,files,status:'pending',createdAt:Date.now()};
+ if(!conversation.messages.length)conversation.title=text.slice(0,60);
+ conversation.messages.push(m);await save();composer.clear();render();
+ let answer=null;
+ await run(async()=>{answer=await processMessage(m);});
+ return answer?{reply:answer.text||'',navigation:answer.toolAction?.kind==='navigate'}:null;
+}
+const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async args=>{
+ if(voiceMode?.isActive())voiceMode.stop();
+ try{await sendCurrentChatTurn(args);}catch(e){status(e.message);}
+}});
+const voiceMode=bindJarvixConversationalVoice({
+ form:$('jChatForm'),input:$('jInput'),onError:status,
+ getLanguage:getJarvixLanguage,
+ onTurn:text=>sendCurrentChatTurn({text,mode:'auto',files:[]}),
+ speak:(text,complete)=>speakJarvis(text,complete),
+ stopSpeech:stopAllSpeech,
+ deactivateSphere:deactivateJarvisVoice
+});
 $('jStop').onclick=()=>{controller?.abort();$('jStop').hidden=true;status('Browser waiting stopped. Already submitted generation tasks are not cancelled.');};
-$('jNew').onclick=async()=>{if(busy)return;conversation=store.create('jarvix-'+makeId());sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);await save();render();};
-$('jHistory').onchange=async()=>{if(busy)return;const next=await store.get($('jHistory').value);if(!next)return;conversation=next;sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);render();await restoreResults();};
-function freeze(){try{store.guard();}catch{++epoch;controller?.abort();composer.stop();for(const u of urls)URL.revokeObjectURL(u);$('jMessages').replaceChildren();$('jChatForm').hidden=true;status('Account changed. Reload to open the correct private conversations.');}}
+$('jNew').onclick=async()=>{voiceMode.stop();if(busy)return;conversation=store.create('jarvix-'+makeId());sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);await save();render();};
+$('jHistory').onchange=async()=>{voiceMode.stop();if(busy)return;const next=await store.get($('jHistory').value);if(!next)return;conversation=next;sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);render();await restoreResults();};
+function freeze(){try{store.guard();}catch{voiceMode.stop();++epoch;controller?.abort();composer.stop();for(const u of urls)URL.revokeObjectURL(u);$('jMessages').replaceChildren();$('jChatForm').hidden=true;status('Account changed. Reload to open the correct private conversations.');}}
 window.addEventListener('storage',freeze);window.addEventListener('focus',freeze);window.addEventListener('pageshow',freeze);
 conversation=await store.get(sessionStorage.getItem('jarvix_active_conversation'))||store.create(getJarvixSessionId());sessionStorage.setItem('jarvix_active_conversation',conversation.id);await save();render();trackViewport();await restoreResults();
 const pending=conversation.messages.find(m=>m.status==='pending');if(pending)await run(()=>processMessage(pending));
