@@ -20,11 +20,16 @@ body.jarvix-shared-studio-chat:not(.jarvix-studio-tools-open)
  display:none!important;
 }
 body.jarvix-shared-studio-chat .jarvix-studio-tools-toggle{
- display:block;box-sizing:border-box;margin:0 0 16px 4px;padding:7px 10px;
+ display:block;box-sizing:border-box;margin:0 0 8px 4px;padding:7px 10px;
  color:#b9cee8;background:transparent;border:0;border-radius:8px;
  font:500 13px/1.4 system-ui,-apple-system,sans-serif;text-align:left;cursor:pointer;
 }
 body.jarvix-shared-studio-chat .jarvix-studio-tools-toggle:hover{color:#fff;background:#16263b}
 body.jarvix-shared-studio-chat .jarvix-studio-tools-toggle:focus-visible{
  outline:2px solid #d6ecff;outline-offset:2px;
+}
+/* The pre-existing fixed Studio universal dock is a SECOND composer.
+   Keep it intact for Studio mode, but never overlap shared JARVIX Chat. */
+body.jarvix-shared-studio-chat:not(.jarvix-studio-tools-open) #studioUniversalDock{
+ display:none!important;
 }
