@@ -72,8 +72,8 @@ const sharedAccess=[
 ];
 const monthlyDetails=[['✓','Monthly subscription; manage in your account']];
 const planned=[
- {key:'trial',name:'Trial',suffix:'one time',label:'Start Trial',summary:'Introductory offer for new accounts — not yet active',
-  benefits:[['ⓘ','New-account eligibility: pending approval'],['✕','AI credits not included in current Trial preview'],['✕','Watermark-free exports not included in Trial'],['✓','Explore the Canvas workspace; paid AI requires credits'],['ⓘ','Duration and renewal terms: not approved'],['✕','Trial checkout is not available']],proposed:true},
+ {key:'trial',name:'Trial',suffix:'one time',label:'Start Trial',summary:'3-day trial pass for DeepSyQ tools',
+  benefits:[['✓','3-day trial pass for DeepSyQ tools'],['✓','100 tool processing credits included'],['✓','One-time payment: no automatic renewal'],['✓','Explore the Canvas workspace; paid AI requires credits'],['✓','Watermark-free exports during trial'],['✓','One account for your plan, credits and history']],proposed:false},
  {key:'basic',name:'Basic',suffix:'/ month',label:'Choose Basic',summary:'For everyday video variations and essential tools',
   benefits:[...verifiedQuality.basic,...sharedAccess,...monthlyDetails]},
  {key:'pro',name:'Pro',suffix:'/ month',label:'Choose Pro',summary:'For regular creators needing higher quality and more variants',
@@ -184,11 +184,7 @@ async function checkoutPlan(plan){
   else message('pricingStatus','Yearly plans are a pricing preview only; annual checkout is not available. No payment was taken.');
   return;
  }
- if(plan==='trial'){
-  if(!token())openAuth();
-  else message('pricingStatus','Trial is not available yet. Credits, duration and renewal conditions still need approval. No payment was taken.');
-  return;
- }
+ 
  const scope=paymentScope();
  if(!scope.token){openAuth();return;}
  if(!toolBillingConfigured){message('pricingStatus','Checkout is not yet available. No payment was taken.');return;}
