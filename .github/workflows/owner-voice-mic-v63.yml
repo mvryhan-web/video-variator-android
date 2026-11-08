@@ -1,0 +1,33 @@
+name: Owner F2 V6.3 local microphone preview no-spend acceptance
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/voice-agent-preview.html'
+      - 'tests/voice-agent-preview.spec.mjs'
+      - '.github/workflows/owner-voice-mic-v63.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  voice-local-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      PRODUCT_WATCHER_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install project dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install mock-browser dependencies (no paid AI)
+        run: npx playwright install --with-deps chromium webkit
+      - name: Test existing V6.2 and new V6.3 in Chromium and mobile WebKit
+        run: npx playwright test tests/voice-agent-preview.spec.mjs --project=chromium --project=mobile-webkit --workers=1
