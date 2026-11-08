@@ -64,7 +64,6 @@ const CANDIDATE_PATTERN = /^lite-cand-[a-f0-9]{24}$/;
 const FINGERPRINT_PATTERN = /^lite-fp-[a-f0-9]{32}$/;
 const OWNER_TAG_PATTERN = /^[a-f0-9]{64}$/;
 const INITIAL = LITE_ATTEMPT_STATUSES.UNPREPARED;
-const VALID_ACTIONS = new Set(['PREPARE', 'APPROVE', 'RECHECK', 'CANCEL', 'REVOKE']);
 
 function isRecord(x) {
   return x !== null && typeof x === 'object' && !Array.isArray(x) && !(x instanceof Date);
