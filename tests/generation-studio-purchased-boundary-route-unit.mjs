@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {d18PricingJson} from './d18-pricing-fixture.mjs';
 import express from 'express';
-import {randomUUID} from 'node:crypto';
+import {randomUUID,createHash} from 'node:crypto';
 import {installGenerationStudio} from '../server/generation-studio.js';
 
 // Full HTTP/Studio → DB persisted job → purchased B+D gate → mock provider.
@@ -15,12 +15,13 @@ const baseEnv={AI_STUDIO_ENABLED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',
  GEMINI_API_KEY:'test-only-not-an-api-key',DATABASE_URL:'test-only',ADMIN_EMAIL:'owner@example.test',
  AI_MODEL_PRICING_JSON:d18PricingJson([pricing]),
  AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:12}])};
-function simulate({receiptStatus='paid',providerThrows=false,reservationPersistFails=false,marginReady=true,user={id:'customer-1',email:'buyer@example.test',plan:'basic',subscription_status:'active',provider:'email'},envOverrides={}}={}){
- const jobs=[],walletEvents=[];let providerCalls=0;
+function simulate({receiptStatus='paid',providerThrows=false,reservationPersistFails=false,marginReady=true,storageFails=false,storageReturnsInvalid=false,storageReturnsValid=false,user={id:'customer-1',email:'buyer@example.test',plan:'basic',subscription_status:'active',provider:'email'},envOverrides={}}={}){
+ const jobs=[],walletEvents=[];let providerCalls=0,storageWrites=0;
  const pool={
   async query(sql,args=[]){
    if(sql.startsWith('SELECT terms_version,privacy_version,provider_data_version,provider_data_accepted'))return {rows:[{terms_version:'2026-10-20',privacy_version:'2026-10-20',provider_data_version:'2026-10-20',provider_data_accepted:true}]};
    if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};
+   if(sql.startsWith('SELECT kind FROM vv_generation_jobs WHERE id=$1'))return {rows:jobs.filter(j=>j.id===args[0]).map(j=>({kind:j.kind}))};
    if(sql.startsWith('SELECT user_id,kind,model,provider,status,operation,deleted,request_fingerprint,credits_reserved,settings,estimated_cost,cost_currency FROM vv_generation_jobs')){
     return {rows:jobs.filter(j=>j.id===args[0]&&j.user_id===args[1])};
    }
@@ -37,6 +38,7 @@ function simulate({receiptStatus='paid',providerThrows=false,reservationPersistF
    if(sql.startsWith("UPDATE vv_generation_jobs SET status='failed'")){
     const j=jobs.find(x=>x.id===args[0]);j.status='failed';
     if(sql.includes('credits_reserved=CASE WHEN')){j.credits_reserved=args[1]?0:j.credits_reserved;j.error=args[2];}
+    else if(sql.includes("error='OBJECT_STORAGE_FAILED'")){j.error='OBJECT_STORAGE_FAILED';j.error_message=args[1]?'AI_WALLET_REVIEW_REQUIRED':null;j.metadata={failure:{category:'storage',providerOutputProduced:true}};}
     else j.error=args[1];
     return {rows:[]};
    }
@@ -74,9 +76,9 @@ function simulate({receiptStatus='paid',providerThrows=false,reservationPersistF
   }}
  };
  const app=express();app.use(express.json());
- installGenerationStudio(app,{pool,wallet,env:{...baseEnv,...envOverrides},auth:(req,_res,next)=>{req.user=user;next()},
+ installGenerationStudio(app,{pool,wallet,env:{...baseEnv,...envOverrides},storage:storageFails||storageReturnsInvalid||storageReturnsValid?{configured:true,async putGeneration({mime,bytes}){storageWrites++;if(storageFails)throw Error('fixture S3 rejected write');if(storageReturnsInvalid)return {storage:'s3',key:'',mime:'image/png',size:15,sha256:'0'.repeat(64)};return {storage:'s3',key:'test/users/owned-job.png',mime,size:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')};}}:null,auth:(req,_res,next)=>{req.user=user;next()},
   provider:async()=>{providerCalls++;if(providerThrows)throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED');return {mime:'image/png',bytes:Buffer.from('mock-only-image')}}});
- return {app,jobs,walletEvents,providerCalls:()=>providerCalls};
+ return {app,jobs,walletEvents,providerCalls:()=>providerCalls,storageWrites:()=>storageWrites};
 }
 async function withHttp(sim,fn){
  const server=sim.app.listen(0);await new Promise(r=>server.once('listening',r));
@@ -173,5 +175,45 @@ test('HTTP job persistence fails AFTER wallet reserve: release credits, NO provi
   assert.equal(sim.providerCalls(),0);
   assert.deepEqual(sim.walletEvents.map(x=>x[0]),['reserve','settle']);
   assert.equal(sim.walletEvents[1][1].outcome,'confirmed_failure');
+ });
+});
+
+test('HTTP paid Image S3 PUT failure preserves HELD purchased credits with no refund or retry',async()=>{
+ const sim=simulate({storageFails:true});
+ await withHttp(sim,async post=>{
+  const res=await post();assert.equal(res.status,202);await settle();
+  assert.equal(sim.providerCalls(),1);assert.equal(sim.storageWrites(),1);
+  const job=sim.jobs[0];
+  assert.equal(job.status,'failed');assert.equal(job.error,'OBJECT_STORAGE_FAILED');
+  assert.equal(job.error_message,'AI_WALLET_REVIEW_REQUIRED');
+  assert.equal(job.credits_reserved,7);assert.equal(job.credits_charged||0,0);
+  assert.equal(job.metadata.failure.providerOutputProduced,true);
+  assert.deepEqual(sim.walletEvents.map(e=>e[0]),['reserve','purchasedClaim']);
+ });
+});
+
+test('HTTP paid Image malformed S3 receipt is not captured as READY media',async()=>{
+ const sim=simulate({storageReturnsInvalid:true});
+ await withHttp(sim,async post=>{
+  const res=await post();assert.equal(res.status,202);await settle();
+  assert.equal(sim.providerCalls(),1);assert.equal(sim.storageWrites(),1);
+  const job=sim.jobs[0];
+  assert.equal(job.status,'failed');assert.equal(job.error,'OBJECT_STORAGE_FAILED');
+  assert.equal(job.error_message,'AI_WALLET_REVIEW_REQUIRED');
+  assert.equal(job.credits_reserved,7);assert.equal(job.credits_charged||0,0);
+  assert.equal(job.metadata.failure.providerOutputProduced,true);
+  assert.deepEqual(sim.walletEvents.map(e=>e[0]),['reserve','purchasedClaim']);
+ });
+});
+
+test('HTTP paid Image with valid private S3 receipt captures once and remains downloadable',async()=>{
+ const sim=simulate({storageReturnsValid:true});
+ await withHttp(sim,async post=>{
+  const res=await post();assert.equal(res.status,202);await settle();
+  assert.equal(sim.providerCalls(),1);assert.equal(sim.storageWrites(),1);
+  assert.equal(sim.jobs[0].status,'ready');
+  assert.equal(sim.jobs[0].credits_charged,7);
+  assert.deepEqual(sim.walletEvents.map(e=>e[0]),['reserve','purchasedClaim','settle']);
+  assert.equal(sim.walletEvents.at(-1)[1].outcome,'success');
  });
 });
