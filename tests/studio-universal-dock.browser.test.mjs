@@ -64,6 +64,7 @@ try{
      assert.ok(Math.abs(geometry.plus.w-geometry.plus.h)<2,'round +');
      assert.ok(Math.abs(geometry.send.w-geometry.send.h)<2,'round Send');
      assert.equal(await page.locator('#studioUniversalDock .j-mode-rail a').count(),1,'Video Uniquifier must not appear in Studio chat rail');
+     assert.equal(await page.locator('#studioUniversalDock .j-mode-rail a[href="index.html"]').count(),0,'No Video Uniquifier link in Studio chat');
      assert.equal(await page.locator('#studioUniversalDock #jPlusMenu').isVisible(),false);
      await page.locator('#studioUniversalDock #jPlus').click();
      assert.equal(await page.locator('#studioUniversalDock #jPlusMenu .j-hub-tile').count(),8);
@@ -170,6 +171,7 @@ try{
    const page=await context.newPage();await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});
    await page.waitForSelector('#homeQuickForm .j-settings-shortcut',{timeout:16000});
    assert.equal(await page.locator('#homeQuickBar .j-mode-rail a').count(),1,'Video Uniquifier must not appear in Home chat rail');
+   assert.equal(await page.locator('#homeQuickBar .j-mode-rail a[href="index.html"]').count(),0,'No Video Uniquifier link in Home chat');
    assert.equal(await page.locator('#homeQuickForm #jSettingsMenu').count(),0);
    await page.locator('#homeQuickForm .j-settings-shortcut').click();
    const native=page.frameLocator('#homeStudioSettingsFrame');
