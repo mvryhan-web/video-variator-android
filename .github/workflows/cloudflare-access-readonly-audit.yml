@@ -1,0 +1,79 @@
+name: Cloudflare Pages configured access audit (READ ONLY)
+on:
+  push:
+    branches:
+      - audit-cloudflare-pages-access-20261108
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cloudflare-access-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TOKEN_2: ${{ secrets.CF_API_TOKEN }}
+      TOKEN_3: ${{ secrets.CLOUDFLARE_TOKEN }}
+      ACCOUNT_1: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ACCOUNT_2: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      ACCOUNT_3: ${{ secrets.CF_ACCOUNT_ID }}
+      ACCOUNT_4: ${{ vars.CF_ACCOUNT_ID }}
+    steps:
+      - name: Verify connected secrets and read-only Pages project metadata (no deployment)
+        shell: bash
+        run: |
+          set -euo pipefail
+          token="${TOKEN_1:-${TOKEN_2:-${TOKEN_3:-}}}"
+          account="${ACCOUNT_1:-${ACCOUNT_2:-${ACCOUNT_3:-${ACCOUNT_4:-}}}}"
+          echo '### Cloudflare credential and TEST project preflight (read only)' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -z "$token" ]]; then
+            echo 'API_TOKEN_CONFIGURED=false (tested CLOUDFLARE_API_TOKEN, CF_API_TOKEN, CLOUDFLARE_TOKEN)' >> "$GITHUB_STEP_SUMMARY"
+            echo 'API_TOKEN_CONFIGURED=false'
+            exit 0
+          fi
+          echo 'API_TOKEN_CONFIGURED=true' >> "$GITHUB_STEP_SUMMARY"
+          echo 'API_TOKEN_CONFIGURED=true'
+          echo "::add-mask::$token"
+          status=$(curl -sS --connect-timeout 5 --max-time 14 -o /tmp/cf-token-check.json -w '%{http_code}' -H "Authorization: Bearer $token" -H 'Accept: application/json' 'https://api.cloudflare.com/client/v4/user/tokens/verify') || status=network_error
+          TOKEN_STATUS="$status" python3 - <<'PY'
+          import json,os
+          try:
+            data=json.load(open('/tmp/cf-token-check.json'))
+            success=data.get('success') is True and data.get('result',{}).get('status')=='active'
+          except Exception:
+            success=False
+          print('TOKEN_ACTIVE='+str(success).lower())
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+            f.write('TOKEN_ACTIVE='+str(success).lower()+', HTTP_STATUS='+os.environ['TOKEN_STATUS']+'\\n')
+          PY
+          if [[ -z "$account" ]]; then
+            echo 'ACCOUNT_ID_CONFIGURED=false (tested CLOUDFLARE_ACCOUNT_ID, CF_ACCOUNT_ID in Secrets/Variables)' >> "$GITHUB_STEP_SUMMARY"
+            echo 'ACCOUNT_ID_CONFIGURED=false'
+            exit 0
+          fi
+          echo 'ACCOUNT_ID_CONFIGURED=true' >> "$GITHUB_STEP_SUMMARY"
+          echo 'ACCOUNT_ID_CONFIGURED=true'
+          if [[ ! "$account" =~ ^[a-fA-F0-9]{32}$ ]]; then
+            echo 'ACCOUNT_ID_FORMAT_VALID=false' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          status=$(curl -sS --connect-timeout 5 --max-time 14 -o /tmp/cf-project-check.json -w '%{http_code}' -H "Authorization: Bearer $token" -H 'Accept: application/json' "https://api.cloudflare.com/client/v4/accounts/$account/pages/projects/deepsyq") || status=network_error
+          PROJECT_STATUS="$status" python3 - <<'PY'
+          import json,os
+          try:
+            data=json.load(open('/tmp/cf-project-check.json'))
+            project=data.get('result') if data.get('success') is True else None
+          except Exception:
+            project=None
+          print('PAGES_PROJECT_DEEPSYQ_ACCESSIBLE='+str(bool(project)).lower())
+          if project:
+            print('PAGES_PRODUCTION_BRANCH='+str(project.get('production_branch')))
+            source=project.get('source') or {}
+            print('PAGES_GIT_SOURCE_TYPE='+str(source.get('type')))
+            latest=project.get('latest_deployment') or {}
+            print('LATEST_DEPLOYMENT_BRANCH='+str((latest.get('deployment_trigger') or {}).get('metadata',{}).get('branch')))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+            f.write('PAGES_PROJECT_DEEPSYQ_ACCESSIBLE='+str(bool(project)).lower()+', HTTP_STATUS='+os.environ['PROJECT_STATUS']+'\\n')
+            if project:
+              f.write('PAGES_PRODUCTION_BRANCH='+str(project.get('production_branch'))+'\\n')
+          PY
