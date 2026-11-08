@@ -1,0 +1,228 @@
+{
+  "version": "1.0.0",
+  "name": "JARVIX 4-Language Scenario Matrix",
+  "languages": ["ru", "en", "fr", "es"],
+  "totalScenarios": 21,
+  "categories": [
+    "greetings_and_identity",
+    "video_uniquifier",
+    "everyday_tools",
+    "generation_studio",
+    "pricing_and_retention",
+    "settings_and_politeness",
+    "paywall_and_upgrade"
+  ],
+  "scenarios": [
+    {
+      "id": "scenario_01_identity",
+      "category": "greetings_and_identity",
+      "text": {
+        "ru": "Я Джарвис — персональный AI-помощник DEEPSYQ. Помогу создать фото, видео и музыку, открыть нужный инструмент или настроить проект. С чего начнём?",
+        "en": "I am Jarvis, your personal DEEPSYQ AI assistant. I can help create photos, videos, and music, open any tool, or set up your project. Where shall we start?",
+        "fr": "Je suis Jarvis, votre assistant IA personnel sur DEEPSYQ. Je peux créer des photos, vidéos et musiques, ou ouvrir vos outils. Par quoi commençons-nous ?",
+        "es": "Soy Jarvis, tu asistente de IA personal en DEEPSYQ. Te ayudo a crear fotos, vídeos y música, o abrir cualquier herramienta. ¿Por dónde empezamos?"
+      }
+    },
+    {
+      "id": "scenario_02_ready",
+      "category": "greetings_and_identity",
+      "text": {
+        "ru": "Да, я на связи и готов к работе. Какую задачу решаем?",
+        "en": "Yes, I am here and ready. What task are we working on?",
+        "fr": "Oui, je suis là et prêt. Sur quel projet travaillons-nous ?",
+        "es": "Sí, estoy aquí y listo. ¿En qué tarea nos enfocamos?"
+      }
+    },
+    {
+      "id": "scenario_03_capabilities",
+      "category": "greetings_and_identity",
+      "text": {
+        "ru": "Я генерирую изображения, видео и музыку в Студии, сжимаю файлы, уникализирую ролики и управляю разделами сайта прямо по вашей команде.",
+        "en": "I generate images, video, and music in Studio, compress files, uniquify clips, and control site navigation directly from your voice.",
+        "fr": "Je génère des images, vidéos et musiques dans le Studio, compresse vos fichiers, rend vos vidéos uniques et gère la navigation vocale.",
+        "es": "Genero imágenes, vídeo y música en Studio, comprimo archivos, hago únicos tus vídeos y controlo la navegación con tu voz."
+      }
+    },
+    {
+      "id": "scenario_04_uniquifier_what",
+      "category": "video_uniquifier",
+      "text": {
+        "ru": "Видеоуникализатор меняет метаданные, структуру кадров и аудиодорожку ролика, чтобы соцсети распознавали его как абсолютно новое авторское видео. Открыть раздел?",
+        "en": "Video Uniquifier modifies metadata, frame structure, and audio track so social platforms recognize it as a completely fresh original video. Shall I open it?",
+        "fr": "L'unificateur de vidéo modifie les métadonnées, la structure des images et l'audio pour que les réseaux sociaux le considèrent comme un contenu original. Je l'ouvre ?",
+        "es": "El unificador de vídeo cambia metadatos, estructura de fotogramas y audio para que las redes lo reconozcan como un vídeo totalmente original. ¿Lo abro?"
+      }
+    },
+    {
+      "id": "scenario_05_uniquifier_modes",
+      "category": "video_uniquifier",
+      "text": {
+        "ru": "Gentle сохраняет исходную картинку без видимых изменений, Balance идеален для Reels и TikTok, а Dynamic обеспечивает максимальную степень уникализации для строгих алгоритмов.",
+        "en": "Gentle preserves the original picture cleanly, Balance is ideal for Reels and TikTok, and Dynamic delivers maximum alteration for strict algorithms.",
+        "fr": "Gentle préserve l'image d'origine, Balance est idéal pour Reels et TikTok, et Dynamic offre une protection maximale pour les algorithmes stricts.",
+        "es": "Gentle conserva la imagen original sin cambios visibles, Balance es ideal para Reels y TikTok, y Dynamic ofrece máxima alteración para algoritmos estrictos."
+      }
+    },
+    {
+      "id": "scenario_06_aspect_ratio",
+      "category": "video_uniquifier",
+      "text": {
+        "ru": "Для Reels, TikTok и Shorts выберите вертикальный формат девять к шестнадцати. Для YouTube и горизонтальных экранов используйте шестнадцать к девяти.",
+        "en": "For Reels, TikTok, and Shorts, choose the vertical 9:16 aspect ratio. For YouTube and widescreen displays, use 16:9.",
+        "fr": "Pour Reels, TikTok et Shorts, choisissez le format vertical 9:16. Pour YouTube et les écrans horizontaux, utilisez le 16:9.",
+        "es": "Para Reels, TikTok y Shorts, elige el formato vertical 9:16. Para YouTube y pantallas panorámicas, usa 16:9."
+      }
+    },
+    {
+      "id": "scenario_07_compress_photo",
+      "category": "everyday_tools",
+      "text": {
+        "ru": "Открываю инструмент сжатия фотографий прямо здесь. Загрузите файл, настройте ползунок качества и сохраните оптимизированный результат.",
+        "en": "Opening Photo Compressor right here in the workspace. Upload your file, adjust the quality slider, and save the optimized result.",
+        "fr": "J'ouvre l'outil de compression de photos ici. Déposez votre fichier, ajustez la qualité et téléchargez le résultat optimisé.",
+        "es": "Abro la herramienta de compresión de fotos aquí mismo. Sube tu archivo, ajusta la calidad y guarda el resultado optimizado."
+      }
+    },
+    {
+      "id": "scenario_08_compress_video",
+      "category": "everyday_tools",
+      "text": {
+        "ru": "Запускаю сжатие видео. Ролик оптимизируется локально в вашем браузере с сохранением чёткости и быстрой отправки в соцсети.",
+        "en": "Launching Video Compressor. Your clip is optimized locally right in your browser, maintaining clarity for instant sharing.",
+        "fr": "Je lance le compresseur vidéo. Votre fichier est optimisé localement dans votre navigateur, avec une excellente netteté.",
+        "es": "Inicio el compresor de vídeo. El clip se optimiza localmente en tu navegador manteniendo la nitidez para compartirlo rápido."
+      }
+    },
+    {
+      "id": "scenario_09_remove_bg",
+      "category": "everyday_tools",
+      "text": {
+        "ru": "Открываю удаление фона. Нейросеть мгновенно отделит главный объект и сделает задний план прозрачным в формате PNG.",
+        "en": "Opening Background Remover. The neural model will instantly isolate the subject and provide a transparent PNG file.",
+        "fr": "J'ouvre le détourage. L'IA isole instantanément le sujet principal et génère un fichier PNG transparent.",
+        "es": "Abro el eliminador de fondo. La red neuronal separará al sujeto al instante y te dará un archivo PNG transparente."
+      }
+    },
+    {
+      "id": "scenario_10_trim",
+      "category": "everyday_tools",
+      "text": {
+        "ru": "Открываю инструмент обрезки. Выберите нужный интервал от начала до конца и скачайте точный фрагмент без пережатия.",
+        "en": "Opening the Trim tool. Set your start and end markers and download the exact fragment without loss of quality.",
+        "fr": "J'ouvre l'outil de découpe. Définissez le début et la fin pour télécharger l'extrait exact sans perte.",
+        "es": "Abro la herramienta de recorte. Marca el inicio y el final para descargar el fragmento exacto sin perder calidad."
+      }
+    },
+    {
+      "id": "scenario_11_image_studio",
+      "category": "generation_studio",
+      "text": {
+        "ru": "Открываю Студию генерации изображений. Опишите сюжет своими словами, выберите стиль, и я помогу запустить создание.",
+        "en": "Opening Image Studio. Describe your idea in your own words, select an art style, and I will set up the generation.",
+        "fr": "J'ouvre le Studio d'images. Décrivez votre idée avec vos propres mots, choisissez un style, et je prépare la création.
+",
+        "es": "Abro el Estudio de imágenes. Describe tu idea con tus palabras, elige un estilo y te ayudo a iniciar la creación."
+      }
+    },
+    {
+      "id": "scenario_12_video_studio",
+      "category": "generation_studio",
+      "text": {
+        "ru": "Переходим в Студию видео. Вы можете оживить готовую фотографию или создать ролик с нуля по текстовому описанию.",
+        "en": "Heading to Video Studio. You can animate an existing photo or create a completely new video clip from a text prompt.",
+        "fr": "Nous passons au Studio vidéo. Vous pouvez animer une photo existante ou créer un clip complet à partir d'un prompt texte.",
+        "es": "Vamos al Estudio de vídeo. Puedes animar una foto existente o crear un vídeo desde cero a partir de una descripción."
+      }
+    },
+    {
+      "id": "scenario_13_prompt_help",
+      "category": "generation_studio",
+      "text": {
+        "ru": "Расскажите суть идеи простыми словами, а я дополню её деталями: освещением, атмосферой, ракурсом камеры и кинематографичным стилем.",
+        "en": "Tell me the core idea simply, and I will enrich it with lighting, mood, camera angles, and cinematic details.",
+        "fr": "Expliquez-moi votre idée simplement, et j'ajouterai la lumière, l'atmosphère, l'angle de caméra et les détails de style.",
+        "es": "Cuéntame tu idea en palabras sencillas y yo la enriqueceré con iluminación, ambiente, ángulo de cámara y estilo cinematográfico."
+      }
+    },
+    {
+      "id": "scenario_14_pricing_open",
+      "category": "pricing_and_retention",
+      "text": {
+        "ru": "Открываю страницу тарифов. У нас доступны ежемесячные планы Basic, Pro, Business и пожизненный Lifetime с полной гарантией возврата кредитов.",
+        "en": "Opening Pricing page. We offer Basic, Pro, Business monthly plans, and permanent Lifetime access with full credit protection.",
+        "fr": "J'ouvre la page des tarifs. Nous proposons les forfaits Basic, Pro, Business et un accès Lifetime avec garantie de crédits.",
+        "es": "Abro la página de precios. Ofrecemos planes Basic, Pro, Business y acceso Lifetime con protección total de créditos."
+      }
+    },
+    {
+      "id": "scenario_15_pricing_plans_diff",
+      "category": "pricing_and_retention",
+      "text": {
+        "ru": "Basic открывает основные инструменты и качество до 720p. Pro даёт разрешение 1080p и максимальную скорость, а Business снимает ограничения и поддерживает качество до 4K.",
+        "en": "Basic unlocks core tools up to 720p. Pro provides Full HD 1080p with maximum queue priority, and Business unlocks 4K rendering and enterprise limits.",
+        "fr": "Basic débloque les outils essentiels jusqu'à 720p. Pro offre le 1080p et la vitesse maximale, et Business ajoute la 4K sans compromis.",
+        "es": "Basic desbloquea las herramientas esenciales hasta 720p. Pro ofrece 1080p y máxima velocidad, y Business permite calidad hasta 4K."
+      }
+    },
+    {
+      "id": "scenario_16_credits_info",
+      "category": "pricing_and_retention",
+      "text": {
+        "ru": "Кредиты используются для генерации нейросетевых фото, видео и музыки. Инструменты обработки работают по подписке, а кредиты расходуются только за готовый результат.",
+        "en": "Credits power AI generation of photos, videos, and music. Everyday tools run on subscription, and credits are deducted strictly upon successful generation.",
+        "fr": "Les crédits alimentent la génération IA de photos, vidéos et musiques. Les outils quotidiens sont inclus, et les crédits ne sont débités qu'au résultat final.",
+        "es": "Los créditos permiten generar fotos, vídeos y música con IA. Las herramientas diarias están incluidas, y los créditos solo se descuentan cuando el resultado está listo."
+      }
+    },
+    {
+      "id": "scenario_17_refund_guarantee",
+      "category": "pricing_and_retention",
+      "text": {
+        "ru": "В DEEPSYQ действует железное правило: если произойдёт сбой сети или генерации, все кредиты мгновенно и автоматически возвращаются на ваш баланс.",
+        "en": "DEEPSYQ operates on an ironclad guarantee: if any network error or generation failure occurs, all credits are instantly restored to your balance.",
+        "fr": "DEEPSYQ applique une garantie absolue : en cas d'erreur de réseau ou de génération, vos crédits sont automatiquement recrédités immédiatement.",
+        "es": "En DEEPSYQ la garantía es total: si ocurre un fallo de red o generación, todos los créditos se devuelven al instante a tu saldo."
+      }
+    },
+    {
+      "id": "scenario_18_thanks",
+      "category": "settings_and_politeness",
+      "text": {
+        "ru": "Всегда к вашим услугам! Если понадобится продолжить проект или создать что-то новое — я рядом.",
+        "en": "Always at your service! Whenever you want to continue your project or create something new, I am right here.",
+        "fr": "Toujours à votre service ! Dès que vous souhaitez continuer ou créer autre chose, je suis là.",
+        "es": "¡Siempre a tu servicio! Cuando quieras continuar con tu proyecto o crear algo nuevo, aquí estoy."
+      }
+    },
+    {
+      "id": "scenario_19_theme_change",
+      "category": "settings_and_politeness",
+      "text": {
+        "ru": "Готово, обновил оформление сайта. Напишите или скажите, если захотите переключить на другой стиль.",
+        "en": "Done, interface theme updated. Let me know if you would like to switch to another style.",
+        "fr": "C'est fait, le thème visuel est mis à jour. Dites-moi si vous souhaitez tester un autre style.",
+        "es": "Listo, tema visual actualizado. Avísame si quieres cambiar a otro estilo en cualquier momento."
+      }
+    },
+    {
+      "id": "scenario_20_lang_change",
+      "category": "settings_and_politeness",
+      "text": {
+        "ru": "Язык переключен на русский. Все системы и ответы переведены.",
+        "en": "Language switched to English. All systems and voice responses are updated.",
+        "fr": "Langue changée en français. Tous les systèmes et réponses vocales sont prêts.",
+        "es": "Idioma cambiado a español. Todos los sistemas y respuestas de voz están listos."
+      }
+    },
+    {
+      "id": "scenario_21_voice_limit_upgrade",
+      "category": "paywall_and_upgrade",
+      "text": {
+        "ru": "Бесплатный голосовой лимит на сегодня завершён. Оформите тариф в разделе Цены для неограниченного живого общения и премиального качества голоса.",
+        "en": "Today's free voice allowance has ended. Choose a plan on our Pricing page for unlimited live conversation and premium studio voice quality.",
+        "fr": "Votre limite vocale gratuite du jour est atteinte. Choisissez un forfait sur la page Tarifs pour un dialogue illimité en qualité studio.",
+        "es": "El límite de voz gratuito de hoy ha terminado. Elige un plan en Precios para disfrutar de conversación ilimitada y calidad de voz de estudio."
+      }
+    }
+  ]
+}
