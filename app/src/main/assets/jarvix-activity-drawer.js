@@ -34,8 +34,16 @@ if (page === 'jarvix-chat.html' || page === 'generate-studio.html') {
   const title = element('h2', 'jarvix-activity-title');
   const newChatArea = element('div', 'jarvix-activity-new');
   const oldNewChat = page === 'jarvix-chat.html' ? document.getElementById('jNew') : null;
-  const newChat = oldNewChat || element('a', 'jarvix-activity-new-link');
-  if (!oldNewChat) newChat.href = 'jarvix-chat.html?new=1';
+  const newChat = oldNewChat || element('button', 'jarvix-activity-new-link');
+  if (!oldNewChat) {
+    newChat.type = 'button';
+    newChat.onclick = () => {
+      const frame = document.getElementById('jarvixSharedChatFrame');
+      const button = frame?.contentDocument?.getElementById('jNew');
+      if (button) { button.click(); void showRecent(); }
+      else location.assign('jarvix-chat.html?new=1');
+    };
+  }
   newChat.classList.add('jarvix-activity-new-link');
   newChatArea.append(newChat);
   const recentTitle = element('h3', 'jarvix-activity-heading');
@@ -109,7 +117,11 @@ if (page === 'jarvix-chat.html' || page === 'generate-studio.html') {
             showRecent();
           } else {
             sessionStorage.setItem('jarvix_active_conversation', record.id);
-            location.assign('jarvix-chat.html');
+            const frame = document.getElementById('jarvixSharedChatFrame');
+            if (frame?.contentWindow && frame?.contentDocument?.getElementById('jHistory')) {
+              frame.contentWindow.dispatchEvent(new Event('jarvix:conversation-updated'));
+              void showRecent();
+            } else location.assign('jarvix-chat.html');
           }
         };
         recentList.append(item);
