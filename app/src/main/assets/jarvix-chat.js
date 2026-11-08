@@ -2,7 +2,8 @@ import {ACTION_ROUTES,extractAction,resolveActionModel} from './jarvix-action-pl
 import {downloadResult,mediaExtension} from './jarvix-result-cache.js';
 import {makeId,conversationStore,resolveMode} from './jarvix-conversations.js';
 import {bindComposer,trackViewport} from './jarvix-composer.js';
-import {getJarvixSessionId,getJarvixLanguage,speakJarvis,stopAllSpeech,deactivateJarvisVoice} from './jarvis-core.js';
+import {getJarvixSessionId,getJarvixLanguage,speakJarvis,deactivateJarvisVoice} from './jarvis-core.js';
+import {unlockOwnerSpeech,speakOwnerSpeech,stopOwnerSpeech} from './jarvix-owner-speech.js';
 import {bindJarvixConversationalVoice} from './jarvix-conversational-voice.js';
 import {saveStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id),status=text=>$('jStatus').textContent=text;
@@ -105,9 +106,13 @@ const voiceMode=bindJarvixConversationalVoice({
  form:$('jChatForm'),input:$('jInput'),onError:status,
  getLanguage:getJarvixLanguage,
  onTurn:text=>sendCurrentChatTurn({text,mode:'auto',files:[]}),
- speak:(text,complete)=>speakJarvis(text,complete),
- stopSpeech:stopAllSpeech,
- deactivateSphere:deactivateJarvisVoice
+ speak:(text,complete)=>speakOwnerSpeech(text,getJarvixLanguage(),{
+   start(){},complete,
+   fallback(){window.dispatchEvent(new CustomEvent('jarvix:voice-unavailable',{detail:{source:'self-hosted'}}));},
+   error(){window.dispatchEvent(new CustomEvent('jarvix:voice-unavailable',{detail:{source:'self-hosted'}}));}
+ }),
+ stopSpeech:stopOwnerSpeech,
+ deactivateSphere(){deactivateJarvisVoice();unlockOwnerSpeech();}
 });
 $('jStop').onclick=()=>{controller?.abort();$('jStop').hidden=true;status('Browser waiting stopped. Already submitted generation tasks are not cancelled.');};
 $('jNew').onclick=async()=>{voiceMode.stop();if(busy)return;conversation=store.create('jarvix-'+makeId());sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);await save();render();};
