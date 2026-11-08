@@ -5,6 +5,15 @@ import { runProductWatcherOnce, watcherConfig } from './monitor.js';
 // A persistent DB timestamp survives process restarts.
 export const WATCHER_INTERVAL_MS = 15 * 60 * 1000;
 
+// The existing always-on Node worker emits a heartbeat each minute (legacy 3m TTL).
+// Cloudflare Cron runs every 15m to stay within the free Neon compute quota;
+// the owner panel must recognize that cadence only when explicitly configured.
+export function watcherHeartbeatTtlMs(env={}) {
+  return env.PRODUCT_WATCHER_SCHEDULER_MODE === 'cloudflare-cron-15m'
+    ? 20 * 60 * 1000 : 3 * 60 * 1000;
+}
+
+
 export async function productWatcherTick({
   pool, env = process.env, fetchFn = globalThis.fetch, now = () => new Date()
 } = {}) {
