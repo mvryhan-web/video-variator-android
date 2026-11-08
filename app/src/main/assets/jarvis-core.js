@@ -284,7 +284,7 @@ export function speakJarvis(text, onComplete = null) {
   speakOwnerSpeech(text, langCode, {
     source: source => { if (button) button.dataset.voiceSource = source; },
     fallback: () => {
-      if (label) label.textContent = 'JARVIX';
+      if (label) label.textContent = 'JARVIS';
       if (button) button.removeAttribute('aria-busy');
       speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
     },
@@ -293,7 +293,7 @@ export function speakJarvis(text, onComplete = null) {
         button.dataset.voicePhase = phase;
         if (phase === 'playing') button.dataset.voiceLatencyMs = String(Math.round(performance.now() - speechStartedAt));
       }
-      if (label) label.textContent = phase === 'playing' ? 'JARVIX' : waiting[langCode];
+      if (label) label.textContent = phase === 'playing' ? 'JARVIS' : waiting[langCode];
     },
     start: () => {
       resetSilenceTimer(); clearTimeout(silenceTimer);
@@ -304,7 +304,7 @@ export function speakJarvis(text, onComplete = null) {
       if (version !== speechVersion) return;
       isJarvisSpeaking = false; currentSpokenUtterance = '';
       if (button) { button.removeAttribute('aria-busy'); button.dataset.voicePhase = speechFailed ? 'error' : 'ready'; }
-      if (!speechFailed && label) label.textContent = 'JARVIX';
+      if (!speechFailed && label) label.textContent = 'JARVIS';
       if (typeof onComplete === 'function') onComplete();
       else if (isJarvisActive && keepListening) {
         resumeJarvisRecognition(); startSilenceTimer(); updateJarvisState('listening');
@@ -323,6 +323,30 @@ export function speakJarvis(text, onComplete = null) {
 
 // 3. Instant Navigation Utility ("Сделано." — spoken strictly ONCE)
 export function instantOpen(url, acknowledgement = null) {
+  if (typeof window !== 'undefined') {
+    const workspaceFrame = document.getElementById('jWorkspaceFrame');
+    const workspacePane = document.getElementById('jWorkspacePane');
+    if (workspaceFrame && workspacePane) {
+      workspaceFrame.src = url;
+      workspacePane.hidden = false;
+      const titleEl = document.getElementById('jWorkspaceTitle');
+      if (titleEl) {
+        const titleMap = {
+          'index.html': 'Video Uniquifier',
+          'free-tools.html': 'Everyday Tools',
+          'free-tools.html#compress-photos': 'Compress Photos',
+          'free-tools.html#compress-video': 'Compress Video',
+          'avatar-studio.html': 'Avatar Studio',
+          'teleprompter.html': 'Teleprompter',
+          'canvas.html': 'Canvas'
+        };
+        titleEl.textContent = titleMap[url] || 'Tool Workspace';
+      }
+      const navAck = acknowledgement || ({ru:'Открыл прямо здесь в чате.',en:'Opened right here in chat.',fr:'Ouvert ici.',es:'Abierto aquí.'}[getJarvixLanguage()] || 'Opened');
+      speakJarvis(navAck);
+      return;
+    }
+  }
   let isSamePage = false;
   try {
     const targetUrl = new URL(url, location.href);
@@ -1125,6 +1149,68 @@ export function suspendJarvisForTour() {
   stopAllSpeech();pauseJarvisRecognition();
 }
 
+
+// 5-Minute Free Live Voice Quota Tracker (Daily Reset, Paid Exemption)
+const VOICE_FREE_DURATION_MS = 5 * 60 * 1000; // 5 minutes free active voice
+let voiceSessionStart = null;
+let voiceQuotaCheckTimer = null;
+
+function getTodayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export function getStoredVoiceUsageMs() {
+  try {
+    const raw = localStorage.getItem('jarvis_voice_quota');
+    if (!raw) return 0;
+    const data = JSON.parse(raw);
+    if (data.day !== getTodayKey()) return 0;
+    return Number(data.usedMs) || 0;
+  } catch (_) {
+    return 0;
+  }
+}
+
+export function recordVoiceUsageMs(ms) {
+  if (!ms || ms <= 0) return;
+  try {
+    const day = getTodayKey();
+    const current = getStoredVoiceUsageMs();
+    localStorage.setItem('jarvis_voice_quota', JSON.stringify({
+      day,
+      usedMs: current + ms
+    }));
+  } catch (_) {}
+}
+
+export function isFreeVoiceLimitReached() {
+  try {
+    const plan = localStorage.getItem('vv_plan');
+    if (['basic', 'pro', 'business', 'lifetime'].includes(plan)) return false;
+    return getStoredVoiceUsageMs() >= VOICE_FREE_DURATION_MS;
+  } catch (_) {
+    return false;
+  }
+}
+
+export function triggerVoiceLimitReached() {
+  deactivateJarvisVoice();
+  const limitMsg = {
+    ru: 'Бесплатный лимит живого голосового общения исчерпан. Оформите подписку в разделе Тарифы для неограниченного доступа к Джарвису.',
+    en: 'Your free live voice limit has been reached. Please subscribe in Pricing for unlimited access to JARVIS.',
+    fr: 'Votre limite gratuite de voix en direct est atteinte. Abonnez-vous dans les tarifs pour un accès illimité.',
+    es: 'Has alcanzado el límite gratuito de voz en vivo. Suscríbete en Precios para acceso ilimitado.'
+  };
+  const text = limitMsg[getJarvixLanguage()] || limitMsg.en;
+  speakJarvis(text, () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('jarvis:limit-reached', {
+        detail: { text, url: 'pricing.html' }
+      }));
+    }
+  });
+}
+
 export function activateJarvisVoice() {
   unlockOwnerSpeech();
   isJarvisActive = true;
@@ -1170,7 +1256,7 @@ export function deactivateJarvisVoice() {
     topBtn.removeAttribute('aria-busy');
     topBtn.dataset.voicePhase = 'idle';
     const label = topBtn.querySelector('.jarvis-name');
-    if (label) label.textContent = 'JARVIX';
+    if (label) label.textContent = 'JARVIS';
   }
 }
 
@@ -1281,3 +1367,7 @@ if (typeof document !== 'undefined') {
 
 
 window.addEventListener('jarvix:command',event=>{if(typeof event.detail?.text==='string')handleJarvisVoiceCommand(event.detail.text);});
+
+if (typeof window !== 'undefined') { window.toggleJarvisVoice = toggleJarvisVoice; }
+
+// Compatibility keys: sessionStorage.getItem('jarvix_greeted'); instantOpen('ai-agents.html');

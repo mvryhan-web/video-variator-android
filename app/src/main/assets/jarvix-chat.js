@@ -1,3 +1,26 @@
+
+export function openWorkspace(url, title = 'Everyday Tool') {
+  const pane = $('jWorkspacePane'), frame = $('jWorkspaceFrame'), headTitle = $('jWorkspaceTitle'), popout = $('jWorkspacePopout');
+  if (!pane || !frame) {
+    location.assign(url);
+    return;
+  }
+  const titleMap = {
+    'index.html': 'Video Uniquifier',
+    'free-tools.html': 'Everyday Tools',
+    'free-tools.html#compress-photos': 'Compress Photos',
+    'free-tools.html#compress-video': 'Compress Video',
+    'avatar-studio.html': 'Avatar Studio',
+    'teleprompter.html': 'Teleprompter',
+    'audio-studio.html': 'Audio Studio',
+    'canvas.html': 'Canvas'
+  };
+  frame.src = url;
+  if (headTitle) headTitle.textContent = titleMap[url] || title;
+  if (popout) popout.href = url;
+  pane.hidden = false;
+  document.body.classList.add('has-chat-workspace');
+}
 import {ACTION_ROUTES,extractAction,resolveActionModel} from './jarvix-action-plan.js';
 import {downloadResult,mediaExtension} from './jarvix-result-cache.js';
 import {makeId,conversationStore,resolveMode} from './jarvix-conversations.js';
@@ -13,10 +36,16 @@ async function historyList(){const rows=await store.list();$('jHistory').replace
 const node=(tag,text)=>{const n=document.createElement(tag);if(text)n.textContent=text;return n;};
 function showFile(parent,file){const box=node('div'),url=URL.createObjectURL(file);urls.push(url);const el=node(file.type.startsWith('image/')?'img':file.type.startsWith('video/')?'video':file.type.startsWith('audio/')?'audio':'a');el.src=url;if(el.tagName==='IMG')el.alt=file.name||'Attachment';else if(el.tagName==='A'){el.href=url;el.download=file.name;el.textContent=file.name;}else el.controls=true;box.append(el);parent.append(box);}
 function render(){for(const url of urls)URL.revokeObjectURL(url);urls=[];const area=$('jMessages');area.replaceChildren();if(!conversation.messages.length){const empty=node('div');empty.className='j-empty';empty.append(node('h2','What would you like to create?'));area.append(empty);}
- for(const m of conversation.messages){const item=node('article');item.className='j-message '+m.role;item.append(node('strong',m.role==='user'?'YOU':'JARVIX'),node('div',m.text));if(m.role==='assistant'&&m.limitReached===true){const pricing=node('a','View Pricing');pricing.href='pricing.html';pricing.style.cssText='display:inline-block;margin-top:10px;padding:10px 14px;border:1px solid #fff;border-radius:8px;color:#fff;font-weight:700';item.append(pricing);}for(const f of m.files||[])showFile(item,f);
+ for(const m of conversation.messages){const item=node('article');item.className='j-message '+m.role;item.append(node('strong',m.role==='user'?'YOU':'JARVIS'),node('div',m.text));if(m.role==='assistant'&&m.limitReached===true){const pricing=node('a','View Pricing');pricing.href='pricing.html';pricing.style.cssText='display:inline-block;margin-top:10px;padding:10px 14px;border:1px solid #fff;border-radius:8px;color:#fff;font-weight:700';item.append(pricing);}for(const f of m.files||[])showFile(item,f);
  if(m.role==='assistant'&&m.toolAction){
   const action=m.toolAction,valid=ACTION_ROUTES[action.target]===action.url;
-  if(valid&&action.kind==='navigate'){const link=node('a',({ru:'Открыть раздел',en:'Open section',fr:'Ouvrir',es:'Abrir'}[getJarvixLanguage()]||'Open section'));link.href=action.url;item.append(link);}
+  if(valid&&action.kind==='navigate'){
+     const link=node('button',({ru:'Открыть прямо здесь ↗',en:'Open right here ↗',fr:'Ouvrir ici ↗',es:'Abrir aquí ↗'}[getJarvixLanguage()]||'Open right here ↗'));
+     link.type='button';
+     link.className='j-tool-open-btn';
+     link.onclick=()=>openWorkspace(action.url,action.target);
+     item.append(link);
+    }
   if(valid&&action.kind==='prepare-studio'&&['image','video','audio'].includes(action.target)&&typeof action.prompt==='string'&&action.prompt.trim()){
    const button=node('button',({ru:'Продолжить в Studio',en:'Continue in Studio',fr:'Continuer dans Studio',es:'Continuar en Studio'}[getJarvixLanguage()]||'Continue in Studio'));button.type='button';
    button.onclick=async()=>{try{store.guard();await saveStudioHandoff({kind:action.target==='audio'?'music':action.target,prompt:action.prompt,settings:action.ratio?{ratio:action.ratio}:{},source:'jarvix-chat'});store.guard();location.assign(action.url);}catch(e){status(e.message);}};
@@ -96,3 +125,33 @@ conversation=await store.get(sessionStorage.getItem('jarvix_active_conversation'
 const pending=conversation.messages.find(m=>m.status==='pending');if(pending)await run(()=>processMessage(pending));
 
 window.addEventListener('jarvix:conversation-updated',async()=>{if(busy)return;const next=await store.get(sessionStorage.getItem('jarvix_active_conversation'));if(!next)return;conversation=next;render();const pending=conversation.messages.find(m=>m.status==='pending');if(pending)await run(()=>processMessage(pending));});
+
+if ($('jWorkspaceClose')) {
+  $('jWorkspaceClose').onclick = () => {
+    if ($('jWorkspacePane')) $('jWorkspacePane').hidden = true;
+    if ($('jWorkspaceFrame')) $('jWorkspaceFrame').src = 'about:blank';
+    document.body.classList.remove('has-chat-workspace');
+  };
+}
+
+// Listen for limit-reached event from jarvis-core
+window.addEventListener('jarvis:limit-reached', async (e) => {
+  if (!conversation) return;
+  conversation.messages.push({
+    id: makeId(),
+    role: 'assistant',
+    text: e.detail?.text || 'Бесплатный 5-минутный лимит живого голосового общения исчерпан. Оформите подписку в разделе Тарифы для неограниченного доступа к Джарвису.',
+    limitReached: true,
+    createdAt: Date.now()
+  });
+  await save();
+  render();
+});
+
+// Auto-open tool if specified in URL query
+try {
+  const initialTool = new URLSearchParams(location.search).get('tool');
+  if (initialTool) {
+    setTimeout(() => openWorkspace(initialTool), 300);
+  }
+} catch (_) {}

@@ -67,4 +67,20 @@ export function decorateComposer(form,{settingsTarget=null}={}){
   mic?.after(gear);
  }
  const plus=form.querySelector('#jPlus');if(plus)plus.classList.add('j-glow-plus');
+ if(!form.querySelector('.j-composer-orb-btn')){
+  const orbBtn=document.createElement('button');
+  orbBtn.type='button';
+  orbBtn.className='j-composer-orb-btn';
+  orbBtn.setAttribute('aria-label','Activate JARVIS Live Voice');
+  orbBtn.setAttribute('title','JARVIS Live Voice');
+  orbBtn.innerHTML='<div class="jarvis-mini-orb"><span class="jarvis-core"></span><span class="jarvis-ring"></span><span class="jarvis-ring ring-violet"></span></div>';
+  orbBtn.onclick=e=>{
+   e.preventDefault();
+   if(typeof window.toggleJarvisVoice==='function')window.toggleJarvisVoice();
+   else import('./jarvis-core.js').then(m=>m.toggleJarvisVoice());
+  };
+  const sendBtn=form.querySelector('.j-send,#homeQuickSubmit,#generate');
+  if(sendBtn)sendBtn.after(orbBtn);
+  else form.append(orbBtn);
+ }
 }
