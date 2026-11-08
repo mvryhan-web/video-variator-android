@@ -399,7 +399,7 @@ body.studio-universal-ready .j-settings-menu .j-settings-tile{
 /* Owner-requested ChatGPT-like recent activity drawer. Only JARVIX Chat and Studio. */
 body.jarvix-activity-enabled #jHistory{display:none!important}
 .jarvix-activity-toggle{
- position:fixed;z-index:120;top:82px;left:214px;display:grid;place-items:center;
+ position:fixed;z-index:120;top:164px;left:214px;display:grid;place-items:center;
  width:35px;height:40px;min-height:40px;padding:0;border:0;border-radius:10px;
  background:#101b2d;color:#dce8f8;font:500 28px/1 system-ui,sans-serif;
  box-shadow:0 5px 15px #0005;cursor:pointer;
@@ -448,7 +448,7 @@ body.jarvix-activity-enabled #jHistory{display:none!important}
 .jarvix-activity-panel .jarvix-activity-all{color:#b9c9db;font-size:12px;text-decoration:none;margin:5px 10px 2px}
 .jarvix-activity-panel .jarvix-activity-all:hover{text-decoration:underline}
 @media(max-width:900px){
- .jarvix-activity-toggle{left:12px;top:142px;z-index:98;width:37px;height:39px}
+ .jarvix-activity-toggle{left:12px;top:215px;z-index:98;width:37px;height:39px}
  .jarvix-activity-panel{left:0;top:132px;bottom:0;z-index:97;width:min(84vw,340px);border-radius:0 14px 0 0;padding-top:22px}
  .jarvix-activity-open .jarvix-activity-toggle{left:calc(min(84vw,340px) - 19px)}
 }
