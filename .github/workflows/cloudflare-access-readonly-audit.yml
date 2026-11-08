@@ -224,3 +224,37 @@ jobs:
               'latest_env':((p.get('latest_deployment') or {}).get('environment'))
             },sort_keys=True))
           PY
+
+      - name: Verify existing preview Worker availability (read-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          token="${TOKEN_1:-${TOKEN_2:-${TOKEN_3:-}}}"
+          account="${ACCOUNT_1:-${ACCOUNT_2:-${ACCOUNT_3:-${ACCOUNT_4:-}}}}"
+          if [[ -z "$token" || ! "$account" =~ ^[a-fA-F0-9]{32}$ ]]; then exit 0; fi
+          echo "::add-mask::$token"
+          scripts=$(python3 - <<'PY'
+          import json
+          p=json.load(open('/tmp/cf-meta-project.json')).get('result') or {}
+          for key in ['production_script_name','preview_script_name']:
+            name=p.get(key)
+            print(key+' '+str(name) if name else key+' MISSING')
+          PY
+          )
+          echo "$scripts"
+          while read -r kind script; do
+            if [[ "$script" == MISSING || -z "$script" ]]; then continue; fi
+            status=$(curl -sS --connect-timeout 5 --max-time 15 -o /tmp/cf-exact-worker-read -w '%{http_code}' -H "Authorization: Bearer $token" "https://api.cloudflare.com/client/v4/accounts/$account/workers/scripts/$script/content/v2") || status=network_error
+            echo "EXACT_WORKER_CONTENT_READ=$kind HTTP=$status BYTES=$(wc -c </tmp/cf-exact-worker-read)"
+          done <<< "$scripts"
+          python3 - <<'PY'
+          import json
+          x=json.load(open('/tmp/cf-deployments.json')).get('result') or []
+          for d in x[:5]:
+            print('PREVIEW_AVAILABILITY='+json.dumps({
+              'url':d.get('url'),
+              'branch':((d.get('deployment_trigger') or {}).get('metadata') or {}).get('branch'),
+              'environment':d.get('environment'),
+              'uses_functions':d.get('uses_functions')
+            }))
+          PY
