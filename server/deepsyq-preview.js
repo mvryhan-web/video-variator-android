@@ -50,9 +50,16 @@ app.get('/robots.txt',(_req,res)=>res.type('text/plain').send('User-agent: *\nDi
 // The standalone Video Uniquifier must load its real browser-local FFmpeg
 // from the SAME origin in the isolated preview, as in server/server.js.
 // Only these three public package assets are served; other APIs stay disabled.
-app.get('/vendor/ffmpeg/ffmpeg.js',(_req,res)=>res.type('application/javascript').sendFile(path.join(ffmpegUmd,'ffmpeg.js')));
-app.get('/vendor/ffmpeg/ffmpeg-core.js',(_req,res)=>res.type('application/javascript').sendFile(path.join(ffmpegCore,'ffmpeg-core.js')));
-app.get('/vendor/ffmpeg/ffmpeg-core.wasm',(_req,res)=>res.type('application/wasm').sendFile(path.join(ffmpegCore,'ffmpeg-core.wasm')));
+const crawlerPattern=/(?:gptbot|claudebot|bytespider|petalbot|semrushbot|ahrefsbot|mj12bot|dotbot|bingbot|googlebot|yandexbot|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkshare|w3c_validator|whatsapp|applebot|amazonbot|anthropic-ai|ccbot|cohere-ai|omgilibot|perplexitybot)/i;
+app.use((req,res,next)=>{
+ if(crawlerPattern.test(String(req.headers['user-agent']||''))&&req.path!=='/robots.txt'){
+  return res.status(403).set('Cache-Control','public, max-age=86400').type('text/plain').send('Forbidden');
+ }
+ next();
+});
+app.get('/vendor/ffmpeg/ffmpeg.js',(_req,res)=>{res.setHeader('Cache-Control','public, max-age=31536000, immutable');res.type('application/javascript').sendFile(path.join(ffmpegUmd,'ffmpeg.js'));});
+app.get('/vendor/ffmpeg/ffmpeg-core.js',(_req,res)=>{res.setHeader('Cache-Control','public, max-age=31536000, immutable');res.type('application/javascript').sendFile(path.join(ffmpegCore,'ffmpeg-core.js'));});
+app.get('/vendor/ffmpeg/ffmpeg-core.wasm',(_req,res)=>{res.setHeader('Cache-Control','public, max-age=31536000, immutable');res.type('application/wasm').sendFile(path.join(ffmpegCore,'ffmpeg-core.wasm'));});
 app.get('/api/health',(_req,res)=>res.json({ok:true,service:'deepsyq-design-preview',paymentsEnabled:false,aiGenerationEnabled:false}));
 app.get('/api/config',(_req,res)=>res.json({
  googleClientId:'',appleClientId:'',emailAuth:false,billingConfigured:false,trialLimit:0,
