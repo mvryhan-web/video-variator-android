@@ -234,15 +234,6 @@ export function reduceLiteDeliveryAttempt({previous = null, action, verifiedOwne
   if (!prior && action.type !== 'PREPARE') {
     return initial(LITE_ATTEMPT_REASONS.INVALID_TRANSITION, nowMs);
   }
-  if (prior && action.type === 'PREPARE') {
-    return output(prior, prior.status, LITE_ATTEMPT_REASONS.DUPLICATE_ACTION, nowMs, false);
-  }
-  if (prior && action.type === 'APPROVE' && prior.status === LITE_ATTEMPT_STATUSES.APPROVED_FOR_MANUAL_REVIEW) {
-    return output(prior, prior.status, LITE_ATTEMPT_REASONS.DUPLICATE_ACTION, nowMs, false);
-  }
-  if (prior && action.type === 'APPROVE' && prior.status !== LITE_ATTEMPT_STATUSES.REVIEW_PENDING) {
-    return output(prior, prior.status, LITE_ATTEMPT_REASONS.INVALID_TRANSITION, nowMs, false);
-  }
   // A manual approval also expires locally. Do not extend its age with a new
   // W5.5 readiness object while keeping an old approval transition alive.
   if (prior?.status === LITE_ATTEMPT_STATUSES.APPROVED_FOR_MANUAL_REVIEW &&
@@ -263,6 +254,17 @@ export function reduceLiteDeliveryAttempt({previous = null, action, verifiedOwne
     return output(prior, prior.status === LITE_ATTEMPT_STATUSES.APPROVED_FOR_MANUAL_REVIEW
       ? LITE_ATTEMPT_STATUSES.REVOKED : LITE_ATTEMPT_STATUSES.BLOCKED,
     LITE_ATTEMPT_REASONS.CANDIDATE_CHANGED, nowMs);
+  }
+  // Validate freshness/candidate BEFORE treating a repeated action as a no-op.
+  // Otherwise a replayed APPROVE could mask expired or changed W5.5 consent.
+  if (prior && action.type === 'PREPARE') {
+    return output(prior, prior.status, LITE_ATTEMPT_REASONS.DUPLICATE_ACTION, nowMs, false);
+  }
+  if (prior && action.type === 'APPROVE' && prior.status === LITE_ATTEMPT_STATUSES.APPROVED_FOR_MANUAL_REVIEW) {
+    return output(prior, prior.status, LITE_ATTEMPT_REASONS.DUPLICATE_ACTION, nowMs, false);
+  }
+  if (prior && action.type === 'APPROVE' && prior.status !== LITE_ATTEMPT_STATUSES.REVIEW_PENDING) {
+    return output(prior, prior.status, LITE_ATTEMPT_REASONS.INVALID_TRANSITION, nowMs, false);
   }
   if (!prior) {
     return freezeState({
