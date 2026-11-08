@@ -35,7 +35,7 @@ try{
      const debug=await page.evaluate(async()=>{
       const paths=['deepsyq-site-shell.js','jarvix-activity-drawer.js','jarvix-chat.css'];
       const assets=await Promise.all(paths.map(async path=>{
-       try{const r=await fetch(path,{cache:'no-store'}),body=await r.text();
+       try{const r=await fetch(path,{cache:'no-store',signal:AbortSignal.timeout(3500)}),body=await r.text();
         return{path,status:r.status,mime:r.headers.get('content-type'),
          length:body.length,snippet:body.slice(0,90),
          hasDrawer:body.includes('jarvix-activity-drawer.js')||body.includes('jarvix-activity-toggle')};
