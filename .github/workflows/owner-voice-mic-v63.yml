@@ -30,4 +30,4 @@ jobs:
       - name: Install mock-browser dependencies (no paid AI)
         run: npx playwright install --with-deps chromium webkit
       - name: Test existing V6.2 and new V6.3 in Chromium and mobile WebKit
-        run: npx playwright test tests/voice-agent-preview.spec.mjs --project=chromium --project=mobile-webkit --workers=1
+        run: npx playwright test --config tests/voice-agent-preview.config.mjs
