@@ -56,6 +56,12 @@ try{
     if(await expand.getAttribute('aria-expanded')==='false')await expand.click();
     await page.locator('#jarvixActivityPanel').waitFor({state:'visible',timeout:7000});
     assert.equal(await page.locator('#jarvixActivityPanel h2').textContent(),'JARVIX Chat');
+    const headingBox=await page.locator('#jarvixActivityPanel h2').boundingBox();
+    const arrowBox=await expand.boundingBox();
+    assert.ok(headingBox&&arrowBox&&arrowBox.y>=headingBox.y+headingBox.height+12,
+      'Shared drawer arrow must stay below JARVIX Chat heading on '+viewport.name+' '+route+
+      ' heading='+JSON.stringify(headingBox)+' arrow='+JSON.stringify(arrowBox));
+    console.log('JARVIX_ARROW_BELOW_TITLE',viewport.name,route,Math.round(arrowBox.y-(headingBox.y+headingBox.height))+'px');
     const viewportFit=await page.locator('#jarvixActivityPanel').boundingBox();
     assert.ok(viewportFit&&viewportFit.x>=-1&&viewportFit.x+viewportFit.width<=viewport.width+1,'drawer inside viewport');
     await page.screenshot({path:`${folder}/${viewport.name}-${name}.png`,fullPage:false});
