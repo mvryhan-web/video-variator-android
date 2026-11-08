@@ -22,7 +22,7 @@ export function isSpokenEcho(heard, spoken) {
 export function createJarvixVoiceSession({getRecognizer, getLanguage=()=> 'en', onTurn, speak, stopSpeech, onPhase=()=>{}, onError=()=>{}, deactivateSphere=()=>{}, win, doc}) {
  if(typeof getRecognizer!=='function'||typeof onTurn!=='function'||typeof speak!=='function')throw Error('VOICE_DEPENDENCY_MISSING');
  let active=false,phase='idle',recognition=null,recognitionStarted=false,sequence=0;
- let pendingText='',pendingTimer=null,restartTimer=null,restartCount=0,lastText='',lastAt=0,spoken='',speakingDone=null;
+ let pendingText='',pendingTimer=null,restartTimer=null,restartCount=0,lastText='',lastAt=0,spoken='',speakingDone=null,speechEpoch=0;
  const clock=()=>win?.performance?.now?.() ?? Date.now();
  const clearPending=()=>{if(pendingTimer!==null)win.clearTimeout(pendingTimer);pendingTimer=null;pendingText='';};
  const clearRestart=()=>{if(restartTimer!==null)win.clearTimeout(restartTimer);restartTimer=null;};
@@ -49,7 +49,7 @@ export function createJarvixVoiceSession({getRecognizer, getLanguage=()=> 'en', 
  }
  function stop(){
    if(!active&&phase==='idle')return;
-   active=false;sequence++;clearPending();closeRecognizer();
+   active=false;sequence++;speechEpoch++;clearPending();closeRecognizer();
    const done=speakingDone;speakingDone=null;
    try{stopSpeech?.();}catch{}
    spoken='';
@@ -67,10 +67,19 @@ export function createJarvixVoiceSession({getRecognizer, getLanguage=()=> 'en', 
    if(!phrase)return;
    const now=clock();
    if(normalize(phrase)===lastText && now-lastAt<1400)return;
+   if(/^(?:стоп|стой|тихо|замолчи|хватит|stop|quiet|silence|cancel|arrête|silencio)\\s*[!.?]*$/iu.test(phrase)){
+     if(phase==='speaking'){
+       speechEpoch++;
+       try{stopSpeech?.();}catch{}
+       resume();
+     }else stop();
+     return;
+   }
    lastText=normalize(phrase);lastAt=now;
    const turn=sequence;
    if(phase==='speaking'){
      if(isSpokenEcho(phrase,spoken))return;
+     speechEpoch++;
      try{stopSpeech?.();}catch{}
      speakingDone=null;
      if(/^(?:стоп|стой|тихо|замолчи|хватит|stop|quiet|silence|cancel|arrête|silencio)\s*[!.?]*$/iu.test(phrase)){
@@ -87,7 +96,8 @@ export function createJarvixVoiceSession({getRecognizer, getLanguage=()=> 'en', 
      spoken=reply.trim();
      mark('speaking');
      startRecognizer(); // Enables user speech interruption, with echo rejection.
-     const complete=()=>{if(active&&sequence===turn&&phase==='speaking')resume();};
+     const audioTurn=++speechEpoch;
+     const complete=()=>{if(active&&sequence===turn&&audioTurn===speechEpoch&&phase==='speaking')resume();};
      speakingDone=complete;
      try{speak(spoken,complete);}catch(error){fail(error);}
    }catch(error){
@@ -171,7 +181,7 @@ export function bindJarvixConversationalVoice({form,input,onTurn,speak,stopSpeec
      button.setAttribute('aria-pressed',String(phase!=='idle'));
      button.setAttribute('aria-label',phase==='idle'?locale.start:locale.stop);
      button.title=phase==='idle'?locale.start:locale.stop;
-     if(phase!=='idle')onError(phase==='listening'?locale.listening:phase==='thinking'?locale.thinking:locale.speaking);
+     onError(phase==='idle'?'':phase==='listening'?locale.listening:phase==='thinking'?locale.thinking:locale.speaking);
    }
  });
  button.onclick=()=>session.toggle();
