@@ -66,6 +66,29 @@ jobs:
       - name: Verify real deployed Cloudflare TEST pages in desktop and mobile Chromium
         if: github.event_name == 'pull_request' && github.event.pull_request.number == 645 && github.head_ref == 'owner-unified-jarvix-main-integration-20261108' && github.event.pull_request.head.repo.full_name == github.repository
         run: node tests/jarvix-activity-preview-smoke.mjs
+      - name: Read-only compare working domain against reviewed TEST assets
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 645 && github.head_ref == 'owner-unified-jarvix-main-integration-20261108' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          JARVIX_WORKING_URL: https://deepsyq.app
+        run: |
+          node --input-type=module <<'JAVASCRIPT'
+          import {createHash} from 'node:crypto';
+          const files=['deepsyq-site-shell.js','jarvix-activity-drawer.js','jarvix-chat.css','jarvix-chat.js','jarvix-chat.html','generate-studio.html','generate-studio.js','deepsyq.html','pricing.html','pricing-page.js','jarvis-core.js','studio-classic-theme.css','deepsyq-logo.png'];
+          const origins=[process.env.JARVIX_WORKING_URL,process.env.JARVIX_TEST_PREVIEW_URL];
+          if(!/^https:\/\/[a-z0-9-]+\.deepsyq\.pages\.dev$/.test(origins[1]||''))throw Error('No isolated TEST URL');
+          let unrelated=0;for(const path of files){
+            const data=await Promise.all(origins.map(async origin=>{
+              try{const res=await fetch(origin+'/'+path,{signal:AbortSignal.timeout(8000),redirect:'follow'});const bytes=Buffer.from(await res.arrayBuffer());
+                return{status:res.status,sha:createHash('sha256').update(bytes).digest('hex').slice(0,12),size:bytes.length,contentType:res.headers.get('content-type')};
+              }catch(error){return{error:String(error)}}
+            }));
+            const same=data[0]?.sha&&data[0].sha===data[1]?.sha;
+            const expected=['deepsyq-site-shell.js','jarvix-activity-drawer.js','jarvix-chat.css','jarvix-chat.js','jarvix-chat.html'].includes(path);
+            if(!same&&!expected)unrelated++;
+            console.log('PRODUCTION_READONLY_DIFF',JSON.stringify({file:path,identical:!!same,expected,working:data[0],preview:data[1]}));
+          }
+          console.log('PRODUCTION_READONLY_SUMMARY',{unrelatedChanges:unrelated,published:false});
+          JAVASCRIPT
       - name: Keep actual Cloudflare TEST screenshots for owner review
         if: always() && github.event_name == 'pull_request' && github.event.pull_request.number == 645 && github.head_ref == 'owner-unified-jarvix-main-integration-20261108'
         uses: actions/upload-artifact@v4
