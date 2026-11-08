@@ -66,6 +66,17 @@ try {
     await studioTools.click();
     assert.equal(await page.locator('#creator').isVisible(),false,'Second composer must collapse again');
     await page.locator('#jarvixActivityToggle').waitFor({timeout:10000});
+    const arrowGap=await page.evaluate(()=>{
+      const frame=document.getElementById('jarvixSharedChatFrame');
+      const heading=frame?.contentDocument?.querySelector('.j-chat-toolbar h1');
+      const arrow=document.getElementById('jarvixActivityToggle');
+      if(!frame||!heading||!arrow)return null;
+      const fr=frame.getBoundingClientRect(),hr=heading.getBoundingClientRect(),ar=arrow.getBoundingClientRect();
+      return ar.top-(fr.top+hr.bottom);
+    });
+    assert.ok(arrowGap!==null && arrowGap>=14,
+      'JARVIX Studio arrow must be BELOW its heading on '+size.name+' '+kind+'; gap='+arrowGap);
+    console.log('UNIFIED_JARVIX_ARROW_GAP',size.name,kind,Math.round(arrowGap)+'px');
     const toggle=page.locator('#jarvixActivityToggle');
     if(await toggle.getAttribute('aria-expanded')!=='true') await toggle.click();
     await page.locator('#jarvixActivityPanel .jarvix-activity-title').waitFor({state:'visible'});
