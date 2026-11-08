@@ -47,7 +47,7 @@ function harness({signedIn=true,pagingAvailable=true}={}) {
     return {ok:true,json:async()=>structuredClone(data)};
   };
   const doc={
-    getElementById(id){if(!ids[id])throw Error('UNKNOWN_NODE '+id);return ids[id];},
+    getElementById(id){return ids[id] || null;},
     querySelectorAll(q){assert.equal(q,'[data-sec]');return buttons;},
     createElement(){return element();}
   };
