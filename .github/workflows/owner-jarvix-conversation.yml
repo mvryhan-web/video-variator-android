@@ -1,0 +1,123 @@
+name: Owner F2 one JARVIX Chat voice mode TEST only
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/jarvix-conversational-voice.js'
+      - 'app/src/main/assets/jarvix-conversational-voice.css'
+      - 'app/src/main/assets/jarvix-chat.js'
+      - 'app/src/main/assets/jarvix-chat.html'
+      - 'tests/jarvix-conversational-voice.*.mjs'
+      - 'tests/jarvix-cloudflare-branch-worker.js'
+      - 'tests/jarvix-cloudflare-branch-worker.test.mjs'
+      - '.github/workflows/owner-jarvix-conversation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conversational-voice-test-and-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      JARVIX_FREE_LLM_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Test one voice engine, privacy, history and old user mic, zero provider spending
+        run: |
+          node --test \
+            tests/jarvix-conversational-voice.test.mjs \
+            tests/jarvix-voice-input.test.mjs \
+            tests/jarvix-unified-chat.test.mjs \
+            tests/jarvix-action-first.test.mjs \
+            tests/jarvix-local-voice.test.mjs \
+            tests/jarvix-cloudflare-branch-worker.test.mjs
+      - name: Install browser engines
+        run: npx playwright install --with-deps chromium webkit
+      - name: Desktop Chromium and mobile WebKit mock-provider acceptance
+        run: npx playwright test --config tests/jarvix-conversational-voice.config.mjs
+      - name: Build a PREVIEW-ONLY asset folder and restricted JARVIX API route bridge
+        if: github.event_name == 'pull_request' && github.head_ref == 'owner-f2-jarvix-unified-voice-test-20261108'
+        run: |
+          mkdir -p "$RUNNER_TEMP/jarvix-test-dist"
+          cp -R app/src/main/assets/. "$RUNNER_TEMP/jarvix-test-dist/"
+          cp tests/jarvix-cloudflare-branch-worker.js "$RUNNER_TEMP/jarvix-test-dist/_worker.js"
+          test -f "$RUNNER_TEMP/jarvix-test-dist/jarvix-chat.html"
+          test -f "$RUNNER_TEMP/jarvix-test-dist/_worker.js"
+      - name: Cloudflare TEST branch preview, never production
+        if: github.event_name == 'pull_request' && github.head_ref == 'owner-f2-jarvix-unified-voice-test-20261108'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Cloudflare Pages GitHub secrets unavailable; TEST deploy not attempted."
+            exit 1
+          fi
+          npx --yes wrangler@4 pages deploy "$RUNNER_TEMP/jarvix-test-dist" \
+            --project-name=deepsyq \
+            --branch=owner-f2-jarvix-unified-voice-test-20261108 \
+            --commit-hash="${{ github.event.pull_request.head.sha }}"
+      - name: Verify published TEST UI and API availability without AI calls
+        if: github.event_name == 'pull_request' && github.head_ref == 'owner-f2-jarvix-unified-voice-test-20261108'
+        run: |
+          set -eu
+          TEST_URL='https://owner-f2-jarvix-unified-voic.deepsyq.pages.dev'
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --location --silent --show-error "$TEST_URL/jarvix-chat.html" -o /tmp/jarvix-test-page.html; then
+              break
+            fi
+            sleep 3
+          done
+          grep -q 'jarvix-conversational-voice.css' /tmp/jarvix-test-page.html
+          curl --fail --location --silent --show-error "$TEST_URL/jarvix-conversational-voice.js" \
+            | grep -q 'createJarvixVoiceSession'
+          python3 - "$TEST_URL" <<'PY'
+          import json, sys, urllib.request, urllib.error
+          root=sys.argv[1]
+          hosts=[('PREVIEW',root),('CANONICAL_TEST','https://deepsyq.pages.dev')]
+          results={}
+          for label,host in hosts:
+              for suffix in ('/api/jarvix/status','/api/jarvix/voice-config'):
+                  req=urllib.request.Request(host+suffix,headers={'User-Agent':'Mozilla/5.0 DEEPSYQ-Owner-API-Preflight','Accept':'application/json'})
+                  try:
+                      with urllib.request.urlopen(req,timeout=15) as response:
+                          code=response.status
+                          kind=response.headers.get('content-type','')
+                          body=response.read(512)
+                          challenged=response.headers.get('cf-mitigated','')
+                  except urllib.error.HTTPError as error:
+                      code=error.code
+                      kind=error.headers.get('content-type','')
+                      challenged=error.headers.get('cf-mitigated','')
+                      body=error.read(512)
+                  print(label, suffix, 'HTTP',code,'Content-Type',kind,'Challenge',challenged)
+                  print('Sanitized response prefix:',body.decode('utf-8','replace')[:220].replace('\n',' '))
+                  results[(label,suffix)]=(code,kind,body)
+          for suffix in ('/api/jarvix/status','/api/jarvix/voice-config'):
+              code,kind,body=results[('PREVIEW',suffix)]
+              if code != 200 or 'json' not in kind.lower():
+                  raise SystemExit('BLOCKED: Cloudflare branch preview API unavailable (not fixed by front-end HTML); must configure owner-authorized TEST Worker route/access')
+              data=json.loads(body)
+              if suffix.endswith('/status') and not isinstance(data.get('llm'),dict):
+                  raise SystemExit('BLOCKED: test has no confirmed AI route')
+              if suffix.endswith('/voice-config') and not isinstance(data.get('speechModelInstalled'),bool):
+                  raise SystemExit('BLOCKED: test has no confirmed speech route')
+          print('TEST API routes PRESENT, real provider calls intentionally not sent.')
+          PY
+      - name: Browser verify ACTUAL published Cloudflare TEST chat (all AI/TTS calls mocked, $0)
+        if: github.event_name == 'pull_request' && github.head_ref == 'owner-f2-jarvix-unified-voice-test-20261108'
+        env:
+          JARVIX_VOICE_REMOTE_TEST_URL: https://owner-f2-jarvix-unified-voic.deepsyq.pages.dev
+        run: npx playwright test --config tests/jarvix-conversational-voice.config.mjs

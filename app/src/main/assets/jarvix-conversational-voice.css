@@ -1,0 +1,18 @@
+/* One Voice Mode button beside the existing JARVIX dictation mic. Chat page only. */
+#jChatForm #jTalk.j-talk {
+ display:inline-flex;align-items:center;justify-content:center;flex:0 0 35px;
+ width:35px;min-width:35px;height:38px;box-sizing:border-box;
+ padding:5px;border:1px solid rgba(122,199,220,.38);border-radius:50%;
+ background:rgba(9,27,44,.76);color:#d1f5ff;cursor:pointer;
+ transition:border-color .15s,background .15s;
+}
+#jChatForm #jTalk.j-talk svg {width:20px;height:20px;display:block;flex-shrink:0}
+#jChatForm #jTalk.j-talk:focus-visible {outline:2px solid #e9faff;outline-offset:2px}
+#jChatForm #jTalk.j-talk:hover {border-color:#69d7e8;background:#153348}
+#jChatForm #jTalk.j-talk[data-voice-phase="listening"] {border-color:#44e1bb;box-shadow:0 0 9px #31cda64d;color:#7effd8}
+#jChatForm #jTalk.j-talk[data-voice-phase="thinking"] {border-color:#e6b96b;color:#ffd491}
+#jChatForm #jTalk.j-talk[data-voice-phase="speaking"] {border-color:#62cee8;color:#94e9ff}
+#jChatForm #jTalk.j-talk[aria-pressed="true"] svg{animation:j-talk-breathe 1.25s ease-in-out infinite alternate}
+@keyframes j-talk-breathe {from{opacity:.65;transform:scale(.92)}to{opacity:1;transform:scale(1.08)}}
+@media(max-width:390px){#jChatForm #jTalk.j-talk{flex-basis:30px;min-width:30px;width:30px;height:34px;padding:4px}#jChatForm #jTalk.j-talk svg{width:18px;height:18px}}
+@media(prefers-reduced-motion:reduce){#jChatForm #jTalk.j-talk[aria-pressed="true"] svg{animation:none}}
