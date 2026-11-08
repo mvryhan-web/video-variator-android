@@ -1,0 +1,30 @@
+name: F5 Cloudflare Cron isolated TEST gate
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'cloudflare/product-watcher/**'
+      - 'tests/product-watcher-cloudflare-cron-unit.mjs'
+      - '.github/workflows/f5-cloudflare-cron.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-cron:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install existing pinned dependencies
+        run: npm ci --ignore-scripts
+      - name: Offline syntax and cron safety tests
+        run: |
+          node --check cloudflare/product-watcher/cron-core.js
+          node --check cloudflare/product-watcher/worker.js
+          node --test tests/product-watcher-cloudflare-cron-unit.mjs
+      - name: Cloudflare Worker bundle only (NO deploy)
+        run: npx --yes wrangler@4 deploy --dry-run --config cloudflare/product-watcher/wrangler.toml
