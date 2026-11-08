@@ -1,0 +1,33 @@
+name: F4 W4.4 Workspace cursor and owner isolation (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/workspace-card-cursor.js'
+      - 'tests/workspace-card-cursor-unit.mjs'
+      - '.github/workflows/block4-workspace-cursor-w4-4.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/workspace-card-cursor.js'
+      - 'tests/workspace-card-cursor-unit.mjs'
+      - '.github/workflows/block4-workspace-cursor-w4-4.yml'
+permissions:
+  contents: read
+jobs:
+  offline-cursor-and-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify untouched W4.2 and W4.3 source syntax
+        run: |
+          node --check server/workspace-job-view.js
+          node --check server/workspace-card-sections.js
+          node --check server/workspace-card-cursor.js
+      - name: Run W4.2 W4.3 W4.4 no-network owner-scoped tests
+        run: |
+          node --test tests/workspace-job-view-unit.mjs tests/workspace-card-sections-unit.mjs tests/workspace-card-cursor-unit.mjs
