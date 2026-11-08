@@ -62,6 +62,20 @@ app.get('/api/config',(_req,res)=>res.json({
   business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}
  }
 }));
+app.get('/api/ai-billing/config',(_req,res)=>res.json({
+ enabled:false,mode:'test',livePaymentsEnabled:false,unit:'AI credits',
+ subscriptionCredits:{basic:500,pro:1500,business:6000},
+ packs:[
+  {sku:'credits_1000',credits:1000,amount:1000,currency:'usd'},
+  {sku:'credits_10000',credits:10000,amount:10000,currency:'usd'},
+  {sku:'credits_100000',credits:100000,amount:100000,currency:'usd'},
+  {sku:'credits_1000000',credits:1000000,amount:1000000,currency:'usd'},
+  {sku:'credits_10000000',credits:10000000,amount:10000000,currency:'usd'}
+ ],
+ rates:[{kind:'image',credits:5},{kind:'video',credits:20},{kind:'music',credits:10}],
+ revision:'preview-catalog-v1',reason:'PREVIEW_ONLY'
+}));
+app.get('/api/ai-wallet/config',(_req,res)=>res.json({welcomeEnabled:false,welcomeCredits:0}));
 const isFreeStudioActive = process.env.FREE_AI_STUDIO_ENABLED === 'true' || Boolean(process.env.RENDER) || process.env.NODE_ENV === 'production' || process.env.PORT !== '31896';
 const isLegacyTest = !isFreeStudioActive;
 

@@ -340,9 +340,16 @@ function initGoogle(){
 }
 window.addEventListener('load',()=>{if(!authModal.hidden)initGoogle();});
 
+const fallbackPlanConfig={
+ billingConfigured:false,googleClientId:'',
+ plans:{
+  basic:{price:9,limit:750},pro:{price:24,limit:2250},
+  business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}
+ }
+};
 async function initialize(){
  let planConfig=null,creditConfig=null;
- try{planConfig=await api('/api/config');}catch{ /* Fail closed */ }
+ try{planConfig=await api('/api/config');}catch{planConfig=fallbackPlanConfig;}
  renderPlans(planConfig);
  try{creditConfig=await api('/api/ai-billing/config');}catch{ /* Preview-only server or unavailable endpoint */ }
  renderCredits(creditConfig);

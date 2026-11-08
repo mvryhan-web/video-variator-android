@@ -83,7 +83,12 @@ if(process.env.RENDER_EXTERNAL_HOSTNAME){
       {kind:'music',credits:10}
     ]),
     AI_CREDIT_PACKS_JSON:JSON.stringify([
-      {sku:'pack_starter',priceId:'price_1URuWTLR9hQMNEjM0E4GWLXN',credits:20,amount:99,currency:'usd'}
+      {sku:'pack_starter',priceId:process.env.STRIPE_PRICE_STARTER||'price_1URuWTLR9hQMNEjM0E4GWLXN',credits:20,amount:99,currency:'usd'},
+      ...(process.env.STRIPE_PRICE_CREDITS_1000?[{sku:'credits_1000',priceId:process.env.STRIPE_PRICE_CREDITS_1000,credits:1000,amount:1000,currency:'usd'}]:[]),
+      ...(process.env.STRIPE_PRICE_CREDITS_10000?[{sku:'credits_10000',priceId:process.env.STRIPE_PRICE_CREDITS_10000,credits:10000,amount:10000,currency:'usd'}]:[]),
+      ...(process.env.STRIPE_PRICE_CREDITS_100000?[{sku:'credits_100000',priceId:process.env.STRIPE_PRICE_CREDITS_100000,credits:100000,amount:100000,currency:'usd'}]:[]),
+      ...(process.env.STRIPE_PRICE_CREDITS_1000000?[{sku:'credits_1000000',priceId:process.env.STRIPE_PRICE_CREDITS_1000000,credits:1000000,amount:1000000,currency:'usd'}]:[]),
+      ...(process.env.STRIPE_PRICE_CREDITS_10000000?[{sku:'credits_10000000',priceId:process.env.STRIPE_PRICE_CREDITS_10000000,credits:10000000,amount:10000000,currency:'usd'}]:[])
     ]),
     AI_MODEL_PRICING_JSON:JSON.stringify([
       {model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:5,providerCostMicros:15000,currency:'usd'},
