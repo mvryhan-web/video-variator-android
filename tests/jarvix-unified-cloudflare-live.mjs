@@ -56,11 +56,22 @@ try {
     assert.ok(await page.locator('#creator').count(),'Preserved native Studio composer '+kind);
     assert.ok(await page.locator('#settingsButton').count(),'Preserved Studio settings '+kind);
     assert.ok(await page.locator('#modelButton').count(),'Preserved model picker '+kind);
+    const studioTools=page.locator('#jarvixStudioToolsToggle');
+    await studioTools.waitFor({state:'visible',timeout:10000});
+    assert.equal(await studioTools.getAttribute('aria-expanded'),'false','Native Studio must start collapsed');
+    assert.equal(await page.locator('#creator').isVisible(),false,'Only ONE composer is visible by default');
+    assert.equal(await page.frameLocator('#jarvixSharedChatFrame').locator('#jNew').isVisible(),false,'Only outer New Chat control in Studio');
+    await studioTools.click();
+    assert.equal(await page.locator('#creator').isVisible(),true,'Existing Studio generator must remain accessible');
+    await studioTools.click();
+    assert.equal(await page.locator('#creator').isVisible(),false,'Second composer must collapse again');
     await page.locator('#jarvixActivityToggle').waitFor({timeout:10000});
     const toggle=page.locator('#jarvixActivityToggle');
     if(await toggle.getAttribute('aria-expanded')!=='true') await toggle.click();
     await page.locator('#jarvixActivityPanel .jarvix-activity-title').waitFor({state:'visible'});
     assert.equal((await page.locator('#jarvixActivityPanel .jarvix-activity-title').innerText()).trim(),'JARVIX Chat');
+    await page.screenshot({path:'artifacts/jarvix-unified/'+size.name+'-'+kind+'-history.png'});
+    if(await toggle.getAttribute('aria-expanded')==='true') await toggle.click();
     await page.screenshot({path:'artifacts/jarvix-unified/'+size.name+'-'+kind+'.png'});
     console.log('UNIFIED_JARVIX_LIVE_OK',size.name,kind,id);
   }
