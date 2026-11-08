@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `0cc74822b97cbfc85e3c7a2f628e9bba9926efad`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `d8223e5aea3072befcb4dc0b2b388534d047cf61`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` | Indexed files: 62 | Named symbols: 177 | Checked relations: 50
 
 ## Topic finder (matching filenames)
@@ -39,7 +39,7 @@ db.js (L1) · adminEmail (L6) · pool (L8)
 
 ### `server/deepsyq-preview.js`
 
-app (L20) · port (L21) · root (L22) · assets (L23) · ffmpegUmd (L24) · ffmpegCore (L25) · disabled (L28) · freeStudioModels (L68) · freeJarvix (L248) · jarvixRequests (L249) · ownerMedia (L291) · imageMedia (L292) · ownerInspiration (L297) · ownerNext (L301) · approvedItems (L303) · previewItems (L304) · creativeMedia (L314)
+app (L20) · port (L21) · root (L22) · assets (L23) · ffmpegUmd (L24) · ffmpegCore (L25) · disabled (L28) · freeStudioModels (L82) · freeJarvix (L262) · jarvixRequests (L263) · ownerMedia (L305) · imageMedia (L306) · ownerInspiration (L311) · ownerNext (L315) · approvedItems (L317) · previewItems (L318) · creativeMedia (L328)
 
 ### `server/email-auth.js`
 
@@ -215,7 +215,7 @@ reminders.js (L1) · validFrequency (L12) · validChannel (L13) · leads (L14)
 
 ### `server/server.js`
 
-server.js (L1) · app (L29) · port (L29) · __dirname (L31) · rootDir (L32) · staticDir (L33) · ffmpegDist (L34) · ffmpegCoreDist (L35) · appUrl (L107) · googleJwks (L112) · appleJwks (L112) · plans (L113) · registerTelegramWebhook (L209) · generationBilling (L258) · generationStudio (L262)
+server.js (L1) · app (L29) · port (L29) · __dirname (L31) · rootDir (L32) · staticDir (L33) · ffmpegDist (L34) · ffmpegCoreDist (L35) · appUrl (L112) · googleJwks (L117) · appleJwks (L117) · plans (L118) · registerTelegramWebhook (L214) · generationBilling (L263) · generationStudio (L267)
 
 ### `server/speech.js`
 
