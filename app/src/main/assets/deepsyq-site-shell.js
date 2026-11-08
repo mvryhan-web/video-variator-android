@@ -315,6 +315,11 @@
   document.body.classList.add('deepsyq-sitewide-shell');
   document.body.prepend(scrim, toggle, sidebar);
 
+  // Owner-scoped: one shared recent history drawer only on JARVIX Chat and Image/Video/Audio Studio.
+  if (path === 'jarvix-chat.html' || path === 'generate-studio.html') {
+    import('./jarvix-activity-drawer.js').catch(error => console.warn('JARVIX recent activity unavailable:', error?.message));
+  }
+
   // Dynamic live re-translation listener
   const refreshLanguage = () => {
     const dict = t();
