@@ -30,6 +30,7 @@ import {objectStorageConfig} from './generation-storage.js';
 import {isSmartDecisionEnabled,decideSmartModel,publicDecisionView} from './generation-smart-decision.js';
 import {projectWorkspaceJobView} from './workspace-job-view.js';
 import {selectWorkspaceCardSections} from './workspace-card-sections.js';
+import {paginateAuthorizedWorkspaceRows,WORKSPACE_SOURCE_LIMIT} from './workspace-card-page-source.js';
 import {renameProjectRecord,archiveProjectRecord,restoreProjectRecord,toggleFavoriteProjectRecord,deletePreflightProjectRecord,WorkspacePolicyError} from './workspace-project-policy.js';
 import {validateCompareAiPolicy} from './compare-ai-policy.js';
 import {executeCompareAiMock} from './compare-ai-mock-worker.js';
@@ -520,6 +521,44 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  }catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
  app.get('/api/studio/workspace/cards',auth,generationUser,async(req,res)=>{res.set('Cache-Control','private, no-store');try{
   await init();
+  // Opt-in W4.4 pagination: legacy response is completely unchanged without
+  // ?section=recent|drafts|completed. No AI generation or paid service calls.
+  if(Object.prototype.hasOwnProperty.call(req.query,'section')){
+   if(typeof req.query.section!=='string')return res.status(400).json({error:'INVALID_SECTION'});
+   const cursorValue=req.query.cursor;
+   if(cursorValue!==undefined&&typeof cursorValue!=='string')return res.status(400).json({error:'INVALID_OR_STALE_CURSOR'});
+   const pageSizeValue=req.query.pageSize;
+   if(pageSizeValue!==undefined&&typeof pageSizeValue!=='string')return res.status(400).json({error:'INVALID_PAGE_SIZE'});
+   const privateSecret=env.WORKSPACE_CURSOR_SECRET||env.APP_JWT_SECRET;
+   if(typeof privateSecret!=='string'||Buffer.byteLength(privateSecret,'utf8')<32){
+    return res.status(503).json({error:'WORKSPACE_CURSOR_NOT_CONFIGURED'});
+   }
+   const filters={
+    searchQuery:typeof req.query.q==='string'?req.query.q:'',
+    typeFilter:typeof req.query.type==='string'?req.query.type:'',
+    statusFilter:typeof req.query.status==='string'?req.query.status:''
+   };
+   // Bounded query, always scoped to the session identity, never an input user ID.
+   // A too-large dataset yields an explicit error; NEVER silently omit older work.
+   const {rows:historyRows}=await pool.query(
+    'SELECT id,user_id,kind,status,output_assets,metadata,created_at FROM vv_generation_jobs WHERE user_id=$1 AND deleted=false ORDER BY created_at DESC,id ASC LIMIT $2',
+    [req.user.id,WORKSPACE_SOURCE_LIMIT+1]
+   );
+   const paged=paginateAuthorizedWorkspaceRows({
+    rows:historyRows,verifiedAccountKey:String(req.user.id),
+    requestedSection:req.query.section,signingSecret:privateSecret,filters,
+    cursor:cursorValue??null,pageSize:pageSizeValue===undefined?30:Number(pageSizeValue),
+    includeArchived:req.query.includeArchived==='true'
+   });
+   if(paged.error){
+    const code=paged.error==='INVALID_OR_STALE_CURSOR'?409
+      :paged.error==='WORKSPACE_SOURCE_TOO_LARGE'?413
+      :paged.error==='CURSOR_SECRET_UNAVAILABLE'?503:400;
+    return res.status(code).json({error:paged.error});
+   }
+   return res.json(paged);
+  }
+
   const {rows}=await pool.query('SELECT id,user_id,kind,status,output_assets,metadata,created_at FROM vv_generation_jobs WHERE user_id=$1 AND deleted=false ORDER BY created_at DESC LIMIT 50',[req.user.id]);
   const includeArchived=req.query.includeArchived==='true';
   const favoriteProof=new Set();
