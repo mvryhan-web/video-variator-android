@@ -423,7 +423,14 @@
           };
           audioFrame = win.requestAnimationFrame(frame);
           if (audioContext.state === 'suspended') {
-            try { void Promise.resolve(audioContext.resume()).catch(() => stopMeter()); } catch { stopMeter(); }
+            const pendingContext = audioContext;
+            try {
+              void Promise.resolve(pendingContext.resume()).catch(() => {
+                if (audioContext === pendingContext) stopMeter();
+              });
+            } catch {
+              if (audioContext === pendingContext) stopMeter();
+            }
           }
         } catch {
           stopMeter(); // Unsupported Web Audio must not break the opt-in microphone controls.
