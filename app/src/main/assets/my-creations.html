@@ -217,6 +217,10 @@ main.ws-page{width:100%;max-width:none;margin:0;padding:16px clamp(16px,2.5vw,40
     $('cardsGrid').replaceChildren();
     $('wsLoadMore').hidden = true;
     if (!localStorage.getItem('vv_token')) {
+      for (const k of ['recent', 'favorites', 'completed', 'drafts']) {
+        const count = $('cnt-' + k);
+        if (count) count.textContent = '0';
+      }
       $('wsStatus').textContent = '';
       const empty = document.createElement('div');
       empty.className = 'ws-empty';
