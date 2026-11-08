@@ -35,9 +35,10 @@ try{
     await page.goto(base+'/'+l.page,{waitUntil:'domcontentloaded',timeout:30000});
     await page.waitForSelector('#jPlus',{timeout:16000});
     await page.waitForSelector('.j-mode-rail a',{timeout:16000});
-    assert.equal(await page.locator('.j-mode-rail a').count(),2,'one existing rail with two persistent links');
+    assert.equal(await page.locator('.j-mode-rail a').count(),1,'one JARVIX link in shared chat rail');
     assert.deepEqual(await page.locator('.j-mode-rail a').allTextContents().then(a=>a.map(s=>s.trim().replace(/^◉\s*/,''))),
-      ['JARVIX','Video Uniquifier']);
+      ['JARVIX']);
+    assert.equal(await page.locator('.j-mode-rail a[href="index.html"]').count(),0,'Video Uniquifier is not a chat-mode link');
     assert.equal(await page.locator('.j-active-mode').isVisible(),false);
     assert.equal(await page.locator('.j-image-shortcut,.j-attach-shortcut').count(),0,'no duplicate image and clip');
     await page.locator('#jPlus').click();
