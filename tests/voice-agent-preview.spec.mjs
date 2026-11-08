@@ -247,10 +247,9 @@ test('V6.3: no meter or context on permission denial/device absence; pending Sto
   await page.click('#enableMicBtn');
   await expect(page.locator('#voiceStateBadge')).toHaveText('DEVICE_MISSING');
   await page.evaluate(() => { window.__VOICE_TEST_STATE__.failMode = null; });
-  await page.evaluate(() => {
-    document.getElementById('enableMicBtn').click();
-    document.getElementById('stopMicBtn').click();
-  });
+  await page.click('#enableMicBtn');
+  await expect.poll(() => page.evaluate(() => window.__VOICE_TEST_STATE__.getUserMediaCalls)).toBe(3);
+  await page.click('#stopMicBtn');
   await expect(page.locator('#voiceStateBadge')).toHaveText('IDLE');
   await page.waitForTimeout(150);
   await expect(page.locator('#micMeter')).toHaveAttribute('aria-valuenow', '0');
