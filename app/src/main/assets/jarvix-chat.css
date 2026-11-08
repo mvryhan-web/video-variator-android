@@ -670,4 +670,6 @@ html.jarvix-embedded .jarvix-activity-panel,
 html.jarvix-embedded .jarvix-activity-toggle{display:none!important}
 html.jarvix-embedded .jarvix-chat{box-sizing:border-box;margin:0!important;width:100%!important;max-width:none!important;height:100dvh!important;min-height:0!important;padding:10px 13px!important}
 html.jarvix-embedded .j-chat-toolbar h1{font-size:18px}
+html.jarvix-embedded #jHistory,
+html.jarvix-embedded #jNew{display:none!important}
 @media(max-width:760px){html.jarvix-embedded .jarvix-chat{padding:8px!important;height:100dvh!important}}
