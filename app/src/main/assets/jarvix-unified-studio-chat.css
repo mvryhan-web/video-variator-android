@@ -33,3 +33,9 @@ body.jarvix-shared-studio-chat .jarvix-studio-tools-toggle:focus-visible{
 body.jarvix-shared-studio-chat:not(.jarvix-studio-tools-open) #studioUniversalDock{
  display:none!important;
 }
+/* Studio chat sits lower than standalone Chat. Keep its shared arrow below
+   the actual JARVIX heading rather than at the standalone fixed position. */
+body.jarvix-shared-studio-chat .jarvix-activity-toggle{top:238px}
+@media(max-width:900px){
+ body.jarvix-shared-studio-chat .jarvix-activity-toggle{top:272px}
+}
