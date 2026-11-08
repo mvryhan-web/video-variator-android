@@ -22,14 +22,14 @@ body.ds-embedded-uniquifier .shell>.main{
    The old standalone app chrome stays retired; its stats remain hidden by VU CSS. */
 body.ds-embedded-uniquifier .ds-platform-header{
  position:relative;display:flex;align-items:center;justify-content:center;
- min-height:88px;height:88px;margin:11px 14px 0 0;padding:0 14px 0 78px;
- border:1px solid #24c8f1;border-radius:19px;
- background:linear-gradient(110deg,#02091b,#060a23 54%,#070a21);
- box-shadow:0 0 0 1px #4834a766,0 0 13px #00e9ff59,inset 0 0 12px #4c38bc25;
+ min-height:76px;height:76px;margin:0;padding:0 20px;
+ border:0;border-radius:0;
+ background:rgba(3, 8, 22, 0.94);
+ box-shadow:none;
  box-sizing:border-box;isolation:isolate;
 }
 body.ds-embedded-uniquifier .ds-platform-header.ds-hard-fixed{
- margin:0!important;border-radius:18px;z-index:480!important;
+ margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;z-index:480!important;
 }
 body.ds-embedded-uniquifier #topJarvisBtn{
  position:absolute!important;left:50%!important;top:50%!important;
@@ -102,16 +102,10 @@ body.ds-embedded-uniquifier.ds-vu-nav-collapsed .ds-site-mobile-toggle{left:23px
 /* Owner 07 Nov: the Video Uniquifier uses the same working DEEPSYQ header
    button order on desktop. No change to its approved films or processing UI. */
 @media(min-width:761px){
- html body.ds-embedded-uniquifier .ds-platform-header .ds-header-tools{
-  left:70px!important;
- }
- html body.ds-embedded-uniquifier .ds-platform-header .ds-header-credit{
-  left:calc(50% - 155px)!important;right:auto!important;
-  transform:translateY(-50%)!important;white-space:nowrap!important;
- }
+ html body.ds-embedded-uniquifier .ds-platform-header .ds-header-tools,
+ html body.ds-embedded-uniquifier .ds-platform-header .ds-header-credit,
  html body.ds-embedded-uniquifier .ds-platform-header #dsTakeTour{
-  left:calc(50% + 56px)!important;right:auto!important;
-  transform:translateY(-50%)!important;white-space:nowrap!important;
-  overflow-wrap:normal!important;word-break:keep-all!important;
+  position:static!important;left:auto!important;right:auto!important;top:auto!important;
+  transform:none!important;white-space:nowrap!important;
  }
 }
