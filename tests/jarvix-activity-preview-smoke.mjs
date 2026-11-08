@@ -29,7 +29,29 @@ try{
    try{
     const response=await page.goto(base+'/'+route,{waitUntil:'domcontentloaded',timeout:30000});
     assert.equal(response?.status(),200,route+' HTTP status');
-    await page.locator('#jarvixActivityToggle').waitFor({state:'visible',timeout:20000});
+    try {
+     await page.locator('#jarvixActivityToggle').waitFor({state:'visible',timeout:6000});
+    } catch (absence) {
+     const debug=await page.evaluate(async()=>{
+      const paths=['deepsyq-site-shell.js','jarvix-activity-drawer.js','jarvix-chat.css'];
+      const assets=await Promise.all(paths.map(async path=>{
+       try{const r=await fetch(path,{cache:'no-store'}),body=await r.text();
+        return{path,status:r.status,mime:r.headers.get('content-type'),
+         length:body.length,snippet:body.slice(0,90),
+         hasDrawer:body.includes('jarvix-activity-drawer.js')||body.includes('jarvix-activity-toggle')};
+       }catch(e){return{path,error:String(e)}}
+      }));
+      return{title:document.title,url:location.href,
+       mainText:document.body?.innerText?.slice(0,250),
+       scripts:[...document.scripts].map(x=>x.src||'[inline]').slice(0,30),
+       htmlHasJarvixChat:document.documentElement.outerHTML.includes('jHistory'),
+       htmlHasStudio:document.documentElement.outerHTML.includes('historyList'),
+       hasSiteSidebar:!!document.querySelector('#dsSiteSidebar'),
+       assets};
+     });
+     console.error('CLOUDFLARE_DIAGNOSTICS',JSON.stringify({route,viewport:viewport.name,debug}));
+     throw absence;
+    }
     const expand=page.locator('#jarvixActivityToggle');
     if(await expand.getAttribute('aria-expanded')==='false')await expand.click();
     await page.locator('#jarvixActivityPanel').waitFor({state:'visible',timeout:7000});
