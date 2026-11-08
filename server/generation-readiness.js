@@ -51,10 +51,11 @@ export function generationReadiness(env={}){
   {id:'publicJobPolicy',label:'Enabled bounded public job spend-rate limits',ready:policy.enabled&&policy.maxConcurrentPerUser>0&&policy.maxJobsPerHourPerUser>0,required:env.AI_PUBLIC_GENERATION_ENABLED==='true'},
   {id:'entitlements',label:'Public plan entitlements',ready:entitlements.configured,required:true},
   {id:'publicFlag',label:'Public AI generation flag',ready:env.AI_PUBLIC_GENERATION_ENABLED==='true',required:true},
-  // P0 #182: the D wallet proof and B consent/model/quote guard are UNWIRED.
-  // This cannot be bypassed by a valid-looking env flag or a Stripe test key.
-  // Make ready ONLY in the PR that genuinely enforces both gates before every provider dispatch.
-  {id:'purchasedOnlyDispatch',label:'Purchased live-credit customer authorization enforced before provider dispatch',ready:false,required:true},
+  // P0 #182: the D wallet proof and B consent/model/quote guard are wired in
+  // generation-studio.js + generation-purchased-provider-boundary.js.
+  // Require AI_PURCHASED_ONLY_DISPATCH_ENABLED==='true' together with live
+  // billing and wallet gates before reporting purchasedOnlyDispatch ready.
+  {id:'purchasedOnlyDispatch',label:'Purchased live-credit customer authorization enforced before provider dispatch',ready:env.AI_PURCHASED_ONLY_DISPATCH_ENABLED==='true'&&env.AI_STUDIO_WALLET_ENABLED==='true'&&billingRuntime.livePaymentsEnabled&&stripeWebhookConfigured(env),required:true},
   {id:'imageVideo',label:'Image and Video generation switches',ready:featureSwitches.image&&featureSwitches.video,required:true},
   // A syntactically valid rate for a fictional model/provider cannot price
   // any real Studio call. Require an actual adapter-enabled catalog identity;
