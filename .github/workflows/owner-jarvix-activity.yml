@@ -1,0 +1,39 @@
+name: Owner JARVIX recent activity drawer no-spend acceptance
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/jarvix-activity-drawer.js'
+      - 'app/src/main/assets/jarvix-chat.js'
+      - 'app/src/main/assets/jarvix-chat.css'
+      - 'app/src/main/assets/deepsyq-site-shell.js'
+      - 'tests/jarvix-activity-drawer.browser.test.mjs'
+      - '.github/workflows/owner-jarvix-activity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recent-history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      PRODUCT_WATCHER_ENABLED: 'false'
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install project dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install Chromium for isolated browser acceptance
+        run: npx playwright install --with-deps chromium
+      - name: Verify JARVIX and Studio history drawer with no paid requests
+        run: node --test tests/jarvix-activity-drawer.browser.test.mjs
