@@ -54,6 +54,7 @@ jobs:
             "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/deepsyq" \
             > /tmp/deepsyq-pages-project.json
           node --input-type=module -e 'import fs from "node:fs";const p=JSON.parse(fs.readFileSync("/tmp/deepsyq-pages-project.json","utf8"));const b=p.result?.production_branch;if(p.success!==true||!b||b===process.env.PREVIEW_BRANCH){console.error("Cloudflare production branch could not be safely excluded. Aborting.");process.exit(1)}console.log("Verified Cloudflare Pages production branch differs from this isolated preview branch.")'
+          node --input-type=module -e 'import fs from "node:fs";const p=JSON.parse(fs.readFileSync("/tmp/deepsyq-pages-project.json","utf8"));const d=p.result?.canonical_deployment;const latest=p.result?.latest_deployment;console.log("CLOUDFLARE_RELEASE_AUDIT",JSON.stringify({project:p.result?.name,production_branch:p.result?.production_branch,production_deployment:{id:d?.id,branch:d?.deployment_trigger?.metadata?.branch,commit:d?.deployment_trigger?.metadata?.commit_hash},latest_deployment:{id:latest?.id,branch:latest?.deployment_trigger?.metadata?.branch,commit:latest?.deployment_trigger?.metadata?.commit_hash}}))'
           npx --yes wrangler@4 pages deploy app/src/main/assets \
             --project-name=deepsyq \
             --branch="${PREVIEW_BRANCH}" \
