@@ -102,6 +102,31 @@
       background: rgba(255, 100, 124, 0.18);
       color: var(--danger);
     }
+    .mic-meter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 14px;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .mic-meter-track {
+      width: 100%;
+      height: 9px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+    }
+    .mic-meter-fill {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: var(--live);
+    }
     #voiceStatusText {
       margin: 0;
       font-size: 14px;
@@ -228,6 +253,13 @@
       <p id="voiceStatusText" role="status" aria-live="polite">
         Microphone is off. Click "Enable microphone" to request local access.
       </p>
+      <div class="mic-meter-row">
+        <span id="micMeterLabel">Local microphone level</span>
+        <span id="micMeterPercent" aria-hidden="true">0%</span>
+      </div>
+      <div id="micMeter" class="mic-meter-track" role="meter" aria-label="Local microphone level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0 percent">
+        <span id="micMeterFill" class="mic-meter-fill"></span>
+      </div>
       <p id="voiceErrorText" role="alert" hidden></p>
     </section>
 
@@ -285,6 +317,9 @@
       const mockInput = doc.getElementById('mockTranscriptInput');
       const mockBtn = doc.getElementById('mockTranscriptBtn');
       const mockOutput = doc.getElementById('mockTranscriptOutput');
+      const meter = doc.getElementById('micMeter');
+      const meterFill = doc.getElementById('micMeterFill');
+      const meterPercent = doc.getElementById('micMeterPercent');
 
       const adapter = options.mediaAdapter || win.__VOICE_PREVIEW_MEDIA_ADAPTER__ || null;
       const accountId = options.accountId ?? (typeof localStorage !== 'undefined' ? localStorage.getItem('vv_token') : null);
@@ -299,6 +334,108 @@
         [VOICE_AGENT_STATES.DEVICE_MISSING]: 'No working microphone device or media adapter was found on this device.',
         [VOICE_AGENT_STATES.ERROR]: 'Could not start microphone preview. Please try again.'
       };
+
+      // Local, output-disconnected Web Audio graph: microphone -> analyser only.
+      // It never records, uploads, plays sound or synthesizes speech.
+      let audioContext = null;
+      let audioSource = null;
+      let audioAnalyser = null;
+      let audioStream = null;
+      let audioTrack = null;
+      let audioBytes = null;
+      let audioFrame = 0;
+      let audioGeneration = 0;
+
+      function updateMeter(level) {
+        const value = Number.isFinite(level) ? Math.max(0, Math.min(100, Math.round(level))) : 0;
+        meterFill.style.width = value + '%';
+        meterPercent.textContent = value + '%';
+        meter.setAttribute('aria-valuenow', String(value));
+        meter.setAttribute('aria-valuetext', value + ' percent');
+      }
+
+      function onAudioTrackEnded() {
+        if (audioStream && controller.stream === audioStream) controller.stopMicrophone();
+      }
+
+      function stopMeter() {
+        audioGeneration++;
+        if (audioFrame) win.cancelAnimationFrame(audioFrame);
+        audioFrame = 0;
+        audioTrack?.removeEventListener?.('ended', onAudioTrackEnded);
+        try { audioSource?.disconnect(); } catch {}
+        try { audioAnalyser?.disconnect(); } catch {}
+        const previousContext = audioContext;
+        audioContext = null;
+        audioSource = null;
+        audioAnalyser = null;
+        audioStream = null;
+        audioTrack = null;
+        audioBytes = null;
+        if (previousContext && previousContext.state !== 'closed') {
+          try { void Promise.resolve(previousContext.close()).catch(() => {}); } catch {}
+        }
+        updateMeter(0);
+      }
+
+      function startMeter() {
+        const stream = controller.stream;
+        if (!stream || controller.state !== VOICE_AGENT_STATES.LIVE || doc.visibilityState === 'hidden') return;
+        if (stream === audioStream && audioAnalyser) return;
+        stopMeter();
+        const Context = options.AudioContext || win.AudioContext || win.webkitAudioContext;
+        if (typeof Context !== 'function') return;
+        try {
+          audioContext = new Context();
+          audioSource = audioContext.createMediaStreamSource(stream);
+          audioAnalyser = audioContext.createAnalyser();
+          audioAnalyser.fftSize = 1024;
+          audioSource.connect(audioAnalyser); // Deliberately NO destination/output connection.
+          audioStream = stream;
+          audioTrack = stream.getAudioTracks?.()[0] || null;
+          audioBytes = new Uint8Array(audioAnalyser.fftSize);
+          audioTrack?.addEventListener?.('ended', onAudioTrackEnded, { once: true });
+          const generation = ++audioGeneration;
+          const frame = () => {
+            if (generation !== audioGeneration || controller.state !== VOICE_AGENT_STATES.LIVE ||
+                controller.stream !== stream || doc.visibilityState === 'hidden' ||
+                audioTrack?.readyState === 'ended') {
+              if (generation === audioGeneration) {
+                if (audioTrack?.readyState === 'ended') controller.stopMicrophone();
+                else stopMeter();
+              }
+              return;
+            }
+            try {
+              audioAnalyser.getByteTimeDomainData(audioBytes);
+              let sum = 0;
+              for (const sample of audioBytes) {
+                const centered = (sample - 128) / 128;
+                sum += centered * centered;
+              }
+              // Actual RMS from PCM amplitude, scaled for a small visible 0–100% meter.
+              updateMeter(Math.sqrt(sum / audioBytes.length) * 140);
+            } catch {
+              stopMeter();
+              return;
+            }
+            audioFrame = win.requestAnimationFrame(frame);
+          };
+          audioFrame = win.requestAnimationFrame(frame);
+          if (audioContext.state === 'suspended') {
+            const pendingContext = audioContext;
+            try {
+              void Promise.resolve(pendingContext.resume()).catch(() => {
+                if (audioContext === pendingContext) stopMeter();
+              });
+            } catch {
+              if (audioContext === pendingContext) stopMeter();
+            }
+          }
+        } catch {
+          stopMeter(); // Unsupported Web Audio must not break the opt-in microphone controls.
+        }
+      }
 
       function render(status) {
         const st = status.state;
@@ -323,9 +460,16 @@
         muteBtn.disabled = !(st === VOICE_AGENT_STATES.LIVE || st === VOICE_AGENT_STATES.MUTED);
         muteBtn.textContent = st === VOICE_AGENT_STATES.MUTED ? 'Unmute' : 'Mute';
         stopBtn.disabled = !busyOrActive;
+        if (st === VOICE_AGENT_STATES.LIVE && status.hasStream && !status.isMuted) startMeter();
+        else stopMeter();
       }
 
       controller.subscribe(render);
+      // Controller already stops on pagehide/visibility. React to another-tab
+      // account change as well, so the meter never follows a stale identity.
+      win.addEventListener('storage', event => {
+        if (event.key === 'vv_token') controller.setAccountId(event.newValue || null);
+      });
 
       enableBtn.addEventListener('click', () => {
         void controller.requestMicrophone();
