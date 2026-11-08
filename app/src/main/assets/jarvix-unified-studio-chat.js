@@ -18,7 +18,23 @@
   frame.referrerPolicy = 'same-origin';
   host.append(frame);
   main.prepend(host);
+  const toolsToggle = document.createElement('button');
+  toolsToggle.id = 'jarvixStudioToolsToggle';
+  toolsToggle.type = 'button';
+  toolsToggle.className = 'jarvix-studio-tools-toggle';
+  toolsToggle.setAttribute('aria-controls', 'creator');
+  const showToolsInitially = new URLSearchParams(location.search).get('view') === 'studio' ||
+    new URLSearchParams(location.search).has('jobId') ||
+    Boolean(sessionStorage.getItem('deepsyq_studio_handoff_id'));
+  const setToolsVisible = value => {
+    document.body.classList.toggle('jarvix-studio-tools-open',value);
+    toolsToggle.setAttribute('aria-expanded',String(value));
+    toolsToggle.textContent = value ? 'Свернуть инструменты Studio ▴' : 'Инструменты Studio ▾';
+  };
+  host.after(toolsToggle);
+  toolsToggle.addEventListener('click',() => setToolsVisible(!document.body.classList.contains('jarvix-studio-tools-open')));
   document.body.classList.add('jarvix-shared-studio-chat');
+  setToolsVisible(showToolsInitially);
 
   const currentMode = () => {
     const selected = nav.querySelector('button[data-kind][aria-pressed="true"]')?.dataset.kind;
