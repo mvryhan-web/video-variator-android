@@ -32,7 +32,10 @@ const store=await conversationStore();let conversation=null,busy=false,epoch=0,c
 const headers=()=>({'Content-Type':'application/json',...(localStorage.getItem('vv_token')?{Authorization:'Bearer '+localStorage.getItem('vv_token')}:{})});
 async function api(path,body){store.guard();const r=await fetch(path,{method:body?'POST':'GET',headers:headers(),cache:'no-store',...(body?{body:JSON.stringify(body)}:{}),signal:controller?.signal});store.guard();const d=await r.json();if(!r.ok)throw Error(d.message||d.error||'Request failed');return d;}
 async function save(){conversation=await store.save(conversation);await historyList();}
-async function historyList(){const rows=await store.list();$('jHistory').replaceChildren();for(const r of rows){const o=document.createElement('option');o.value=r.id;o.textContent=r.title;o.selected=r.id===conversation?.id;$('jHistory').append(o);}}
+async function historyList(){const rows=await store.list();$('jHistory').replaceChildren();for(const r of rows){const o=document.createElement('option');o.value=r.id;o.textContent=r.title;o.selected=r.id===conversation?.id;$('jHistory').append(o);}
+ window.dispatchEvent(new Event('jarvix:history-changed'));
+ if (window.parent !== window) { try { if (window.parent.location.origin === location.origin) window.parent.dispatchEvent(new Event('jarvix:history-changed')); } catch {} }
+}
 const node=(tag,text)=>{const n=document.createElement(tag);if(text)n.textContent=text;return n;};
 function showFile(parent,file){const box=node('div'),url=URL.createObjectURL(file);urls.push(url);const el=node(file.type.startsWith('image/')?'img':file.type.startsWith('video/')?'video':file.type.startsWith('audio/')?'audio':'a');el.src=url;if(el.tagName==='IMG')el.alt=file.name||'Attachment';else if(el.tagName==='A'){el.href=url;el.download=file.name;el.textContent=file.name;}else el.controls=true;box.append(el);parent.append(box);}
 function render(){for(const url of urls)URL.revokeObjectURL(url);urls=[];const area=$('jMessages');area.replaceChildren();if(!conversation.messages.length){const empty=node('div');empty.className='j-empty';empty.append(node('h2','What would you like to create?'));area.append(empty);}
@@ -115,16 +118,33 @@ async function processMessage(message){
    status(e.message);if(message.voiceAction)speakJarvis(/credit|balance/i.test(e.message)?'Недостаточно кредитов':'Уточните промпт');const link=node('button','Open request in Studio');link.type='button';link.onclick=async()=>{const mode=resolveMode(message.text,message.mode),kind=mode==='audio'?'music':mode==='text'?'image':mode;const files=(message.files||[]).filter(f=>['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024);try{await saveStudioHandoff({kind,prompt:message.text,files,source:'jarvix-chat'});location.assign('generate-studio.html?studio='+(kind==='music'?'audio':kind));}catch(e){status(e.message);}};$('jStatus').append(link);
   }if(e.name==='AbortError')throw e;}
 }
-const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();const m={id:makeId(),role:'user',text,mode,files,status:'pending',createdAt:Date.now()};if(!conversation.messages.length)conversation.title=text.slice(0,60);conversation.messages.push(m);await save();composer.clear();render();await run(()=>processMessage(m));}catch(e){status(e.message);}}});
+const draftKey='jarvix_chat_draft_'+store.scope;
+try{$('jInput').value=sessionStorage.getItem(draftKey)||'';}catch{}
+$('jInput').addEventListener('input',()=>{try{sessionStorage.setItem(draftKey,$('jInput').value);}catch{}});
+const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();const m={id:makeId(),role:'user',text,mode,files,status:'pending',createdAt:Date.now()};if(!conversation.messages.length)conversation.title=text.slice(0,60);conversation.messages.push(m);await save();composer.clear();try{sessionStorage.removeItem(draftKey);}catch{}render();await run(()=>processMessage(m));}catch(e){status(e.message);}}});
 $('jStop').onclick=()=>{controller?.abort();$('jStop').hidden=true;status('Browser waiting stopped. Already submitted generation tasks are not cancelled.');};
 $('jNew').onclick=async()=>{if(busy)return;conversation=store.create('jarvix-'+makeId());sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);await save();render();};
 $('jHistory').onchange=async()=>{if(busy)return;const next=await store.get($('jHistory').value);if(!next)return;conversation=next;sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);render();await restoreResults();};
 function freeze(){try{store.guard();}catch{++epoch;controller?.abort();composer.stop();for(const u of urls)URL.revokeObjectURL(u);$('jMessages').replaceChildren();$('jChatForm').hidden=true;status('Account changed. Reload to open the correct private conversations.');}}
 window.addEventListener('storage',freeze);window.addEventListener('focus',freeze);window.addEventListener('pageshow',freeze);
-conversation=await store.get(sessionStorage.getItem('jarvix_active_conversation'))||store.create(getJarvixSessionId());sessionStorage.setItem('jarvix_active_conversation',conversation.id);await save();render();trackViewport();await restoreResults();
+const params=new URLSearchParams(location.search);
+conversation=params.get('new')==='1'?store.create('jarvix-'+makeId()):await store.get(sessionStorage.getItem('jarvix_active_conversation'))||store.create(getJarvixSessionId());
+sessionStorage.setItem('jarvix_active_conversation',conversation.id);
+sessionStorage.setItem('jarvix_session_id',conversation.sessionId);
+if(params.has('new')){params.delete('new');history.replaceState(null,'',location.pathname+(params.size?'?'+params.toString():'')+location.hash);}
+await save();render();trackViewport();await restoreResults();
 const pending=conversation.messages.find(m=>m.status==='pending');if(pending)await run(()=>processMessage(pending));
 
-window.addEventListener('jarvix:conversation-updated',async()=>{if(busy)return;const next=await store.get(sessionStorage.getItem('jarvix_active_conversation'));if(!next)return;conversation=next;render();const pending=conversation.messages.find(m=>m.status==='pending');if(pending)await run(()=>processMessage(pending));});
+// Studio mode changes never create another conversation or JARVIX brain.
+window.addEventListener('message',event=>{
+ if (event.origin!==location.origin || window.parent===window || event.source!==window.parent) return;
+ if (event.data?.type!=='jarvix:set-mode') return;
+ const requested=event.data.mode;
+ if (!['image','video','audio'].includes(requested)) return;
+ const tile=document.querySelector('#jPlusMenu [data-j-mode="'+requested+'"]');
+ if(tile) tile.click();
+});
+window.addEventListener('jarvix:conversation-updated',async()=>{if(busy)return;const next=await store.get(sessionStorage.getItem('jarvix_active_conversation'));if(!next)return;conversation=next;await historyList();render();const pending=conversation.messages.find(m=>m.status==='pending');if(pending)await run(()=>processMessage(pending));});
 
 if ($('jWorkspaceClose')) {
   $('jWorkspaceClose').onclick = () => {
