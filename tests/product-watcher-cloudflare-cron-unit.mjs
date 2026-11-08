@@ -1,10 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {runCloudflareProductWatcherTick,validateIsolatedWatcherEnvironment,WATCHER_CRON} from '../cloudflare/product-watcher/cron-core.js';
+import {watcherHeartbeatTtlMs} from '../server/product-watcher/scheduler.js';
 const URL='postgresql://test_user:test_pass@ep-test.eu-central-1.aws.neon.tech/deepsyq_test';
 const base=()=>({PRODUCT_WATCHER_ENABLED:'true',PRODUCT_WATCHER_SCHEDULER_ENABLED:'true',PRODUCT_WATCHER_DEPLOY_ENV:'test',PRODUCT_WATCHER_TEST_DB_ISOLATED:'true',PRODUCT_WATCHER_BASE_URL:'https://deepsyq.pages.dev/',DATABASE_URL:URL});
 function mock(){let called=0,ended=0;const pool={connect(){},async end(){ended++}};return {pool,metrics:()=>({called,ended}),createPool:async()=>{called++;return pool}}}
 test('cron observes free Neon 15-minute quota-aware schedule',()=>assert.equal(WATCHER_CRON,'*/15 * * * *'));
+test('legacy heartbeat remains 3m, explicit isolated Cron mode uses bounded 20m',()=>{
+ assert.equal(watcherHeartbeatTtlMs({}),3*60*1000);
+ assert.equal(watcherHeartbeatTtlMs({PRODUCT_WATCHER_SCHEDULER_MODE:'cloudflare-cron-15m'}),20*60*1000);
+ assert.equal(watcherHeartbeatTtlMs({PRODUCT_WATCHER_SCHEDULER_MODE:'bogus'}),3*60*1000);
+});
 test('starts fail-closed and never connects without explicit switches',async()=>{const m=mock(); const r=await runCloudflareProductWatcherTick({env:{},createPool:m.createPool}); assert.equal(r.code,'WATCHER_DISABLED'); assert.equal(m.metrics().called,0)});
 test('Cloudflare TEST isolation required, not production or shared DB',()=>{for(const patch of [{PRODUCT_WATCHER_DEPLOY_ENV:'production'},{PRODUCT_WATCHER_TEST_DB_ISOLATED:'false'},{PRODUCT_WATCHER_BASE_URL:'https://deepsyq.app/'}])assert.equal(validateIsolatedWatcherEnvironment({...base(),...patch}).ready,false)});
 test('Neon URL must be direct, authenticated PostgreSQL and not a pooler',()=>{for(const url of ['','http://example.com/','postgres://x:y@evil.com/a','postgres://x:y@ep-foo-pooler.eu.neon.tech/test','postgresql://x@ep-foo.eu.neon.tech/test'])assert.equal(validateIsolatedWatcherEnvironment({...base(),DATABASE_URL:url}).ready,false)});
