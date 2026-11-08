@@ -43,7 +43,7 @@ function harness({signedIn=true,pagingAvailable=true}={}) {
     if(params.has('section')&&pagingAvailable){
       const isNext=params.get('cursor')==='next_30';
       data={items:isNext?Array.from({length:5},(_,i)=>mockCard(i+30)):legacyCards,
-        pageInfo:{hasMore:!isNext,nextCursor:isNext?null:'next_30',count:isNext?5:30}};
+        pageInfo:{hasMore:!isNext,nextCursor:isNext?null:'next_30',count:isNext?5:30,total:35}};
     }
     return {ok:true,json:async()=>structuredClone(data)};
   };
@@ -68,6 +68,7 @@ test('F4 client: 30 initial + 5 next results, correct signed cursor, no duplicat
   await settle();
   assert.equal(ids.cardsGrid.children.length,30);
   assert.equal(ids.wsLoadMore.hidden,false,'load more appears after first page');
+  assert.equal(ids['cnt-recent'].textContent,'35','display actual total rather than first 30');
   assert.equal(typeof ids.wsLoadMore.onclick,'function');
   ids.wsLoadMore.onclick();
   await settle();
