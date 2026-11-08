@@ -4,7 +4,8 @@
  * Defaults fail closed until the owner configures an isolated TEST deployment.
  */
 export const WATCHER_TEST_ORIGIN = 'https://deepsyq.pages.dev/';
-export const WATCHER_CRON = '*/2 * * * *';
+// Fewer wake-ups protect the free Neon compute budget: 15m monitoring cadence.
+export const WATCHER_CRON = '*/15 * * * *';
 
 export function validateIsolatedWatcherEnvironment(env = {}) {
   if (env.PRODUCT_WATCHER_ENABLED !== 'true' || env.PRODUCT_WATCHER_SCHEDULER_ENABLED !== 'true') {
