@@ -10,13 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     env:
-      TOKEN_1: \${{ secrets.CLOUDFLARE_API_TOKEN }}
-      TOKEN_2: \${{ secrets.CF_API_TOKEN }}
-      TOKEN_3: \${{ secrets.CLOUDFLARE_TOKEN }}
-      ACCOUNT_1: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      ACCOUNT_2: \${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-      ACCOUNT_3: \${{ secrets.CF_ACCOUNT_ID }}
-      ACCOUNT_4: \${{ vars.CF_ACCOUNT_ID }}
+      TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TOKEN_2: ${{ secrets.CF_API_TOKEN }}
+      TOKEN_3: ${{ secrets.CLOUDFLARE_TOKEN }}
+      ACCOUNT_1: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ACCOUNT_2: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      ACCOUNT_3: ${{ secrets.CF_ACCOUNT_ID }}
+      ACCOUNT_4: ${{ vars.CF_ACCOUNT_ID }}
       F4_BRANCH: f4-w44-owner-card-cursor-secure-20261108
       PROJECT: deepsyq
     steps:
