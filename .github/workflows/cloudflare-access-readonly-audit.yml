@@ -77,3 +77,33 @@ jobs:
             if project:
               f.write('PAGES_PRODUCTION_BRANCH='+str(project.get('production_branch'))+'\\n')
           PY
+
+      - name: Inspect existing preview deployment metadata and unauthenticated route status
+        shell: bash
+        run: |
+          set -euo pipefail
+          token="${TOKEN_1:-${TOKEN_2:-${TOKEN_3:-}}}"
+          account="${ACCOUNT_1:-${ACCOUNT_2:-${ACCOUNT_3:-${ACCOUNT_4:-}}}}"
+          if [[ -z "$token" || ! "$account" =~ ^[a-fA-F0-9]{32}$ ]]; then
+            echo 'SKIPPED: no validated configured API token or account ID'
+            exit 0
+          fi
+          echo "::add-mask::$token"
+          status=$(curl -sS --connect-timeout 5 --max-time 15 -o /tmp/cf-deployments.json -w '%{http_code}' -H "Authorization: Bearer $token" -H 'Accept: application/json' "https://api.cloudflare.com/client/v4/accounts/$account/pages/projects/deepsyq/deployments?per_page=5") || status=network_error
+          DEPLOYMENTS_HTTP_STATUS="$status" python3 - <<'PY'
+          import json,os
+          try:
+            data=json.load(open('/tmp/cf-deployments.json'))
+            records=data.get('result') if data.get('success') else []
+          except Exception:
+            records=[]
+          print('DEPLOYMENTS_LIST_HTTP_STATUS='+os.environ['DEPLOYMENTS_HTTP_STATUS'])
+          for d in (records or [])[:5]:
+            trigger=d.get('deployment_trigger') or {}
+            meta=trigger.get('metadata') or {}
+            print('DEPLOYMENT='+json.dumps({'environment':d.get('environment'),'url':d.get('url'),'branch':meta.get('branch'),'commit_hash':meta.get('commit_hash'),'status':(d.get('latest_stage') or {}).get('status'),'created_on':d.get('created_on')},sort_keys=True))
+          PY
+          for route in 'https://deepsyq.pages.dev/my-creations.html' 'https://deepsyq.pages.dev/api/studio/workspace/cards?section=recent' 'https://deepsyq.app/my-creations.html' 'https://deepsyq.app/api/studio/workspace/cards?section=recent'; do
+            status=$(curl -sS -L --connect-timeout 5 --max-time 14 -o /tmp/cf-route-content -w '%{http_code};%{content_type}' "$route") || status=network_error
+            echo "UNAUTHENTICATED_ROUTE_STATUS=$route $status"
+          done
