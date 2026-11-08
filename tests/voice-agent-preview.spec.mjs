@@ -11,6 +11,8 @@ function installFakeMediaAdapter(page, options = {}) {
       delayMs: opts.delayMs || 0,
       endedTracks: 0,
       currentTrack: null,
+      holdMedia: false,
+      releasePendingMedia: null,
       endCurrentTrack() {
         const track = state.currentTrack;
         if (!track || track.readyState === 'ended') return;
@@ -27,6 +29,9 @@ function installFakeMediaAdapter(page, options = {}) {
       },
       async getUserMedia() {
         state.getUserMediaCalls++;
+        if (state.holdMedia) {
+          await new Promise(resolve => { state.releasePendingMedia = resolve; });
+        }
         if (state.delayMs > 0) {
           await new Promise(r => setTimeout(r, state.delayMs));
         }
@@ -237,7 +242,7 @@ test('V6.3: real local RMS responds only while LIVE, mute zeroes, stop closes gr
 });
 
 test('V6.3: no meter or context on permission denial/device absence; pending Stop invalidates stream', async ({ page }) => {
-  await installFakeMediaAdapter(page, { failMode: 'denied', delayMs: 300 });
+  await installFakeMediaAdapter(page, { failMode: 'denied' });
   await installFakeAudioContext(page);
   await page.goto('/voice-agent-preview.html');
   await page.click('#enableMicBtn');
@@ -246,12 +251,16 @@ test('V6.3: no meter or context on permission denial/device absence; pending Sto
   await page.evaluate(() => { window.__VOICE_TEST_STATE__.failMode = 'missing'; });
   await page.click('#enableMicBtn');
   await expect(page.locator('#voiceStateBadge')).toHaveText('DEVICE_MISSING');
-  await page.evaluate(() => { window.__VOICE_TEST_STATE__.failMode = null; });
+  await page.evaluate(() => {
+    window.__VOICE_TEST_STATE__.failMode = null;
+    window.__VOICE_TEST_STATE__.holdMedia = true;
+  });
   await page.click('#enableMicBtn');
   await expect.poll(() => page.evaluate(() => window.__VOICE_TEST_STATE__.getUserMediaCalls)).toBe(3);
   await page.click('#stopMicBtn');
   await expect(page.locator('#voiceStateBadge')).toHaveText('IDLE');
-  await page.waitForTimeout(450);
+  await page.evaluate(() => window.__VOICE_TEST_STATE__.releasePendingMedia());
+  await expect.poll(() => page.evaluate(() => window.__VOICE_TEST_STATE__.stoppedTracks)).toBe(1);
   await expect(page.locator('#micMeter')).toHaveAttribute('aria-valuenow', '0');
   const state = await page.evaluate(() => ({
     media: window.__VOICE_TEST_STATE__, audio: window.__VOICE_AUDIO_TEST__
