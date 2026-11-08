@@ -67,7 +67,7 @@ export function createJarvixVoiceSession({getRecognizer, getLanguage=()=> 'en', 
    if(!phrase)return;
    const now=clock();
    if(normalize(phrase)===lastText && now-lastAt<1400)return;
-   if(/^(?:стоп|стой|тихо|замолчи|хватит|stop|quiet|silence|cancel|arrête|silencio)\\s*[!.?]*$/iu.test(phrase)){
+   if(/^(?:стоп|стой|тихо|замолчи|хватит|stop|quiet|silence|cancel|arrête|silencio)\s*[!.?]*$/iu.test(phrase)){
      if(phase==='speaking'){
        speechEpoch++;
        try{stopSpeech?.();}catch{}
@@ -82,9 +82,6 @@ export function createJarvixVoiceSession({getRecognizer, getLanguage=()=> 'en', 
      speechEpoch++;
      try{stopSpeech?.();}catch{}
      speakingDone=null;
-     if(/^(?:стоп|стой|тихо|замолчи|хватит|stop|quiet|silence|cancel|arrête|silencio)\s*[!.?]*$/iu.test(phrase)){
-       resume();return;
-     }
    }
    mark('thinking');
    try{
