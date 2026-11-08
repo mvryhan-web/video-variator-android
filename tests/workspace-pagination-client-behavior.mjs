@@ -30,6 +30,7 @@ function harness({signedIn=true,pagingAvailable=true}={}) {
   const tabNames=['recent','favorites','completed','drafts'];
   const buttons=tabNames.map(s=>{const e=element();e.dataset.sec=s;return e;});
   const calls=[];
+  let token = signedIn ? 'safe-token' : null;
   const legacyCards=Array.from({length:30},(_,i)=>mockCard(i));
   const legacy={
     sections:{recent:legacyCards,favorites:[legacyCards[0]],completed:legacyCards,drafts:[]},
@@ -52,12 +53,12 @@ function harness({signedIn=true,pagingAvailable=true}={}) {
     createElement(){return element();}
   };
   const context=vm.createContext({
-    document:doc,localStorage:{getItem:k=>k==='vv_token'&&signedIn?'safe-token':null},
+    document:doc,localStorage:{getItem:k=>k==='vv_token'?token:null},
     fetch,URLSearchParams,Date,Set,Object,Array,Error,encodeURIComponent,prompt:()=>null,
     console
   });
   new vm.Script(inline,{filename:'my-creations.inline.js'}).runInContext(context,{timeout:2500});
-  return {ids,buttons,calls};
+  return {ids,buttons,calls,setToken(value){token=value;}};
 }
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 
@@ -104,4 +105,18 @@ test('F4 client: signed-out view remains private, with no network call',async()=
   assert.equal(calls.length,0);
   assert.equal(ids.wsLoadMore.hidden,true);
   assert.ok(ids.cardsGrid.children[0].innerHTML.includes('Sign in to view your creations'));
+});
+
+
+test('F4 client: logging out immediately clears previous account card memory',async()=>{
+  const {ids,buttons,calls,setToken}=harness();
+  await settle();await settle();
+  assert.equal(ids.cardsGrid.children.length,30);
+  setToken(null);
+  ids.refreshBtn.onclick();
+  assert.equal(ids.cardsGrid.children.length,1);
+  assert.ok(ids.cardsGrid.children[0].innerHTML.includes('Sign in to view your creations'));
+  buttons[2].onclick();
+  assert.equal(ids.cardsGrid.children.length,1,'must not restore previous users cards on tab switch');
+  assert.equal(calls.length,2,'logout does not contact authenticated endpoint');
 });
