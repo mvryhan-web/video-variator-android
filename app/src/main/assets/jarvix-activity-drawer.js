@@ -1,7 +1,8 @@
 // JARVIX/Studio shared activity drawer. Reuses existing private chat and Studio history.
 import { conversationStore } from './jarvix-conversations.js';
 
-const page = location.pathname.split('/').pop();
+const rawPage = location.pathname.split('/').pop() || '';
+const page = rawPage.endsWith('.html') ? rawPage : rawPage + '.html';
 if (page === 'jarvix-chat.html' || page === 'generate-studio.html') {
   const dictionary = {
     en: { title: 'JARVIX Chat', newChat: 'New chat', recent: 'Recent conversations', works: 'Recent works', all: 'All my works', empty: 'No conversations yet', account: 'Account changed. Reload to see your history.', open: 'Open recent activity', close: 'Close recent activity', image: 'Image', video: 'Video', audio: 'Audio' },
