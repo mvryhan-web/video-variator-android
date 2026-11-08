@@ -1,49 +1,286 @@
 import { createHash } from 'node:crypto';
-~AqI
+import {
   computeLiteCandidateId,
-  LITE_DELIVERY_REASON_CODES~AeVDINES~AbTSTATUSES
-~CLI./lite-delivery-policy.js';
+  LITE_DELIVERY_REASON_CODES,
+  LITE_DELIVERY_READINESS,
+  LITE_DELIVERY_STATUSES
+} from './lite-delivery-policy.js';
 
 /**
  * W5.6 is an in-memory, side-effect-free audit reducer. It neither sends mail
- * nor proves ~B3I. Only a trusted server caller may inject verifiedOwnerId
+ * nor proves delivery. Only a trusted server caller may inject verifiedOwnerId
  * and a newly evaluated W5.5 readiness result; never use request-body claims.
  *
  * Actions: {type:'PREPARE'|'APPROVE'|'RECHECK'|'CANCEL'|'REVOKE',
- * ~ABKexpectedRevision:number, c~HiK?:string}.
- * The~D6Just persist compare-and-swap on r~BWH externally if it needs
- * cross-process concurrency protection. This function has NO~B6Ience.
- * Re-~FiI~FhGat nowMs before every a~BFGexcept ~EgG / ~EgG.
+ *           expectedRevision:number, candidateId?:string}.
+ * The caller must persist compare-and-swap on revision externally if it needs
+ * cross-process concurrency protection. This function has NO persistence.
+ * Re-evaluate W5.5 at nowMs before every action except CANCEL / REVOKE.
  */
-export const~KkGATTEMPT~KjJ = Object.freeze({
-  UN~GMHD: '~ANK',
-  REVIEW_PENDING: '~ARO',
-  ~HAHD_FOR_MANUAL_~AnG: ~HdI~AdT',
-  BLOCKED: '~AKH~B2IO~AWG~AKH',
- ~D0HLED: ~IgHLED'
-});~D6bACTION~D5W~DqH: ~KNJ,~DNI~C6K', ~KXH: ~KhJ~CPK~CMJ',~C3H~C2J~Cbg~RxG~CbW~FnHREQUI~GZG~ASP',
-  OWNER~FPH_~FqJNOT_SENT: '~Ahe~FsHADY_UNCHANG~BqH~ASN',
-  INVALID_CLOCK: '~AQN~AiN~FxG~AjL~ARG~AkNPREVIOUS~AmL~ATI~DYLUNVERIFIED~DKJ~ATK',
-  FOREIGN_~AdGDEN~AsG~AXU~CAN~XNJ~CBL~AUJ~EWJINESS_STAL~HUG~ASN~AmP~LIK~AUR~ItIDIDATE_~FoK~AUR~AqPMISMATCH~ArN~AVI',~N6JAL_EXP~InH~ATQ~BUGONCURREN~MQI_CONFLICT: '~Ada',
-  DUPLICATE~HaK~ATQ~FcNTRANSI~IEP~AVK~DkI~O-G_BY~GmG~PTM~AVJ~FkHVOK~AqO~ATQ',
-  TERMINAL_STATE: '~ARO~ONG
-~OHGMAX_AUDIT = 20;~AWQ_ENTRY_BYTES = 20~AjO~NHIAGE_MS = 15 * 60 * 10~AsKSTA~BAGnew Set(~PmHvalues(~WgV))~A-I~S4K~A_j~AtH~A-K~RbK~A-I[...~BCb~AxH),
-  ~AqW~koV)]~BzJID_PATTERN = /^[a-zA-Z0-9._:@-]{1,128}$/~AwI~LTK~A3Mlite-cand-[a-f0-9]{24~A2LFINGERPRINT~A4Sfp~A2K32~A2L~QJGTAG~CjQ~AsG6~BiMINITIAL =~dCW.~chK~AyI~TnM~FzN~ZXL~ZOL~ZFK~Y7L~YzI]);
+export const LITE_ATTEMPT_STATUSES = Object.freeze({
+  UNPREPARED: 'UNPREPARED',
+  REVIEW_PENDING: 'REVIEW_PENDING',
+  APPROVED_FOR_MANUAL_REVIEW: 'APPROVED_FOR_MANUAL_REVIEW',
+  BLOCKED: 'BLOCKED',
+  REVOKED: 'REVOKED',
+  CANCELLED: 'CANCELLED'
+});
+export const LITE_ATTEMPT_ACTIONS = Object.freeze({
+  PREPARE: 'PREPARE', APPROVE: 'APPROVE', RECHECK: 'RECHECK',
+  CANCEL: 'CANCEL', REVOKE: 'REVOKE'
+});
+export const LITE_ATTEMPT_REASONS = Object.freeze({
+  REVIEW_REQUIRED: 'REVIEW_REQUIRED',
+  OWNER_REVIEW_APPROVED_NOT_SENT: 'OWNER_REVIEW_APPROVED_NOT_SENT',
+  READY_UNCHANGED: 'READY_UNCHANGED',
+  INVALID_CLOCK: 'INVALID_CLOCK',
+  INVALID_ACTION: 'INVALID_ACTION',
+  INVALID_PREVIOUS: 'INVALID_PREVIOUS',
+  OWNER_UNVERIFIED: 'OWNER_UNVERIFIED',
+  FOREIGN_OWNER_DENIED: 'FOREIGN_OWNER_DENIED',
+  INVALID_READINESS: 'INVALID_READINESS',
+  READINESS_STALE: 'READINESS_STALE',
+  READINESS_BLOCKED: 'READINESS_BLOCKED',
+  CANDIDATE_CHANGED: 'CANDIDATE_CHANGED',
+  CANDIDATE_MISMATCH: 'CANDIDATE_MISMATCH',
+  APPROVAL_EXPIRED: 'APPROVAL_EXPIRED',
+  CONCURRENT_ACTION_CONFLICT: 'CONCURRENT_ACTION_CONFLICT',
+  DUPLICATE_ACTION: 'DUPLICATE_ACTION',
+  INVALID_TRANSITION: 'INVALID_TRANSITION',
+  CANCELLED_BY_OWNER: 'CANCELLED_BY_OWNER',
+  REVOKED_BY_OWNER: 'REVOKED_BY_OWNER',
+  TERMINAL_STATE: 'TERMINAL_STATE'
+});
 
-~gyJisRecord(x) {
+const MAX_AUDIT = 20;
+const MAX_AUDIT_ENTRY_BYTES = 200;
+const MAX_APPROVED_AGE_MS = 15 * 60 * 1000;
+const STATES = new Set(Object.values(LITE_ATTEMPT_STATUSES));
+const ACTIONS = new Set(Object.values(LITE_ATTEMPT_ACTIONS));
+const REASONS = new Set([...Object.values(LITE_ATTEMPT_REASONS),
+  ...Object.values(LITE_DELIVERY_REASON_CODES)]);
+const ID_PATTERN = /^[a-zA-Z0-9._:@-]{1,128}$/;
+const CANDIDATE_PATTERN = /^lite-cand-[a-f0-9]{24}$/;
+const FINGERPRINT_PATTERN = /^lite-fp-[a-f0-9]{32}$/;
+const OWNER_TAG_PATTERN = /^[a-f0-9]{64}$/;
+const INITIAL = LITE_ATTEMPT_STATUSES.UNPREPARED;
+const VALID_ACTIONS = new Set(['PREPARE', 'APPROVE', 'RECHECK', 'CANCEL', 'REVOKE']);
+
+function isRecord(x) {
   return x !== null && typeof x === 'object' && !Array.isArray(x) && !(x instanceof Date);
-}~B0KvalidClock(ms~B3NNumber.isSafeInteger(ms) && ms > 0~AKH<= 8640~ABM~BjNownerTag(id~BhN~vWK('sha256').update('deepsyq-w5.6-owner-v1\0' + id).digest('hex'~DRO~dWGState(value~B0G~d0Ovalue.audit);
-  for (~HfGitem of ~AjM~A-Pitem);~DJK~BcT~CUOevent(atMs, from, to, reasonCod~CjH~CAGrecord = { at: new Date(atMs).toISOString()~BNW };
-  if (Buffer.byteLength(JSON.~soGify(~BsG), 'utf8') >~UWW~CgG  throw new Error('In~syG bounded~zBHevent contract violated');
-  }~E5K~CAG~ErNinitial(~DQK,~sfG, withEvent = fals~E3N~B5G=~AlL&&~LdMnowMs)
-    ? [~GRG~BYH~QDH,~QCX~fYH~GwN] : []~IDL~J2M~EsGstatus:~BVq,
-   ~zSM: null,~NAJ~AQH
-    requiresOwner~1sG: true,~4RJS~CBM~6-R.~oWI~BQGsent:~FWG,~0RJ: 0, ~ORGdAtMs:~FRS ?~y9H~CdMapprov~A0I~DFGaudit
-  }~R_TPrevious(p~AJH~HZGif (!~UUJ~AcK|| !~duG.ha~A1K.~FyG) || ~AUP ===~XqJ||
-~5WG!~aUR.test~BRK~GML)~A3L~ZfR~A3P~GwI~A0M~VNV~AyJ~FxI~C8O~6YJ< 1~BLL~GEL~ArJ~GlL~B2L~EGKent !=~M3H~BlN~IuO !=~cJH~Ixa~CLL~ZyO~BUJ~U1H~BnMaudit.length~DQH~AdX~SDL~BqK~BcL~JcL~cYN~EYV~AuM)~EaL~I1Q =~D4I~OqR~7Sa~B2n~U9I~QqHnull~UHI~S7O~RRGlet last = 0~abX~FpQ~BgG~MvOitem) ||~gwIitem.a~IGG'~YCG'~EQK ~NSNitem.fro~BBG~AaRto~FKL  !~pNH~AhK~bZM~ApL~aPhitem~aNk~FKP~FIJtMs = Date.pars~epG.a~fjG~EhH~GwLa~MuH~dkd !==~E9J~DNLatMs <~GqG||~APG>~GaK~ORN~CwR~HgHatMs~ARG// Take allowlisted fields only, so arbitrary properties can never be echoed.
-   ~JVG.push(~hJG~DEH~g0G~APH~g_I~APH~hIO~AVH~hZM~fAJif~OTk~AiW~Emnif (audit[~QfN- 1].to !==~XmQ~BDR~APH{~eLI~AwP~DtO~LGM~ApJ~LKM?~WaM~EUJ~fhP~BGI~8KIPREVIOUS~fdT~BOJ~AWL~ftM~AgJ~ATI~f6I~edI~CPL~ATG~etP~FnU~ehU~GnV~eyH}~vKOutpu~bqK,~jlH~jGN~muIchange = tr~uEI~TvP...~TKO];~AlJnext~aTH=~BmH~IVI~BZG)~LiM~nPN~HmR~ClS))~BqKtrimmed =~BRHslice(-~R7J~vpM~nma~CwK~nTf~H25~nwT![~azW~5nGLED~rTY~5-GD].includes(~DAK)~BxG~pG_~D7H~Ktb +~HLI ? 1 : 0~B6H~LEN~AiJ~pmI~LVo~JBM~fcz~XoH?~CkL~CCR~fnN~sBOudit:~JbI~r2TerifiedReadiness(r~AKI,~AdJOwnerId~NRH~sTU~A1J) || ~AOJ~jUI~nMt~A-L~otR~AcKdraftOnly !=~PaM~VsK~L-H~UXfREADINESS~6tG}
-  // W5.5~wSGates its own alert age, opt-in, recipient and~H6Hal TTL at a~BPGcaller-injected clock. R~NLG a fresh~B2Gevaluation for EACH action;~BNGreplaying a past "ready" snapshot must not extend its~CaKlifetime.~HFH~FTK~B6HedA~F2G~iNJ~H3G~iOO~Fuu~FmJ_STALE~FsK~CCO~AKJ~MqK~IyJ~BDJ~6yI &&~IyRready =~IzJ&&~AdLblocked =~IxX~DCI~eAM~BbN~W0I~OTJ~AeU~eIY~EDK~DAH~EEh~M2S~EEKREADY~M0U~ECG~MUI~M0O~EBI~NTM~BBU~DKI~CBVSON_CODE~CEH_FOR_~6IG~AmI~2XZ~CKQr~QvQ~AXI~ljI!== 0~ClUo~SSG !==~SmQ~B-LFINGERPRINT~8hO~BJKalertFingerprint~wnL~yvH~EaM~PrI~y7W~AqY~AYT.toLowerCase(~B0L~ArU~6OJ12~EML!/^[^\s@<>"']+@[a-z0-9.-]+\.[a-z]{2,}$/~DwQ~BXJ~B1L~XHT~VfG~GePdraft.hasAlert~KgG~JlH~C_R~AsG~X_L'draft_ready~E0V~AyH~Xzg~X5T~BOa~ueH~GZU~BaT~AdJConfigur~MrH~Zdd~KUS~R0N~Kpb~RGJ~QvVFOREIGN~NbJNIED~vjg~bMT~paGexp~Z5G= computeLiteC~n4K~pEH~CuH:~f6S~EcJ~DyM~AVJ~hsH~NMP~ArM~AcQ~iKH~hIHCANDIDATE~OnY~qjL) ||~DRK~HfO~AnN~ags~CBKMISMATCH~FDK~BCJ~s-N~CCI~tlI~l1G };
+}
+function validClock(ms) {
+  return Number.isSafeInteger(ms) && ms > 0 && ms <= 8640000000000000;
+}
+function ownerTag(id) {
+  return createHash('sha256').update('deepsyq-w5.6-owner-v1\0' + id).digest('hex');
+}
+function freezeState(value) {
+  Object.freeze(value.audit);
+  for (const item of value.audit) Object.freeze(item);
+  return Object.freeze(value);
+}
+function event(atMs, from, to, reasonCode) {
+  const record = { at: new Date(atMs).toISOString(), from, to, reasonCode };
+  if (Buffer.byteLength(JSON.stringify(record), 'utf8') > MAX_AUDIT_ENTRY_BYTES) {
+    throw new Error('Internal bounded audit event contract violated');
+  }
+  return record;
+}
+function initial(reasonCode, nowMs, withEvent = false) {
+  const audit = withEvent && validClock(nowMs)
+    ? [event(nowMs, INITIAL, LITE_ATTEMPT_STATUSES.BLOCKED, reasonCode)] : [];
+  return freezeState({
+    status: LITE_ATTEMPT_STATUSES.BLOCKED, reasonCode,
+    candidateId: null, ownerTag: null,
+    requiresOwnerAction: true, deliveryStatus: LITE_DELIVERY_STATUSES.NOT_SENT,
+    sent: false, revision: 0, updatedAtMs: validClock(nowMs) ? nowMs : null,
+    approvedAtMs: null, audit
+  });
+}
+function validPrevious(previous) {
+  if (!isRecord(previous) || !STATES.has(previous.status) || previous.status === INITIAL ||
+      !CANDIDATE_PATTERN.test(previous.candidateId) ||
+      !OWNER_TAG_PATTERN.test(previous.ownerTag) ||
+      !Number.isSafeInteger(previous.revision) || previous.revision < 1 ||
+      !validClock(previous.updatedAtMs) ||
+      previous.sent !== false || previous.deliveryStatus !== LITE_DELIVERY_STATUSES.NOT_SENT ||
+      !Array.isArray(previous.audit) || previous.audit.length < 1 || previous.audit.length > MAX_AUDIT ||
+      (previous.approvedAtMs !== null && !validClock(previous.approvedAtMs)) ||
+      (previous.status === LITE_ATTEMPT_STATUSES.APPROVED_FOR_MANUAL_REVIEW && !validClock(previous.approvedAtMs))) {
+    return null;
+  }
+  const audit = [];
+  let last = 0;
+  for (const item of previous.audit) {
+    if (!isRecord(item) || typeof item.at !== 'string' ||
+        !STATES.has(item.from) || !STATES.has(item.to) ||
+        !REASONS.has(item.reasonCode) ||
+        Buffer.byteLength(JSON.stringify(item), 'utf8') > MAX_AUDIT_ENTRY_BYTES) return null;
+    const atMs = Date.parse(item.at);
+    if (!validClock(atMs) || new Date(atMs).toISOString() !== item.at ||
+        atMs < last || atMs > previous.updatedAtMs) return null;
+    last = atMs;
+    // Take allowlisted fields only, so arbitrary properties can never be echoed.
+    audit.push({ at: item.at, from: item.from, to: item.to, reasonCode: item.reasonCode });
+  }
+  if (previous.approvedAtMs !== null && previous.approvedAtMs > previous.updatedAtMs) return null;
+  if (audit[audit.length - 1].to !== previous.status) return null;
+  return {status: previous.status, reasonCode: REASONS.has(previous.reasonCode) ? previous.reasonCode : LITE_ATTEMPT_REASONS.INVALID_PREVIOUS,
+    candidateId: previous.candidateId, ownerTag: previous.ownerTag,
+    revision: previous.revision, updatedAtMs: previous.updatedAtMs,
+    approvedAtMs: previous.approvedAtMs, audit};
+}
+function output(previous, status, reasonCode, nowMs, change = true) {
+  const audit = [...previous.audit];
+  const nextStatus = status;
+  if (change) audit.push(event(nowMs, previous.status, status, reasonCode));
+  const trimmed = audit.slice(-MAX_AUDIT);
+  return freezeState({
+    status: nextStatus, reasonCode,
+    candidateId: previous.candidateId, ownerTag: previous.ownerTag,
+    requiresOwnerAction: ![LITE_ATTEMPT_STATUSES.CANCELLED, LITE_ATTEMPT_STATUSES.REVOKED].includes(nextStatus),
+    deliveryStatus: LITE_DELIVERY_STATUSES.NOT_SENT,
+    sent: false,
+    revision: previous.revision + (change ? 1 : 0),
+    updatedAtMs: change ? nowMs : previous.updatedAtMs,
+    approvedAtMs: nextStatus === LITE_ATTEMPT_STATUSES.APPROVED_FOR_MANUAL_REVIEW
+      ? (change ? nowMs : previous.approvedAtMs) : null,
+    audit: trimmed
+  });
+}
+function verifiedReadiness(readiness, verifiedOwnerId, nowMs) {
+  if (!isRecord(readiness) || readiness.status !== LITE_DELIVERY_STATUSES.NOT_SENT ||
+      readiness.sent !== false || readiness.draftOnly !== true) {
+    return { reason: LITE_ATTEMPT_REASONS.INVALID_READINESS };
+  }
+  // W5.5 validates its own alert age, opt-in, recipient and approval TTL at a
+  // caller-injected clock. Require a fresh W5.5 evaluation for EACH action;
+  // replaying a past "ready" snapshot must not extend its approval lifetime.
+  if (readiness.evaluatedAt !== new Date(nowMs).toISOString()) {
+    return { reason: LITE_ATTEMPT_REASONS.READINESS_STALE };
+  }
+  if (readiness.readiness === LITE_DELIVERY_READINESS.BLOCKED &&
+      readiness.ready === false && readiness.blocked === true) {
+    return {reason: REASONS.has(readiness.reasonCode)
+      ? readiness.reasonCode : LITE_ATTEMPT_REASONS.READINESS_BLOCKED};
+  }
+  if (readiness.readiness !== LITE_DELIVERY_READINESS.READY ||
+      readiness.ready !== true || readiness.blocked !== false ||
+      readiness.reasonCode !== LITE_DELIVERY_REASON_CODES.READY_FOR_OWNER_DELIVERY ||
+      !Array.isArray(readiness.blockers) || readiness.blockers.length !== 0 ||
+      readiness.ownerId !== verifiedOwnerId ||
+      !FINGERPRINT_PATTERN.test(readiness.alertFingerprint) ||
+      typeof readiness.recipient !== 'string' ||
+      readiness.recipient !== readiness.recipient.toLowerCase() ||
+      readiness.recipient.length > 120 ||
+      !/^[^\s@<>"']+@[a-z0-9.-]+\.[a-z]{2,}$/.test(readiness.recipient) ||
+      !isRecord(readiness.draft) || readiness.draft.hasAlerts !== true ||
+      readiness.draft.status !== 'draft_ready' ||
+      readiness.draft.sent !== false || readiness.draft.draftOnly !== true ||
+      readiness.draft.to !== readiness.recipient || readiness.draft.recipientConfigured !== true) {
+    return { reason: readiness.ownerId && readiness.ownerId !== verifiedOwnerId
+      ? LITE_ATTEMPT_REASONS.FOREIGN_OWNER_DENIED : LITE_ATTEMPT_REASONS.INVALID_READINESS };
+  }
+  const expected = computeLiteCandidateId({
+    ownerId: verifiedOwnerId, recipient: readiness.recipient,
+    alertFingerprint: readiness.alertFingerprint
+  });
+  if (!CANDIDATE_PATTERN.test(readiness.candidateId) || expected !== readiness.candidateId) {
+    return { reason: LITE_ATTEMPT_REASONS.CANDIDATE_MISMATCH };
+  }
+  return { candidateId: expected, reason: null };
 }
 
-/** Never sends, queues, schedules or claims any notific~f3G~rxI. */
-export ~mxJreduceLiteD~AnHAttempt({~oPI ~74G,~g3H~nIT~EyJ~nTH} = {}~nZLvalidClock~f9H~7SJinitial(~KJdCLOCK~ovI~HmI~VQH~WvQ~VMP !ID~IGO~AxP~h6J// Do~jnGcho another account's~GwK or prior~3yHon authent~FzIfailure.~IzM~Dqd~OXGUNVERIFIED~DtM~N4KownTag =~1WJ~DNR~3-K~ChG=~vVJ ==~HIG ?~AHG:~qRGP~AgH~78J~FhJ~A6J!~A6I&& (!~BZG||~BiG~3OJ !==~ChH~nNQ~D6I~A7H~SiX~HtIPREVIOUS~SeY~TKU~EvQ~xOO~K4G) || !ACTI~mNI~AYG.type~a_MNumber.isSafeInteger~AsI~OnIR~3sH) ||~MYH~AcR < 0~EKP~EBIoutput(prior,~FJH~_NI~Edd~C_G~DvH,~bWG~pAI:~NNm~BDN~EyN~DIY!== ~CsG?~7lK|| 0~HpQ~Df5CONCURRENT~
+/** Never sends, queues, schedules or claims any notification delivery. */
+export function reduceLiteDeliveryAttempt({previous = null, action, verifiedOwnerId, readiness, nowMs} = {}) {
+  if (!validClock(nowMs)) return initial(LITE_ATTEMPT_REASONS.INVALID_CLOCK, nowMs);
+  if (typeof verifiedOwnerId !== 'string' || !ID_PATTERN.test(verifiedOwnerId)) {
+    // Do not echo another account's candidate or prior audit on authentication failure.
+    return initial(LITE_ATTEMPT_REASONS.OWNER_UNVERIFIED, nowMs);
+  }
+  const ownTag = ownerTag(verifiedOwnerId);
+  const prior = previous === null ? null : validPrevious(previous);
+  if (previous !== null && (!prior || prior.ownerTag !== ownTag)) {
+    return initial(!prior ? LITE_ATTEMPT_REASONS.INVALID_PREVIOUS : LITE_ATTEMPT_REASONS.FOREIGN_OWNER_DENIED, nowMs);
+  }
+  if (!isRecord(action) || !ACTIONS.has(action.type) ||
+      !Number.isSafeInteger(action.expectedRevision) || action.expectedRevision < 0) {
+    return prior ? output(prior, prior.status, LITE_ATTEMPT_REASONS.INVALID_ACTION, nowMs, false)
+      : initial(LITE_ATTEMPT_REASONS.INVALID_ACTION, nowMs);
+  }
+  if (action.expectedRevision !== (prior?.revision || 0)) {
+    return prior ? output(prior, prior.status, LITE_ATTEMPT_REASONS.CONCURRENT_ACTION_CONFLICT, nowMs, false)
+      : initial(LITE_ATTEMPT_REASONS.CONCURRENT_ACTION_CONFLICT, nowMs);
+  }
+  if (typeof action.candidateId !== 'undefined' &&
+      (!CANDIDATE_PATTERN.test(action.candidateId) ||
+       (prior && action.candidateId !== prior.candidateId))) {
+    return prior ? output(prior, prior.status, LITE_ATTEMPT_REASONS.CANDIDATE_MISMATCH, nowMs, false)
+      : initial(LITE_ATTEMPT_REASONS.CANDIDATE_MISMATCH, nowMs);
+  }
+  if (prior && nowMs < prior.updatedAtMs) {
+    return output(prior, prior.status, LITE_ATTEMPT_REASONS.INVALID_CLOCK, nowMs, false);
+  }
+  if (prior && [LITE_ATTEMPT_STATUSES.REVOKED, LITE_ATTEMPT_STATUSES.BLOCKED,
+                LITE_ATTEMPT_STATUSES.CANCELLED].includes(prior.status)) {
+    return output(prior, prior.status, LITE_ATTEMPT_REASONS.TERMINAL_STATE, nowMs, false);
+  }
+  if (prior && action.type === 'CANCEL') {
+    return output(prior, LITE_ATTEMPT_STATUSES.CANCELLED, LITE_ATTEMPT_REASONS.CANCELLED_BY_OWNER, nowMs);
+  }
+  if (prior && action.type === 'REVOKE') {
+    return output(prior, LITE_ATTEMPT_STATUSES.REVOKED, LITE_ATTEMPT_REASONS.REVOKED_BY_OWNER, nowMs);
+  }
+  if (!prior && action.type !== 'PREPARE') {
+    return initial(LITE_ATTEMPT_REASONS.INVALID_TRANSITION, nowMs);
+  }
+  if (prior && action.type === 'PREPARE') {
+    return output(prior, prior.status, LITE_ATTEMPT_REASONS.DUPLICATE_ACTION, nowMs, false);
+  }
+  if (prior && action.type === 'APPROVE' && prior.status === LITE_ATTEMPT_STATUSES.APPROVED_FOR_MANUAL_REVIEW) {
+    return output(prior, prior.status, LITE_ATTEMPT_REASONS.DUPLICATE_ACTION, nowMs, false);
+  }
+  if (prior && action.type === 'APPROVE' && prior.status !== LITE_ATTEMPT_STATUSES.REVIEW_PENDING) {
+    return output(prior, prior.status, LITE_ATTEMPT_REASONS.INVALID_TRANSITION, nowMs, false);
+  }
+  // A manual approval also expires locally. Do not extend its age with a new
+  // W5.5 readiness object while keeping an old approval transition alive.
+  if (prior?.status === LITE_ATTEMPT_STATUSES.APPROVED_FOR_MANUAL_REVIEW &&
+      nowMs - prior.approvedAtMs > MAX_APPROVED_AGE_MS) {
+    return output(prior, LITE_ATTEMPT_STATUSES.REVOKED, LITE_ATTEMPT_REASONS.APPROVAL_EXPIRED, nowMs);
+  }
+  const check = verifiedReadiness(readiness, verifiedOwnerId, nowMs);
+  if (check.reason) {
+    if (!prior) return initial(check.reason, nowMs, true);
+    return output(prior, prior.status === LITE_ATTEMPT_STATUSES.APPROVED_FOR_MANUAL_REVIEW
+      ? LITE_ATTEMPT_STATUSES.REVOKED : LITE_ATTEMPT_STATUSES.BLOCKED, check.reason, nowMs);
+  }
+  if (typeof action.candidateId !== 'undefined' && action.candidateId !== check.candidateId) {
+    return prior ? output(prior, prior.status, LITE_ATTEMPT_REASONS.CANDIDATE_MISMATCH, nowMs, false)
+      : initial(LITE_ATTEMPT_REASONS.CANDIDATE_MISMATCH, nowMs);
+  }
+  if (prior && prior.candidateId !== check.candidateId) {
+    return output(prior, prior.status === LITE_ATTEMPT_STATUSES.APPROVED_FOR_MANUAL_REVIEW
+      ? LITE_ATTEMPT_STATUSES.REVOKED : LITE_ATTEMPT_STATUSES.BLOCKED,
+    LITE_ATTEMPT_REASONS.CANDIDATE_CHANGED, nowMs);
+  }
+  if (!prior) {
+    return freezeState({
+      status: LITE_ATTEMPT_STATUSES.REVIEW_PENDING,
+      reasonCode: LITE_ATTEMPT_REASONS.REVIEW_REQUIRED,
+      candidateId: check.candidateId, ownerTag: ownTag,
+      requiresOwnerAction: true, deliveryStatus: LITE_DELIVERY_STATUSES.NOT_SENT,
+      sent: false, revision: 1, updatedAtMs: nowMs, approvedAtMs: null,
+      audit: [event(nowMs, INITIAL, LITE_ATTEMPT_STATUSES.REVIEW_PENDING, LITE_ATTEMPT_REASONS.REVIEW_REQUIRED)]
+    });
+  }
+  if (action.type === 'APPROVE') {
+    return output(prior, LITE_ATTEMPT_STATUSES.APPROVED_FOR_MANUAL_REVIEW,
+      LITE_ATTEMPT_REASONS.OWNER_REVIEW_APPROVED_NOT_SENT, nowMs);
+  }
+  if (action.type === 'RECHECK') {
+    return output(prior, prior.status, LITE_ATTEMPT_REASONS.READY_UNCHANGED, nowMs, false);
+  }
+  return output(prior, prior.status, LITE_ATTEMPT_REASONS.INVALID_TRANSITION, nowMs, false);
+}
