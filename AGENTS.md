@@ -1,3 +1,30 @@
+## OWNER D26 — 2026-11-08 — CLOUDFLARE MIGRATION ($0 RENDER), FAST-TRACK LAUNCH & PROFIT RULES
+
+**LATEST BINDING OWNER INSTRUCTION; overrides D25/D24/D23 on Render hosting, active executors, and deployment URLs.**
+
+1. **HOSTING MIGRATED FROM RENDER TO CLOUDFLARE + NEON POSTGRESQL ($0/MONTH BANDWIDTH & SERVERS):**
+   - All Render web services, static sites, and the paid Render PostgreSQL database (`video-uniquifier-db`) have been **suspended/deleted** by owner order to eliminate Render monthly bandwidth and server charges ($0.00 Render spend).
+   - **Never deploy to or re-enable Render (`*.onrender.com`).**
+   - **TEST / Preview environment:** Cloudflare Pages (`https://deepsyq.pages.dev` and branch preview URLs `https://<branch>.deepsyq.pages.dev`) + local preview (`START_DEEPSYQ_LOCAL.bat` / `http://127.0.0.1:3019`).
+   - **MAIN / Production domain:** `https://deepsyq.app` (and `https://www.deepsyq.app`), served via Cloudflare Pages + Cloudflare Edge Worker (`_worker.js`) + 30-day Edge Cache + Neon PostgreSQL (`DATABASE_URL` / `JARVIX_QUOTA_DATABASE_URL`). Production updates require owner verification and explicit approval.
+
+2. **ACTIVE ROLES:**
+   - **Owner** — final authority on UI, pricing, features, and release.
+   - **Administrator & Antigravity (by direct owner assignment)** — authorized executors to implement scoped code changes, run verification, and publish to Cloudflare Pages (`deepsyq`).
+   - **Coordinator P (ChatGPT)** — audits tasks, checks live deployment/billing state, and maintains status reports; does not independently alter application code.
+   - Preserve all historical code and assets; never delete working features.
+
+3. **THE ASSEMBLED-CAR RULE + TWO-SPEED WORKFLOW FOR FAST LAUNCH:**
+   - **Surgical Scope (Assembled Car):** Change ONLY the exact element requested by the owner. Never touch neighboring controls, Studio Settings, shared navigation, JARVIX, Pricing, or Video Uniquifier unless explicitly requested.
+   - **Fast-Track (UI / copy / CSS / 1–3 files):** Direct surgical edit on `deepsyq-platform` → verify exact `git diff` → deploy to Cloudflare Pages (`wrangler pages deploy`) → verify live HTTP 200 & desktop/mobile visual result → report direct URL to owner.
+   - **Full Gate (Stripe billing, AI credits, DB schema, auth):** Mandatory unit test suite (`pricing`, `generation-readiness`, `webhook-config`), strict `AI_BILLING_MODE=test` / `$0` test spend until explicit Live approval, and exact diff review.
+
+4. **OWNER PROFIT, CONVERSION, RETENTION & SEO DIRECTIVE:**
+   - **Unit Economics ≥ 2:1:** Every paid AI generation must yield at least 2x revenue over provider API cost. Deduct credits BEFORE provider execution (auto-refund only on provider error). Test budget = `$0`.
+   - **Subscription & Credit Pack Conversion:** Free Tools (`free-tools.html`), Video Uniquifier (`index.html`), and free-tier `JARVIX` serve as SEO traffic magnets that convert users into paid plans and the 5 Stripe AI Credit Packs (`1,000` to `10,000,000` credits on `pricing.html`).
+
+---
+
 ## OWNER D25 — 2026-11-07 — ONE INTEGRATED SITE / ADMINISTRATOR ONLY
 
 **LATEST BINDING OWNER INSTRUCTION; overrides D24/D23 on roles, executor permissions, deployment and scope.**

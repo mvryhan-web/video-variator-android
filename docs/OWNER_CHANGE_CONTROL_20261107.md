@@ -1,3 +1,16 @@
+# OWNER D26 — 2026-11-08 — CLOUDFLARE MIGRATION ($0 RENDER), FAST-TRACK LAUNCH & PROFIT RULES
+
+**This is the CURRENT binding rule. It supersedes D25/D24 wherever older rules reference Render (`onrender.com`) or restrict owner-assigned Antigravity deployments.**
+
+- **Render Decommissioned ($0/month):** All Render services and the paid Render PostgreSQL database (`video-uniquifier-db`) are suspended/deleted. Do not deploy to or re-enable Render.
+- **Cloudflare Pages + Edge Worker + Neon PostgreSQL:**
+  - **Preview / TEST:** `https://deepsyq.pages.dev` (and branch preview URLs `*.deepsyq.pages.dev`) + local `START_DEEPSYQ_LOCAL.bat`.
+  - **Main Domain:** `https://deepsyq.app` (updated only with owner verification and approval).
+- **Executors:** Administrator and Antigravity (acting on direct owner instructions) are authorized to implement surgical edits and publish to Cloudflare Pages; Coordinator P (ChatGPT) performs independent verification, audits, and reporting.
+- **Assembled-Car Principle + Profit Rules:** Preserve all existing approved UI and features; change only requested lines; maintain unit economics ≥ 2:1 and `$0` test spend.
+
+---
+
 # OWNER D25 — 2026-11-07 — ONE CAR, ONE ADMINISTRATOR, SURGICAL REPAIR
 
 **This is the CURRENT binding rule. It overrides D24/D23 wherever older rules imply that Antigravity, P or other agents may develop/publish application features.**
