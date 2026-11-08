@@ -74,3 +74,16 @@ test('PostgreSQL failures do not leak credentials or imply a healthy deployment'
  assert.equal(JSON.stringify(r).includes('SECRET'),false);
  assert.equal(r.readyForOwnerReview,false);
 });
+
+// Clock contract: a 15-minute Cloudflare Cron must not look dead after only 3m.
+test('15-minute Cloudflare Cron has bounded 20m heartbeat window; legacy mode stays 3m',async()=>{
+ const twelve=pool({schema:true,paused:false,heartbeat:new Date('2026-10-15T17:48:00Z')});
+ const cloud=await watcherDeploymentReadiness(twelve,{env:{...flags,PRODUCT_WATCHER_SCHEDULER_MODE:'cloudflare-cron-15m'},now:instant});
+ assert.equal(cloud.schedulerHeartbeatFresh,true);
+ const legacy=await watcherDeploymentReadiness(twelve,{env:flags,now:instant});
+ assert.equal(legacy.schedulerHeartbeatFresh,false);
+ const tooOld=pool({schema:true,paused:false,heartbeat:new Date('2026-10-15T17:39:00Z')});
+ const stale=await watcherDeploymentReadiness(tooOld,{env:{...flags,PRODUCT_WATCHER_SCHEDULER_MODE:'cloudflare-cron-15m'},now:instant});
+ assert.equal(stale.schedulerHeartbeatFresh,false);
+ assert.ok(stale.blockers.includes('WATCHER_WORKER_NOT_SEEN'));
+});
