@@ -195,8 +195,10 @@ test('audit caps at 20 entries, each <=200 bytes, no mutation; stable through re
 });
 test('approval is time-bounded even when caller tries to inject an artificially fresh readiness',()=>{
  const a=approved();const later=START+16*60*1000;
- const x=reduce(a,action('RECHECK',2),later,readinessAt(later));
- assert.equal(x.status,'REVOKED');assert.equal(x.reasonCode,'APPROVAL_EXPIRED');assertSafe(x);
+ for(const type of ['RECHECK','APPROVE','PREPARE']){
+  const x=reduce(a,action(type,2),later,readinessAt(later));
+  assert.equal(x.status,'REVOKED');assert.equal(x.reasonCode,'APPROVAL_EXPIRED');assertSafe(x);
+ }
 });
 test('no network or send API is imported: pure policy module remains owner-only manual',async()=>{
  const fs=await import('node:fs');
