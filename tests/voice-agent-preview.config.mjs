@@ -1,4 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
+import { fileURLToPath } from 'node:url';
+const repoRoot = fileURLToPath(new URL('../', import.meta.url));
 
 // Dedicated, no-spend V6.3 microphone UI acceptance.
 // The production-style server/server.js correctly forbids inline modules via CSP;
@@ -14,6 +16,7 @@ export default defineConfig({
   reporter: 'list',
   use: { baseURL: 'http://127.0.0.1:31992', trace: 'retain-on-failure' },
   webServer: {
+    cwd: repoRoot,
     command: 'node server/deepsyq-preview.js',
     url: 'http://127.0.0.1:31992/api/health',
     reuseExistingServer: false,
