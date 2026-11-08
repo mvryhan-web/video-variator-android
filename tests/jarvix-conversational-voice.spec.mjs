@@ -56,7 +56,7 @@ for(const [size,name] of [[{width:1280,height:800},'desktop'],[{width:390,height
   await expect.poll(()=>calls).toBe(2);
   await expect(page.locator('#jTalk')).toHaveAttribute('data-voice-phase','listening',{timeout:10000});
   await page.evaluate(()=>window.__voiceStt.emit('Открой видео студию'));
-  await expect(page).toHaveURL(/generate-studio\.html\?studio=video/,{timeout:10000});
+  await expect(page).toHaveURL(/\/generate-studio(?:\.html)?\?studio=video(?:&|$)/,{timeout:10000});
   expect(calls).toBe(2,'local allowlisted navigation must not incur an AI call');
  });
 }
