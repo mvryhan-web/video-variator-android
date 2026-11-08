@@ -64,8 +64,8 @@ if(process.env.RENDER_EXTERNAL_HOSTNAME){
     AI_PROVIDER_ADMIN_ENABLED:'true',
     AI_OWNER_CREDIT_ADJUSTMENTS:'true',
     AI_BILLING_ENABLED:'true',
-    AI_BILLING_MODE:'live',
-    AI_LIVE_BILLING_APPROVED:'true',
+    AI_BILLING_MODE:/^(sk_live_|rk_live_)/.test(String(process.env.STRIPE_SECRET_KEY||''))?'live':'test',
+    AI_LIVE_BILLING_APPROVED:/^(sk_live_|rk_live_)/.test(String(process.env.STRIPE_SECRET_KEY||''))?'true':'false',
     STRIPE_PRICE_BASIC:'price_1UGmi7LR9hQMNEjM5aL8c7Us',
     STRIPE_PRICE_PRO:'price_1UGmiKLR9hQMNEjMo71YfrIY',
     STRIPE_PRICE_BUSINESS:'price_1UGmiULR9hQMNEjMHurOX9bk',
@@ -82,13 +82,17 @@ if(process.env.RENDER_EXTERNAL_HOSTNAME){
       {kind:'video',credits:20},
       {kind:'music',credits:10}
     ]),
+    STRIPE_PRICE_CREDITS_1000:'price_1UZTCqLR9hQMNEjM5LiVHcNi',
+    STRIPE_PRICE_CREDITS_10000:'price_1UZTDoLR9hQMNEjMrZ5nkhXS',
+    STRIPE_PRICE_CREDITS_100000:'price_1UZTEhLR9hQMNEjMomMuGN4s',
+    STRIPE_PRICE_CREDITS_1000000:'price_1UZTFnLR9hQMNEjMo91Ep5Ps',
+    STRIPE_PRICE_CREDITS_10000000:'price_1UZTGrLR9hQMNEjMOq5eAA8r',
     AI_CREDIT_PACKS_JSON:JSON.stringify([
-      {sku:'pack_starter',priceId:process.env.STRIPE_PRICE_STARTER||'price_1URuWTLR9hQMNEjM0E4GWLXN',credits:20,amount:99,currency:'usd'},
-      ...(process.env.STRIPE_PRICE_CREDITS_1000?[{sku:'credits_1000',priceId:process.env.STRIPE_PRICE_CREDITS_1000,credits:1000,amount:1000,currency:'usd'}]:[]),
-      ...(process.env.STRIPE_PRICE_CREDITS_10000?[{sku:'credits_10000',priceId:process.env.STRIPE_PRICE_CREDITS_10000,credits:10000,amount:10000,currency:'usd'}]:[]),
-      ...(process.env.STRIPE_PRICE_CREDITS_100000?[{sku:'credits_100000',priceId:process.env.STRIPE_PRICE_CREDITS_100000,credits:100000,amount:100000,currency:'usd'}]:[]),
-      ...(process.env.STRIPE_PRICE_CREDITS_1000000?[{sku:'credits_1000000',priceId:process.env.STRIPE_PRICE_CREDITS_1000000,credits:1000000,amount:1000000,currency:'usd'}]:[]),
-      ...(process.env.STRIPE_PRICE_CREDITS_10000000?[{sku:'credits_10000000',priceId:process.env.STRIPE_PRICE_CREDITS_10000000,credits:10000000,amount:10000000,currency:'usd'}]:[])
+      {sku:'credits_1000',credits:1000,amount:1000,currency:'usd',priceId:process.env.STRIPE_PRICE_CREDITS_1000||'price_1UZTCqLR9hQMNEjM5LiVHcNi'},
+      {sku:'credits_10000',credits:10000,amount:10000,currency:'usd',priceId:process.env.STRIPE_PRICE_CREDITS_10000||'price_1UZTDoLR9hQMNEjMrZ5nkhXS'},
+      {sku:'credits_100000',credits:100000,amount:100000,currency:'usd',priceId:process.env.STRIPE_PRICE_CREDITS_100000||'price_1UZTEhLR9hQMNEjMomMuGN4s'},
+      {sku:'credits_1000000',credits:1000000,amount:1000000,currency:'usd',priceId:process.env.STRIPE_PRICE_CREDITS_1000000||'price_1UZTFnLR9hQMNEjMo91Ep5Ps'},
+      {sku:'credits_10000000',credits:10000000,amount:10000000,currency:'usd',priceId:process.env.STRIPE_PRICE_CREDITS_10000000||'price_1UZTGrLR9hQMNEjMOq5eAA8r'}
     ]),
     AI_MODEL_PRICING_JSON:JSON.stringify([
       {model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:5,providerCostMicros:15000,currency:'usd'},
