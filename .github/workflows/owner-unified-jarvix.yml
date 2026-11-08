@@ -1,0 +1,74 @@
+name: Owner unified JARVIX current DEV four-page TEST publish
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/jarvix-activity-drawer.js'
+      - 'app/src/main/assets/jarvix-chat.js'
+      - 'app/src/main/assets/jarvix-chat.css'
+      - 'app/src/main/assets/deepsyq-site-shell.js'
+      - 'tests/jarvix-activity-drawer.browser.test.mjs'
+      - 'tests/jarvix-activity-preview-smoke.mjs'
+      - '.github/workflows/owner-jarvix-activity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recent-history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      PRODUCT_WATCHER_ENABLED: 'false'
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install project dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install Chromium for isolated browser acceptance
+        run: npx playwright install --with-deps chromium
+      - name: Verify JARVIX and Studio history drawer with no paid requests
+        run: node --test tests/jarvix-activity-drawer.browser.test.mjs
+      - name: Publish verified JARVIX drawer only to isolated Cloudflare TEST branch
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 645 && github.head_ref == 'owner-unified-jarvix-main-integration-20261108' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+          PREVIEW_BRANCH: owner-unified-jarvix-main-integration-20261108
+        run: |
+          set -euo pipefail
+          if [ -z "${CLOUDFLARE_API_TOKEN}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID}" ]; then
+            echo '::error::Cloudflare credentials not available to GitHub Actions. No deployment attempted. Configure repo Actions secret CLOUDFLARE_API_TOKEN and secret or variable CLOUDFLARE_ACCOUNT_ID; never share the token in chat.'
+            exit 1
+          fi
+          curl --fail --silent --show-error -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/deepsyq" \
+            > /tmp/deepsyq-pages-project.json
+          node --input-type=module -e 'import fs from "node:fs";const p=JSON.parse(fs.readFileSync("/tmp/deepsyq-pages-project.json","utf8"));const b=p.result?.production_branch;if(p.success!==true||!b||b===process.env.PREVIEW_BRANCH){console.error("Cloudflare production branch could not be safely excluded. Aborting.");process.exit(1)}console.log("Verified Cloudflare Pages production branch differs from this isolated preview branch.")'
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq \
+            --branch="${PREVIEW_BRANCH}" \
+            --commit-hash="${{ github.sha }}"
+          echo 'Deployment requested for isolated branch preview only; MAIN was not targeted.'
+      - name: Verify real deployed Cloudflare TEST pages in desktop and mobile Chromium
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 645 && github.head_ref == 'owner-unified-jarvix-main-integration-20261108' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          JARVIX_TEST_PREVIEW_URL: https://owner-unified-jarvix-main-integ.deepsyq.pages.dev
+        run: node tests/jarvix-activity-preview-smoke.mjs
+      - name: Keep actual Cloudflare TEST screenshots for owner review
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.number == 645 && github.head_ref == 'owner-unified-jarvix-main-integration-20261108'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvix-cloudflare-real-desktop-mobile
+          path: artifacts/jarvix-live-preview/*.png
+          if-no-files-found: ignore
+          retention-days: 7
