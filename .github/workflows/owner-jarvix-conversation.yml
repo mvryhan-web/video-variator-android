@@ -8,6 +8,8 @@ on:
       - 'app/src/main/assets/jarvix-chat.js'
       - 'app/src/main/assets/jarvix-chat.html'
       - 'tests/jarvix-conversational-voice.*.mjs'
+      - 'tests/jarvix-cloudflare-branch-worker.js'
+      - 'tests/jarvix-cloudflare-branch-worker.test.mjs'
       - '.github/workflows/owner-jarvix-conversation.yml'
   workflow_dispatch:
 
@@ -39,11 +41,20 @@ jobs:
             tests/jarvix-voice-input.test.mjs \
             tests/jarvix-unified-chat.test.mjs \
             tests/jarvix-action-first.test.mjs \
-            tests/jarvix-local-voice.test.mjs
+            tests/jarvix-local-voice.test.mjs \
+            tests/jarvix-cloudflare-branch-worker.test.mjs
       - name: Install browser engines
         run: npx playwright install --with-deps chromium webkit
       - name: Desktop Chromium and mobile WebKit mock-provider acceptance
         run: npx playwright test --config tests/jarvix-conversational-voice.config.mjs
+      - name: Build a PREVIEW-ONLY asset folder and restricted JARVIX API route bridge
+        if: github.event_name == 'pull_request' && github.head_ref == 'owner-f2-jarvix-unified-voice-test-20261108'
+        run: |
+          mkdir -p "$RUNNER_TEMP/jarvix-test-dist"
+          cp -R app/src/main/assets/. "$RUNNER_TEMP/jarvix-test-dist/"
+          cp tests/jarvix-cloudflare-branch-worker.js "$RUNNER_TEMP/jarvix-test-dist/_worker.js"
+          test -f "$RUNNER_TEMP/jarvix-test-dist/jarvix-chat.html"
+          test -f "$RUNNER_TEMP/jarvix-test-dist/_worker.js"
       - name: Cloudflare TEST branch preview, never production
         if: github.event_name == 'pull_request' && github.head_ref == 'owner-f2-jarvix-unified-voice-test-20261108'
         env:
@@ -54,7 +65,7 @@ jobs:
             echo "::error::Cloudflare Pages GitHub secrets unavailable; TEST deploy not attempted."
             exit 1
           fi
-          npx --yes wrangler@4 pages deploy app/src/main/assets \
+          npx --yes wrangler@4 pages deploy "$RUNNER_TEMP/jarvix-test-dist" \
             --project-name=deepsyq \
             --branch=owner-f2-jarvix-unified-voice-test-20261108 \
             --commit-hash="${{ github.event.pull_request.head.sha }}"
