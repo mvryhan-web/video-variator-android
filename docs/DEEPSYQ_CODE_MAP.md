@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `371e98fa008b73ca05505dfb2fe1283b74e04690`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `6deefbd1b6994ebacc4011421584fa6d5f9aa9bb`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` | Indexed files: 62 | Named symbols: 177 | Checked relations: 50
 
 ## Topic finder (matching filenames)
@@ -39,7 +39,7 @@ db.js (L1) · adminEmail (L6) · pool (L8)
 
 ### `server/deepsyq-preview.js`
 
-app (L20) · port (L21) · root (L22) · assets (L23) · ffmpegUmd (L24) · ffmpegCore (L25) · disabled (L28) · freeStudioModels (L82) · freeJarvix (L262) · jarvixRequests (L263) · ownerMedia (L305) · imageMedia (L306) · ownerInspiration (L311) · ownerNext (L315) · approvedItems (L317) · previewItems (L318) · creativeMedia (L328)
+app (L20) · port (L21) · root (L22) · assets (L23) · ffmpegUmd (L24) · ffmpegCore (L25) · disabled (L28) · freeStudioModels (L89) · freeJarvix (L269) · jarvixRequests (L270) · ownerMedia (L312) · imageMedia (L313) · ownerInspiration (L318) · ownerNext (L322) · approvedItems (L324) · previewItems (L325) · creativeMedia (L335)
 
 ### `server/email-auth.js`
 
