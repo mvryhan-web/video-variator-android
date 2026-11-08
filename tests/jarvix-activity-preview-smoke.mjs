@@ -17,7 +17,7 @@ try{
  ]){
   const context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height},
    isMobile:viewport.mobile,hasTouch:viewport.mobile,deviceScaleFactor:1});
-  await context.addInitScript(()=>{localStorage.setItem('deepsyq_home_language','ru');});
+  await context.addInitScript(()=>{localStorage.setItem('deepsyq_home_language','ru');localStorage.setItem('deepsyq_lumina_terms_accepted','true');});
   const page=await context.newPage();
   const paid=[];
   page.on('request',request=>{if(request.method()==='POST'&&/\/api\/(?:studio\/jobs|stripe|payments|checkout)/i.test(request.url()))paid.push(request.url());});
