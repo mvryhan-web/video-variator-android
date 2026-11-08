@@ -58,3 +58,32 @@ jobs:
             --project-name=deepsyq \
             --branch=owner-f2-jarvix-unified-voice-test-20261108 \
             --commit-hash="${{ github.event.pull_request.head.sha }}"
+      - name: Verify published TEST UI and API availability without AI calls
+        if: github.event_name == 'pull_request' && github.head_ref == 'owner-f2-jarvix-unified-voice-test-20261108'
+        run: |
+          set -eu
+          TEST_URL='https://owner-f2-jarvix-unified-voic.deepsyq.pages.dev'
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --location --silent --show-error "$TEST_URL/jarvix-chat.html" -o /tmp/jarvix-test-page.html; then
+              break
+            fi
+            sleep 3
+          done
+          grep -q 'jarvix-conversational-voice.css' /tmp/jarvix-test-page.html
+          curl --fail --location --silent --show-error "$TEST_URL/jarvix-conversational-voice.js" \
+            | grep -q 'createJarvixVoiceSession'
+          python3 - "$TEST_URL" <<'PY'
+          import json, sys, urllib.request
+          root=sys.argv[1]
+          for suffix in ('/api/jarvix/status','/api/jarvix/voice-config'):
+              with urllib.request.urlopen(root+suffix, timeout=15) as response:
+                  data=json.load(response)
+              if suffix.endswith('/status'):
+                  if not isinstance(data.get('llm'),dict):
+                      raise SystemExit('BLOCKED: branch TEST lacks existing JARVIX conversational AI API')
+                  print('TEST AI API: route present (model connectivity not proven by status alone)')
+              else:
+                  if not isinstance(data.get('speechModelInstalled'),bool):
+                      raise SystemExit('BLOCKED: branch TEST lacks existing JARVIX TTS API')
+                  print('TEST TTS API: route present (actual arbitrary speech not yet verified)')
+          PY
