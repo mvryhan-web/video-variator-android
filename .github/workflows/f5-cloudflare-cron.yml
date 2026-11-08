@@ -28,3 +28,20 @@ jobs:
           node --test tests/product-watcher-cloudflare-cron-unit.mjs
       - name: Cloudflare Worker bundle only (NO deploy)
         run: npx --yes wrangler@4 deploy --dry-run --config cloudflare/product-watcher/wrangler.toml
+
+  w56-existing-policy-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact separate W5.6 draft revision (read only, no merge)
+        uses: actions/checkout@v4
+        with:
+          ref: 254882dbe37c8ddcc2e1651b78bb134413ffdbc0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify actual W5.5 integration on existing W5.6 draft SHA
+        run: |
+          node --check server/product-watcher/lite-delivery-attempt.js
+          node --check tests/product-watcher-lite-delivery-attempt-unit.mjs
+          node --test tests/product-watcher-lite-delivery-policy-unit.mjs tests/product-watcher-lite-delivery-attempt-unit.mjs
