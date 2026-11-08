@@ -1,0 +1,113 @@
+name: Publish F4 visual TEST to existing DEEPSYQ Pages preview
+on:
+  push:
+    branches: [audit-cloudflare-pages-access-20261108]
+    paths: ['.github/workflows/deepsyq-f4-visual-test-publish.yml']
+permissions:
+  contents: read
+jobs:
+  f4-visual-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TOKEN_1: \${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TOKEN_2: \${{ secrets.CF_API_TOKEN }}
+      TOKEN_3: \${{ secrets.CLOUDFLARE_TOKEN }}
+      ACCOUNT_1: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ACCOUNT_2: \${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      ACCOUNT_3: \${{ secrets.CF_ACCOUNT_ID }}
+      ACCOUNT_4: \${{ vars.CF_ACCOUNT_ID }}
+      F4_BRANCH: f4-w44-owner-card-cursor-secure-20261108
+      PROJECT: deepsyq
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: deepsyq-platform
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Authorize isolated TEST and overlay only current F4 page
+        shell: bash
+        run: |
+          set -euo pipefail
+          token="$TOKEN_1"; account="$ACCOUNT_1"
+          if [[ -z "$token" ]]; then token="$TOKEN_2"; fi
+          if [[ -z "$token" ]]; then token="$TOKEN_3"; fi
+          if [[ -z "$account" ]]; then account="$ACCOUNT_2"; fi
+          if [[ -z "$account" ]]; then account="$ACCOUNT_3"; fi
+          if [[ -z "$account" ]]; then account="$ACCOUNT_4"; fi
+          if [[ -z "$token" || ! "$account" =~ ^[0-9a-fA-F]{32}$ ]]; then
+            echo "::error::Cloudflare credentials not configured"; exit 1
+          fi
+          echo "::add-mask::$token"
+          curl -fsS --connect-timeout 5 --max-time 15 \
+            -H "Authorization: Bearer $token" \
+            "https://api.cloudflare.com/client/v4/accounts/$account/pages/projects/$PROJECT" \
+            -o /tmp/cfproject.json
+          python3 - <<'PY'
+          import json,sys
+          p=json.load(open('/tmp/cfproject.json')).get('result') or {}
+          assert p.get('name')=='deepsyq' and p.get('production_branch')=='deepsyq-platform', 'Unexpected CF project configuration'
+          print('Safe Cloudflare preview confirmed; production branch=deepsyq-platform')
+          PY
+          dev_sha=$(git rev-parse HEAD)
+          git fetch --no-tags --depth=1 origin "$F4_BRANCH"
+          f4_sha=$(git rev-parse FETCH_HEAD)
+          git show "FETCH_HEAD:app/src/main/assets/my-creations.html" > app/src/main/assets/my-creations.html
+          grep -q 'id="wsLoadMore"' app/src/main/assets/my-creations.html
+          changed=$(git diff --name-only)
+          [[ "$changed" == "app/src/main/assets/my-creations.html" ]] || {
+            echo "::error::Unexpected application change: $changed"; exit 2;
+          }
+          [[ ! -f app/src/main/assets/_worker.js ]] || {
+            echo "::error::Worker source found unexpectedly; abort to avoid overwrite"; exit 2;
+          }
+          echo "CLOUDFLARE_API_TOKEN=$token" >> "$GITHUB_ENV"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+          echo "DEV_SHA=$dev_sha" >> "$GITHUB_ENV"
+          echo "F4_SHA=$f4_sha" >> "$GITHUB_ENV"
+          echo "PUBLISH_TARGET=EXISTING_F4_PREVIEW_ONLY"
+          echo "SOURCE_DEV_SHA=$dev_sha"
+          echo "F4_UI_SHA=$f4_sha"
+          echo "SERVER_API_INCLUDED=false"
+      - name: Publish F4 UI-only to existing preview branch, never production
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$F4_BRANCH" != "deepsyq-platform" ]] || exit 3
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name "$PROJECT" --branch "$F4_BRANCH" \
+            --commit-hash "$DEV_SHA" --commit-dirty=true \
+            --commit-message "F4 UI TEST only (latest DEV assets plus F4 page; API not yet deployed)"
+      - name: Verify deployment on Cloudflare preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS --connect-timeout 5 --max-time 20 \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT/deployments" \
+            -o /tmp/cfdeps.json
+          python3 - <<'PY'
+          import json,os,subprocess,sys
+          items=json.load(open('/tmp/cfdeps.json')).get('result') or []
+          for d in items:
+            meta=(d.get('deployment_trigger') or {}).get('metadata') or {}
+            if meta.get('branch')!=os.environ['F4_BRANCH']:continue
+            if d.get('environment')!='preview' or (d.get('latest_stage') or {}).get('status')!='success':
+              sys.exit('Expected successful PREVIEW, not production')
+            url=d.get('url')
+            if not isinstance(url,str) or not url.startswith('https://'):sys.exit('No Cloudflare preview URL')
+            res=subprocess.run(['curl','-fsSL','--connect-timeout','6','--max-time','20',url+'/my-creations.html'],capture_output=True,text=True)
+            if res.returncode or 'id="wsLoadMore"' not in res.stdout:
+              sys.exit('Published F4 page not found in deployed TEST')
+            print('F4_VISUAL_TEST_PUBLISHED='+url+'/my-creations.html')
+            print('F4_UI_LIVE_CHECK=PASS')
+            print('SERVER_W44_API_INCLUDED=NO (not DONE)')
+            with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
+              out.write('### F4 visual TEST published\n')
+              out.write('- '+url+'/my-creations.html\n')
+              out.write('- This preview is UI-only; production not changed, W4.4 backend not included.\n')
+            sys.exit(0)
+          sys.exit('Cloudflare did not return preview deployment')
+          PY
