@@ -10,6 +10,8 @@ export function validateIsolatedWatcherEnvironment(env = {}) {
   if (env.PRODUCT_WATCHER_ENABLED !== 'true' || env.PRODUCT_WATCHER_SCHEDULER_ENABLED !== 'true') {
     return { ready: false, code: 'WATCHER_DISABLED' };
   }
+  // This flag is an operator assertion, NOT proof of database isolation.
+  // An independent Neon project/branch check is required before enabling.
   if (env.PRODUCT_WATCHER_DEPLOY_ENV !== 'test' || env.PRODUCT_WATCHER_TEST_DB_ISOLATED !== 'true') {
     return { ready: false, code: 'WATCHER_TEST_ISOLATION_UNCONFIRMED' };
   }
