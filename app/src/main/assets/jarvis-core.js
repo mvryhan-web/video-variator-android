@@ -196,9 +196,11 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
     if (voiceMeta && voiceMeta.voice) {
       utterance.voice = voiceMeta.voice;
     }
-    if (!voiceMeta?.voice && cachedVoices.length) {
-      const anyLangVoice = cachedVoices.find(v => v.lang.startsWith(resolvedLang)) || cachedVoices[0];
-      if (anyLangVoice) utterance.voice = anyLangVoice;
+    // Never silently substitute an unknown or female OS voice.
+    if (!voiceMeta?.isExplicitMale) {
+      window.dispatchEvent(new CustomEvent('jarvix:voice-unavailable', { detail: { language: resolvedLang } }));
+      if (typeof onComplete === 'function') onComplete();
+      return;
     }
     utterance.pitch = 1.0;
     utterance.rate = 1.0;
@@ -278,37 +280,45 @@ export function speakJarvis(text, onComplete = null) {
   if (button) { button.dataset.voicePhase = 'connecting'; button.setAttribute('aria-busy','true'); button.title = waitingTitle[langCode]; }
   if (label) label.textContent = waiting[langCode];
   let speechFailed = false;
-  // Instant, responsive speech (<0.1s) without 25-30s tunnel delay to owner PC
-  if (button) {
-    button.removeAttribute('aria-busy');
-    button.dataset.voicePhase = 'playing';
-  }
-  if (label) label.textContent = 'JARVIS';
-
-  pauseJarvisRecognition();
-  isJarvisSpeaking = true;
-  currentSpokenUtterance = text;
-  updateJarvisState('speaking');
-
-  speakLocalSpeechSynthesis(text, () => {
-    if (version !== speechVersion) return;
-    isJarvisSpeaking = false;
-    currentSpokenUtterance = '';
-    if (button) {
-      button.removeAttribute('aria-busy');
-      button.dataset.voicePhase = 'ready';
+  const speechStartedAt = performance.now();
+  speakOwnerSpeech(text, langCode, {
+    source: source => { if (button) button.dataset.voiceSource = source; },
+    fallback: () => {
+      if (label) label.textContent = 'JARVIS';
+      if (button) button.removeAttribute('aria-busy');
+      speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
+    },
+    phase: phase => {
+      if (button) {
+        button.dataset.voicePhase = phase;
+        if (phase === 'playing') button.dataset.voiceLatencyMs = String(Math.round(performance.now() - speechStartedAt));
+      }
+      if (label) label.textContent = phase === 'playing' ? 'JARVIS' : waiting[langCode];
+    },
+    start: () => {
+      resetSilenceTimer(); clearTimeout(silenceTimer);
+      pauseJarvisRecognition(); isJarvisSpeaking = true;
+      currentSpokenUtterance = text; updateJarvisState('speaking');
+    },
+    complete: () => setTimeout(() => {
+      if (version !== speechVersion) return;
+      isJarvisSpeaking = false; currentSpokenUtterance = '';
+      if (button) { button.removeAttribute('aria-busy'); button.dataset.voicePhase = speechFailed ? 'error' : 'ready'; }
+      if (!speechFailed && label) label.textContent = 'JARVIS';
+      if (typeof onComplete === 'function') onComplete();
+      else if (isJarvisActive && keepListening) {
+        resumeJarvisRecognition(); startSilenceTimer(); updateJarvisState('listening');
+      } else updateJarvisState('idle');
+    }, 300),
+    error: code => {
+      speechFailed = true;
+      if (label) label.textContent = {ru:'Нет звука',en:'No audio',fr:'Sans son',es:'Sin audio'}[langCode];
+      if (button) button.dataset.voiceError = code;
+      const messages = {ru:'Голосовой сервер недоступен. Попробуйте ещё раз.',en:'Voice server unavailable. Please try again.',fr:'Serveur vocal indisponible. Réessayez.',es:'Servidor de voz no disponible. Inténtalo de nuevo.'};
+      if (button) button.title = messages[langCode] || messages.en;
+      window.dispatchEvent(new CustomEvent('jarvix:voice-unavailable', {detail:{language:langCode,source:'self-hosted'}}));
     }
-    if (label) label.textContent = 'JARVIS';
-    if (typeof onComplete === 'function') {
-      onComplete();
-    } else if (isJarvisActive && keepListening && !isTourActive()) {
-      resumeJarvisRecognition();
-      startSilenceTimer();
-      updateJarvisState('listening');
-    } else {
-      updateJarvisState('idle');
-    }
-  }, langCode, isRu);
+  });
 }
 
 // 3. Instant Navigation Utility ("Сделано." — spoken strictly ONCE)
@@ -1213,9 +1223,7 @@ export function activateJarvisVoice() {
   if (topBtn) topBtn.classList.add('is-active');
 
   // Ordinary activation is a short listening acknowledgement, never the tour.
-  const listening = {ru:'Да, слушаю.',en:'Listening.',fr:'Je vous écoute.',es:'Te escucho.'};
-  resumeJarvisRecognition();
-  updateJarvisState('listening');
+  const listening = {ru:'Слушаю вас очень внимательно.',en:'Listening closely. Go ahead.',fr:'Je vous écoute très attentivement.',es:'Te escucho atentamente. Dime.'};
   speakJarvis(listening[getJarvixLanguage()] || listening.en, () => {
     if(isJarvisActive && keepListening && !isTourActive()){
       resumeJarvisRecognition();updateJarvisState('listening');
