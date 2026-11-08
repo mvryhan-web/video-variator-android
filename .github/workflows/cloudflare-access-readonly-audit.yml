@@ -192,3 +192,33 @@ jobs:
             bytes=$(wc -c < "/tmp/cf-worker-$name" 2>/dev/null || echo 0)
             echo "WORKER_SCRIPT_READ=$name HTTP=$code BYTES=$bytes"
           done
+
+      - name: List existing Cloudflare Pages projects and declared TEST targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          token="${TOKEN_1:-${TOKEN_2:-${TOKEN_3:-}}}"
+          account="${ACCOUNT_1:-${ACCOUNT_2:-${ACCOUNT_3:-${ACCOUNT_4:-}}}}"
+          if [[ -z "$token" || ! "$account" =~ ^[a-fA-F0-9]{32}$ ]]; then exit 0; fi
+          echo "::add-mask::$token"
+          code=$(curl -sS --connect-timeout 5 --max-time 20 -H "Authorization: Bearer $token" -o /tmp/cf-pages-all.json -w '%{http_code}' "https://api.cloudflare.com/client/v4/accounts/$account/pages/projects?per_page=100") || code=network_error
+          PROJECTS_HTTP_STATUS="$code" python3 - <<'PY'
+          import json,os
+          try:
+            data=json.load(open('/tmp/cf-pages-all.json'))
+            items=data.get('result') or []
+          except Exception:
+            items=[]
+          print('PROJECT_LIST_HTTP='+os.environ['PROJECTS_HTTP_STATUS'])
+          print('PROJECT_LIST_COUNT='+str(len(items)))
+          for p in items:
+            print('PROJECT_SUMMARY='+json.dumps({
+              'name':p.get('name'),
+              'subdomain':p.get('subdomain'),
+              'production_branch':p.get('production_branch'),
+              'uses_functions':p.get('uses_functions'),
+              'domains':p.get('domains'),
+              'source_type':(p.get('source') or {}).get('type'),
+              'latest_env':((p.get('latest_deployment') or {}).get('environment'))
+            },sort_keys=True))
+          PY
