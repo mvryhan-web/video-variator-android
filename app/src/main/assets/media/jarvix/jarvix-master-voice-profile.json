@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "jarvix-master-voice-profile/v1",
+  "voiceName": "JARVIX Official Master Voice (Tour v3 Edition)",
+  "sourceCollection": "tour-v3",
+  "language": "ru",
+  "sampleRate": 48000,
+  "description": "Owner-approved official voice model from the latest interactive tour (tour-v3). Characterized by natural cadence, modern cinematic tone, warmth, and high intelligibility.",
+  "canonicalReferenceFiles": [
+    {
+      "file": "app/src/main/assets/media/jarvix/tour-v3/t3_ru_4077808843cd.mp3",
+      "url": "/media/jarvix/tour-v3/t3_ru_4077808843cd.mp3",
+      "text": "Готово! Теперь вы знакомы с DEEPSYQ. Я JARVIX — ваш помощник в творчестве. Просто скажите, что хотите создать.",
+      "role": "full_sentence_expressive",
+      "bytes": 205100
+    },
+    {
+      "file": "app/src/main/assets/media/jarvix/tour-v3/t3_ru_76c07a8f82b9.mp3",
+      "url": "/media/jarvix/tour-v3/t3_ru_76c07a8f82b9.mp3",
+      "text": "Сжатие фото и видео, обработка звука, PDF, коллажи и удаление фона.",
+      "role": "technical_feature_cadence",
+      "bytes": 131948
+    },
+    {
+      "file": "app/src/main/assets/media/jarvix/tour-v3/t3_ru_5c4572bce29c.mp3",
+      "url": "/media/jarvix/tour-v3/t3_ru_5c4572bce29c.mp3",
+      "text": "Привет! Я JARVIX. Смотрите, что я умею.",
+      "role": "greeting_presentation",
+      "bytes": 66860
+    },
+    {
+      "file": "app/src/main/assets/media/jarvix/tour-v3/t3_ru_886755277794.mp3",
+      "url": "/media/jarvix/tour-v3/t3_ru_886755277794.mp3",
+      "text": "Business — расширенные режимы и до 4K.",
+      "role": "commercial_pricing_tone",
+      "bytes": 74348
+    }
+  ]
+}
