@@ -107,3 +107,64 @@ jobs:
             status=$(curl -sS -L --connect-timeout 5 --max-time 14 -o /tmp/cf-route-content -w '%{http_code};%{content_type}' "$route") || status=network_error
             echo "UNAUTHENTICATED_ROUTE_STATUS=$route $status"
           done
+
+      - name: Read latest Pages deployment and Worker runtime metadata without exposing credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          token="${TOKEN_1:-${TOKEN_2:-${TOKEN_3:-}}}"
+          account="${ACCOUNT_1:-${ACCOUNT_2:-${ACCOUNT_3:-${ACCOUNT_4:-}}}}"
+          if [[ -z "$token" || ! "$account" =~ ^[a-fA-F0-9]{32}$ ]]; then exit 0; fi
+          echo "::add-mask::$token"
+          for kind in project deployments; do
+            if [[ "$kind" == project ]]; then url="https://api.cloudflare.com/client/v4/accounts/$account/pages/projects/deepsyq"; else url="https://api.cloudflare.com/client/v4/accounts/$account/pages/projects/deepsyq/deployments?per_page=1"; fi
+            curl -sS --connect-timeout 5 --max-time 15 -H "Authorization: Bearer $token" "$url" -o "/tmp/cf-meta-$kind.json"
+          done
+          python3 - <<'PY'
+          import json
+          project=json.load(open('/tmp/cf-meta-project.json')).get('result') or {}
+          deployment=(json.load(open('/tmp/cf-meta-deployments.json')).get('result') or [{}])[0]
+          print('PROJECT_PUBLIC_CONFIG='+json.dumps({
+            'production_branch':project.get('production_branch'),
+            'source_type':(project.get('source') or {}).get('type'),
+            'build_config':project.get('build_config'),
+            'deployment_config_types':list((project.get('deployment_configs') or {}).keys()),
+            'preview_env_keys':list((((project.get('deployment_configs') or {}).get('preview') or {}).get('env_vars') or {}).keys()),
+            'production_env_keys':list((((project.get('deployment_configs') or {}).get('production') or {}).get('env_vars') or {}).keys())
+          },default=str))
+          print('DEPLOYMENT_METADATA='+json.dumps({
+            'keys':list(deployment.keys()),
+            'id':deployment.get('id'),
+            'environment':deployment.get('environment'),
+            'branch':((deployment.get('deployment_trigger') or {}).get('metadata') or {}).get('branch'),
+            'manifest_key_count':len(deployment.get('manifest') or {}),
+            'manifest_worker_present':any('_worker' in k for k in (deployment.get('manifest') or {}).keys()),
+            'deployment_url':deployment.get('url'),
+            'latest_stage':deployment.get('latest_stage')
+          },default=str))
+          PY
+          id=$(python3 -c "import json;print((json.load(open('/tmp/cf-meta-deployments.json')).get('result') or [{}])[0].get('id') or '')")
+          if [[ -n "$id" ]]; then
+            code=$(curl -sS --connect-timeout 5 --max-time 15 -o /tmp/cf-deployment-detail.json -w '%{http_code}' -H "Authorization: Bearer $token" "https://api.cloudflare.com/client/v4/accounts/$account/pages/projects/deepsyq/deployments/$id") || code=network_error
+            DEPLOYMENT_DETAIL_HTTP="$code" python3 - <<'PY'
+          import json,os
+          try:
+            d=json.load(open('/tmp/cf-deployment-detail.json')).get('result') or {}
+          except Exception:d={}
+          print('DEPLOYMENT_DETAIL='+json.dumps({
+            'http_status':os.environ['DEPLOYMENT_DETAIL_HTTP'],
+            'keys':list(d.keys()),
+            'manifest_keys':list((d.get('manifest') or {}).keys())[:20],
+            'has_worker_keys':any('_worker' in k for k in (d.get('manifest') or {}).keys()),
+            'environment':d.get('environment'),
+            'url':d.get('url')
+          }))
+          PY
+          fi
+          for route in 'https://deepsyq.pages.dev/api/studio/workspace/cards?section=recent' 'https://deepsyq.pages.dev/api/studio/never-exists-check-XYZ' 'https://deepsyq.pages.dev/my-creations.html'; do
+            status=$(curl -sS -L --connect-timeout 5 --max-time 10 -o /tmp/cf-http-body -w '%{http_code};%{content_type}' "$route") || status=network_error
+            echo "UNAUTH_ROUTE=$route STATUS=$status"
+            if [[ "$route" == *my-creations.html ]]; then
+              if grep -q 'id="wsLoadMore"' /tmp/cf-http-body; then echo 'LIVE_PAGE_HAS_LOAD_MORE=true'; else echo 'LIVE_PAGE_HAS_LOAD_MORE=false'; fi
+            fi
+          done
