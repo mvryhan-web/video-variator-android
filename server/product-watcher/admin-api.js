@@ -1,6 +1,6 @@
 import { runProductWatcherOnce, watcherConfig } from './monitor.js';
 import { initAdminAudit } from '../admin-audit.js';
-import { WATCHER_INTERVAL_MS } from './scheduler.js';
+import { WATCHER_INTERVAL_MS, watcherHeartbeatTtlMs } from './scheduler.js';
 import { listWatcherAlerts } from './alerts.js';
 import { listOfficialSourceReviews, officialSourceEnabled } from './official-sources.js';
 import { listWatcherBriefs, briefEnabled } from './briefs.js';
@@ -46,7 +46,7 @@ export function installProductWatcher(app, { auth, pool, env = process.env, fetc
       // an actually observed, fresh heartbeat, never the web flag alone.
       const observedAt = Date.now();
       const schedulerActive = heartbeat > 0 &&
-        heartbeat <= observedAt && observedAt - heartbeat < 180000;
+        heartbeat <= observedAt && observedAt - heartbeat < watcherHeartbeatTtlMs(env);
       const recent = runs[0]?.checkedAt ? new Date(runs[0].checkedAt).getTime() : null;
       const dueAt = schedulerActive && !state.rows[0].paused && Number.isFinite(recent)
         ? recent + WATCHER_INTERVAL_MS : null;
