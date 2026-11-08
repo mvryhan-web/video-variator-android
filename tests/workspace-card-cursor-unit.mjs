@@ -215,4 +215,18 @@ test('W4.4: integration with existing W4.3 sanitized summaries (bounded to 30)',
   assert.ok(!JSON.stringify(r).includes('TOP SECRET'));
   assert.ok(!JSON.stringify(r).includes('private.example'));
   assert.equal(sections.metadata.sourceValidated, false, 'W4.3 does not authenticate; caller must do so');
+  // W4.2 performs owner filtering before W4.3/W4.4; this layer never sees raw foreign jobs.
+  const { projectWorkspaceJobView } = await import('../server/workspace-job-view.js');
+  const jobs = [
+    { id:'owned_a', user_id:alice, status:'completed', type:'image', created_at:'2026-11-01T10:00:00Z', prompt:'OWNER SECRET' },
+    { id:'foreign_b', user_id:bob, status:'completed', type:'image', created_at:'2026-11-01T11:00:00Z', prompt:'FOREIGN SECRET' },
+    { id:'owned_c', ownerId:alice, status:'queued', type:'video', created_at:'2026-11-01T12:00:00Z', prompt:'OTHER SECRET' }
+  ];
+  const ownerOnly = projectWorkspaceJobView({ userId:alice, jobs });
+  const verifiedSections = selectWorkspaceCardSections({cards:ownerOnly,options:{referenceTimeMs:NOW}});
+  const verifiedPage = page(verifiedSections);
+  assert.equal(verifiedPage.error, null);
+  assert.deepEqual(verifiedPage.items.map(x=>x.id).sort(), ['owned_a','owned_c']);
+  assert.ok(!JSON.stringify(verifiedPage).includes('foreign_b'));
+  assert.ok(!JSON.stringify(verifiedPage).includes('SECRET'));
 });
