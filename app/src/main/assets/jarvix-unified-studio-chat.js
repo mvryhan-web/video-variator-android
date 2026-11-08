@@ -31,7 +31,7 @@
     toolsToggle.setAttribute('aria-expanded',String(value));
     toolsToggle.textContent = value ? 'Свернуть инструменты Studio ▴' : 'Инструменты Studio ▾';
   };
-  host.after(toolsToggle);
+  host.before(toolsToggle);
   toolsToggle.addEventListener('click',() => setToolsVisible(!document.body.classList.contains('jarvix-studio-tools-open')));
   document.body.classList.add('jarvix-shared-studio-chat');
   setToolsVisible(showToolsInitially);
