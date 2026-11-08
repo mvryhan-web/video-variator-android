@@ -67,7 +67,7 @@ test('F4 integration: unexpected foreign user in query results fails closed', ()
 
 test('F4 integration: no raw job prompts, storage keys or sensitive metadata in page', () => {
   const record = job(1,{
-    metadata:{workspace:{title:'<b>Studio Result</b>'},secret:'HIDDEN_METADATA'},
+    metadata:{workspace:{title:'Studio Result'},secret:'HIDDEN_METADATA'},
     output_assets:[{storage:'s3',key:'PRIVATE_S3_KEY'}],
     prompt:'HIDDEN_PROMPT',
     access_token:'HIDDEN_TOKEN'
