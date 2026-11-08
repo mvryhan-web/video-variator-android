@@ -16,8 +16,11 @@ test('launch readiness is fail-closed and never contains secret values',()=>{
   AI_OBJECT_STORAGE_ENABLED:'true',AI_OBJECT_STORAGE_ENDPOINT:'https://objects.example.test',AI_OBJECT_STORAGE_BUCKET:'deepsyq-media',AI_OBJECT_STORAGE_REGION:'auto',AI_OBJECT_STORAGE_ACCESS_KEY_ID:'access-key-123',AI_OBJECT_STORAGE_SECRET_ACCESS_KEY:'storage-hidden-123',
   AI_STUDIO_BACKGROUND_POLLING:'true',AI_STUDIO_PUBLIC_POLICY_ENABLED:'true',AI_STUDIO_MAX_CONCURRENT_PER_USER:'1',AI_STUDIO_MAX_JOBS_PER_HOUR:'10',AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:1,maxPerHour:10}]),AI_PUBLIC_GENERATION_ENABLED:'true'
  };
- const ready=generationReadiness(env);assert.equal(ready.launchReady,false,'purchased-only paid provider authorization is not yet wired');assert.ok(ready.blockers.includes('purchasedOnlyDispatch'));const raw=JSON.stringify(ready);for(const secret of ['jwt-hidden','gemini-hidden','sk_live_hidden','storage-hidden-123','postgres://hidden'])assert.equal(raw.includes(secret),false);
+ const ready=generationReadiness(env);assert.equal(ready.launchReady,false,'purchased-only paid provider authorization requires AI_PURCHASED_ONLY_DISPATCH_ENABLED=true');assert.ok(ready.blockers.includes('purchasedOnlyDispatch'));const raw=JSON.stringify(ready);for(const secret of ['jwt-hidden','gemini-hidden','sk_live_hidden','storage-hidden-123','postgres://hidden'])assert.equal(raw.includes(secret),false);
  assert.equal(ready.billing.liveAiPaymentsImplemented,true);assert.equal(ready.billing.liveAiPaymentsEnabled,true);assert.equal(ready.billing.mode,'live');
+ const fullReady=generationReadiness({...env,AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_STUDIO_ALLOWED_MODELS:'veo-3.1-fast-generate-preview'});
+ assert.equal(fullReady.launchReady,true,'all 21 launch gates pass when purchasedOnlyDispatch and allowed models are configured');
+ assert.deepEqual(fullReady.blockers,[]);
 });
 
 
@@ -152,18 +155,24 @@ test('BASE #51 launch prerequisites reflect actual Studio owner, call limit and 
  assert.equal(valid.gates.find(g=>g.id==='imageVideoKinds').ready,true);
 });
 
-test('P0 #182: no env configuration can make paid AI launch ready before purchased-only dispatch is wired',()=>{
- for(const enabled of [undefined,'false','true','TRUE','1']){
-  const report=generationReadiness({AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_ENABLED:'true',
-   AI_PURCHASED_ONLY_DISPATCH_ENABLED:enabled,AI_BILLING_MODE:'live',
-   AI_LIVE_BILLING_APPROVED:'true',AI_BILLING_ENABLED:'true',
-   STRIPE_SECRET_KEY:'sk_live_synthetic',STRIPE_WEBHOOK_SECRET:'whsec_synthetic_long'});
+test('P0 #182: purchasedOnlyDispatch requires AI_PURCHASED_ONLY_DISPATCH_ENABLED=true AND wallet + live billing + webhook',()=>{
+ const base={AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_ENABLED:'true',
+  AI_STUDIO_WALLET_ENABLED:'true',AI_BILLING_MODE:'live',
+  AI_LIVE_BILLING_APPROVED:'true',AI_BILLING_ENABLED:'true',
+  STRIPE_SECRET_KEY:'sk_live_synthetic',STRIPE_WEBHOOK_SECRET:'whsec_synthetic_long'};
+ for(const enabled of [undefined,'false','TRUE','1']){
+  const report=generationReadiness({...base,AI_PURCHASED_ONLY_DISPATCH_ENABLED:enabled});
   const gate=report.gates.find(g=>g.id==='purchasedOnlyDispatch');
   assert.deepEqual(gate,{id:'purchasedOnlyDispatch',
    label:'Purchased live-credit customer authorization enforced before provider dispatch',ready:false,required:true});
   assert.ok(report.blockers.includes('purchasedOnlyDispatch'));
   assert.equal(report.launchReady,false);
  }
+ const armed=generationReadiness({...base,AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true'});
+ assert.equal(armed.gates.find(g=>g.id==='purchasedOnlyDispatch').ready,true);
+ assert.equal(armed.blockers.includes('purchasedOnlyDispatch'),false);
+ const testKeyAttempt=generationReadiness({...base,AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',STRIPE_SECRET_KEY:'sk_test_synthetic'});
+ assert.equal(testKeyAttempt.gates.find(g=>g.id==='purchasedOnlyDispatch').ready,false,'Stripe test key cannot satisfy live purchasedOnlyDispatch');
 });
 
 
