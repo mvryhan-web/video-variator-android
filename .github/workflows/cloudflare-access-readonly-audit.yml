@@ -168,3 +168,27 @@ jobs:
               if grep -q 'id="wsLoadMore"' /tmp/cf-http-body; then echo 'LIVE_PAGE_HAS_LOAD_MORE=true'; else echo 'LIVE_PAGE_HAS_LOAD_MORE=false'; fi
             fi
           done
+
+      - name: Identify existing Pages Function runtime and repository-safe deployment path
+        shell: bash
+        run: |
+          set -euo pipefail
+          token="${TOKEN_1:-${TOKEN_2:-${TOKEN_3:-}}}"
+          account="${ACCOUNT_1:-${ACCOUNT_2:-${ACCOUNT_3:-${ACCOUNT_4:-}}}}"
+          if [[ -z "$token" || ! "$account" =~ ^[a-fA-F0-9]{32}$ ]]; then exit 0; fi
+          echo "::add-mask::$token"
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/cf-deployment-detail.json')).get('result') or {}
+          files=d.get('files') or {}
+          paths=files.keys() if isinstance(files,dict) else [str(item.get('name') or item.get('path') or '') for item in files if isinstance(item,dict)]
+          paths=list(paths)
+          print('LATEST_PAGES_USES_FUNCTIONS='+str(d.get('uses_functions')).lower())
+          print('LATEST_DEPLOYMENT_FILE_COUNT='+str(len(paths)))
+          print('DEPLOYMENT_FILE_NAMES_SAMPLE='+str([p for p in paths if any(s in p.lower() for s in ['worker','functions','my-creations','wrangler'])][:20]))
+          PY
+          for name in pages-deepsyq deepsyq; do
+            code=$(curl -sS --connect-timeout 5 --max-time 12 -H "Authorization: Bearer $token" -o "/tmp/cf-worker-$name" -w '%{http_code}' "https://api.cloudflare.com/client/v4/accounts/$account/workers/scripts/$name") || code=network_error
+            bytes=$(wc -c < "/tmp/cf-worker-$name" 2>/dev/null || echo 0)
+            echo "WORKER_SCRIPT_READ=$name HTTP=$code BYTES=$bytes"
+          done
