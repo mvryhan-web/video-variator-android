@@ -7,6 +7,9 @@
     if (savedTheme) document.documentElement.setAttribute('data-site-theme', savedTheme);
   } catch (_) {}
 
+  // Embedded JARVIX reuses the parent's site chrome, never a second site shell.
+  if (new URLSearchParams(location.search).get('embedded') === '1') return;
+
   // Current language resolver
   const getLang = () => {
     try {
@@ -330,6 +333,11 @@
     privacy.textContent = dict.privacy;
     translateCommon();
   };
+
+  const currentPage = location.pathname.split('/').pop().replace(/\.html$/, '');
+  if (currentPage === 'jarvix-chat' || currentPage === 'generate-studio') {
+    import('./jarvix-activity-drawer.js').catch(error => console.warn('JARVIX shared drawer:', error?.message));
+  }
 
   window.addEventListener('deepsyq:lang', refreshLanguage);
   window.addEventListener('storage', e => {
