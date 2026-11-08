@@ -5,6 +5,9 @@ on:
     paths:
       - 'server/workspace-card-cursor.js'
       - 'server/workspace-card-page-source.js'
+      - 'server/generation-studio.js'
+      - 'app/src/main/assets/my-creations.html'
+      - 'tests/workspace-pagination-page-contract.mjs'
       - 'tests/workspace-card-cursor-unit.mjs'
       - 'tests/workspace-card-page-source-unit.mjs'
       - '.github/workflows/block4-workspace-cursor-w4-4.yml'
@@ -31,6 +34,8 @@ jobs:
           node --check server/workspace-card-sections.js
           node --check server/workspace-card-cursor.js
           node --check server/workspace-card-page-source.js
+          node --check server/generation-studio.js
+          node --check tests/workspace-pagination-page-contract.mjs
       - name: Run W4.2 W4.3 W4.4 no-network owner-scoped tests
         run: |
-          node --test tests/workspace-job-view-unit.mjs tests/workspace-card-sections-unit.mjs tests/workspace-card-cursor-unit.mjs tests/workspace-card-page-source-unit.mjs
+          node --test tests/workspace-job-view-unit.mjs tests/workspace-card-sections-unit.mjs tests/workspace-card-cursor-unit.mjs tests/workspace-card-page-source-unit.mjs tests/workspace-pagination-page-contract.mjs tests/my-creations-existing-page-owner-contract.mjs
