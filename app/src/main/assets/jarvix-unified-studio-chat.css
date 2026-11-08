@@ -1,0 +1,15 @@
+/* A single JARVIX Chat sits above preserved native Image/Video/Audio Studio tools. */
+body.jarvix-shared-studio-chat .jarvix-shared-chat-host{
+ position:relative;box-sizing:border-box;width:100%;height:clamp(455px,74dvh,900px);
+ margin:0 0 18px;border:1px solid rgba(105,136,181,.30);border-radius:16px;
+ background:#090f1c;box-shadow:0 10px 26px rgba(0,0,0,.22);overflow:hidden;
+ flex:none;min-width:0;
+}
+body.jarvix-shared-studio-chat .jarvix-shared-chat-host iframe{
+ display:block;width:100%;height:100%;border:0;background:#090f1c;
+}
+@media(max-width:900px){
+ body.jarvix-shared-studio-chat .jarvix-shared-chat-host{
+  height:calc(100dvh - 176px);min-height:395px;border-radius:12px;
+ }
+}
