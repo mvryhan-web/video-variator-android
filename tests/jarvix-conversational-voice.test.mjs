@@ -151,7 +151,8 @@ test('existing JARVIX brain, text mic, safe navigation and preview CSS are REUSE
  assert.match(chat,/processMessage\(m\)/);
  assert.match(chat,/api\('\/api\/jarvix\/chat'/);
  assert.match(chat,/getJarvixLanguage/);
- assert.match(chat,/deactivateSphere:deactivateJarvisVoice/);
+ assert.match(chat,/deactivateSphere\(\)\{deactivateJarvisVoice\(\);unlockOwnerSpeech\(\);\}/);
+ assert.match(chat,/speakOwnerSpeech\(text,getJarvixLanguage\(\)/);
  assert.match(voiceInput,/bindVoiceInput/);
  assert.match(html,/id="jMic"/);
  assert.match(html,/jarvix-conversational-voice\.css/);
