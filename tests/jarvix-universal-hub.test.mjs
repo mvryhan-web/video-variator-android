@@ -21,6 +21,7 @@ test('Modes are selected in existing composer; plus stays plus and selection glo
  assert.match(design,/if\(attach&&!isQuickChat\)/);
  assert.match(design,/if\(imageChoice&&!isQuickChat/);
  assert.match(design,/navItems=isQuickChat\?\[\['JARVIX'/);
+ assert.doesNotMatch(design,/\['Video Uniquifier','index\.html'/,'No Video Uniquifier tab in either quick or full composer rail');
  assert.match(design,/j-active-mode/);
  assert.match(css,/\.j-mode-rail \.j-active-mode:not\(\[hidden\]\)/);
 });
