@@ -92,8 +92,28 @@ jobs:
                 await page.locator('#cwGenerate').click();
                 await page.locator('#cwStudioOverlay').waitFor({state:'visible',timeout:20000});
                 assert.match(await page.locator('#cwStudioFrame').getAttribute('src'),/generate-studio.html/);
+                const frame=page.frameLocator('#cwStudioFrame');
+                await frame.locator('body').waitFor({state:'attached',timeout:20000});
+                await frame.locator('body').evaluate(body=>{
+                  const doc=body.ownerDocument;
+                  let holder=doc.querySelector('#media');
+                  if(!holder){holder=doc.createElement('div');holder.id='media';doc.body.append(holder);}
+                  const bytes=Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO97n4YAAAAASUVORK5CYII='),c=>c.charCodeAt(0));
+                  const image=doc.createElement('img');
+                  image.src=URL.createObjectURL(new Blob([bytes],{type:'image/png'}));
+                  holder.replaceChildren(image);
+                });
+                await page.locator('#cwStudioImport').click();
+                await page.locator('#cwStudioOverlay').waitFor({state:'hidden',timeout:10000});
+                assert.equal(await page.locator('#cwNodes .cw-node').count(),3,name+' simulated Studio result import');
+                page.once('dialog',d=>d.accept('Canvas '+name));
+                await page.locator('#cwSave').click();
+                await page.getByText('Project saved in this browser.').waitFor({timeout:10000});
+                await page.reload({waitUntil:'domcontentloaded'});
+                await page.locator('#cwNodes .cw-node').nth(2).waitFor({timeout:20000});
+                assert.equal(await page.locator('#cwNodes .cw-node').count(),3,name+' imported file persisted');
                 await page.screenshot({path:'artifacts/canvas/'+name+'.png',fullPage:true});
-                console.log('PASS '+name+' add, connect, zoom, save, restore, Studio overlay');
+                console.log('PASS '+name+' add, connect, zoom, save, restore, Studio overlay, result import and persistence; zero AI calls');
               } finally {await ctx.close();}
             }
           } finally {await browser.close();}
