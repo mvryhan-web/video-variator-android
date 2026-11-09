@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 
 // Agent C BASE29: approved inner-page navigation. No live accounts or paid providers.
 const ordered=['Home','Image','Video','JARVIX','Audio','Tools','AI Apps','Canvas',
- 'Video Uniquifier','My Creations','Share','Inspiration','Pricing'];
+ 'Video Uniquifier','My Creations','Share','Pricing'];
 async function openMobileSidebar(page){
  const toggle=page.locator('.ds-site-mobile-toggle');
  if(await toggle.isVisible())await toggle.click();
@@ -33,8 +33,7 @@ test('BASE29 sidebar order, existing routes, and honest non-links for unavailabl
   ['Home','deepsyq.html'],['Tools','free-tools.html'],['AI Apps','ai-apps.html'],
   ['Canvas','canvas.html'],['Video Uniquifier','index.html'],
   ['My Creations','my-creations.html'],
-  ['Pricing','pricing.html'],
-  ['Inspiration','deepsyq.html#inspirationPreview']
+  ['Pricing','pricing.html']
  ]) await expect(nav.getByRole('link',{name:label,exact:true})).toHaveAttribute('href',href);
  await expect(nav.getByRole('link',{name:'JARVIX AI'})).toHaveCount(1);
  await expect(nav.getByRole('link',{name:'Assets',exact:true})).toHaveCount(0);
@@ -86,8 +85,9 @@ test('BASE29 protected Home still holds Inspiration All/Video/Image, no fake AI 
  await expect(page.locator('#sidebar')).not.toContainText('Favorites');
  await expect(page.locator('#sidebar')).not.toContainText('Challenges');
  await page.goto('/ai-apps.html');
- const types=await page.locator('#type option').evaluateAll(xs=>xs.map(x=>x.value));
- expect(types).toEqual(['','image','video','audio']);
+ await expect(page.locator('#type')).toHaveCount(0);
+ await expect(page.locator('#inspirationPreview [data-inspiration-kind]')).toHaveCount(3);
+ await expect(page.locator('#dsSiteSidebar a[href*="inspirationPreview"]')).toHaveCount(0);
  expect(paid).toEqual([]);
 });
 
