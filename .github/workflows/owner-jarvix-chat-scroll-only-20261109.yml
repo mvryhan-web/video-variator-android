@@ -48,3 +48,51 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Real desktop and mobile empty/long-chat regression
         run: node --test tests/jarvix-chat-scroll-boundary.browser.test.mjs
+
+  main-worker-readiness:
+    needs: chat-scroll-only
+    if: github.event.pull_request.number == 677
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Read-only production Worker source and binding preflight
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          const account=process.env.CLOUDFLARE_ACCOUNT_ID,token=process.env.CLOUDFLARE_API_TOKEN;
+          if(!/^[a-f\d]{32}$/i.test(account||'')||!token)throw Error('BLOCKED_MAIN: Cloudflare credentials not configured');
+          const api='https://api.cloudflare.com/client/v4/accounts/'+account;
+          async function request(path){
+            return fetch(api+path,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(14000)});
+          }
+          const projectRes=await request('/pages/projects/deepsyq');
+          assert.equal(projectRes.status,200,'BLOCKED_MAIN: cannot verify Pages project');
+          const projectJson=await projectRes.json();
+          assert.equal(projectJson.success,true);
+          const project=projectJson.result;
+          assert.equal(project.production_branch,'deepsyq-platform');
+          assert.equal(project.canonical_deployment?.uses_functions,true,'BLOCKED_MAIN: live production Worker missing');
+          const script=project.production_script_name;
+          assert(script,'BLOCKED_MAIN: production Worker name missing');
+          const encoded=encodeURIComponent(script);
+          const content=await request('/workers/scripts/'+encoded+'/content/v2');
+          const settings=await request('/workers/scripts/'+encoded+'/settings');
+          console.log('MAIN_WORKER_READINESS',JSON.stringify({
+            productionHasWorker:true,
+            sourceReadHTTP:content.status,
+            settingsReadHTTP:settings.status,
+            mainDeployId:project.canonical_deployment.id
+          }));
+          if(!content.ok||!settings.ok){
+            throw Error('BLOCKED_MAIN: Worker source/settings cannot be read; production deployment refused. Preserve existing auth, payments, credits and APIs.');
+          }
+          const source=await content.text();
+          assert(source.length>1000,'BLOCKED_MAIN: invalid source bundle');
+          const data=await settings.json();
+          assert(data.success!==false,'BLOCKED_MAIN: Worker binding inspection failed');
+          console.log('MAIN_WORKER_READ_AND_SETTINGS_READY_NO_DEPLOY');
+          JS
