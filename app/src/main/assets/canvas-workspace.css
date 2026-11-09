@@ -112,3 +112,12 @@ body.canvas-detail-page.cw-studio-open{overflow:hidden}
  body.canvas-detail-page .cw-studio-top{padding:7px 10px}
 }
 @media(prefers-reduced-motion:reduce){body.canvas-detail-page .cw-toolbar button,body.canvas-detail-page .cw-node button{transition:none}}
+
+body.canvas-detail-page .cw-studio-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+body.canvas-detail-page .cw-studio-actions #cwStudioImport{background:#117764;border-color:#3bc5a8}
+body.canvas-detail-page .cw-studio-message{margin:0;padding:7px 14px;background:#10293a;color:#c6e6dc;font-size:12px}
+@media(max-width:650px){
+ body.canvas-detail-page .cw-studio-top{flex-wrap:wrap}
+ body.canvas-detail-page .cw-studio-actions{width:100%}
+ body.canvas-detail-page .cw-studio-actions button{flex:1;min-width:125px;padding:7px 8px;font-size:11px}
+}
