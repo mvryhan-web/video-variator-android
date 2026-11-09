@@ -227,8 +227,10 @@ function scrubStudioAccount({removeDrafts=false}={}){
  $('historyList').replaceChildren();$('historyEmpty').textContent='';
  for(const id of ['walletSummary','walletHistory','creditPacks'])$(id)?.replaceChildren();
  for(const id of ['walletStatus','walletMode','status','lyrics','accessInfo','creditEstimate']){const el=$(id);if(el)el.textContent='';}
- $('walletBalance').textContent='—';$('jobProgress').hidden=true;$('resumeJob').hidden=true;
- $('clearRefs').hidden=true;$('imageEditPresets').hidden=true;
+ $('walletBalance').textContent='—';
+ // An embedded Studio can be unloaded before optional editor controls mount.
+ // Keep the existing account scrub behavior; simply skip absent controls.
+ for(const id of ['jobProgress','resumeJob','clearRefs','imageEditPresets']){const el=$(id);if(el)el.hidden=true;}
  job=null;busy=false;activeVideoWatchId=null;
  if(removeDrafts){
   try{for(const key of [imageDraftKey,videoDraftKey,'vu_generation_job','vu_generation_job_image','vu_generation_job_video','vu_generation_job_audio','vu_generation_background_job','deepsyq_template_start','deepsyq_studio_handoff_id'])if(key)sessionStorage.removeItem(key);}catch(_){}
