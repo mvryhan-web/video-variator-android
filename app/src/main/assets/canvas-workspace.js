@@ -148,7 +148,7 @@ function renderNode(n){
   const startX=event.clientX,startY=event.clientY,baseX=n.x,baseY=n.y;
   handle.setPointerCapture(event.pointerId);
   const move=e=>{n.x=clamp(Math.round(baseX+(e.clientX-startX)/scale),0,WIDTH-290);n.y=clamp(Math.round(baseY+(e.clientY-startY)/scale),0,HEIGHT-250);el.style.left=n.x+'px';el.style.top=n.y+'px';drawEdges();};
-  const up=e=>{handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',up);handle.removeEventListener('pointercancel',up);if(n.x!==baseX||n.y!==baseY)markChanged();paint();};
+  const up=()=>{handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',up);handle.removeEventListener('pointercancel',up);if(n.x!==baseX||n.y!==baseY){markChanged();paint();}else{selectNode(n.id);}};
   handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',up);handle.addEventListener('pointercancel',up);
  });
  return el;
