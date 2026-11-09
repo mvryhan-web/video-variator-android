@@ -1,0 +1,62 @@
+name: Owner D29 two URLs - Cloudflare read-only audit
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - .github/workflows/deepsyq-d29-two-urls-readonly.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-release-destinations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Read project and source deployments without printing credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo 'BLOCKED: Cloudflare Pages token unavailable'; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo 'BLOCKED: Cloudflare account ID unavailable'; exit 1; }
+          base="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq"
+          curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$base" > /tmp/cloudflare-project.json
+          for page in 1 2 3 4; do
+            curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$base/deployments?per_page=100&page=$page" > "/tmp/cloudflare-deployments-$page.json"
+          done
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const project=JSON.parse(fs.readFileSync('/tmp/cloudflare-project.json','utf8'));
+          if(project.success!==true||project.result?.name!=='deepsyq')throw Error('Pages project not verified');
+          const p=project.result;
+          const arr=[1,2,3,4].flatMap(n=>{
+            const v=JSON.parse(fs.readFileSync('/tmp/cloudflare-deployments-'+n+'.json','utf8'));
+            if(v.success!==true||!Array.isArray(v.result))throw Error('Could not inspect Pages deployments');
+            return v.result;
+          });
+          const safe=d=>d?({
+            url:d.url,
+            aliases:(d.aliases||[]).filter(x=>x.endsWith('.deepsyq.pages.dev')),
+            branch:d.deployment_trigger?.metadata?.branch,
+            sha:d.deployment_trigger?.metadata?.commit_hash,
+            created:d.created_on,
+            uses_functions:d.uses_functions,
+            environment:d.environment
+          }):null;
+          const byHash=arr.find(d=>d.url?.includes('2fa7fbd4.deepsyq.pages.dev'));
+          const stable=arr.find(d=>(d.aliases||[]).some(x=>x.includes('test.deepsyq.pages.dev')));
+          const main=p.canonical_deployment;
+          console.log('D29_CF_READONLY',JSON.stringify({
+            project:p.name,production_branch:p.production_branch,
+            production_deployments_enabled:p.source?.config?.production_deployments_enabled,
+            stable_test: 'https://test.deepsyq.pages.dev',
+            stable_test_live:safe(stable),
+            owner_supplied_antigravity_candidate:safe(byHash),
+            latest_preview:safe(arr.find(d=>d.environment==='preview')),
+            canonical_main:safe(main)
+          }));
+          if(p.production_branch!=='deepsyq-platform')throw Error('Production branch changed; no deploy attempted');
+          JS
+          echo 'READ_ONLY: no Pages/Worker/DNS production or preview deployment was changed.'
