@@ -1,4 +1,5 @@
 name: Owner Pricing mobile mid-card MAIN live check (read only)
+# Recheck current canonical MAIN after owner-approved PR #679 merge.
 on:
   push:
     branches: [owner-pricing-midcard-main-livecheck-20261109]
