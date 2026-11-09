@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `90dbb3fcfe08701ae0335fe2b27d1b4771d31548`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `3497d45988cb5ac539016ec75a1bec161f50d2d0`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 118 | Named symbols: 378 | Checked relations: 74
 
 ## Topic finder (matching filenames)
@@ -38,7 +38,7 @@ _worker.js (L1) · INSPIRATION_ITEMS (L3) · CREATIVE_TEMPLATES (L4) · studioJo
 
 ### `app/src/main/assets/ai-apps.js`
 
-all (L4) · accountLogout (L238)
+all (L5) · accountLogout (L160)
 
 ### `app/src/main/assets/ai-pricing.js`
 
