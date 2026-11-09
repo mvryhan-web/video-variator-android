@@ -42,3 +42,5 @@ Preview must use `https://<deployment-hash>.deepsyq.pages.dev`, non-production b
 ## For future DEEPSYQ chats
 
 Read `AGENTS.md`, `DECISIONS.md`, `docs/OWNER_CHANGE_CONTROL_20261107.md`, and **this runbook**. Use GitHub Actions credentials by *name*, not by sharing their values. Always distinguish **Pages Read/Write** from **Worker Script Content Read**, and TEST from MAIN. This verification is dated, so check fresh statuses before claiming anything is published or a permission works. Document proof in [Issue #233](https://github.com/mvryhan-web/video-variator-android/issues/233).
+
+**Publication rule:** This runbook becomes the default cross-chat source only after its documentation change has been merged into `deepsyq-platform`; PR-only content is not automatically visible in the branch read by other sessions. Check its current GitHub location before relying on it.
