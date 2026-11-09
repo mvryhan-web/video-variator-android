@@ -15,7 +15,7 @@ export function openWorkspace(url, title = 'Everyday Tool') {
     'audio-studio.html': 'Audio Studio',
     'canvas.html': 'Canvas'
   };
-  frame.src = url;
+  if (frame.getAttribute('src') !== url) frame.src = url;
   if (headTitle) headTitle.textContent = titleMap[url] || title;
   if (popout) popout.href = url;
   pane.hidden = false;
@@ -28,6 +28,8 @@ import {bindComposer,trackViewport} from './jarvix-composer.js';
 import {getJarvixSessionId,getJarvixLanguage,speakJarvis} from './jarvis-core.js';
 import {saveStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id),status=text=>$('jStatus').textContent=text;
+const creationModes=Object.freeze({image:'Image',video:'Video',audio:'Audio'});
+let activeJarvixMode='auto';
 const store=await conversationStore();let conversation=null,busy=false,epoch=0,controller=null,config=null,urls=[];
 const headers=()=>({'Content-Type':'application/json',...(localStorage.getItem('vv_token')?{Authorization:'Bearer '+localStorage.getItem('vv_token')}:{})});
 async function api(path,body){store.guard();const r=await fetch(path,{method:body?'POST':'GET',headers:headers(),cache:'no-store',...(body?{body:JSON.stringify(body)}:{}),signal:controller?.signal});store.guard();const d=await r.json();if(!r.ok)throw Error(d.message||d.error||'Request failed');return d;}
@@ -48,7 +50,7 @@ function render(){for(const url of urls)URL.revokeObjectURL(url);urls=[];const a
     }
   if(valid&&action.kind==='prepare-studio'&&['image','video','audio'].includes(action.target)&&typeof action.prompt==='string'&&action.prompt.trim()){
    const button=node('button',({ru:'Продолжить в Studio',en:'Continue in Studio',fr:'Continuer dans Studio',es:'Continuar en Studio'}[getJarvixLanguage()]||'Continue in Studio'));button.type='button';
-   button.onclick=async()=>{try{store.guard();await saveStudioHandoff({kind:action.target==='audio'?'music':action.target,prompt:action.prompt,settings:action.ratio?{ratio:action.ratio}:{},source:'jarvix-chat'});store.guard();location.assign(action.url);}catch(e){status(e.message);}};
+   button.onclick=async()=>{try{store.guard();await saveStudioHandoff({kind:action.target==='audio'?'music':action.target,prompt:action.prompt,settings:action.ratio?{ratio:action.ratio}:{},source:'jarvix-chat'});store.guard();if(['image','video','audio'].includes(action.target))switchJarvixMode(action.target);else location.assign(action.url);}catch(e){status(e.message);}};
    item.append(button);
   }
  }
@@ -79,14 +81,16 @@ async function processMessage(message){
   if(command?.intent==='NAVIGATE'){
    const label=({ru:'Открываю раздел DEEPSYQ.',en:'Opening the DEEPSYQ section.',fr:'Ouverture de la section DEEPSYQ.',es:'Abriendo la sección DEEPSYQ.'})[getJarvixLanguage()]||'Opening the DEEPSYQ section.';
    const response={id:makeId(),role:'assistant',text:label,toolAction:{kind:'navigate',target:command.target,url:command.url},createdAt:Date.now()};
-   message.status='sent';conversation.messages.push(response);await save();render();store.guard();location.assign(command.url);return;
+   message.status='sent';conversation.messages.push(response);await save();render();store.guard();if(['image','video','audio'].includes(command.target))switchJarvixMode(command.target);else location.assign(command.url);return;
   }
-  if(command?.intent==='GENERATE_MEDIA'&&command.raw_prompt){
+  if(command?.intent==='GENERATE_MEDIA'&&['image','video','audio'].includes(command.target)){
    const label=({ru:'Подготовил запрос для Studio. Откройте студию и проверьте модель и стоимость перед созданием. Генерация и списание кредитов не запускаются автоматически.',en:'Your Studio prompt is ready. Open Studio to review the model and cost. No generation or credit charge has started.',fr:'Votre demande est prête dans Studio. Vérifiez le modèle et le coût avant de lancer. Aucun débit automatique.',es:'Tu solicitud está lista para Studio. Revisa el modelo y el coste antes de empezar. No hay cobro automático.'})[getJarvixLanguage()]||'Your Studio prompt is ready.';
    const response={id:makeId(),role:'assistant',text:label,toolAction:{kind:'prepare-studio',target:command.target,url:command.url,prompt:command.raw_prompt,ratio:command.aspect_ratio},createdAt:Date.now()};
-   message.status='sent';conversation.messages.push(response);await save();render();return;
+   await saveStudioHandoff({kind:command.target==='audio'?'music':command.target,prompt:command.raw_prompt||message.text,settings:command.aspect_ratio?{ratio:command.aspect_ratio}:{},source:'jarvix-chat'});
+    message.status='sent';conversation.messages.push(response);await save();render();
+    switchJarvixMode(command.target);return;
   }
-  let mode=message.mode==='auto'?'text':resolveMode(message.text,message.mode);
+  let mode=message.mode='auto'?'text':resolveMode(message.text,message.mode);
   if(message.mode==='auto'&&mode==='text'&&/измен|сделай.*(ярче|темнее)|ещё|change|brighter|darker|modifier|cambiar/i.test(message.text)){const previous=[...conversation.messages].reverse().find(m=>m.role==='assistant'&&m.jobId);if(previous)mode=previous.kind;}
   let answer;
   if(mode==='text'){
@@ -112,10 +116,10 @@ async function processMessage(message){
   }
   message.status='sent';conversation.messages.push(answer);await save();render();if(answer.jobId)await poll(answer);
  }catch(e){message.status=message.status==='sent'?'sent':e.name==='AbortError'?'interrupted':'error';message.error=e.message;await save();if(e.name!=='AbortError'){
-   status(e.message);if(message.voiceAction)speakJarvis(/credit|balance/i.test(e.message)?'Недостаточно кредитов':'Уточните промпт');const link=node('button','Open request in Studio');link.type='button';link.onclick=async()=>{const mode=resolveMode(message.text,message.mode),kind=mode==='audio'?'music':mode==='text'?'image':mode;const files=(message.files||[]).filter(f=>['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024);try{await saveStudioHandoff({kind,prompt:message.text,files,source:'jarvix-chat'});location.assign('generate-studio.html?studio='+(kind==='music'?'audio':kind));}catch(e){status(e.message);}};$('jStatus').append(link);
+   status(e.message);if(message.voiceAction)speakJarvis(/credit|balance/i.test(e.message)?'Недостаточно кредитов':'Уточните промпт');const link=node('button','Open request in Studio');link.type='button';link.onclick=async()=>{const mode=resolveMode(message.text,message.mode),kind=mode==='audio'?'music':mode==='text'?'image':mode;const files=(message.files||[]).filter(f=>['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024);try{await saveStudioHandoff({kind,prompt:message.text,files,source:'jarvix-chat'});switchJarvixMode(kind==='music'?'audio':kind);}catch(e){status(e.message);}};$('jStatus').append(link);
   }if(e.name==='AbortError')throw e;}
 }
-const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();const m={id:makeId(),role:'user',text,mode,files,status:'pending',createdAt:Date.now()};if(!conversation.messages.length)conversation.title=text.slice(0,60);conversation.messages.push(m);await save();composer.clear();render();await run(()=>processMessage(m));}catch(e){status(e.message);}}});
+const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();const m={id:makeId(),role:'user',text,mode:activeJarvixMode==='auto'?'auto':activeJarvixMode,files,status:'pending',createdAt:Date.now()};if(!conversation.messages.length)conversation.title=text.slice(0,60);conversation.messages.push(m);await save();composer.clear();render();await run(()=>processMessage(m));}catch(e){status(e.message);}}});
 $('jStop').onclick=()=>{controller?.abort();$('jStop').hidden=true;status('Browser waiting stopped. Already submitted generation tasks are not cancelled.');};
 $('jNew').onclick=async()=>{if(busy)return;conversation=store.create('jarvix-'+makeId());sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);await save();render();};
 $('jHistory').onchange=async()=>{if(busy)return;const next=await store.get($('jHistory').value);if(!next)return;conversation=next;sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);await historyList();render();await restoreResults();};
@@ -147,6 +151,55 @@ window.addEventListener('jarvis:limit-reached', async (e) => {
   await save();
   render();
 });
+
+// One JARVIX conversation: Image, Video and Audio are native Studio tools inside the chat.
+function switchJarvixMode(requested,{updateUrl=true}={}){
+ const mode=Object.hasOwn(creationModes,requested)?requested:'auto';
+ activeJarvixMode=mode;
+ try{sessionStorage.setItem('jarvix_composer_mode',mode);}catch{}
+ for(const button of document.querySelectorAll('#jPlusMenu [data-j-mode]'))button.setAttribute('aria-pressed',String(button.dataset.jMode===mode));
+ const header=document.querySelector('.j-chat-toolbar h1');
+ if(header)header.textContent=mode==='auto'?'JARVIX Chat':'JARVIX '+creationModes[mode];
+ if(mode==='auto'){
+  const pane=$('jWorkspacePane'),frame=$('jWorkspaceFrame');
+  if(pane)pane.hidden=true;
+  if(frame)frame.src='about:blank';
+  document.body.classList.remove('has-chat-workspace','jarvix-creation-mode');
+ }else{
+  openWorkspace('generate-studio.html?studio='+encodeURIComponent(mode)+'&jarvix_embedded=1','JARVIX '+creationModes[mode]);
+  document.body.classList.add('jarvix-creation-mode');
+ }
+ for(const link of document.querySelectorAll('#dsSiteSidebar a[href*="jarvix-chat.html"]')){
+   const href=new URL(link.href,location.href);
+   const current=(href.searchParams.get('mode')||'auto')===mode;
+   if(current)link.setAttribute('aria-current','page');
+   else link.removeAttribute('aria-current');
+ }
+ document.querySelector('#jChatForm')?.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode},bubbles:true}));
+ if(updateUrl){
+  const url=new URL(location.href);
+  if(mode==='auto')url.searchParams.delete('mode');else url.searchParams.set('mode',mode);
+  history.replaceState(null,'',url.pathname+url.search+url.hash);
+ }
+ window.dispatchEvent(new CustomEvent('jarvix:unified-mode',{detail:{mode}}));
+ return mode;
+}
+document.addEventListener('click',event=>{
+ const link=event.target.closest?.('a[href]');
+ if(!link||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.altKey||event.shiftKey)return;
+ const url=new URL(link.href,location.href);
+ if(url.pathname!==location.pathname||url.searchParams.has('new')||url.searchParams.has('tool'))return;
+ if(url.searchParams.has('mode')&&!Object.hasOwn(creationModes,url.searchParams.get('mode')))return;
+ event.preventDefault();
+ switchJarvixMode(url.searchParams.get('mode')||'auto');
+},true);
+$('jChatForm').addEventListener('jarvix:mode',event=>{
+ if(event.detail?.mode && Object.hasOwn(creationModes,event.detail.mode) && event.detail.mode!==activeJarvixMode)
+    switchJarvixMode(event.detail.mode);
+});
+// Restore original conversation independently from tool/mode selection on any reload.
+switchJarvixMode(new URLSearchParams(location.search).get('mode')||'auto',{updateUrl:false});
+window.addEventListener('popstate',()=>switchJarvixMode(new URLSearchParams(location.search).get('mode')||'auto',{updateUrl:false}));
 
 // Auto-open tool if specified in URL query
 try {

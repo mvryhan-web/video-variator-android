@@ -663,3 +663,22 @@ body.jarvix-activity-enabled:not(.jarvix-activity-open) .jarvix-activity-toggle{
  .jarvix-activity-open .jarvix-activity-toggle{left:calc(min(84vw,340px) - 19px)}
 }
 @media(prefers-reduced-motion:reduce){.jarvix-activity-toggle,.jarvix-activity-panel{transition:none!important}}
+
+/* Owner unified JARVIX: one central Chat, one visible composer at a time.
+   Selected native Studio mode uses the existing backend, quotes and consent. */
+body.jarvix-creation-mode .jarvix-chat{
+ max-width:1600px;width:min(100%,calc(100vw - 30px));display:flex;flex-direction:column;min-width:0;
+}
+body.jarvix-creation-mode .jarvix-chat>.j-chat-toolbar{order:0}
+body.jarvix-creation-mode .jarvix-chat>.j-messages,
+body.jarvix-creation-mode .jarvix-chat>.j-chat-bottom{display:none!important}
+body.jarvix-creation-mode .jarvix-chat>.j-workspace-pane{
+ position:relative!important;inset:auto!important;order:1;
+ flex:1 1 auto!important;min-width:0;min-height:0;width:100%!important;height:auto!important;
+ border-left:0!important;border-top:1px solid #00e5ff25;border-radius:12px;
+ box-shadow:none;z-index:1;
+}
+
+/* On Home, this is the canonical JARVIX entry. No redundant lower navigation link,
+   especially no Video Uniquifier shortcut below the chat. Mode selection stays in +. */
+#homeQuickBar[data-canonical-jarvix-home] .j-mode-rail a{display:none!important}

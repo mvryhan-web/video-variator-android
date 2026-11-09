@@ -1,0 +1,149 @@
+name: Owner JARVIX single-chat isolated Cloudflare TEST
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'app/src/main/assets/deepsyq-site-shell.js'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/jarvix-home-chat.js'
+      - 'app/src/main/assets/jarvix-chat.js'
+      - 'app/src/main/assets/jarvix-chat.css'
+      - 'app/src/main/assets/jarvix-composer-design.js'
+      - 'app/src/main/assets/jarvix-action-plan.js'
+      - 'app/src/main/assets/generate-studio.html'
+      - 'tests/jarvix-unified-chat-routes.test.mjs'
+      - 'tests/jarvix-unified-chat.browser.test.mjs'
+      - '.github/workflows/owner-jarvix-unified-chat-preview.yml'
+permissions:
+  contents: read
+concurrency:
+  group: owner-one-jarvix-chat-preview-654
+  cancel-in-progress: true
+jobs:
+  publish-single-chat-preview:
+    if: github.event.pull_request.number == 654 && github.head_ref == 'owner-one-jarvix-chat-unified-modes-20261109' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      PREVIEW_BRANCH: owner-one-jarvix-chat-20261109
+      NODE_ENV: test
+      OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      DATABASE_URL: ''
+      JARVIX_QUOTA_DATABASE_URL: ''
+      JARVIX_FREE_LLM_ENABLED: 'false'
+      AI_BILLING_MODE: test
+      PRODUCT_WATCHER_ENABLED: 'false'
+    steps:
+      - name: Exact reviewed PR source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Refuse stale PR that omits latest DEV
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/deepsyq-platform:refs/remotes/origin/deepsyq-platform
+          git merge-base --is-ancestor refs/remotes/origin/deepsyq-platform HEAD
+      - name: Install existing test dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Syntax and JARVIX single chat + original shared Hub tests
+        run: |
+          set -euo pipefail
+          node --check app/src/main/assets/jarvix-chat.js
+          node --check app/src/main/assets/jarvix-home-chat.js
+          node --check app/src/main/assets/deepsyq-site-shell.js
+          node --check app/src/main/assets/jarvix-action-plan.js
+          node --test tests/jarvix-unified-chat-routes.test.mjs tests/jarvix-universal-hub.test.mjs
+      - name: Install isolated browser
+        run: npx playwright install --with-deps chromium
+      - name: Real local desktop/mobile mode navigation, unchanged session, embedded native Studio
+        run: node tests/jarvix-unified-chat.browser.test.mjs
+      - name: Validate exact project and preserve production deployment baseline
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" > /tmp/jarvix-main-before.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const data=JSON.parse(fs.readFileSync('/tmp/jarvix-main-before.json','utf8'));
+          if(data.success!==true||data.result?.name!=='deepsyq'||
+             data.result?.production_branch!=='deepsyq-platform'||
+             data.result?.production_branch===process.env.PREVIEW_BRANCH||
+             !data.result?.canonical_deployment?.id)throw Error('Cloudflare MAIN isolation guard failed');
+          fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_ID_BEFORE='+data.result.canonical_deployment.id+'\n');
+          console.log('PREVIEW_GUARD_OK',JSON.stringify({project:'deepsyq',production_branch:'deepsyq-platform'}));
+          JS
+      - name: Publish EXACT PR SHA ONLY to Cloudflare isolated TEST branch (not MAIN)
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq \
+            --branch="$PREVIEW_BRANCH" \
+            --commit-hash="${{ github.event.pull_request.head.sha }}" | tee /tmp/jarvix-preview.log
+          URL=$(grep -Eo 'https://[a-z0-9-]+\.deepsyq\.pages\.dev' /tmp/jarvix-preview.log | head -n1)
+          if [[ ! "$URL" =~ ^https://[a-z0-9-]+\.deepsyq\.pages\.dev$ ]]; then
+            echo '::error::No verified Cloudflare Preview URL'
+            exit 1
+          fi
+          echo "UNIFIED_JARVIX_PREVIEW_URL=$URL" >> "$GITHUB_ENV"
+          echo "UNIFIED_JARVIX_TEST_DEPLOYMENT=$URL"
+      - name: Verify LIVE isolated cloud Preview desktop/mobile without AI generation
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const origin=process.env.UNIFIED_JARVIX_PREVIEW_URL;
+          assert.match(origin,/^https:\/\/[a-z0-9-]+\.deepsyq\.pages\.dev$/);
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try{
+           for(const [name,viewport] of [['desktop',{width:1365,height:900}],['mobile',{width:390,height:844}]]){
+            const context=await browser.newContext({viewport,isMobile:name==='mobile',hasTouch:name==='mobile'});
+            try{
+             const page=await context.newPage();
+             const home=await page.goto(origin+'/deepsyq.html',{waitUntil:'domcontentloaded',timeout:30000});
+             assert.equal(home?.status(),200);
+             assert.equal(await page.locator('#homeQuickForm').count(),0,'legacy Home quick form removed');
+             await page.locator('#homeQuickBar #jChatForm').waitFor({state:'visible',timeout:15000});
+             assert.equal(await page.locator('#homeQuickBar .j-mode-rail a[href="index.html"]').count(),0);
+             for(const mode of ['image','video','audio']){
+               assert.equal(await page.locator('#sidebar a[href="jarvix-chat.html?mode='+mode+'"]').count(),1);
+             }
+             const chat=await page.goto(origin+'/jarvix-chat.html?mode=video',{waitUntil:'domcontentloaded',timeout:30000});
+             assert.equal(chat?.status(),200);
+             await page.locator('#jWorkspacePane:not([hidden])').waitFor({timeout:25000});
+             assert.match(new URL(page.url()).pathname,/^\/jarvix-chat(?:\.html)?$/);
+             assert.match(await page.locator('#jWorkspaceFrame').getAttribute('src'),/studio=video&jarvix_embedded=1/);
+             await page.frameLocator('#jWorkspaceFrame').locator('#creator').waitFor({timeout:25000});
+             assert.equal(await page.locator('.j-mode-rail a[href="index.html"]').count(),0);
+             const id=await page.evaluate(()=>sessionStorage.getItem('jarvix_active_conversation'));assert(id);
+             await page.evaluate(()=>document.querySelector('#dsSiteSidebar a[href="jarvix-chat.html?mode=audio"]')?.click());
+             await page.waitForFunction(()=>location.search.includes('mode=audio'));
+             assert.equal(await page.evaluate(()=>sessionStorage.getItem('jarvix_active_conversation')),id);
+             assert.match(new URL(page.url()).pathname,/^\/jarvix-chat(?:\.html)?$/);
+             console.log('LIVE_SINGLE_JARVIX_PASS',JSON.stringify({name,originalConversationPreserved:true,mode:'audio',path:'/jarvix-chat.html'}));
+            }finally{await context.close();}
+           }
+          }finally{await browser.close();}
+          JS
+      - name: Verify production canonical deployment ID is still unchanged
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" > /tmp/jarvix-main-after.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const data=JSON.parse(fs.readFileSync('/tmp/jarvix-main-after.json','utf8'));
+          if(data.success!==true||data.result?.canonical_deployment?.id!==process.env.MAIN_ID_BEFORE)
+            throw Error('Cloudflare MAIN deployment changed during TEST: investigate');
+          console.log('MAIN_UNCHANGED_VERIFIED',JSON.stringify({main_id_unchanged:true,preview_only:true}));
+          JS
