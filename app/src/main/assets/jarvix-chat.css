@@ -1279,3 +1279,40 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
 
 .jarvix-chat #jActiveModeLabel[data-mode="auto"],
 .jarvix-chat #jActiveModeLabel[data-mode="text"]{text-transform:none!important;}
+
+/* JARVIX Chat ONLY — mobile WebView / Safari visible viewport.
+   Earlier desktop height:100dvh-56px !important overrode the 132px mobile header,
+   pushing the original composer beneath the bottom edge. No composer redesign. */
+@media (max-width: 760px) {
+  main.jarvix-chat {
+    height: var(--j-mobile-visible-height, calc(var(--j-viewport, 100dvh) - 144px)) !important;
+    max-height: var(--j-mobile-visible-height, calc(var(--j-viewport, 100dvh) - 144px)) !important;
+    min-height: 0 !important;
+    padding: 8px 12px 6px !important;
+    overflow: hidden !important;
+  }
+  main.jarvix-chat .j-messages {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+  }
+  main.jarvix-chat .j-chat-bottom {
+    flex: 0 0 auto !important;
+    padding-bottom: calc(7px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  main.jarvix-chat #jInput {
+    font-size: 16px !important; /* iOS keyboard must not auto-zoom and clip the dock */
+  }
+}
+
+/* Narrow phones: keep every original control and give the message input room. */
+@media (max-width: 360px) {
+  main.jarvix-chat .j-chat-bottom form#jChatForm {
+    gap: 2px !important;
+    padding: 4px !important;
+  }
+  main.jarvix-chat .j-chat-bottom form#jChatForm textarea#jInput {
+    padding-inline: 3px !important;
+    min-width: 0 !important;
+  }
+}
