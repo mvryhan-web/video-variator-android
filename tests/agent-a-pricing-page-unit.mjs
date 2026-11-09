@@ -60,7 +60,10 @@ test('original account modal and wider Pricing feature matrix are present withou
 test('annual quote toggle remains presentation-only, protects original billing and credit accounting',()=>{
  assert.match(html,/id="priceBillingMonthly"/);
  assert.match(html,/id="priceBillingYearly"/);
- assert.match(js,/AI Credits Sold Separately/);assert.doesNotMatch(js,/80% Credit Bonus/);
+ assert.doesNotMatch(js,/AI Credits Sold Separately/);assert.doesNotMatch(js,/80% Credit Bonus/);
+ assert.doesNotMatch(html,/id="priceBillingPromo"/);
+ assert.doesNotMatch(html,/Video &amp; Everyday Tools Plans/);
+ assert.match(html,/class="price-plan-carousel-stage"/);
  assert.match(js,/const annualPlanKeys=new Set\(\['basic','pro','business'\]\)/);
  assert.match(js,/Math\.round\(monthlyCents\*0\.8\)/);
  assert.match(js,/if\(billingPeriod==='yearly'&&annualPlanKeys\.has\(plan\)\)/);
