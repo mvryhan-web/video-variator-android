@@ -101,10 +101,10 @@ if(!shell.includes("import('./jarvix-activity-drawer.js')")){
   "  }",
   ""
  ].join('\n');
- const anchor=shell.match(/^[ \\t]*document\\.body\\.prepend\\(scrim,\\s*toggle,\\s*sidebar\\);[ \\t]*(?:\\r?\\n|$)/m)?.[0];
+ const anchor=shell.match(/^[ \t]*document\.body\.prepend\(scrim,\s*toggle,\s*sidebar\);[ \t]*(?:\r?\n|$)/m)?.[0];
  if(!anchor)throw Error('Production shell has no stable sidebar insertion anchor');
- const newline=shell.includes('\\r\\n')?'\\r\\n':'\\n';
- shell=one(shell,anchor,anchor+addition.replaceAll('\\n',newline),'site-shell');
+ const newline=shell.includes('\r\n')?'\r\n':'\n';
+ shell=one(shell,anchor,anchor+addition.replaceAll('\n',newline),'site-shell');
 }
 await writeFile(at(dist,'deepsyq-site-shell.js'),shell);
 
