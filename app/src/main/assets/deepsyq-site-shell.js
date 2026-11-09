@@ -315,8 +315,10 @@
   document.body.classList.add('deepsyq-sitewide-shell');
   document.body.prepend(scrim, toggle, sidebar);
 
-  // One shared JARVIX recent drawer for Chat/Image/Video/Audio; no duplicate chat.
-  if (['jarvix-chat', 'jarvix-chat.html', 'generate-studio', 'generate-studio.html'].includes(path)) {
+  // JARVIX Chat already has its single history panel under the title.
+  // Do NOT mount the older activity drawer there; it duplicates chat and recent works.
+  // The existing Studio activity drawer remains available on Studio routes.
+  if (['generate-studio', 'generate-studio.html'].includes(path)) {
     import('./jarvix-activity-drawer.js').catch(error => console.warn('JARVIX activity unavailable:', error?.message));
   }
 
