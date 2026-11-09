@@ -55,6 +55,8 @@ main.ws-page{width:100%;max-width:none;margin:0;padding:16px clamp(16px,2.5vw,40
 .ws-meta{font-size:12px;color:#a5b6d5}
 .ws-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto}.ws-actions button,.ws-actions a{background:#132b4d;border:1px solid #27568d;border-radius:9px;color:#e4f2ff;padding:7px 10px;font-size:12px}.ws-actions :is(a,button):hover{border-color:#1de5ff}
 #wsStatus{color:#b6cae4;font-size:13px}
+.ws-load-more{display:block;margin:18px auto 0;padding:10px 20px;min-height:40px;border:1px solid #2d8fe0;border-radius:10px;background:#0c2344;color:#e7f4ff;font-weight:650;font-size:13px}
+.ws-load-more[hidden]{display:none}.ws-load-more:disabled{opacity:.6;cursor:wait}
 .ws-empty{min-height:230px;grid-column:1/-1;border:1px dashed #1f4f83;border-radius:14px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;text-align:center;padding:34px 18px;background:radial-gradient(circle at 50% 100%,#101d43,#06122a)}
 .ws-empty-icon{width:64px;height:64px;display:grid;place-items:center;font-size:27px;border-radius:18px;border:1px solid #7d44ef;background:linear-gradient(140deg,#122f61,#33146b)}
 .ws-empty h3{margin:2px 0;font-size:20px}.ws-empty p{margin:0 0 13px;color:#b0c2db;font-size:13px}
@@ -141,6 +143,7 @@ main.ws-page{width:100%;max-width:none;margin:0;padding:16px clamp(16px,2.5vw,40
     </div>
     <p id="wsStatus" role="status" aria-live="polite">Loading your workspace…</p>
     <div id="cardsGrid" class="cards-grid"></div>
+    <button id="wsLoadMore" class="ws-load-more" type="button" hidden>Load more</button>
   </section>
 
   <section class="ws-discover" aria-labelledby="wsExploreTitle">
@@ -157,14 +160,71 @@ main.ws-page{width:100%;max-width:none;margin:0;padding:16px clamp(16px,2.5vw,40
   let activeSection = 'recent';
   let lastData = null;
   let favSet = new Set();
+  let pageStates = Object.create(null);
+  let loadGeneration = 0;
 
   function authHeaders() {
     const token = localStorage.getItem('vv_token');
     return token ? { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
   }
 
+
+  // W4.4 is opt-in and progressively enhanced. If an older API is deployed,
+  // preserve the existing W4.3 cards instead of changing user-visible data.
+  async function loadPagedSection(section, generation, cursor = null) {
+    if (section === 'favorites') return;
+    const params = new URLSearchParams();
+    const q = $('searchInput').value.trim();
+    if (q) params.set('q', q);
+    if ($('typeSelect').value) params.set('type', $('typeSelect').value);
+    if ($('statusSelect').value) params.set('status', $('statusSelect').value);
+    params.set('section', section);
+    params.set('pageSize', '30');
+    if (cursor) params.set('cursor', cursor);
+    const moreButton = $('wsLoadMore');
+    try {
+      const response = await fetch('/api/studio/workspace/cards?' + params.toString(), { headers: authHeaders() });
+      const page = await response.json();
+      if (generation !== loadGeneration) return;
+      if (!response.ok || !Array.isArray(page.items) || !page.pageInfo) {
+        if (cursor) $('wsStatus').textContent = 'Could not load older creations. Please refresh.';
+        return;
+      }
+      const previous = cursor ? (pageStates[section]?.items || []) : [];
+      const seen = new Set(previous.map(item => item.id));
+      pageStates[section] = {
+        items: previous.concat(page.items.filter(item => !seen.has(item.id))),
+        pageInfo: page.pageInfo
+      };
+      const count = $('cnt-' + section);
+      if (count && Number.isSafeInteger(page.pageInfo.total) && page.pageInfo.total >= 0) {
+        count.textContent = String(page.pageInfo.total);
+      }
+      if (section === activeSection) renderSection();
+    } catch (_) {
+      if (generation === loadGeneration && cursor) {
+        $('wsStatus').textContent = 'Could not load older creations. Please refresh.';
+      }
+    } finally {
+      if (generation === loadGeneration) {
+        moreButton.disabled = false;
+        moreButton.textContent = 'Load more';
+      }
+    }
+  }
+
   async function loadCards() {
+    const generation = ++loadGeneration;
+    pageStates = Object.create(null);
+    lastData = null;
+    favSet = new Set();
+    $('cardsGrid').replaceChildren();
+    $('wsLoadMore').hidden = true;
     if (!localStorage.getItem('vv_token')) {
+      for (const k of ['recent', 'favorites', 'completed', 'drafts']) {
+        const count = $('cnt-' + k);
+        if (count) count.textContent = '0';
+      }
       $('wsStatus').textContent = '';
       const empty = document.createElement('div');
       empty.className = 'ws-empty';
@@ -185,6 +245,7 @@ main.ws-page{width:100%;max-width:none;margin:0;padding:16px clamp(16px,2.5vw,40
       const res = await fetch('/api/studio/workspace/cards?' + params.toString(), { headers: authHeaders() });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'WORKSPACE_UNAVAILABLE');
+      if (generation !== loadGeneration) return;
       lastData = data;
       favSet = new Set((data.sections?.favorites || []).map(c => c.id));
       for (const k of ['recent', 'favorites', 'completed', 'drafts']) {
@@ -192,7 +253,9 @@ main.ws-page{width:100%;max-width:none;margin:0;padding:16px clamp(16px,2.5vw,40
         if (el) el.textContent = String(data.counts?.[k] ?? 0);
       }
       renderSection();
+      if (activeSection !== 'favorites') void loadPagedSection(activeSection, generation);
     } catch (e) {
+      if (generation !== loadGeneration) return;
       $('wsStatus').textContent = 'Unable to load your creations (' + (e.message || 'error') + ').';
     }
   }
@@ -215,7 +278,9 @@ main.ws-page{width:100%;max-width:none;margin:0;padding:16px clamp(16px,2.5vw,40
   function renderSection() {
     const grid = $('cardsGrid');
     grid.replaceChildren();
-    const list = lastData?.sections?.[activeSection] || [];
+    const paged = pageStates[activeSection];
+    const list = paged?.items || lastData?.sections?.[activeSection] || [];
+    $('wsLoadMore').hidden = !paged?.pageInfo?.hasMore || activeSection === 'favorites';
     if (!list.length) {
       $('wsStatus').textContent = '';
       const empty = document.createElement('div');
@@ -293,8 +358,18 @@ main.ws-page{width:100%;max-width:none;margin:0;padding:16px clamp(16px,2.5vw,40
       activeSection = btn.dataset.sec;
       document.querySelectorAll('[data-sec]').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
       renderSection();
+      if (lastData && activeSection !== 'favorites' && !pageStates[activeSection]) {
+        void loadPagedSection(activeSection, loadGeneration);
+      }
     };
   });
+  $('wsLoadMore').onclick = () => {
+    const info = pageStates[activeSection]?.pageInfo;
+    if (!info?.hasMore || !info.nextCursor) return;
+    $('wsLoadMore').disabled = true;
+    $('wsLoadMore').textContent = 'Loading…';
+    void loadPagedSection(activeSection, loadGeneration, info.nextCursor);
+  };
   $('refreshBtn').onclick = () => loadCards();
   $('searchInput').oninput = () => loadCards();
   $('typeSelect').onchange = () => loadCards();

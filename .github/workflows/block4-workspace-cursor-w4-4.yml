@@ -1,0 +1,44 @@
+name: F4 W4.4 Workspace cursor and owner isolation (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/workspace-card-cursor.js'
+      - 'server/workspace-card-page-source.js'
+      - 'server/generation-studio.js'
+      - 'app/src/main/assets/my-creations.html'
+      - 'tests/workspace-pagination-page-contract.mjs'
+      - 'tests/workspace-pagination-client-behavior.mjs'
+      - 'tests/workspace-card-cursor-unit.mjs'
+      - 'tests/workspace-card-page-source-unit.mjs'
+      - '.github/workflows/block4-workspace-cursor-w4-4.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/workspace-card-cursor.js'
+      - 'tests/workspace-card-cursor-unit.mjs'
+      - '.github/workflows/block4-workspace-cursor-w4-4.yml'
+permissions:
+  contents: read
+jobs:
+  offline-cursor-and-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify W4.1 to W4.4 source syntax
+        run: |
+          node --check server/workspace-project-policy.js
+          node --check server/workspace-job-view.js
+          node --check server/workspace-card-sections.js
+          node --check server/workspace-card-cursor.js
+          node --check server/workspace-card-page-source.js
+          node --check server/generation-studio.js
+          node --check tests/workspace-pagination-page-contract.mjs
+          node --check tests/workspace-pagination-client-behavior.mjs
+      - name: Run W4.1 W4.2 W4.3 W4.4 no-network owner-scoped tests
+        run: |
+          node --test tests/workspace-project-policy-unit.mjs tests/workspace-job-view-unit.mjs tests/workspace-card-sections-unit.mjs tests/workspace-card-cursor-unit.mjs tests/workspace-card-page-source-unit.mjs tests/workspace-pagination-page-contract.mjs tests/workspace-pagination-client-behavior.mjs tests/my-creations-existing-page-owner-contract.mjs
