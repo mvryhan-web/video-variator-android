@@ -69,6 +69,12 @@ test('Everyday Tools: mobile tiles have names without prefix icons, desktop unch
      assert.ok(offsets.labelX<35,'Title moved left to use freed icon space '+JSON.stringify(offsets));
     }
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    if(overflow>1){
+     const offenders=await page.evaluate(()=>[...document.body.querySelectorAll('*')]
+      .map(e=>{const r=e.getBoundingClientRect();return{tag:e.tagName,cls:String(e.className||'').slice(0,90),id:e.id,left:Math.round(r.left),right:Math.round(r.right),width:Math.round(r.width)};})
+      .filter(x=>x.width>0&&x.right>innerWidth+1).sort((a,b)=>b.right-a.right).slice(0,12));
+     console.log('EVERYDAY_OVERFLOW_DIAGNOSTIC',JSON.stringify({viewport:viewport.name,overflow,offenders}));
+    }
     assert.ok(overflow<=1,'No horizontal mobile/desktop overflow: '+overflow);
     assert.deepEqual(posts,[],'No paid requests');
     await mkdir('artifacts/everyday-mobile-cleanup',{recursive:true});
