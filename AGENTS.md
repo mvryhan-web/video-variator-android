@@ -1,6 +1,8 @@
 ## OWNER D26 — 2026-11-08 — CLOUDFLARE MIGRATION ($0 RENDER), FAST-TRACK LAUNCH & PROFIT RULES
 
 **LATEST BINDING OWNER INSTRUCTION; overrides D25/D24/D23 on Render hosting, active executors, and deployment URLs.**
+**CLOUDFLARE ACCESS / FOR EVERY NEW DEEPSYQ CHAT — VERIFIED 2026-11-09:** Before saying Cloudflare is inaccessible or requesting a token, **READ [`docs/DEEPSYQ_CLOUDFLARE_ACCESS_RUNBOOK.md`](docs/DEEPSYQ_CLOUDFLARE_ACCESS_RUNBOOK.md)**. The connected GitHub app can use existing GitHub Actions secret **`CLOUDFLARE_API_TOKEN`** and `CLOUDFLARE_ACCOUNT_ID` to check/publish an isolated Pages Preview (verified live). This token is active and can read Pages but reads the production Pages-managed Worker content with **403**. Never expose or recreate keys unnecessarily; no MAIN release if it would drop existing Pages Functions (`uses_functions:true`). See [permission audit](https://github.com/mvryhan-web/video-variator-android/actions/runs/42582178313). A runbook makes access **discoverable** to other connected chats; it does not reveal secret values or alter permission scopes.
+
 
 1. **HOSTING MIGRATED FROM RENDER TO CLOUDFLARE + NEON POSTGRESQL ($0/MONTH BANDWIDTH & SERVERS):**
    - All Render web services, static sites, and the paid Render PostgreSQL database (`video-uniquifier-db`) have been **suspended/deleted** by owner order to eliminate Render monthly bandwidth and server charges ($0.00 Render spend).
