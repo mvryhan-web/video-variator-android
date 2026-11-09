@@ -101,7 +101,8 @@ if(!shell.includes("import('./jarvix-activity-drawer.js')")){
   "  }",
   ""
  ].join('\n');
- const i=shell.indexOf('document.body.');console.log('LIVE_SHELL_AROUND_BODY',JSON.stringify(shell.slice(Math.max(0,i-240),i+420)));\n shell=one(shell,'  document.body.prepend(scrim, toggle, sidebar);\n','  document.body.prepend(scrim, toggle, sidebar);\n'+addition,'site-shell');
+ const i=shell.indexOf('document.body.');console.log('LIVE_SHELL_AROUND_BODY',JSON.stringify(shell.slice(Math.max(0,i-240),i+420)));
+ shell=one(shell,'  document.body.prepend(scrim, toggle, sidebar);\n','  document.body.prepend(scrim, toggle, sidebar);\n'+addition,'site-shell');
 }
 await writeFile(at(dist,'deepsyq-site-shell.js'),shell);
 
