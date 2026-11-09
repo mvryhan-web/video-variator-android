@@ -4,6 +4,11 @@ on:
     branches: [deepsyq-platform]
     paths:
       - 'server/**'
+      - 'app/src/main/assets/**/*.js'
+      - 'app/src/main/assets/**/*.mjs'
+      - 'app/src/main/assets/**/*.html'
+      - 'app/src/main/assets/**/*.css'
+      - 'app/src/main/java/**'
       - '.graphifyignore'
       - 'tools/graphify/**'
       - '.github/workflows/graphify-offline-pilot.yml'
@@ -11,6 +16,8 @@ on:
     branches: [deepsyq-platform]
     paths:
       - '.graphifyignore'
+      - 'app/src/main/assets/**/*.js'
+      - 'app/src/main/java/**'
       - '.agents/skills/graphify/**'
       - 'tools/graphify/**'
       - '.github/workflows/graphify-offline-pilot.yml'
@@ -29,6 +36,7 @@ jobs:
       DEEPSEEK_API_KEY: ''
       MOONSHOT_API_KEY: ''
       GRAPHIFY_BACKEND: ''
+      GRAPHIFY_QUERY_LOG_DISABLE: '1'
       AWS_ACCESS_KEY_ID: ''
       AWS_SECRET_ACCESS_KEY: ''
       AWS_SESSION_TOKEN: ''
@@ -45,14 +53,14 @@ jobs:
           printf 'export const GRAPHIFY_SECRET_SENTINEL = "SYNTHETIC_DO_NOT_INDEX";\n' > server/customer-data/graphify-exclude-probe.js
       - name: Build code-only AST; no docs, model, API, cloud, user files, hooks, or graph artifact
         run: |
-          graphify extract server --code-only --no-viz --no-cluster
+          graphify extract . --code-only --no-viz --no-cluster
           test -f graphify-out/graph.json || test -f server/graphify-out/graph.json
       - name: Reject secret paths and answer one real question without full-repo re-read
         run: |
           GRAPH=graphify-out/graph.json
           test -f "$GRAPH" || GRAPH=server/graphify-out/graph.json
           node tools/graphify/verify-graph.mjs "$GRAPH"
-          (cd server && graphify query "submitPurchasedProviderRequest")
+          graphify query "submitPurchasedProviderRequest"
       - name: Test safe map exporter
         run: node --test tools/graphify/export-safe-index.test.mjs
       - name: Export SAFE code map from verified Graphify AST (no raw source)
@@ -64,6 +72,7 @@ jobs:
           node tools/graphify/export-safe-index.mjs "$GRAPH" "$SOURCE_SHA" docs/DEEPSYQ_CODE_MAP.md
           test -s docs/DEEPSYQ_CODE_MAP.md
           test -s docs/DEEPSYQ_CODE_MAP.json
+          node -e 'const j=require("./docs/DEEPSYQ_CODE_MAP.json");if(j.schema!==2||!j.nodes.some(n=>n[0].startsWith("server/"))||!j.nodes.some(n=>n[0].startsWith("app/src/main/assets/"))||j.page_files.length<5||j.style_files.length<5||j.android_files.length<1)process.exit(1)'
       - name: Share only sanitized code map (never raw graph)
         uses: actions/upload-artifact@v4
         with:
@@ -100,8 +109,23 @@ jobs:
         env:
           SOURCE_SHA: ${{ github.sha }}
         run: |
-          node -e 'const fs=require("fs"); const j=JSON.parse(fs.readFileSync("docs/DEEPSYQ_CODE_MAP.json","utf8")); if(j.source_sha!==process.env.SOURCE_SHA || j.scope!=="server/" || !Array.isArray(j.nodes) || j.nodes.length<10) process.exit(1);'
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const j = JSON.parse(fs.readFileSync('docs/DEEPSYQ_CODE_MAP.json', 'utf8'));
+          if (j.schema !== 2 ||
+              j.source_sha !== process.env.SOURCE_SHA ||
+              !j.scope.includes('app/src/main/assets/') ||
+              !Array.isArray(j.nodes) ||
+              !j.nodes.some(n => n[0].startsWith('app/src/main/assets/')) ||
+              !Array.isArray(j.page_files) || j.page_files.length < 5 ||
+              !Array.isArray(j.android_files) || j.android_files.length < 1) process.exit(1);
+          JS
           grep -Fq "$SOURCE_SHA" docs/DEEPSYQ_CODE_MAP.md
+          ACTUAL_SHA="$(git rev-parse HEAD)"
+          if [ "$ACTUAL_SHA" != "$SOURCE_SHA" ]; then
+            echo "STALE_MAP: DEV advanced from $SOURCE_SHA to $ACTUAL_SHA; refusing to publish stale Graphify index"
+            exit 0
+          fi
           git add -- docs/DEEPSYQ_CODE_MAP.md docs/DEEPSYQ_CODE_MAP.json
           if ! git diff --cached --quiet; then
             git -c user.name='deepsyq-code-map[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "docs(graphify): refresh safe code map from $SOURCE_SHA [skip ci]"

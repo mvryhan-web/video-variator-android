@@ -1,7 +1,7 @@
 // Export an intentionally lossy, safe, agent-readable code map from Graphify AST.
 // Never publish Graphify's raw graph: it may contain source snippets or private data.
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 'node:fs';
+import { dirname, join, relative } from 'node:path';
 
 const [graphPath, sourceSha, outPath = 'docs/DEEPSYQ_CODE_MAP.md'] = process.argv.slice(2);
 if (!graphPath || !/^[a-f0-9]{40}$/.test(sourceSha || '')) {
@@ -21,8 +21,14 @@ function sourcePath(value) {
   if (typeof value !== 'string') return null;
   let x = value.replaceAll('\\', '/').replace(/^\.\//, '');
   if (!x || x.startsWith('/') || x.includes('..') || /[:\n\r\t]/.test(x)) return null;
-  if (!x.startsWith('server/')) x = 'server/' + x;
-  if (!/^server\/[A-Za-z0-9_./-]+\.(?:js|mjs|cjs|ts|tsx)$/.test(x)) return null;
+  // Graphify now scans repository root: retain real source roots instead of
+  // silently attributing frontend/Android symbols to server/.
+  const codeRoots = [
+    /^server\/[A-Za-z0-9_./-]+\.(?:js|mjs|cjs|ts|tsx|jsx)$/,
+    /^app\/src\/main\/assets\/[A-Za-z0-9_./-]+\.(?:js|mjs|cjs|ts|tsx|jsx)$/,
+    /^app\/src\/main\/java\/[A-Za-z0-9_./-]+\.(?:java|kt)$/
+  ];
+  if (!codeRoots.some(re => re.test(x))) return null;
   if (badPath.test(x) || badFragment.test(x)) return null;
   return x;
 }
@@ -63,11 +69,34 @@ for (const item of items) {
   files.get(item.file).push(item);
 }
 const esc = x => x.replaceAll('|', '').replaceAll('`', '');
-let md = '# DEEPSYQ — Graphify code map (server only)\n\n';
+// Filename-only inventory for HTML/CSS and Android configuration; Graphify's
+// code-only AST does not guarantee symbol extraction from these file types.
+const repoRoot = process.env.GRAPHIFY_REPO_ROOT || process.cwd();
+const assetsRoot = join(repoRoot, 'app/src/main/assets');
+const assetFiles = existsSync(assetsRoot) ? readdirSync(assetsRoot, {withFileTypes:true})
+  .filter(x => x.isFile() && /^[A-Za-z0-9_.-]+\.(?:html|css)$/.test(x.name))
+  .map(x => 'app/src/main/assets/' + x.name).sort() : [];
+const pageFiles = assetFiles.filter(x => x.endsWith('.html'));
+const styleFiles = assetFiles.filter(x => x.endsWith('.css'));
+const androidRoot = join(repoRoot, 'app/src/main/java');
+const androidFiles = [];
+function walkAndroid(dir) {
+  if (!existsSync(dir) || androidFiles.length >= 200) return;
+  for (const entry of readdirSync(dir, {withFileTypes:true})) {
+    if (entry.isDirectory()) walkAndroid(join(dir, entry.name));
+    else if (entry.isFile() && /^[A-Za-z0-9_.-]+\.(?:java|kt)$/.test(entry.name)) {
+      const p = relative(repoRoot, join(dir, entry.name)).replaceAll('\\', '/');
+      if (/^app\/src\/main\/java\/[A-Za-z0-9_./-]+\.(?:java|kt)$/.test(p) && !badPath.test(p)) androidFiles.push(p);
+    }
+  }
+}
+walkAndroid(androidRoot);
+androidFiles.sort();
+let md = '# DEEPSYQ — Graphify code map (server, web, Android)\n\n';
 md += '> Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.\n';
-md += '> Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.\n\n';
+md += '> Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.\n\n';
 md += 'Source commit: `' + sourceSha + '`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`\n';
-md += 'Scope: `server/` | Indexed files: ' + files.size + ' | Named symbols: ' + items.length + ' | Checked relations: ' + links.length + '\n\n';
+md += 'Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: ' + files.size + ' | Named symbols: ' + items.length + ' | Checked relations: ' + links.length + '\n\n';
 md += '## Topic finder (matching filenames)\n\n';
 const topics = [
   ['Credits, payments and pricing',/credit|wallet|stripe|billing|pricing|purchased|entitle/i],
@@ -76,13 +105,22 @@ const topics = [
   ['Audio and voice',/audio|speech|voice/i],
   ['AI Apps, Inspiration, History',/tool|app|inspiration|history|workspace/i],
   ['Accounts and security',/auth|policy|access|audit|user/i],
+  ['JARVIX unified chat and composer',/jarvis|jarvix|composer|chat/i],
+  ['Pricing and subscriptions',/pricing|subscription|billing|stripe/i],
+  ['Android app',/^app\/src\/main\/java\//i],
 ];
 const sortedFiles = [...files.keys()].sort();
 for (const [topic,pattern] of topics) {
  const found = sortedFiles.filter(x=>pattern.test(x)).slice(0,30);
  md += '- **' + topic + ':** ' + (found.length ? found.map(x=>'`'+x+'`').join(', ') : 'not mapped by name') + '\n';
 }
-md += '\n## Source symbol map\n\n';
+md += '\n## Frontend page inventory (filenames only, not Graphify AST)\n\n';
+md += pageFiles.map(x=>'\u0060'+x+'\u0060').join(' · ')+'\n\n';
+md += '## Frontend CSS inventory (filenames only)\n\n';
+md += styleFiles.map(x=>'\u0060'+x+'\u0060').join(' · ')+'\n\n';
+md += '## Android Java/Kotlin files (filenames only)\n\n';
+md += androidFiles.map(x=>'\u0060'+x+'\u0060').join(' · ')+'\n\n';
+md += '## Source symbol map\n\n';
 for (const file of sortedFiles) {
   const uniq = new Map();
   for (const item of files.get(file)) uniq.set(item.name + ':' + item.line,item);
@@ -94,7 +132,7 @@ md += '## Link traversal\n\n';
 md += 'Safe relationship edges are available in `docs/DEEPSYQ_CODE_MAP.json` (numeric node indices). This is a navigation hint, not evidence of runtime behavior.\n';
 if (badFragment.test(md) || badPath.test(md)) throw new Error('Unsafe text in proposed map');
 const safeGraph = {
-  schema: 1, source_sha:sourceSha, scope:'server/', graphify_commit:'86c57be8204673c2a1b9849a3292a7dd3ab373d8',
+  schema: 2, source_sha:sourceSha, scope:'server/ + app/src/main/assets/ + app/src/main/java/', page_files:pageFiles, style_files:styleFiles, android_files:androidFiles, graphify_commit:'86c57be8204673c2a1b9849a3292a7dd3ab373d8',
   nodes: items.map(x=>[x.file,x.name,x.line]),
   edges: links.map(x=>[x.a,x.b,x.relation])
 };

@@ -1,3 +1,6 @@
+# OWNER D30 — 2026-11-09 — GRAPHIFY + LATEST INTEGRATED BASELINE
+Before changing code, follow [docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md](../docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md): read today's DEV HEAD, verify Graphify map `source_sha`, reconcile actual deployed TEST SHA, then branch from CURRENT integrated DEV. Never overwrite newer approved changes with yesterday's snapshot. This is required for Administrator, P, Antigravity and future agents, subject to the current owner release permissions. Graphify map is navigation, NOT a real-time task ledger or release proof.
+
 
 # ==============================================================================
 # JARVIX SINGLE CHAT — PERMANENT RULE (ВЛАДЕЛЕЦ DEEPSYQ)
