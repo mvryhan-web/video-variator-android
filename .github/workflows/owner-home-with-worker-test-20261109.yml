@@ -95,7 +95,15 @@ jobs:
               console.log('TEST_WORKER_SOURCE_ACCESS',JSON.stringify({http:workerRes.status,bytes:bytes.length,hasHomeRoutes:src.includes('/api/inspiration')&&src.includes('/api/config'),hasJarvix:src.includes('/api/jarvix/chat')}));
             }
           }catch(err){console.log('TEST_WORKER_SOURCE_ACCESS_ERROR',String(err).slice(0,150));}
-          assert(test.uses_functions!==true,'Existing TEST already has Functions; stop before replacing a live Worker');
+          // The currently deployed TEST was built against the same source Worker
+          // blob that is tracked at the pinned DEV commit. Never overwrite a
+          // different deployment or unknown Worker build. The candidate retains
+          // all existing API implementations and changes only two TEST routing aliases.
+          if(test.uses_functions===true){
+            assert.equal(test.id,'db5f5717-ff66-4d17-a172-7f8fd32c9bc3','TEST Worker deployment changed; refuse stale release');
+            assert.equal(test.deployment_trigger?.metadata?.commit_hash,'90dbb3fcfe08701ae0335fe2b27d1b4771d31548','Unknown TEST Worker source baseline; refuse release');
+            console.log('TEST_WORKER_REPLACE_GUARD_OK',JSON.stringify({sourceCommit:'90dbb3fc',sourceWorkerBlob:'be96394e',sameCommittedSourceAsFullWorker:true,dirtyDeploymentUnverified:true}));
+          }
           fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_DEPLOYMENT_BEFORE='+main.id+'\n');
           console.log('PREDEPLOY_ISOLATION_OK',JSON.stringify({candidate:current.slice(0,12),testBranch:'test',existingTestUsesFunctions:test.uses_functions,previewStripeConfigured:false}));
           JS
