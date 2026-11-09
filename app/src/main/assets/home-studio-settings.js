@@ -149,7 +149,7 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   `;
   // JARVIX Chat mobile only: reserve a separate title row for the close X.
   // Do not alter the shared Studio controls or any desktop/Home layout.
-  if(/\/jarvix-chat(?:\.html)?\/?$/.test(location.pathname)&&innerWidth<=760){
+  if(document.getElementById('jChatForm')&&innerWidth<=760){
    style.textContent+=`
     #studioSettingsHub.composer-popover{
      display:grid!important;grid-template-columns:minmax(0,1fr) 44px!important;
@@ -175,6 +175,11 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   // The native Studio script already opens this real hub for ?settings=1.
   if(!hub.open)hub.showModal();
   hubRef=hub;
+  // JARVIX mobile closes above the first Studio type button. Pin the
+  // original X itself: child Studio layout may override stylesheet offsets.
+  if(document.getElementById('jChatForm')&&innerWidth<=760){
+   hub.querySelector(':scope > button:nth-child(2)')?.style.setProperty('transform','translateY(-14px)','important');
+  }
   const pin=()=>{
    if(!hub.isConnected)return;
    hub.style.setProperty('left','8px','important');

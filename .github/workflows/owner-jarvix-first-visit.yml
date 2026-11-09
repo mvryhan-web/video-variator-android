@@ -83,6 +83,12 @@ jobs:
               return {x:x&&{top:x.top,bottom:x.bottom,left:x.left,right:x.right},first:first&&{top:first.top,bottom:first.bottom},heading:heading&&{top:heading.top,bottom:heading.bottom}};
             });
             console.log('JARVIX_MOBILE_SETTINGS_RECT',JSON.stringify({url:page.url(),rect}));
+            console.log('JARVIX_MOBILE_SETTINGS_DIAG',JSON.stringify(await page.evaluate(()=>{
+              const host=document.getElementById('homeStudioSettingsHost');
+              const documentInFrame=document.getElementById('homeStudioSettingsFrame')?.contentDocument;
+              const button=documentInFrame?.querySelector('#studioSettingsHub > button:nth-child(2)');
+              return {path:location.pathname,composerPresent:!!document.getElementById('jChatForm'),hostVisible:host?.style.visibility,hasSpecialCss:documentInFrame?.getElementById('homeNativeStudioSettingsPresentation')?.textContent.includes('grid-template-columns')||false,buttonStyle:button?.getAttribute('style'),computedTransform:button&&getComputedStyle(button).transform};
+            }))));
             await page.screenshot({path:'artifacts/jarvix-live-preview/mobile-jarvix-settings-x.png'});
             assert(rect.x&&rect.first&&rect.heading,'native Settings controls are present');
             assert(rect.x.bottom<=rect.first.top-3,'Mobile Settings X overlaps creation row');
