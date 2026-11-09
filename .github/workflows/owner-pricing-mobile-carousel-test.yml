@@ -1,0 +1,204 @@
+name: D29 Pricing mobile carousel - one stable TEST
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'app/src/main/assets/pricing.html'
+      - 'app/src/main/assets/pricing-page.css'
+      - 'app/src/main/assets/pricing-page.js'
+      - '.github/workflows/owner-pricing-mobile-carousel-test.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d29-canonical-cloudflare-test
+  cancel-in-progress: false
+
+jobs:
+  pricing-mobile-test:
+    if: github.event.pull_request.number == 660 && github.head_ref == 'owner-pricing-mobile-carousel-20261109' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      PRODUCT_WATCHER_ENABLED: 'false'
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+      CLOUDFLARE_API_TOKEN: \${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: \${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      PREVIEW_BRANCH: test
+      TEST_URL: https://test.deepsyq.pages.dev
+    steps:
+      - name: Checkout exact PR code
+        uses: actions/checkout@v4
+        with:
+          ref: \${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Surgical preflight - newest DEV, only pricing UI
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/deepsyq-platform:refs/remotes/origin/deepsyq-platform
+          git merge-base --is-ancestor refs/remotes/origin/deepsyq-platform HEAD
+          node --check app/src/main/assets/pricing-page.js
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const root='app/src/main/assets/';
+          const html=fs.readFileSync(root+'pricing.html','utf8');
+          const css=fs.readFileSync(root+'pricing-page.css','utf8');
+          const js=fs.readFileSync(root+'pricing-page.js','utf8');
+          for(const id of ['pricePlanPrev','pricePlanNext','pricePlanPosition','planCards'])assert.match(html,new RegExp('id="'+id+'"'));
+          assert.match(css,/@media\(max-width:700px\)[\s\S]*?price-five-grid/);
+          assert.match(css,/scroll-snap-type:x mandatory/);
+          assert.match(js,/function movePlanCarousel/);
+          assert.match(js,/const previousPlan=planCarouselIndex\(\)/);
+          assert.match(html,/id="priceBillingMonthly"/);
+          assert.match(html,/id="priceBillingYearly"/);
+          assert.match(html,/id="creditCards"/);
+          console.log('PRICING_SCOPED_SOURCE_PASS');
+          JS
+      - name: Install existing browser dependencies (no paid providers)
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Verify Cloudflare project production guard before Preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" > /tmp/pricing-cf-before.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const j=JSON.parse(fs.readFileSync('/tmp/pricing-cf-before.json','utf8'));
+          if(j.success!==true || j.result?.name!=='deepsyq' ||
+             j.result?.production_branch!=='deepsyq-platform' ||
+             j.result?.production_branch===process.env.PREVIEW_BRANCH ||
+             !j.result?.canonical_deployment?.id ||
+             j.result?.canonical_deployment?.uses_functions!==true)
+            throw Error('Refusing TEST deploy: cannot establish protected production baseline');
+          fs.appendFileSync(process.env.GITHUB_ENV,
+            'PRODUCTION_DEPLOYMENT_BEFORE='+j.result.canonical_deployment.id+'\n');
+          console.log('MAIN_LOCKED',j.result.canonical_deployment.id,'Worker preserved');
+          JS
+      - name: Publish to the ONE stable Cloudflare TEST preview branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          # TEST only. Static-only previews MUST NEVER be promoted to MAIN.
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq --branch=test \
+            --commit-hash="\${{ github.event.pull_request.head.sha }}" | tee /tmp/pricing-test-deploy.log
+          if ! grep -Eq 'https://[a-z0-9-]+\.deepsyq\.pages\.dev' /tmp/pricing-test-deploy.log; then
+            echo '::error::Cloudflare did not return a Preview deployment'
+            exit 1
+          fi
+          echo "CANONICAL_TEST_URL=$TEST_URL/pricing.html"
+          echo "PREVIEW_UI_ONLY=1"
+      - name: Wait until the same stable TEST alias serves updated pricing
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 18); do
+            if curl -fsSL --retry 1 --retry-delay 2 "$TEST_URL/pricing.html" -o /tmp/pricing-test.html \
+              && grep -q 'id="pricePlanPrev"' /tmp/pricing-test.html; then
+              echo "STABLE_TEST_LIVE $TEST_URL/pricing.html"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo '::error::Canonical TEST alias has not served the new pricing markup'
+          exit 1
+      - name: Real browser verification - phone swipe arrows / desktop unchanged
+        shell: bash
+        run: |
+          mkdir -p artifacts/pricing-mobile-carousel
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const origin=process.env.TEST_URL;
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try {
+            for(const [name,viewport] of [
+              ['mobile-390',{width:390,height:844}],
+              ['mobile-650',{width:650,height:850}],
+              ['desktop',{width:1360,height:900}]
+            ]){
+              const mobile=name.startsWith('mobile');
+              const context=await browser.newContext({viewport,hasTouch:mobile,isMobile:mobile});
+              const page=await context.newPage();
+              try {
+                const res=await page.goto(origin+'/pricing.html',{waitUntil:'domcontentloaded',timeout:45000});
+                assert.equal(res?.status(),200,'pricing HTTP 200');
+                await page.locator('#planCards .price-plan').first().waitFor({state:'visible',timeout:22000});
+                assert.equal(await page.locator('#planCards .price-plan').count(),5);
+                const track=page.locator('#planCards');
+                const initial=await track.evaluate(e=>({
+                  display:getComputedStyle(e).display,
+                  snap:getComputedStyle(e).scrollSnapType,
+                  total:e.scrollWidth,visible:e.clientWidth
+                }));
+                const creditDisplay=await page.locator('#creditCards').evaluate(e=>getComputedStyle(e).display);
+                assert.equal(creditDisplay,'grid','AI Credits layout unchanged');
+                if(mobile){
+                  assert.equal(initial.display,'flex');
+                  assert.match(initial.snap,/x mandatory/);
+                  assert(initial.total>initial.visible+100,'cards are horizontally scrollable');
+                  assert.equal(await page.locator('#pricePlanNext').isVisible(),true);
+                  assert.equal(await page.locator('#pricePlanPosition').textContent(),'1 / 5');
+                  await page.locator('#pricePlanNext').click();
+                  await page.waitForFunction(()=>document.querySelector('#planCards').scrollLeft>100,{timeout:8000});
+                  await page.waitForFunction(()=>document.querySelector('#pricePlanPosition').textContent.includes('2 / 5'),{timeout:8000});
+                  await page.locator('#pricePlanPrev').click();
+                  await page.waitForFunction(()=>document.querySelector('#planCards').scrollLeft<20,{timeout:8000});
+                  await track.evaluate(el=>el.scrollTo({left:el.scrollWidth-el.clientWidth,behavior:'instant'}));
+                  await page.waitForFunction(()=>document.querySelector('#pricePlanPosition').textContent.includes('5 / 5'),{timeout:8000});
+                  assert.equal(await page.locator('#pricePlanNext').isDisabled(),true);
+                  await page.locator('#priceBillingYearly').click();
+                  await page.waitForFunction(()=>document.querySelector('#pricePlanPosition').textContent.includes('5 / 5'),{timeout:8000});
+                  assert.equal(await page.locator('#planCards .price-plan').count(),5);
+                  await page.locator('#priceBillingMonthly').click();
+                } else {
+                  assert.equal(initial.display,'grid','desktop plan grid retained');
+                  assert.equal(await page.locator('#pricePlanPrev').isVisible(),false,'arrows mobile-only');
+                }
+                await page.screenshot({path:'artifacts/pricing-mobile-carousel/'+name+'.png',fullPage:false});
+                console.log('PRICING_CAROUSEL_LIVE_PASS',name,JSON.stringify(initial));
+              } finally {await context.close();}
+            }
+          } finally {await browser.close();}
+          JS
+      - name: Verify MAIN production unchanged after canonical TEST publication
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" > /tmp/pricing-cf-after.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const p=JSON.parse(fs.readFileSync('/tmp/pricing-cf-after.json','utf8'));
+          if(p.success!==true || p.result?.production_branch!=='deepsyq-platform' ||
+             p.result?.canonical_deployment?.id!==process.env.PRODUCTION_DEPLOYMENT_BEFORE ||
+             p.result?.canonical_deployment?.uses_functions!==true)
+             throw Error('MAIN changed or lost Worker unexpectedly');
+          console.log('MAIN_UNCHANGED_VERIFIED; stable TEST https://test.deepsyq.pages.dev/pricing.html');
+          JS
+      - name: Attach screenshots to PR checks
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pricing-mobile-carousel-desktop-mobile
+          path: artifacts/pricing-mobile-carousel/*.png
+          if-no-files-found: ignore
+          retention-days: 7
