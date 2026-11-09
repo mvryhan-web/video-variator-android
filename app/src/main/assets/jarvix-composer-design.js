@@ -7,39 +7,23 @@ export function decorateComposer(form,{settingsTarget=null}={}){
  const ru=(localStorage.getItem('deepsyq_home_language')||document.documentElement.lang).startsWith('ru');
  const make=(tag,label)=>{const el=document.createElement(tag);el.textContent=label;return el;};
  const isQuickChat=['homeQuickForm','jChatForm','creator'].includes(form.id);
- const rail=make('nav','');rail.className='j-mode-rail';rail.setAttribute('aria-label',ru?'Режимы и инструменты':'Creation modes and tools');
- const navItems=isQuickChat?[['JARVIX','jarvix-chat.html',null]]:
- [['JARVIX','jarvix-chat.html',null],['Image','generate-studio.html?studio=image','image'],['Video','generate-studio.html?studio=video','video'],['Audio','generate-studio.html?studio=audio','audio'],['Tools','free-tools.html','tools']];
- let activeMode=null;
- for(const [label,href,iconKey] of navItems){
-  const a=make('a',label);a.href=href;
-  if(iconKey){const art=make('span','');art.className='j-rail-icon';art.setAttribute('aria-hidden','true');art.append(createCanonicalIcon(iconKey));a.prepend(art);}
-  else a.prepend(document.createTextNode('◉ ')); // Stage07 replaces this with approved JARVIX sphere.
-  const u=new URL(href,location.href);
-  if(u.pathname===location.pathname&&u.search===location.search)a.setAttribute('aria-current','page');
-  if(form.id==='creator'&&['Image','Video','Audio'].includes(label))a.onclick=e=>{
-   const kind=label==='Audio'?'music':label.toLowerCase();
-   const button=document.querySelector('[data-kind="'+kind+'"]');
-   if(button){e.preventDefault();button.click();for(const link of rail.querySelectorAll('a'))link.removeAttribute('aria-current');a.setAttribute('aria-current','page');}
-  };
-  if(label==='JARVIX'&&isQuickChat)a.addEventListener('click',()=>{try{sessionStorage.setItem('jarvix_composer_mode','auto');}catch{}});
-  rail.append(a);
-  if(label==='JARVIX'&&isQuickChat){
-   activeMode=make('span','');activeMode.className='j-active-mode';activeMode.hidden=true;activeMode.setAttribute('role','status');activeMode.setAttribute('aria-live','polite');rail.append(activeMode);
+ if(!isQuickChat){
+  const rail=make('nav','');rail.className='j-mode-rail';rail.setAttribute('aria-label',ru?'Режимы и инструменты':'Creation modes and tools');
+  const navItems=[['Image','generate-studio.html?studio=image','image'],['Video','generate-studio.html?studio=video','video'],['Audio','generate-studio.html?studio=audio','audio'],['Tools','free-tools.html','tools']];
+  for(const [label,href,iconKey] of navItems){
+   const a=make('a',label);a.href=href;
+   if(iconKey){const art=make('span','');art.className='j-rail-icon';art.setAttribute('aria-hidden','true');art.append(createCanonicalIcon(iconKey));a.prepend(art);}
+   const u=new URL(href,location.href);
+   if(u.pathname===location.pathname&&u.search===location.search)a.setAttribute('aria-current','page');
+   rail.append(a);
   }
+  const dock=form.closest('#homeQuickBar,.j-chat-bottom')||form;
+  dock.classList.add('j-neon-dock');dock.append(rail);
+ } else {
+  // Never add duplicate rail or duplicate JARVIX link under chat/home composer dock
+  const dock=form.closest('#homeQuickBar,.j-chat-bottom')||form;
+  dock.querySelectorAll('.j-mode-rail').forEach(el=>el.remove());
  }
- if(activeMode)form.addEventListener('jarvix:mode',event=>{
-  const selected=event.detail?.mode;
-  activeMode.replaceChildren();
-  activeMode.hidden=!['image','video','audio'].includes(selected);
-  if(!activeMode.hidden){
-   const icon=createCanonicalIcon(selected);if(icon)activeMode.append(icon);
-   activeMode.append(document.createTextNode(selected.charAt(0).toUpperCase()+selected.slice(1)));
-   activeMode.dataset.mode=selected;
-  }else delete activeMode.dataset.mode;
- });
- const dock=form.closest('#homeQuickBar,.j-chat-bottom')||form;
- dock.classList.add('j-neon-dock');dock.append(rail);
  const mic=form.querySelector('#jMic,#studioVoiceBtn');
  if(isQuickChat)for(const glyph of form.querySelectorAll('#jPlusMenu [data-j-icon]')){
   const icon=createCanonicalIcon(glyph.dataset.jIcon);if(icon)glyph.replaceChildren(icon);
