@@ -1,3 +1,16 @@
+## OWNER D29 — 2026-11-09 — TWO CANONICAL DEEPSYQ DEPLOYMENT URLS
+
+**CURRENT OWNER RELEASE RULE for P, Administrator, Antigravity, every executor. Overrides older deployment-URL examples in D28/D27/D26; preserves surgical scope, safety and billing protections.**
+
+- **ONE stable TEST:** `https://test.deepsyq.pages.dev` — Cloudflare Pages project `deepsyq`, preview branch `test`, deploy using `--project-name=deepsyq --branch=test`. Every executor publishes approved TEST work to this SAME branch alias, serialized to prevent overwriting colleagues. Check deployed SHA and actual visible result at the stable alias. NEVER promote a hash URL or personal branch alias as the new test link.
+- **ONE MAIN:** `https://deepsyq.app`. `https://deepsyq.pages.dev` is the PRODUCTION alias because Cloudflare production branch is `deepsyq-platform`, NEVER test. No unattended MAIN changes before owner approval.
+- **Owner approval to release:** when the owner explicitly accepts the EXACT tested revision, promptly release ONLY that approved revision to MAIN without requesting a redundant second approval. Preserve all accepted changes, prepare rollback, check functional/auth/financial safety. A generic acknowledgement or approval of unrelated work is NOT release approval.
+- **Fail-closed MAIN gate:** current Pages production includes Worker/Functions (`uses_functions:true`). NEVER deploy only `app/src/main/assets` to MAIN: that strips Functions. Verify original production Worker source, bindings, Stripe, Neon, auth, purchased credits and rollback before any promotion. Existing Worker-content retrieval previously failed 403; until safely resolved report `BLOCKED_MAIN`, not DONE.
+- **Only these TWO links appear as current user-facing environments.** Cloudflare creates immutable `<hash>.deepsyq.pages.dev` addresses for every deployment, and old ones may remain visitable; they are technical historical artifacts, not current test sites. Do NOT claim old URLs were deleted. All old per-PR preview workflows need migration to the stable TEST lane before their next owner-facing publication.
+- Written rules alone do not revoke deploy tokens or enforce branch permissions; verify Cloudflare/GitHub protections separately before claiming technical exclusivity.
+
+---
+
 ## OWNER D28 — 2026-11-09 — ASSEMBLED CAR / ONE REQUEST = ONE SURGICAL CHANGE
 
 **CURRENT OWNER SCOPE RULE. Effective immediately for Coordinator P, Administrator, Antigravity and any future executor. D28 clarifies the scope of D27; D27's verified publication, TEST/MAIN separation and security/billing safeguards remain in force. If historical instructions below demand a whole-project audit for a local task, D28 overrides that demand.**
