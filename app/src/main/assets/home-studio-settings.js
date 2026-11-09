@@ -80,7 +80,7 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
    doc=frame.contentDocument;
   }catch{return close();}
    let hub=doc?.getElementById('studioSettingsHub');
-   if(!hub && /\\/jarvix-chat(?:\\.html)?$/.test(location.pathname)){
+   if(!hub && (location.pathname.endsWith('/jarvix-chat') || location.pathname.endsWith('/jarvix-chat.html'))){
      // JARVIX Chat only: Studio may initialize its existing settings hub
      // after the iframe load event. Wait for the original hub, not a copy.
      hub=await new Promise(resolve=>{
