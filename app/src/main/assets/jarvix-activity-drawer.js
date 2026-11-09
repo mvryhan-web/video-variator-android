@@ -49,13 +49,19 @@ if (page === 'jarvix-chat.html' || page === 'generate-studio.html') {
   document.body.append(panel, toggle);
   document.body.classList.add('jarvix-activity-enabled');
 
-  let expanded = sessionStorage.getItem('jarvix_activity_open') === '1';
+  // First visit: show shared JARVIX panel on desktop. On small screens keep
+  // the content usable, with a clearly labeled tab to open the same panel.
+  // Versioned preference avoids inheriting the old invisible-by-default state.
+  const visibilityKey = 'jarvix_activity_open_v2';
+  const storedVisibility = sessionStorage.getItem(visibilityKey);
+  let expanded = storedVisibility === '1' ||
+    (storedVisibility === null && !matchMedia('(max-width: 900px)').matches);
   let ownerChanged = false;
   let chatEpoch = 0;
   let workEpoch = 0;
   const openState = () => {
     panel.hidden = !expanded;
-    toggle.textContent = expanded ? '‹' : '›';
+    toggle.textContent = expanded ? '‹' : '› JARVIX Chat';
     toggle.setAttribute('aria-expanded', String(expanded));
     toggle.setAttribute('aria-label', expanded ? dict().close : dict().open);
     toggle.title = expanded ? dict().close : dict().open;
@@ -152,7 +158,7 @@ if (page === 'jarvix-chat.html' || page === 'generate-studio.html') {
   const refresh = () => { if (expanded) { void showRecent(); void showWorks(); } };
   toggle.onclick = () => {
     expanded = !expanded;
-    sessionStorage.setItem('jarvix_activity_open', expanded ? '1' : '0');
+    sessionStorage.setItem(visibilityKey, expanded ? '1' : '0');
     openState();
     refresh();
     if (expanded) newChat.focus({ preventScroll: true });
@@ -161,7 +167,7 @@ if (page === 'jarvix-chat.html' || page === 'generate-studio.html') {
   window.addEventListener('keydown', event => {
     if (event.key === 'Escape' && expanded) {
       expanded = false;
-      sessionStorage.setItem('jarvix_activity_open', '0');
+      sessionStorage.setItem(visibilityKey, '0');
       openState();
       toggle.focus({ preventScroll: true });
     }

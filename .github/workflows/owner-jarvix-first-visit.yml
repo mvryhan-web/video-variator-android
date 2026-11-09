@@ -1,0 +1,62 @@
+name: Owner JARVIX first-visit visibility - no-spend Cloudflare TEST
+on:
+  push:
+    branches:
+      - owner-jarvix-visible-default-20261109
+    paths:
+      - app/src/main/assets/jarvix-activity-drawer.js
+      - app/src/main/assets/jarvix-chat.css
+      - tests/jarvix-activity-drawer.browser.test.mjs
+      - tests/jarvix-activity-preview-smoke.mjs
+      - .github/workflows/owner-jarvix-first-visit.yml
+permissions:
+  contents: read
+jobs:
+  verify-and-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      PRODUCT_WATCHER_ENABLED: 'false'
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Verify local first visit, existing history and no paid calls
+        run: node --test tests/jarvix-activity-drawer.browser.test.mjs
+      - name: Guard Cloudflare credentials and production branch; deploy separate preview only
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" \
+            -o /tmp/cf-project.json
+          node --input-type=module -e 'import fs from "node:fs";const x=JSON.parse(fs.readFileSync("/tmp/cf-project.json","utf8"));if(!x.success||x.result?.production_branch!=="deepsyq-platform")throw Error("Unsafe production branch mismatch");'
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq \
+            --branch=owner-jarvix-visible-default-20261109 \
+            --commit-hash="${{ github.sha }}" | tee /tmp/jarvix-test-deploy.log
+          DEPLOY_URL="$(grep -Eo 'https://[a-z0-9-]+\.deepsyq\.pages\.dev' /tmp/jarvix-test-deploy.log | head -n1)"
+          if [[ ! "$DEPLOY_URL" =~ ^https://[a-z0-9-]+\.deepsyq\.pages\.dev$ ]]; then exit 1; fi
+          echo "JARVIX_TEST_PREVIEW_URL=$DEPLOY_URL" >> "$GITHUB_ENV"
+      - name: Verify actual TEST UI visible without clicking at first visit
+        run: node tests/jarvix-activity-preview-smoke.mjs
+      - name: Save real first-visit desktop/mobile screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvix-first-visit-evidence
+          path: artifacts/jarvix-live-preview/*.png
+          retention-days: 7
+          if-no-files-found: ignore

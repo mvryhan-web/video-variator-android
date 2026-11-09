@@ -609,6 +609,11 @@ body.jarvix-activity-enabled #jHistory{display:none!important}
  background:#101b2d;color:#dce8f8;font:500 28px/1 system-ui,sans-serif;
  box-shadow:0 5px 15px #0005;cursor:pointer;
 }
+/* Closed panel remains discoverable: show its JARVIX Chat label, not only ›. */
+body.jarvix-activity-enabled:not(.jarvix-activity-open) .jarvix-activity-toggle{
+ width:138px;min-width:138px;padding:0 11px;place-items:center;
+ font:600 13px/1.2 system-ui,-apple-system,sans-serif;white-space:nowrap;
+}
 .jarvix-activity-toggle:hover{background:#1c2940}
 .jarvix-activity-toggle:focus-visible,
 .jarvix-activity-panel :is(button,a):focus-visible{outline:2px solid #e8f2ff;outline-offset:2px}
