@@ -76,11 +76,11 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   let doc;
   try{
    if(frame.contentWindow.location.origin!==location.origin||
-      !frame.contentWindow.location.pathname.endsWith('/generate-studio.html'))return close();
+      !frame.contentWindow.location.pathname.includes('generate-studio'))return close();
    doc=frame.contentDocument;
   }catch{return close();}
-  const hub=doc?.getElementById('studioSettingsHub');
-  if(!hub)return close();
+   let hub=doc?.getElementById('studioSettingsHub');
+   if(!hub){let r=0;const iv=setInterval(()=>{r++;try{hub=frame.contentDocument?.getElementById('studioSettingsHub');}catch{}if(hub){clearInterval(iv);if(!hub.open)hub.showModal();host.dataset.ready='true';host.style.visibility='visible';hub.addEventListener('close',close);}},100);}
   // Native model and format child dialogs originally sit inside Studio main.
   // Place them alongside the native parent dialog in THIS isolated frame so
   // the non-settings page can be hidden without hiding a child dialog.

@@ -8,7 +8,16 @@ export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
  if(innerWidth<361)input.placeholder='Message…';
  let mode='auto',files=[];
  try{const _reqMode=new URLSearchParams(location.search).get('mode')||new URLSearchParams(location.search).get('studio');const stored=sessionStorage.getItem('jarvix_composer_mode');if(_reqMode&&['image','video','audio'].includes(stored)){mode=stored;}else if(!_reqMode){mode='auto';sessionStorage.removeItem('jarvix_composer_mode');}}catch{}
- const reportMode=()=>form.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode},bubbles:true}));
+ const reportMode=()=>{
+  form.dataset.mode=mode;
+  if(plus)plus.dataset.mode=mode;
+  const modeLabel=document.getElementById('jActiveModeLabel');
+  if(modeLabel){
+    modeLabel.dataset.mode=mode;
+    modeLabel.textContent=({image:'IMAGE',video:'VIDEO',audio:'AUDIO',auto:'???'}[mode]||mode.toUpperCase());
+  }
+  form.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode},bubbles:true}));
+};
  const plus=document.getElementById('jPlus'),menu=document.getElementById('jPlusMenu'),fileInput=document.getElementById('jFiles'),attachments=document.getElementById('jAttachments'),mic=document.getElementById('jMic');
  function render(){attachments.replaceChildren();files.forEach((f,i)=>{const b=document.createElement('button');b.type='button';b.textContent=f.name+' ×';b.setAttribute('aria-label','Remove '+f.name);b.onclick=()=>{files.splice(i,1);render();};attachments.append(b);});}
  plus.onclick=()=>{menu.hidden=!menu.hidden;plus.setAttribute('aria-expanded',String(!menu.hidden));};

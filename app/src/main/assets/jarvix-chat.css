@@ -1280,3 +1280,40 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
   fill: none !important;
   filter: drop-shadow(0 0 3px #ffbf5270) !important;
 }
+
+/* Mode-based dynamic glow for + button matching Image (violet), Video (cyan), Audio (gold) */
+:where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer #jPlus[data-mode="image"],
+:where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer[data-mode="image"] #jPlus {
+  border-color: #c084fc !important;
+  background: radial-gradient(circle at 50% 45%, #2a1b42 0%, #150d24 58%, #0d0617 100%) !important;
+  box-shadow: 0 0 0 2px rgba(192, 132, 252, 0.28), 0 0 14px rgba(168, 85, 247, 0.8), 0 0 22px rgba(147, 51, 234, 0.45), inset 0 0 9px rgba(168, 85, 247, 0.4) !important;
+  text-shadow: 0 0 6px #e9d5ff !important;
+}
+:where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer #jPlus[data-mode="video"],
+:where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer[data-mode="video"] #jPlus {
+  border-color: #38bdf8 !important;
+  background: radial-gradient(circle at 50% 45%, #102a43 0%, #081a2e 58%, #040e1b 100%) !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.28), 0 0 14px rgba(14, 165, 233, 0.8), 0 0 22px rgba(2, 132, 199, 0.45), inset 0 0 9px rgba(14, 165, 233, 0.4) !important;
+  text-shadow: 0 0 6px #bae6fd !important;
+}
+:where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer #jPlus[data-mode="audio"],
+:where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer[data-mode="audio"] #jPlus {
+  border-color: #ffbf52 !important;
+  background: radial-gradient(circle at 50% 45%, #2d2315 0%, #1a1409 58%, #0e0903 100%) !important;
+  box-shadow: 0 0 0 2px rgba(255, 191, 82, 0.28), 0 0 14px rgba(236, 157, 58, 0.8), 0 0 22px rgba(189, 126, 50, 0.45), inset 0 0 9px rgba(187, 121, 40, 0.4) !important;
+  text-shadow: 0 0 6px #fef08a !important;
+}
+
+/* Active tiles inside + menu */
+.jarvix-compose .j-hub-menu .j-hub-tile[data-j-mode="image"][aria-pressed="true"] {
+  border-color: #c084fc !important;
+  box-shadow: inset 0 0 16px rgba(168, 85, 247, 0.6), 0 0 16px rgba(192, 132, 252, 0.6) !important;
+}
+.jarvix-compose .j-hub-menu .j-hub-tile[data-j-mode="video"][aria-pressed="true"] {
+  border-color: #38bdf8 !important;
+  box-shadow: inset 0 0 16px rgba(14, 165, 233, 0.6), 0 0 16px rgba(56, 189, 248, 0.6) !important;
+}
+.jarvix-compose .j-hub-menu .j-hub-tile[data-j-mode="audio"][aria-pressed="true"] {
+  border-color: #ffbf52 !important;
+  box-shadow: inset 0 0 16px rgba(245, 158, 11, 0.6), 0 0 16px rgba(255, 191, 82, 0.6) !important;
+}
