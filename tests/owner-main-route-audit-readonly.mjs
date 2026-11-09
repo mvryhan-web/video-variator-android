@@ -3,7 +3,7 @@ import {readdirSync} from 'node:fs';
 const base='https://deepsyq.app';
 const assets='app/src/main/assets';
 const files=readdirSync(assets).filter(n=>n.endsWith('.html')&&n!=='404.html').sort();
-const probes=['/',...files.map(n=>'/'+n),'/jarvix-chat','/jarvix-chat.','/video-uniquifier','/dashboard','/inspiration'];
+const probes=['/',...files.map(n=>'/'+n),'/jarvix-chat','/jarvix-chat.','/video-uniquifier','/dashboard','/inspiration','/generate-studio.html?studio=image','/generate-studio.html?studio=video','/generate-studio.html?studio=audio','/generate-studio.html?view=history','/ai-agents.html?mode=video'];
 const aliases=new Map([
   ['/','Deepsyq'],['/index.html','Deepsyq'],['/deepsyq.html','Deepsyq'],
   ['/dashboard','Deepsyq'],['/ai-agents.html','JARVIS Chat'],['/ai-pricing.html','Pricing'],
@@ -22,9 +22,12 @@ for(const route of probes){
     const url=new URL(response.url);
     const expected=aliases.get(route);
     const intended404=route==='/jarvix-chat.';
+    const wantedMode=route.match(/^\/generate-studio\.html\?studio=(image|video|audio)$/)?.[1];
+    const modePreserved=!wantedMode||((url.pathname==='/jarvix-chat.html'||url.pathname==='/jarvix-chat')&&([url.searchParams.get('mode'),url.searchParams.get('studio')].includes(wantedMode)));
     const issue=response.status!==200&&!intended404?
       'status '+response.status:
       intended404&&response.status!==404?'invalid path was NOT rejected':
+      wantedMode&&!modePreserved?'legacy Studio link loses requested '+wantedMode+' mode':
       expected&&!title.toLowerCase().includes(expected.toLowerCase())?
       'wrong page; expected '+expected:null;
     const row={route,status:response.status,title,final:url.pathname+(url.search||''),...issue?{issue}:{}};
