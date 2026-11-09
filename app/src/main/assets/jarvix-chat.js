@@ -115,7 +115,7 @@ async function processMessage(message){
    status(e.message);if(message.voiceAction)speakJarvis(/credit|balance/i.test(e.message)?'Недостаточно кредитов':'Уточните промпт');const link=node('button','Open request in Studio');link.type='button';link.onclick=async()=>{const mode=resolveMode(message.text,message.mode),kind=mode==='audio'?'music':mode==='text'?'image':mode;const files=(message.files||[]).filter(f=>['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024);try{await saveStudioHandoff({kind,prompt:message.text,files,source:'jarvix-chat'});location.assign('generate-studio.html?studio='+(kind==='music'?'audio':kind));}catch(e){status(e.message);}};$('jStatus').append(link);
   }if(e.name==='AbortError')throw e;}
 }
-const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();const m={id:makeId(),role:'user',text,mode,files,status:'pending',createdAt:Date.now()};if(!conversation.messages.length)conversation.title=text.slice(0,60);conversation.messages.push(m);await save();composer.clear();render();await run(()=>processMessage(m));}catch(e){status(e.message);}}});
+const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();const m={id:makeId(),role:'user',text,mode:activeJarvixMode==='auto'?'auto':activeJarvixMode,files,status:'pending',createdAt:Date.now()};if(!conversation.messages.length)conversation.title=text.slice(0,60);conversation.messages.push(m);await save();composer.clear();render();await run(()=>processMessage(m));}catch(e){status(e.message);}}});
 $('jStop').onclick=()=>{controller?.abort();$('jStop').hidden=true;status('Browser waiting stopped. Already submitted generation tasks are not cancelled.');};
 $('jNew').onclick=async()=>{if(busy)return;conversation=store.create('jarvix-'+makeId());sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);await save();render();};
 $('jHistory').onchange=async()=>{if(busy)return;const next=await store.get($('jHistory').value);if(!next)return;conversation=next;sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);await historyList();render();await restoreResults();};
@@ -150,8 +150,10 @@ window.addEventListener('jarvis:limit-reached', async (e) => {
 
 // One JARVIX conversation: Image, Video and Audio are native Studio tools inside the chat.
 const creationModes=Object.freeze({image:'Image',video:'Video',audio:'Audio'});
+let activeJarvixMode='auto';
 function switchJarvixMode(requested,{updateUrl=true}={}){
  const mode=Object.hasOwn(creationModes,requested)?requested:'auto';
+ activeJarvixMode=mode;
  try{sessionStorage.setItem('jarvix_composer_mode',mode);}catch{}
  const header=document.querySelector('.j-chat-toolbar h1');
  if(header)header.textContent=mode==='auto'?'JARVIX Chat':'JARVIX '+creationModes[mode];
@@ -189,8 +191,8 @@ document.addEventListener('click',event=>{
  switchJarvixMode(url.searchParams.get('mode')||'auto');
 },true);
 $('jChatForm').addEventListener('jarvix:mode',event=>{
- if(event.detail?.mode && Object.hasOwn(creationModes,event.detail.mode) &&
-    !document.body.classList.contains('jarvix-creation-mode'))switchJarvixMode(event.detail.mode);
+ if(event.detail?.mode && Object.hasOwn(creationModes,event.detail.mode) && event.detail.mode!==activeJarvixMode)
+    switchJarvixMode(event.detail.mode);
 });
 // Restore original conversation independently from tool/mode selection on any reload.
 switchJarvixMode(new URLSearchParams(location.search).get('mode')||'auto',{updateUrl:false});
