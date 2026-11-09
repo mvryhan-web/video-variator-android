@@ -92,9 +92,11 @@ async function squareCrop(node){
   try{
    const size=Math.min(bitmap.width,bitmap.height),c=document.createElement('canvas');c.width=size;c.height=size;
    c.getContext('2d').drawImage(bitmap,(bitmap.width-size)/2,(bitmap.height-size)/2,size,size,0,0,size,size);
-   const blob=await new Promise(resolve=>c.toBlob(resolve,'image/jpeg',.84));
-   if(!blob||blob.size>1024*1024)throw Error('Image exceeds 1 MB');
-   node.file=new File([blob],'cropped-'+(node.name||'image')+'.jpg',{type:'image/jpeg'});
+   const format=node.file.type==='image/png'?'image/png':'image/jpeg';
+   const blob=await new Promise(resolve=>c.toBlob(resolve,format,.84));
+   if(!blob||blob.size>1024*1024)throw Error('Cropped image exceeds 1 MB');
+   const filename=(node.name||'image').replace(/\.[^.]+$/,'');
+   node.file=new File([blob],'cropped-'+filename+(format==='image/png'?'.png':'.jpg'),{type:format});
    node.name=node.file.name;paint();markChanged();say('Image cropped to a square. Original downloaded files are unchanged.');
   }finally{bitmap.close();}
  }catch(error){say('Crop failed: '+error.message);}
@@ -287,7 +289,11 @@ $('cwStudioImport').onclick=async()=>{
   const ext=blob.type==='image/svg+xml'?'svg':blob.type==='image/jpeg'?'jpg':kind==='image'?'png':kind==='video'?'mp4':'mp3';
   const file=new File([blob],'studio-result-'+Date.now()+'.'+ext,{type:blob.type});
   const index=nodes.length;
-  addNode(kind,130+(index%3)*310,110+Math.floor(index/3)*260,file);
+  const imported=addNode(kind,130+(index%3)*310,110+Math.floor(index/3)*260,file);
+  if(imported){
+   offset={x:Math.round(viewport.clientWidth/2-(imported.x+135)*scale),y:Math.round(viewport.clientHeight/2-(imported.y+90)*scale)};
+   transform();
+  }
   closeStudio();say('Studio result added to Canvas. Save the project to keep it on this device.');
  }catch(error){message.textContent=error.message||'Could not add Studio result.';}
 };
