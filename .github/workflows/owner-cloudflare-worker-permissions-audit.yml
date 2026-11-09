@@ -1,0 +1,86 @@
+name: Owner Cloudflare existing Worker permissions audit (read-only)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/owner-cloudflare-worker-permissions-audit.yml'
+permissions:
+  contents: read
+jobs:
+  check-cf-worker-credentials:
+    if: github.head_ref == 'owner-cf-worker-access-audit-20261109' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      CF_TOKEN_PAGES: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_TOKEN_WORKERS: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
+      CF_TOKEN_WORKER: ${{ secrets.CLOUDFLARE_WORKER_API_TOKEN }}
+      CF_TOKEN_ALT: ${{ secrets.CF_API_TOKEN }}
+      CF_TOKEN_ALT2: ${{ secrets.CF_WORKERS_API_TOKEN }}
+      CF_TOKEN_DEPLOY: ${{ secrets.CLOUDFLARE_DEPLOY_TOKEN }}
+    steps:
+      - name: Read-only probe of current GitHub Actions Cloudflare tokens and Pages-managed Worker
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {createHash} from 'node:crypto';
+          const account=process.env.ACCOUNT_ID;
+          assert.match(account||'',/^[a-f0-9]{32}$/,'Cloudflare Account ID is not configured');
+          const tokens=[
+            ['CLOUDFLARE_API_TOKEN',process.env.CF_TOKEN_PAGES],
+            ['CLOUDFLARE_WORKERS_API_TOKEN',process.env.CF_TOKEN_WORKERS],
+            ['CLOUDFLARE_WORKER_API_TOKEN',process.env.CF_TOKEN_WORKER],
+            ['CF_API_TOKEN',process.env.CF_TOKEN_ALT],
+            ['CF_WORKERS_API_TOKEN',process.env.CF_TOKEN_ALT2],
+            ['CLOUDFLARE_DEPLOY_TOKEN',process.env.CF_TOKEN_DEPLOY]
+          ];
+          console.log('CLOUDFLARE_SECRET_NAME_AVAILABILITY',JSON.stringify(tokens.map(([name,t])=>({name,configured:!!t}))));
+          const base='https://api.cloudflare.com/client/v4';
+          const pagesToken=tokens[0][1];
+          if(!pagesToken)throw Error('Existing GitHub Actions Pages token is absent');
+          async function request(token,route){
+            const response=await fetch(base+route,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(12000)});
+            const mime=response.headers.get('content-type')||'';
+            let parsed=null,byteCount=0,contentHash=null;
+            if(mime.includes('json')){
+              const bytes=Buffer.from(await response.arrayBuffer());byteCount=bytes.length;
+              try{parsed=JSON.parse(bytes.toString('utf8'));}catch{}
+            }else{
+              const bytes=Buffer.from(await response.arrayBuffer());byteCount=bytes.length;
+              if(response.ok)contentHash=createHash('sha256').update(bytes).digest('hex').slice(0,16);
+            }
+            return {status:response.status,ok:response.ok,contentType:mime.split(';')[0],bytes:byteCount,contentHash,
+              errors:Array.isArray(parsed?.errors)?parsed.errors.map(e=>({code:e.code,message:String(e.message||'').slice(0,140)})):[],
+              result:parsed?.result};
+          }
+          const project=await request(pagesToken,'/accounts/'+account+'/pages/projects/deepsyq');
+          console.log('PAGES_CREDENTIAL_PROOF',JSON.stringify({status:project.status,ok:project.ok,project:project.result?.name,production_branch:project.result?.production_branch}));
+          assert(project.ok&&project.result?.name==='deepsyq','Cloudflare Pages authentication failed');
+          const workerName=project.result.production_script_name;
+          assert(workerName&&/^pages-worker--[a-z0-9-]+-production$/.test(workerName),'Production Pages Worker name missing');
+          console.log('WORKER_TARGET_PRESENT',JSON.stringify({workerName,knownOnlyFromPages:true}));
+          let accessible=null;
+          for(const [name,token] of tokens){
+            if(!token)continue;
+            const suffix='/accounts/'+account+'/workers/scripts/'+encodeURIComponent(workerName);
+            const probes=[
+              ['token_verify','/user/tokens/verify'],
+              ['workers_list','/accounts/'+account+'/workers/scripts'],
+              ['worker_content_v2',suffix+'/content/v2'],
+              ['worker_download',suffix],
+              ['worker_settings',suffix+'/settings']
+            ];
+            let workerRead=false;
+            for(const [kind,route] of probes){
+              let r;
+              try{r=await request(token,route)}
+              catch(e){console.log('CLOUDFLARE_WORKER_PERMISSION_PROBE',JSON.stringify({secretName:name,kind,error:String(e).slice(0,140)}));continue;}
+              const good=r.ok&&(kind==='worker_content_v2'||kind==='worker_download');
+              if(good)workerRead=true;
+              console.log('CLOUDFLARE_WORKER_PERMISSION_PROBE',JSON.stringify({secretName:name,kind,status:r.status,ok:r.ok,contentType:r.contentType,bytes:r.bytes,contentHash:r.contentHash,errorCodes:r.errors.map(e=>e.code),errorMessages:r.errors.map(e=>e.message),tokenStatus:kind==='token_verify'?r.result?.status:undefined}));
+            }
+            if(workerRead)accessible=name;
+          }
+          console.log('WORKER_READ_ACCESS_SUMMARY',JSON.stringify({configuredNames:tokens.filter(x=>!!x[1]).map(x=>x[0]),foundReadableCredential:!!accessible,secretName:accessible,pagesOnly:!accessible}));
+          JS
