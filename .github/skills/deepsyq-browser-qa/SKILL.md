@@ -14,7 +14,7 @@ For the assigned task, read the CURRENT `AGENTS.md` and `DECISIONS.md`, plus `do
 ## Procedure
 1. Use a local/authorized staging preview and existing Playwright or approved browser tool. Default **read-only**; do not send production writes, login as real users, purchase credits, delete files or start billable generation.
 2. Check console/network errors and the exact user journey for the claimed BASE #. Click existing navigation, confirm real destinations; Coming Soon is not a live feature.
-3. Capture representative wide desktop, 390px and 320px viewports. Compare the owner-approved Home references and the true **moving** 16:9 hero plus 12 real scenes. A static poster or fabricated video is not a PASS.
+3. Capture relevant desktop, 390px and 320px viewports **for the exact requested page only**. Compare Home references and the **moving** 16:9 hero/12 real scenes **only if the task actually touches Home or its shared dependencies**. A static poster or fabricated video is not a PASS.
 4. Check overflow, keyboard navigation, focus, labels, visible controls, reduced motion and accessibility; automatic checks are incomplete without human testing.
 5. Distinguish browser-local evidence from production/staging/physical-device evidence. Do not call a screenshot 'validated' without a reference baseline.
 
