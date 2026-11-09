@@ -309,21 +309,40 @@ body.deepsyq-pricing-page .price-credit-hero-art{background-size:cover,auto 160%
 body.deepsyq-pricing-page .price-credit-hero-art{background-size:cover,cover;background-position:center,center 35%}
 .price-credit-bonus{background:rgba(7,15,35,.95)}
 
+/* Owner-approved mobile-only carousel affordance: arrows beside the vertical
+   center of each tariff card, progress below it; desktop grid untouched. */
+body.deepsyq-pricing-page .price-plan-carousel-stage{position:relative;min-width:0}
 body.deepsyq-pricing-page .price-plan-carousel-controls{display:none}
 @media(max-width:700px){
+ body.deepsyq-pricing-page .price-plan-carousel-stage{padding-bottom:34px}
  body.deepsyq-pricing-page .price-plan-carousel-controls{
-  display:flex;align-items:center;justify-content:center;gap:18px;
-  padding:2px 0 12px;color:#c7dcfa;font-size:13px;font-weight:700;
+  display:block;position:absolute;inset:0;pointer-events:none;
+  color:#e7f6ff;font-size:13px;font-weight:800;
  }
  body.deepsyq-pricing-page .price-plan-carousel-controls button{
-  width:38px;height:38px;min-height:38px;padding:0;
-  border:1px solid #4776b0;border-radius:50%;
-  background:#102346;color:#f1f7ff;font:400 27px/1 system-ui,sans-serif;
-  cursor:pointer;
+  position:absolute;top:calc(50% - 17px);z-index:3;
+  display:grid;place-items:center;
+  width:40px;height:46px;min-height:46px;padding:0;
+  border:1px solid #79cce8;border-radius:15px;
+  background:rgba(7,23,52,.93);color:#fff;
+  box-shadow:0 3px 15px rgba(0,0,0,.45),0 0 11px rgba(5,180,236,.22);
+  font:500 31px/1 system-ui,sans-serif;
+  cursor:pointer;pointer-events:auto;
+  transform:translateY(-50%);
  }
- body.deepsyq-pricing-page .price-plan-carousel-controls button:disabled{opacity:.35;cursor:default}
+ body.deepsyq-pricing-page #pricePlanPrev{left:2px}
+ body.deepsyq-pricing-page #pricePlanNext{right:2px}
+ body.deepsyq-pricing-page .price-plan-carousel-controls button:disabled{
+  opacity:.5;cursor:default;
+ }
  body.deepsyq-pricing-page .price-plan-carousel-controls button:focus-visible{
   outline:2px solid #4cdaec;outline-offset:3px;
+ }
+ body.deepsyq-pricing-page #pricePlanPosition{
+  position:absolute;left:50%;bottom:4px;transform:translateX(-50%);
+  padding:4px 15px;border:1px solid #4776b0;border-radius:99px;
+  background:#102346;color:#f1f7ff;text-align:center;
+  font-variant-numeric:tabular-nums;white-space:nowrap;
  }
  body.deepsyq-pricing-page .price-five-grid{
   display:flex;flex-wrap:nowrap;gap:12px;

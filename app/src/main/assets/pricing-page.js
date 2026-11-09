@@ -95,15 +95,12 @@ const annualQuote=amount=>{
 };
 const annualMoney=amount=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(amount);
 function syncBillingPeriod(){
- const monthly=byId('priceBillingMonthly'),yearly=byId('priceBillingYearly'),promo=byId('priceBillingPromo');
+ const monthly=byId('priceBillingMonthly'),yearly=byId('priceBillingYearly');
  const isMonthly=billingPeriod==='monthly';
  monthly.classList.toggle('is-active',isMonthly);
  yearly.classList.toggle('is-active',!isMonthly);
  monthly.setAttribute('aria-pressed',String(isMonthly));
  yearly.setAttribute('aria-pressed',String(!isMonthly));
- promo.replaceChildren();
- promo.append(node('strong','',isMonthly?'AI Credits Sold Separately':'Save 20%'));
- promo.append(node('small','',isMonthly?'Optional AI credit packs are separate from tool plan credits':'Yearly prices are estimates; annual checkout is not enabled'));
 }
 for(const [id,period] of [['priceBillingMonthly','monthly'],['priceBillingYearly','yearly']]){
  byId(id).addEventListener('click',()=>{
