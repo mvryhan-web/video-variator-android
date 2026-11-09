@@ -118,7 +118,7 @@
     { label: 'AI Apps', icon: '◇', url:'ai-apps.html', key: 'apps' },
     { label: 'Canvas', icon: '✎', url:'canvas.html', key: 'canvas' },
     { label: 'Tools', icon: '⊞', url:'free-tools.html', key: 'tools' },
-    { label: 'Video Uniquifier', icon: '▤', url:'index.html', key: 'legacy' },
+    { label: 'Video Uniquifier', icon: '▤', url:'video-uniquifier.html', key: 'legacy' },
     { section:'Library' },
 
     { label: 'My Creations', icon: '▣', url:'my-creations.html', key: 'history' },
