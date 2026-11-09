@@ -80,6 +80,9 @@ jobs:
           for(let attempt=0;attempt<8;attempt++){
             const missing=await request('/jarvix-chat.');
             const home=await request('/');
+            const homeTitle=home.html.split('<title>')[1]?.split('</title>')[0]||'NO_TITLE';
+            const missingTitle=missing.html.split('<title>')[1]?.split('</title>')[0]||'NO_TITLE';
+            console.log('LIVE_DIAGNOSTIC',JSON.stringify({attempt:attempt+1,home:{status:home.status,url:home.url,title:homeTitle},missing:{status:missing.status,url:missing.url,title:missingTitle}}));
             if(missing.status===404 && home.status===200 && /<title>Deepsyq/i.test(home.html)){ready=true;break;}
             await new Promise(resolve=>setTimeout(resolve,3000));
           }
