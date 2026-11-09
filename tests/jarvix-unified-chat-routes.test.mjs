@@ -10,7 +10,7 @@ const [home,shell,chat,studio,composer,actions,homeComposer,styles]=await Promis
 test('exactly one canonical JARVIX chat route in all owner Creation sidebar links',()=>{
  for(const mode of ['image','video','audio']){
   const target='jarvix-chat.html?mode='+mode;
-  assert.match(home,new RegExp('href="'+target+'"'));
+  assert.ok(home.includes('href="'+target+'"'),'Home route '+mode);
   assert.ok(shell.includes("url:'"+target+"'"));
   assert.ok(composer.includes("'"+target+"'"));
   assert.ok(actions.includes(mode+":'"+target+"'"));
