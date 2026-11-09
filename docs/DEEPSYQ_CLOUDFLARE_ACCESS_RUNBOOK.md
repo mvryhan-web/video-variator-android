@@ -1,3 +1,13 @@
+## OWNER D29 — TWO PERMANENT LINKS — 2026-11-09
+
+- **Canonical TEST**: `https://test.deepsyq.pages.dev`, alias of Pages project `deepsyq` preview branch `test`, upload via `--project-name=deepsyq --branch=test`, then verify stable alias. All executors including Antigravity use ONLY this same owner-facing test endpoint.
+- **Canonical MAIN**: `https://deepsyq.app` (production branch `deepsyq-platform`). `https://deepsyq.pages.dev` also points to PRODUCTION, never treat it as TEST.
+- Do not share immutable `https://<hash>.deepsyq.pages.dev` as current TEST; they may remain technically accessible even while the branch alias updates.
+- After the owner explicitly approves one exact TEST revision, publish only it to MAIN without seeking redundant confirmation, but preserve the currently deployed Pages Worker (`uses_functions:true`), API and bindings and have rollback verified. Raw static-only upload to MAIN is forbidden. Existing Worker read 403 is a release blocker until resolved. Keep `BLOCKED_MAIN` honest.
+- Github instructions do not automatically delete old URLs, enforce token access, change Cloudflare project settings, or migrate legacy PR preview workflows. Verify actual stable TEST publication before reporting it as LIVE.
+
+---
+
 # DEEPSYQ — Cloudflare access runbook for every connected ChatGPT conversation
 
 Verified 2026-11-09 via GitHub Actions [run 42582178313](https://github.com/mvryhan-web/video-variator-android/actions/runs/42582178313), [PR #648](https://github.com/mvryhan-web/video-variator-android/pull/648). No secrets or Worker source have been disclosed.
