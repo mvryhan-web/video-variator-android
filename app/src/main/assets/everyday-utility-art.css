@@ -77,14 +77,19 @@ body[data-approved-page="free-tools"] .et-photo-card .et-photo-cta{
  position:absolute;z-index:3;left:53px;bottom:7px;
  display:inline-flex;align-items:center;justify-content:center;
  min-height:25px;padding:4px 13px;border-radius:22px;
- border:1px solid #d62bff;color:#fff;line-height:1.1;
- background:linear-gradient(95deg,#190e43,#9a19dc);font-size:10px;font-weight:680;
- white-space:nowrap;box-shadow:0 0 8px #b21afa58;pointer-events:none;
+ border:1px solid rgba(245, 158, 11, 0.4);color:#fed7aa;line-height:1.1;
+ background:#0d0b14;font-size:10px;font-weight:660;
+ white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.6);pointer-events:none;
+ transition:all 0.22s ease;
 }
 body[data-approved-page="free-tools"] .et-photo-card:hover .et-photo-cta,
 body[data-approved-page="free-tools"] .et-owner-bg-banner:hover .et-photo-cta,
 body[data-approved-page="free-tools"] .et-owner-voice-card:hover .et-photo-cta{
- background:linear-gradient(90deg,#5b13bc,#c32cfa);
+ background:linear-gradient(135deg, #f59e0b, #d97706)!important;
+ color:#0b1020!important;
+ font-weight:700!important;
+ border-color:#f59e0b!important;
+ box-shadow:0 0 16px rgba(245, 158, 11, 0.85)!important;
 }
 body[data-approved-page="free-tools"] .et-photo-card .et-owner-art-error{opacity:.7}
 /* Asset 20: intentionally wide, never join the 19-card 4-column grid. */
@@ -119,8 +124,10 @@ body[data-approved-page="free-tools"] .et-owner-bg-banner>span[aria-hidden="true
 body[data-approved-page="free-tools"] .et-owner-bg-banner>.et-photo-cta{
  position:absolute;z-index:3;right:14px;bottom:20px;display:inline-flex;
  align-items:center;justify-content:center;min-height:28px;padding:5px 15px;
- border-radius:22px;border:1px solid #d632ff;color:#fff;font-size:11px;font-weight:700;
- background:linear-gradient(90deg,#1b134c,#a21ae1);pointer-events:none;
+ border-radius:22px;border:1px solid rgba(245, 158, 11, 0.4);color:#fed7aa;font-size:11px;font-weight:660;
+ background:#0d0b14;pointer-events:none;
+ box-shadow:0 2px 6px rgba(0,0,0,0.6);
+ transition:all 0.22s ease;
 }
 /* Assets 21,22: two separate wide lower cards, preserving the native Audio Studio links. */
 body[data-approved-page="free-tools"] .utility-tools-preview>.et-owner-voices{
@@ -163,9 +170,11 @@ body[data-approved-page="free-tools"] .et-owner-voice-card small{
 body[data-approved-page="free-tools"] .et-owner-voice-card .et-photo-cta{
  position:absolute;z-index:3;left:55px;bottom:8px;
  display:inline-flex;align-items:center;justify-content:center;
- padding:4px 13px;min-height:25px;color:#fff;font-size:10px;font-weight:700;
- border:1px solid #d632ff;border-radius:25px;background:linear-gradient(90deg,#220e61,#b324dd);
+ padding:4px 13px;min-height:25px;color:#fed7aa;font-size:10px;font-weight:660;
+ border:1px solid rgba(245, 158, 11, 0.4);border-radius:25px;background:#0d0b14;
  pointer-events:none;
+ box-shadow:0 2px 6px rgba(0,0,0,0.6);
+ transition:all 0.22s ease;
 }
 @media(max-width:1400px){
  body[data-approved-page="free-tools"] #mobileUtilityGrid.et-photo-grid{
