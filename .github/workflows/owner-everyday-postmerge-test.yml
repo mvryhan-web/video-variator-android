@@ -1,0 +1,88 @@
+name: Owner Everyday Tools merged mobile icons TEST acceptance
+on:
+  push:
+    branches:
+      - owner-everyday-mobile-postmerge-test-20261109
+    paths:
+      - .github/workflows/owner-everyday-postmerge-test.yml
+permissions:
+  contents: read
+jobs:
+  verify-release-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Confirm merged DEV version and no modified site assets in verifier branch
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/deepsyq-platform:refs/remotes/origin/deepsyq-platform
+          git diff --quiet origin/deepsyq-platform HEAD -- app/src/main/assets
+          echo "VERIFYING_MERGED_DEV=$(git rev-parse origin/deepsyq-platform)"
+      - name: Install Chromium and local no-spend dependencies
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Test 22 illustrations, all tools and mobile-only icon removal locally
+        run: |
+          node --test tests/everyday-utility-gallery-unit.mjs
+          node --test tests/everyday-tools-mobile-icons.browser.test.mjs
+      - name: Guard Cloudflare production branch and save MAIN ID
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" \
+            -o /tmp/deepsyq-before.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const p=JSON.parse(fs.readFileSync('/tmp/deepsyq-before.json','utf8'));
+          if(!p.success||p.result?.production_branch!=='deepsyq-platform'||!p.result?.canonical_deployment?.id)throw Error('Unsafe environment');
+          fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_ID='+p.result.canonical_deployment.id+'\n');
+          JS
+      - name: Publish EXACT merged DEV source to isolated Cloudflare TEST only
+        run: |
+          set -euo pipefail
+          DEV_SHA="$(git rev-parse origin/deepsyq-platform)"
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq \
+            --branch=owner-everyday-mobile-postmerge-test-20261109 \
+            --commit-hash="$DEV_SHA" | tee /tmp/everyday-postmerge-deploy.log
+          TEST_URL="$(grep -Eo 'https://[a-z0-9-]+\.deepsyq\.pages\.dev' /tmp/everyday-postmerge-deploy.log | head -n1)"
+          if [[ ! "$TEST_URL" =~ ^https://[a-z0-9-]+\.deepsyq\.pages\.dev$ ]]; then exit 1; fi
+          echo "EVERYDAY_TEST_URL=$TEST_URL" >> "$GITHUB_ENV"
+          echo "EVERYDAY_TEST_MERGED_SOURCE_URL=$TEST_URL"
+      - name: Verify real Cloudflare TEST at phone, tablet and desktop sizes
+        run: node --test tests/everyday-tools-mobile-icons.browser.test.mjs
+      - name: Prove canonical MAIN unchanged
+        run: |
+          set -euo pipefail
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" \
+            -o /tmp/deepsyq-after.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const p=JSON.parse(fs.readFileSync('/tmp/deepsyq-after.json','utf8'));
+          if(!p.success||p.result?.production_branch!=='deepsyq-platform'||p.result?.canonical_deployment?.id!==process.env.MAIN_ID)throw Error('MAIN changed unexpectedly');
+          console.log('MERGED_MOBILE_TOOLS_TEST_DONE_MAIN_UNCHANGED');
+          JS
+      - name: Save actual published phone/tablet/desktop screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: everyday-mobile-merged-source-screenshots
+          path: artifacts/everyday-mobile-cleanup/*.png
+          retention-days: 7
+          if-no-files-found: ignore
