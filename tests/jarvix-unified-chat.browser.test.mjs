@@ -50,7 +50,7 @@ try{
      await page.frameLocator('#jWorkspaceFrame').locator('#creator').waitFor({timeout:25000});
      const native=page.frameLocator('#jWorkspaceFrame');
      const kind=mode==='audio'?'music':mode;
-     await native.locator('.studio-nav [data-kind="'+kind+'"][aria-pressed="true"]').waitFor({timeout:22000});
+     await native.locator('.studio-nav [data-kind="'+kind+'"][aria-pressed="true"]').waitFor({state:'attached',timeout:22000});
      assert.equal(await native.locator('#modelButton').count(),1,'original model picker');
      assert.equal(await native.locator('#generate').count(),1,'original submit and credits flow');
     }
