@@ -1,0 +1,157 @@
+name: DEEPSYQ Owner Home restore with existing Cloudflare Worker - stable TEST
+on:
+  push:
+    branches: [test]
+    paths:
+      - 'app/src/main/assets/_worker.js'
+      - 'app/src/main/assets/deepsyq.js'
+      - '.github/workflows/owner-home-with-worker-test-20261109.yml'
+permissions:
+  contents: read
+concurrency:
+  group: owner-test-canonical-routing
+  cancel-in-progress: false
+jobs:
+  preserve-worker-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Syntax and owner data validation - no paid providers
+        run: |
+          set -euo pipefail
+          node --check app/src/main/assets/_worker.js
+          node --check app/src/main/assets/deepsyq.js
+          node --test tests/owner-test-canonical-routing.mjs
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const w=fs.readFileSync('app/src/main/assets/_worker.js','utf8');
+          const h=fs.readFileSync('app/src/main/assets/deepsyq.js','utf8');
+          const html=fs.readFileSync('app/src/main/assets/index.html','utf8');
+          assert(w.includes("pathname === '/api/inspiration'")&&w.includes("pathname === '/api/config'"));
+          assert(w.includes("return serveHtmlAsset('/video-uniquifier', '/video-uniquifier.html')"));
+          assert(h.includes('loadApprovedHomeFeed()'));
+          assert(html.includes('Deepsyq — Your creative workspace'));
+          const assets='app/src/main/assets';
+          for(const n of ['media/home/owner-20261018/01-close-up-woman.mp4','media/inspiration/openai-20261021/image-01-orbital-muse.webp','ai-apps.html','jarvix-chat.html'])assert(fs.existsSync(assets+'/'+n),'Missing owner asset '+n);
+          console.log('OWNER_HOME_WORKER_SOURCE_VERIFIED');
+          JS
+      - name: Guard production and current canonical TEST before uploading
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = test
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import {execFileSync} from 'node:child_process';
+          const root='https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID+'/pages/projects/deepsyq';
+          const token=process.env.CLOUDFLARE_API_TOKEN;
+          const get=async url=>{
+            const r=await fetch(url,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(18000)});
+            assert(r.ok,'Cloudflare API preflight HTTP '+r.status);
+            const d=await r.json();
+            assert(d.success===true,'Cloudflare API preflight denied');
+            return d.result;
+          };
+          const project=await get(root);
+          assert.equal(project.name,'deepsyq');
+          assert.equal(project.production_branch,'deepsyq-platform');
+          const current=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+          assert.equal(current,process.env.GITHUB_SHA);
+          const main=project.canonical_deployment;
+          assert(main?.id,'Missing immutable MAIN guard');
+          const previewKeys=Object.keys(project.deployment_configs?.preview?.env_vars||{});
+          // Fail closed rather than expose live Stripe secrets on the public TEST URL.
+          assert(!previewKeys.includes('STRIPE_SECRET_KEY'),'TEST preview has Stripe secret; refuse publication');
+          const list=[];
+          for(let page=1;page<=4;page++){
+            const d=await get(root+'/deployments?per_page=20&page='+page);
+            assert(Array.isArray(d));
+            list.push(...d);
+          }
+          const test=list.find(d=>(d.aliases||[]).includes('https://test.deepsyq.pages.dev'));
+          assert(test&&test.environment==='preview'&&test.deployment_trigger?.metadata?.branch==='test','Stable TEST alias absent or wrong environment');
+          // Replacing an already dynamic TEST Worker without matching its source would be unsafe.
+          assert(test.uses_functions!==true,'Existing TEST already has Functions; stop before replacing a live Worker');
+          fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_DEPLOYMENT_BEFORE='+main.id+'\n');
+          console.log('PREDEPLOY_ISOLATION_OK',JSON.stringify({candidate:current.slice(0,12),testBranch:'test',existingTestUsesFunctions:test.uses_functions,previewStripeConfigured:false}));
+          JS
+      - name: Deploy original project Worker and restored Home to canonical TEST
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq --branch=test --commit-hash="$GITHUB_SHA"
+      - name: Verify canonical TEST Worker, carousel, Inspiration and AI App
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const projectUrl='https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID+'/pages/projects/deepsyq';
+          const token=process.env.CLOUDFLARE_API_TOKEN;
+          const get=async u=>{
+            const r=await fetch(u,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(16000)});
+            assert.equal(r.status,200,'Cloudflare verify HTTP');
+            const d=await r.json();assert(d.success);return d.result;
+          };
+          let active=false;
+          for(let attempt=0;attempt<12;attempt++){
+            const deployments=await get(projectUrl+'/deployments?per_page=30&page=1');
+            const d=deployments.find(v=>(v.aliases||[]).includes('https://test.deepsyq.pages.dev'));
+            if(d?.deployment_trigger?.metadata?.commit_hash===process.env.GITHUB_SHA){
+              assert(d.uses_functions===true,'CRITICAL: Worker not present in TEST deployment');
+              assert.equal(d.environment,'preview');
+              active=true;break;
+            }
+            await new Promise(resolve=>setTimeout(resolve,3000));
+          }
+          assert(active,'Stable TEST alias did not adopt worker-enabled commit');
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try{
+            for(const [kind,viewport] of [['desktop',{width:1366,height:900}],['mobile',{width:390,height:844}]]){
+              const context=await browser.newContext({viewport,isMobile:kind==='mobile',hasTouch:kind==='mobile'});
+              const page=await context.newPage();
+              const base='https://test.deepsyq.pages.dev';
+              const response=await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded',timeout:30000});
+              assert.equal(response?.status(),200,kind+' Home response');
+              await page.locator('#inspirationPreviewGrid .inspiration-preview-card').first().waitFor({state:'attached',timeout:30000});
+              const count=await page.locator('#inspirationPreviewGrid .inspiration-preview-card').count();
+              assert(count>=87,kind+' Inspiration cards count='+count);
+              const img=await page.locator('#inspirationPreviewGrid img').first().evaluate(i=>new Promise(done=>{if(i.complete)done({ok:i.naturalWidth>0});else{i.addEventListener('load',()=>done({ok:i.naturalWidth>0}),{once:true});i.addEventListener('error',()=>done({ok:false}),{once:true});}}));
+              assert(img.ok,kind+' Inspiration image failed to load');
+              const video=page.locator('#inspirationHeroVideo');
+              await page.locator('#homeHeroCarousel:not(.is-empty)').waitFor({state:'attached',timeout:15000});
+              // Play explicitly so reduced motion, mobile autoplay and browser policy cannot hide a broken film.
+              await video.evaluate(async v=>{v.muted=true;if(!v.src){v.src='/media/home/owner-20261018/01-close-up-woman.mp4';v.load();}await v.play();});
+              await page.waitForFunction(()=>document.getElementById('inspirationHeroVideo')?.currentTime>.1,{timeout:15000});
+              const config=await page.request.get(base+'/api/config');
+              assert.equal(config.status(),200,kind+' Worker config endpoint');
+              const insp=await page.request.get(base+'/api/inspiration?featured=true&limit=60');
+              assert.equal(insp.status(),200,kind+' Worker Inspiration endpoint');
+              const apps=await page.request.get(base+'/ai-apps.html');
+              assert.equal(apps.status(),200,kind+' AI App page');
+              console.log('LIVE_HOME_WITH_WORKER_PASS',JSON.stringify({device:kind,images:count,videoPlayback:true,apiConfig:200,apiInspiration:200,aiApp:200}));
+              await context.close();
+            }
+          }finally{await browser.close();}
+          const project=await get(projectUrl);
+          assert.equal(project.canonical_deployment?.id,process.env.MAIN_DEPLOYMENT_BEFORE,'MAIN changed unexpectedly');
+          console.log('TEST_WORKER_AND_HOME_VERIFIED_MAIN_UNCHANGED',process.env.GITHUB_SHA);
+          JS
