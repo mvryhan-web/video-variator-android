@@ -1161,8 +1161,11 @@ export default {
     }
 
     // 2. Video Uniquifier routes -> video-uniquifier-app (original index.html)
-    if (pathname === '/index.html' || pathname === '/video-uniquifier.html' || pathname === '/video-uniquifier') {
-      return serveHtmlAsset('/video-uniquifier-app', '/index.html');
+    if (pathname === '/index.html') {
+      return Response.redirect(new URL('/', url.origin).toString(), 301);
+    }
+    if (pathname === '/video-uniquifier.html' || pathname === '/video-uniquifier') {
+      return serveHtmlAsset('/video-uniquifier', '/video-uniquifier.html');
     }
 
     // 3. Explicit .html page requests (e.g. /free-tools.html, /mobile-utility.html, /photo-collage.html, etc.)

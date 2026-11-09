@@ -30,6 +30,15 @@
 4. Оригинальная нижняя панель ввода является защищённым компонентом. Запрещено менять её дизайн, создавать альтернативные версии, добавлять новые сферы справа или дублировать кнопки настроек без прямого разрешения владельца.
 5. На Home, внутри JARVIX Chat и во всех режимах используется одна и та же эталонная нижняя панель ввода.
 
+## OWNER D32 — 2026-11-09 — DIRECT DEPLOYMENT TO MAIN (MAIN FIRST)
+
+**DIRECT OWNER INSTRUCTION FOR ALL AGENTS, ADMINISTRATOR, P, AND COPILOT:**
+- **ONE PRIMARY TARGET (MAIN):** https://deepsyq.app (--project-name=deepsyq --branch=deepsyq-platform). All new verified features and fixes are deployed **directly to the MAIN production site** in one step to eliminate redundant double work.
+- **TEST ENVIRONMENT IN RESERVE:** https://test.deepsyq.pages.dev is kept in **reserve**. It is used only when explicitly requested by the owner for high-risk isolated testing.
+- Always preserve _worker.js and _headers (uses_functions: true) during deployment.
+
+---
+
 ## OWNER D29 — 2026-11-09 — TWO CANONICAL DEEPSYQ DEPLOYMENT URLS
 
 **CURRENT OWNER RELEASE RULE for P, Administrator, Antigravity, every executor. Overrides older deployment-URL examples in D28/D27/D26; preserves surgical scope, safety and billing protections.**

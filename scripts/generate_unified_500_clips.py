@@ -8,10 +8,19 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import time
 import urllib.error
 import urllib.request
 import wave
+
+try:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
 
 WORKSPACE = Path(r"C:\Users\velot\.gemini\antigravity\scratch\f1-smart-decision")
 JARVIS_HOME = Path.home() / "Jarvis"
@@ -83,13 +92,20 @@ def main():
 
     print("=======================================================")
     print(f"  JARVIX VOICE GENERATION: {total_scenarios} SCENARIOS ({total_clips} CLIPS)")
-    print(f"  Destination: {OUTPUT_DIR}")
+    print(f"  Save destination: {OUTPUT_DIR}")
     print("=======================================================")
 
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
         print("ERROR: FFmpeg is required for MP3 conversion.")
         return
+
+    # Pre-scan existing valid files across destination
+    existing_files = {f.name: f.stat().st_size for f in OUTPUT_DIR.glob("*.mp3") if f.stat().st_size > 1000}
+    remaining_total = total_clips - len(existing_files)
+    print(f"  ALREADY READY & SAVED: {len(existing_files)} / {total_clips} (SKIPPED)")
+    print(f"  REMAINING TO SYNTHESIZE: {remaining_total} CLIPS")
+    print("=======================================================")
 
     print("Checking local VoxCPM2 voice server (port 8765)...")
     if not check_server():
@@ -102,6 +118,7 @@ def main():
     generated = 0
     skipped = 0
     current_num = 0
+    remaining_done = 0
 
     manifest_entries = []
 
@@ -114,18 +131,19 @@ def main():
             text = sc["qa"][lang]["answer"]
 
             # Skip if already generated and valid
-            if mp3_file.exists() and mp3_file.stat().st_size > 1000:
+            if filename in existing_files:
                 skipped += 1
                 manifest_entries.append({
                     "id": sc["safeId"] + "_" + lang,
                     "filename": filename,
                     "language": lang,
                     "text": text,
-                    "size": mp3_file.stat().st_size
+                    "size": existing_files[filename]
                 })
                 continue
 
-            print(f"[{current_num}/{total_clips}] Synthesizing ({lang}): {sc['id']} -> {filename}...", end="", flush=True)
+            remaining_done += 1
+            print(f"[{remaining_done}/{remaining_total}] (Total: {current_num}/{total_clips}) [{lang.upper()}] {sc['id']} -> {filename}...", end="", flush=True)
             t0 = time.time()
             try:
                 synthesize_wav(text, lang, wav_file, token)

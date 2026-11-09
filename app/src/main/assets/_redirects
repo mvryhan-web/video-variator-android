@@ -1,0 +1,16 @@
+# Cloudflare Pages TEST routing. Do not turn unknown URLs into the legacy Video Uniquifier.
+# Root is the DEEPSYQ workspace; keep the browser URL at /.
+/ /deepsyq.html 200
+
+# The physical index.html now contains DEEPSYQ Home; explicit /index.html is its alias.
+/index.html / 301
+
+# Preserve old bookmarks without creating duplicate public pages.
+/dashboard /deepsyq.html 302
+/ai-agents /jarvix-chat.html 302
+/ai-agents.html /jarvix-chat.html 302
+/inspiration /deepsyq.html#inspirationPreview 302
+/inspiration.html /deepsyq.html#inspirationPreview 302
+
+# All other missing routes (including /jarvix-chat.) must return the real 404.html.
+# Do NOT add a wildcard /* -> /index.html route.
