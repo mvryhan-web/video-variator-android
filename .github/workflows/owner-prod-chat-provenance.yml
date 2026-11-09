@@ -90,21 +90,25 @@ jobs:
           print('PAGES_HASH_PROVENANCE',json.dumps({'expected':expected,'formulas':formulas,'match':[name for name,h in formulas.items() if h==expected]}))
           if expected not in formulas.values():raise SystemExit('Cannot verify exact Cloudflare Pages hashing; BLOCK safe release')
           PY
-      - name: Check tracked historical composer variants against currently served file
+      - name: Probe EXISTING production Pages Worker readable source, read-only, never print source
         run: |
-          python3 - <<'PY'
-          import subprocess,urllib.request,hashlib
-          url='https://deepsyq.app/jarvix-composer-design.js'
-          raw=urllib.request.urlopen(url,timeout=12).read()
-          print('CURRENT_FILE',{'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()[:16],'video_uniquifier_entries':raw.count(b"['Video Uniquifier','index.html','legacy']")})
-          path='app/src/main/assets/jarvix-composer-design.js'
-          refs=subprocess.check_output(['git','log','--all','--format=%H','--',path],text=True).splitlines()
-          print('SEARCH_HISTORY',len(refs))
-          found=[]
-          for h in refs[:300]:
-            try:
-              b=subprocess.check_output(['git','show',h+':'+path],stderr=subprocess.DEVNULL)
-              if b==raw:found.append(h)
-            except subprocess.CalledProcessError:pass
-          print('MATCHING_HISTORICAL_SHA',found[:8])
-          PY
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const p=JSON.parse(fs.readFileSync('/tmp/pages-project.json','utf8')).result;
+          console.log('PAGES_WORKER_METADATA',JSON.stringify({production_script_name:p.production_script_name,preview_script_name:p.preview_script_name,uses_functions:p.uses_functions}));
+          const name=p.production_script_name;
+          if(!name)throw Error('No production Worker script name from Pages project');
+          const base='https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID+'/workers/scripts/'+encodeURIComponent(name);
+          const headers={Authorization:'Bearer '+process.env.CLOUDFLARE_API_TOKEN};
+          for(const suffix of ['/content/v2','']){
+            try{
+              const r=await fetch(base+suffix,{headers,signal:AbortSignal.timeout(15000)});
+              const b=Buffer.from(await r.arrayBuffer());
+              console.log('PRODUCTION_WORKER_READ_PROBE',JSON.stringify({suffix,status:r.status,mime:r.headers.get('content-type'),size:b.length,readable:r.ok}));
+              if(r.ok){
+                fs.writeFileSync('/tmp/production-pages-worker-'+(suffix? 'v2':'raw')+'.bin',b,{mode:0o600});
+              }
+            }catch(e){console.log('PRODUCTION_WORKER_READ_PROBE',JSON.stringify({suffix,error:String(e)}));}
+          }
+          JS
