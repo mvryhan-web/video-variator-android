@@ -35,9 +35,8 @@ test('JARVIX recent drawer parity, account scope, original New Chat handler and 
     });
     await page.goto(base+'/jarvix-chat.html',{waitUntil:'domcontentloaded'});
     await page.waitForSelector('#jarvixActivityToggle',{timeout:15000});
-    assert.equal(await page.locator('#jarvixActivityPanel').isVisible(),false,'drawer starts collapsed');
-    await page.locator('#jarvixActivityToggle').click();
-    assert.equal(await page.locator('#jarvixActivityPanel').isVisible(),true);
+    assert.equal(await page.locator('#jarvixActivityPanel').isVisible(),true,'desktop first visit shows shared JARVIX Chat automatically');
+    assert.equal(await page.locator('#jarvixActivityToggle').getAttribute('aria-expanded'),'true');
     assert.equal(await page.locator('#jarvixActivityPanel #jNew').count(),1,'existing New chat moved, not duplicated');
     assert.equal(await page.locator('#jNew').evaluate(e=>getComputedStyle(e).borderTopWidth),'0px','no blue new-chat frame');
     assert.equal(await page.locator('#jHistory').isVisible(),false,'old select hidden only when drawer mounted');
@@ -89,6 +88,8 @@ test('JARVIX recent drawer parity, account scope, original New Chat handler and 
     const mobilePage=await mobile.newPage();
     await mobilePage.goto(base+'/jarvix-chat.html');
     await mobilePage.waitForSelector('#jarvixActivityToggle');
+    assert.equal(await mobilePage.locator('#jarvixActivityPanel').isVisible(),false,'mobile keeps Studio usable on first visit');
+    assert.match(await mobilePage.locator('#jarvixActivityToggle').textContent(),/JARVIX Chat/,'mobile closed panel has visible text');
     const position=await mobilePage.locator('#jarvixActivityToggle').boundingBox();
     assert.ok(position&&position.x>=0&&position.x+position.width<=390,'mobile toggle fits width');
     await mobilePage.locator('#jarvixActivityToggle').click();
