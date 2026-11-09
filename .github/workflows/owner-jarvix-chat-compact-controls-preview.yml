@@ -1,0 +1,154 @@
+name: Owner JARVIX Chat compact header - isolated TEST only
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'app/src/main/assets/jarvix-chat.html'
+      - 'app/src/main/assets/jarvix-chat.css'
+      - 'app/src/main/assets/jarvix-chat.js'
+      - '.github/workflows/owner-jarvix-chat-compact-controls-preview.yml'
+permissions:
+  contents: read
+concurrency:
+  group: owner-jarvix-chat-compact-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  jarvix-chat-preview:
+    if: github.event.pull_request.number == 657 && github.head_ref == 'owner-jarvix-chat-compact-controls-20261109' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      PREVIEW_BRANCH: owner-jarvix-chat-compact-controls-20261109
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      PRODUCT_WATCHER_ENABLED: 'false'
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Exact DEV ancestry and isolated changes only
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/deepsyq-platform:refs/remotes/origin/deepsyq-platform
+          git merge-base --is-ancestor refs/remotes/origin/deepsyq-platform HEAD
+          node --check app/src/main/assets/jarvix-chat.js
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const root='app/src/main/assets/';
+          const html=fs.readFileSync(root+'jarvix-chat.html','utf8');
+          const css=fs.readFileSync(root+'jarvix-chat.css','utf8');
+          for(const id of ['jQuickAccount','jQuickPricing','jQuickLang','jQuickHelp','jQuickHelpText']){
+            assert.match(html,new RegExp('id="'+id+'"'));
+          }
+          assert.match(html,/class="jarvix-chat-page"/);
+          assert.match(css,/body\.jarvix-chat-page > header/);
+          JS
+      - name: Install existing dependencies / no paid APIs
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Confirm Cloudflare production identity BEFORE TEST
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" > /tmp/pages-before.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const o=JSON.parse(fs.readFileSync('/tmp/pages-before.json','utf8'));
+          if(o.success!==true||o.result?.name!=='deepsyq'||o.result?.production_branch!=='deepsyq-platform'||
+             o.result?.production_branch===process.env.PREVIEW_BRANCH||!o.result?.canonical_deployment?.id) {
+            throw Error('Production guard failed: TEST not deployed');
+          }
+          fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_DEPLOYMENT_BEFORE='+o.result.canonical_deployment.id+'\n');
+          JS
+      - name: Publish isolated Cloudflare TEST Preview (never MAIN)
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq --branch="$PREVIEW_BRANCH" \
+            --commit-hash="${{ github.event.pull_request.head.sha }}" | tee /tmp/jarvix-compact-preview.log
+          URL=$(grep -Eo 'https://[a-z0-9-]+\.deepsyq\.pages\.dev' /tmp/jarvix-compact-preview.log | head -n1)
+          if [[ ! "$URL" =~ ^https://[a-z0-9-]+\.deepsyq\.pages\.dev$ ]]; then
+            echo '::error::No verifiable isolated TEST URL'
+            exit 1
+          fi
+          echo "JARVIX_TEST_URL=$URL" >> "$GITHUB_ENV"
+          echo "JARVIX_COMPACT_TEST_URL=$URL"
+      - name: Verify exact user-visible behavior in desktop and mobile browser
+        run: |
+          mkdir -p artifacts/jarvix-compact
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const origin=process.env.JARVIX_TEST_URL;
+          assert.match(origin,/^https:\/\/[a-z0-9-]+\.deepsyq\.pages\.dev$/);
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try{
+            for(const [device,viewport] of [['desktop',{width:1365,height:900}],['mobile',{width:390,height:844}]]){
+              const context=await browser.newContext({viewport,isMobile:device==='mobile',hasTouch:device==='mobile'});
+              const page=await context.newPage();
+              try{
+                const res=await page.goto(origin+'/jarvix-chat.html',{waitUntil:'domcontentloaded',timeout:30000});
+                assert.equal(res?.status(),200,'JARVIX page HTTP 200');
+                await page.locator('.j-chat-quick-actions').waitFor({state:'visible'});
+                assert.equal(await page.locator('body > header').evaluate(el=>getComputedStyle(el).display),'none','Chat full header hidden');
+                for(const id of ['jQuickAccount','jQuickPricing','jQuickLang','jQuickHelp']){
+                  assert.equal(await page.locator('#'+id).isVisible(),true,device+' '+id);
+                }
+                assert.equal(await page.locator('#jChatForm').count(),1,'Original composer retained');
+                await page.locator('#jQuickLang').selectOption('ru');
+                assert.equal(await page.locator('#jQuickPricing').textContent(),'Тарифы');
+                await page.locator('#jQuickHelp').click();
+                assert.equal(await page.locator('#jQuickHelpText').isVisible(),true,'Help opens');
+                await page.keyboard.press('Escape');
+                if(device==='mobile'){
+                  await page.locator('.ds-site-mobile-toggle').waitFor({state:'visible',timeout:16000});
+                  await page.locator('.ds-site-mobile-toggle').click();
+                  assert.equal(await page.locator('#dsSiteSidebar').isVisible(),true,'Mobile navigation preserved');
+                }else{
+                  assert.equal(await page.locator('#dsSiteSidebar').isVisible(),true,'Desktop navigation preserved');
+                }
+                await page.screenshot({path:'artifacts/jarvix-compact/'+device+'.png'});
+                console.log('JARVIX_CHAT_COMPACT_PASS',device);
+                const home=await page.goto(origin+'/deepsyq.html',{waitUntil:'domcontentloaded',timeout:30000});
+                assert.equal(home?.status(),200);
+                assert.equal(await page.locator('body').evaluate(el=>el.classList.contains('jarvix-chat-page')),false,'Home unaffected');
+              }finally{await context.close();}
+            }
+          }finally{await browser.close();}
+          JS
+      - name: Prove MAIN production deployment was NOT changed
+        if: success()
+        run: |
+          set -euo pipefail
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" > /tmp/pages-after.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const o=JSON.parse(fs.readFileSync('/tmp/pages-after.json','utf8'));
+          if(o.success!==true||o.result?.production_branch!=='deepsyq-platform'||
+             o.result?.canonical_deployment?.id!==process.env.MAIN_DEPLOYMENT_BEFORE)
+            throw Error('Production deployment changed unexpectedly');
+          console.log('MAIN_UNCHANGED_VERIFIED');
+          JS
+      - name: Save screenshots for owner review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvix-chat-compact-desktop-mobile
+          path: artifacts/jarvix-compact/*.png
+          retention-days: 7
+          if-no-files-found: ignore
