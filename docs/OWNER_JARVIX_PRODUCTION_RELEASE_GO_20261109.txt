@@ -1,0 +1,7 @@
+OWNER_RELEASE_GO_20261109
+User's explicit instruction in conversation: "Слушай, возьми и опубликуй."
+Scope: already reviewed PR #645 JARVIX shared Recent history panel for JARVIX Chat / Image / Video / Audio.
+Production target: Cloudflare Pages project deepsyq, production branch deepsyq-platform, custom domain deepsyq.app.
+Must preserve live Pricing/Studio/JARVIX-core/media/other public assets, run TEST browser acceptance, compare critical non-target hashes, recheck canonical deployment, and auto-rollback if production smoke fails.
+No new AI provider calls, paid generations, Stripe changes, or key disclosure.
+Explicitly NOT permission to replace existing main site with an older unmerged PR snapshot.
