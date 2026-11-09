@@ -161,6 +161,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          ACTUAL_HEAD=$(git ls-remote origin refs/heads/owner-canvas-basic-workspace-20261109 | cut -f1)
+          test "$ACTUAL_HEAD" = "$EXPECTED_SHA" || { echo "::error::Canvas source branch changed since this build"; exit 1; }
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$CLOUDFLARE_ACCOUNT_ID"
           API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq"
@@ -173,10 +175,13 @@ jobs:
           if(!p.success||p.result?.production_branch!=='deepsyq-platform'||!p.result?.canonical_deployment?.id||!d.success||!Array.isArray(d.result))throw Error('Cloudflare safety inspection failed');
           const existing=d.result.filter(v=>v.environment==='preview'&&v.deployment_trigger?.metadata?.branch==='test');
           if(existing.length){
-            console.log('Existing TEST deployments:',existing.length);
             const mostRecent=existing.sort((a,b)=>new Date(b.created_on)-new Date(a.created_on))[0];
-            console.log('TEST_CURRENT_SHA',mostRecent.deployment_trigger?.metadata?.commit_hash,'uses_functions',mostRecent.uses_functions);
-            throw Error('A stable TEST already exists: refuse to overwrite another executor without baseline reconciliation');
+            const prior=mostRecent.deployment_trigger?.metadata?.commit_hash;
+            const allowedPrior=['509d7629d0d794b45b202e3105e39faba3f1a6c6','2c53a37d2334c41e4284274f54f13829d8440794'];
+            console.log('TEST_CURRENT_SHA',prior,'uses_functions',mostRecent.uses_functions);
+            if(!allowedPrior.includes(prior))throw Error('Existing stable TEST belongs to an unknown release; refuse to overwrite');
+            if(mostRecent.uses_functions!==false)throw Error('Stable TEST has server Functions; do not overwrite with static Canvas Preview');
+            console.log('RECONCILED_OLDER_CANVAS_TEST_RELEASE');
           }
           fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_BEFORE='+p.result.canonical_deployment.id+'\n');
           console.log('TEST_BRANCH_UNOCCUPIED; MAIN_BASELINE_CAPTURED');
