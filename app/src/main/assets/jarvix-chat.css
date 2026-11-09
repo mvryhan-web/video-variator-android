@@ -1331,8 +1331,9 @@ body:has(> main.jarvix-chat) {
   overscroll-behavior: none !important;
 }
 body > main.jarvix-chat {
-  height: calc(var(--j-viewport, 100dvh) - 56px) !important;
-  max-height: calc(var(--j-viewport, 100dvh) - 56px) !important;
+  /* JS measures the real space below the existing responsive header. */
+  height: var(--j-chat-visible-height, calc(var(--j-viewport, 100dvh) - 56px)) !important;
+  max-height: var(--j-chat-visible-height, calc(var(--j-viewport, 100dvh) - 56px)) !important;
   min-height: 0 !important;
   overflow: hidden !important;
 }
@@ -1350,7 +1351,7 @@ body > main.jarvix-chat > #jMessages {
 }
 @media (max-width: 760px) {
   body > main.jarvix-chat {
-    height: calc(var(--j-viewport, 100dvh) - 132px - env(safe-area-inset-top, 0px)) !important;
-    max-height: calc(var(--j-viewport, 100dvh) - 132px - env(safe-area-inset-top, 0px)) !important;
+    height: var(--j-chat-visible-height, calc(var(--j-viewport, 100dvh) - 132px - env(safe-area-inset-top, 0px))) !important;
+    max-height: var(--j-chat-visible-height, calc(var(--j-viewport, 100dvh) - 132px - env(safe-area-inset-top, 0px))) !important;
   }
 }
