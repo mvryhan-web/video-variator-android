@@ -1,3 +1,15 @@
+## OWNER D27 — 2026-11-09 — COMPLETE THE TASK THROUGH VERIFIED PUBLICATION
+
+**HIGHEST PRIORITY CURRENT OWNER RULE, effective immediately. It supersedes all D26/D25/D24 "administrator-only", "P audit-only", "do not deploy", and "commit/PR is completion" restrictions. The old wording below is historical and NOT an instruction to stop work.**
+
+1. **No exclusive administrator requirement.** The Owner may directly assign implementation, verification, integration and deployment to Coordinator P (ChatGPT), the Administrator or Antigravity. An explicitly assigned executor performs the work directly; do not wait for a separate Administrator solely because of an obsolete role rule. Preserve the Owner as final authority.
+2. **Work does NOT stop at a plan, code diff, commit, pull request or merge.** Keep going until the owner-requested change is PUBLISHED to the permitted Cloudflare environment, verified on the actual URL (including the relevant mobile interaction) and reported with exact revision and link. Only then mark **DONE**. If a real technical/permission blocker prevents publication, report **BLOCKED, NOT PUBLISHED** accurately; do not pretend success or bypass safety checks.
+3. **Scope and appearance are immutable except for the requested element.** Preserve the current Owner-approved design, controls, data and behavior. No redesigns, reverts to stale design snapshots, new systems or unnecessary files. The immediate task is ONLY the JARVIX Chat mobile Studio Settings close X overlapping Image/Video/Audio.
+4. **TEST first, PROD only with separately explicit Owner approval.** The canonical `deepsyq.pages.dev` is a production-branch alias, NOT isolated TEST; use a uniquely named `https://<preview>.deepsyq.pages.dev` deployment and verify the main deployment is unchanged. Preserve existing Cloudflare Worker/API, Stripe/Neon credentials, purchased credits and all working assets. No paid AI calls in testing.
+5. Before each release, use current DEV HEAD, inspect requested diff, verify syntax and targeted real desktop/mobile behavior, publish and report the actual state. Do not stop solely because the change is small; the publication requirement applies to every requested change unless the Owner explicitly forbids publication.
+
+---
+
 # OWNER D26 — 2026-11-08 — CLOUDFLARE MIGRATION ($0 RENDER), FAST-TRACK LAUNCH & PROFIT RULES
 
 **This is the CURRENT binding rule. It supersedes D25/D24 wherever older rules reference Render (`onrender.com`) or restrict owner-assigned Antigravity deployments.**
