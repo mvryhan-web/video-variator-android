@@ -36,6 +36,11 @@ try{
     try{
      await page.goto(base+'/generate-studio.html?studio='+kind,{waitUntil:'domcontentloaded',timeout:30000});
      await page.waitForSelector('#studioUniversalDock #jPlus',{timeout:25000});
+     // The JARVIX history drawer intentionally starts open on desktop; dismiss it
+     // with its real toggle before independently testing the underlying Studio controls.
+     const recentToggle=page.locator('#jarvixActivityToggle');
+     if(await recentToggle.count() && await recentToggle.getAttribute('aria-expanded')==='true')
+      await recentToggle.click();
      const geometry=await page.evaluate(()=>{
       const rect=id=>{const el=document.querySelector(id),r=el?.getBoundingClientRect();return r?{l:r.left,r:r.right,t:r.top,b:r.bottom,w:r.width,h:r.height}:null;};
       return {vw:innerWidth,vh:innerHeight,dock:rect('#studioUniversalDock'),plus:rect('#studioUniversalDock #jPlus'),
