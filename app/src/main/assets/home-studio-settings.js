@@ -91,6 +91,8 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   // Absolutely no second header, orb, main content or bottom dock may show
   // through the settings frame. Their real DOM remains for native handlers.
   doc.body.id='homeNativeStudioFrameBody';
+  // The iframe viewport does not reliably expose the host device pointer mode.
+  doc.documentElement.classList.toggle('jarvix-mobile-settings-host',innerWidth<=760);
   const hideUnrelated=()=>{
    if(doc.body.id!=='homeNativeStudioFrameBody')doc.body.id='homeNativeStudioFrameBody';
    for(const child of [...doc.body.children]){
@@ -146,13 +148,14 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
    }
    #studioSettingsHub>:is(#studioTypePicker,#modelButton,#settingsButton) .composer-chevron{margin-left:auto!important;}
    #studioSettingsHub.composer-popover::backdrop{background:transparent!important;}
-   /* Mobile touch layout: keep Close X in the heading, clear of the first mode row. */
-   @media (hover:none) and (pointer:coarse) and (max-width:500px){
-    #studioSettingsHub>h2{display:block!important;min-height:42px!important;
-     padding-right:54px!important;margin-bottom:15px!important;}
-    #studioSettingsHub>button:nth-child(2){position:absolute!important;
-     top:0!important;right:8px!important;float:none!important;
-     margin:0!important;z-index:2!important;}
+   /* JARVIX host mobile only: keep Close X above the first creation-mode row. */
+   html.jarvix-mobile-settings-host #studioSettingsHub>h2{
+    display:block!important;min-height:68px!important;
+    padding-right:58px!important;margin-bottom:20px!important;
+   }
+   html.jarvix-mobile-settings-host #studioSettingsHub>button:nth-child(2){
+    position:absolute!important;top:4px!important;right:8px!important;
+    float:none!important;margin:0!important;z-index:2!important;
    }
   `;
   doc.head.append(style);
