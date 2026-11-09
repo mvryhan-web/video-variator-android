@@ -23,9 +23,9 @@
     "app/src/main/assets/media/pricing/e5506ef4-b0a2-412d-a8b7-6e3108f80761.png": "bfd93e46c8457f30d43b2f82591373fa8a43e317b2237ac34eefe96bbf805135",
     "app/src/main/assets/media/pricing/e6d706ae-d1a0-4db9-9a42-1e3d15cdc4ee.png": "77e3186b23f2ebd6499692d72898ef41fcd6c7622761aaf727cca1c57c32fe9d",
     "app/src/main/assets/media/pricing/fa2c9a57-3fe7-4a2c-8123-7da568cabe10.png": "43fcc779f6517e8a31b1b24b882e6e798842d7f5728cc20efb491aa26b654d2d",
-    "app/src/main/assets/pricing-page.css": "f502fe817b93e4fe9dc8ed1963819ec1826ebc8456a823dda2927bb626911a39",
-    "app/src/main/assets/pricing-page.js": "9335c1c4efc48a8e741600d67ca23ec4d6fef28dad4c1293b92713233619ffac",
-    "app/src/main/assets/pricing.html": "e8bd9e182e7b59694adce75eb5b93fa33be786bbd1e3b3c81d890cfff34fc9ed",
+    "app/src/main/assets/pricing-page.css": "1670b6c9cbb49d5598c1d9685f6302bf1a54e082ccfaadb47d1d2c23eff28df8",
+    "app/src/main/assets/pricing-page.js": "4b5df69f4fbde5b87cc8c5c67de15df5b11ae83ceefa3f3fff849d1b16bd0608",
+    "app/src/main/assets/pricing.html": "4d5ac1222fc2aff00b0cce599e3c93fb6b889615a337c71f7e7729e533b5fb93",
     "app/src/main/assets/product-polish.css": "953d1ffc86f0d7e6b222776f243f3321adbe79760168fd319399e5698723d322",
     "app/src/main/assets/startup.css": "a67f2cb7fd448e5a2e1686b0baf3b5c3313dd3b0341a500ecf3d0c607442d476",
     "app/src/main/assets/studio.css": "552ee1da9334d6039be6b84fab1178811d1f997094b967dcc0ed49e498f44efd",
@@ -36,5 +36,6 @@
     "app/src/main/assets/v5.css": "f9324452a502f2662eec3ffc357186f0d45584addc275111d44cb22dae3e219b",
     "app/src/main/assets/video-uniquifier-reference.css": "f24c631243eb71b95be87a9865b5c7a2ff2e0b467d95cb79238321a6fedf229b",
     "app/src/main/assets/video-uniquifier-reference.js": "da9fd4b33cec60d0d3ab9132085a1124736e415c184bc8452041026387913d47"
-  }
+  },
+  "lastOwnerApprovedPricingUiChange": "https://github.com/mvryhan-web/video-variator-android/issues/233#issuecomment-6751199717"
 }
