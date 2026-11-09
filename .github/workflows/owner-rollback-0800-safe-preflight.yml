@@ -58,9 +58,13 @@ jobs:
           assert.equal(project.production_branch,'deepsyq-platform');
           const main=project.canonical_deployment;
           assert(main?.id,'Missing MAIN deployment');
-          const o=await get(root+'/deployments?per_page=100');
-          const all=Array.isArray(o)?o:[];
-          const test=all.find(d=>d.deployment_trigger?.metadata?.branch==='test' && d.environment==='preview');
+          const all=[];
+          for(let page=1;page<=4;page++){
+            const rows=await get(root+'/deployments?per_page=20&page='+page);
+            if(!Array.isArray(rows))throw Error('Unexpected Cloudflare deployment page');
+            all.push(...rows);
+          }
+          const test=all.find(d=>(d.aliases||[]).includes('https://test.deepsyq.pages.dev') && d.environment==='preview');
           console.log('MAIN_READONLY',JSON.stringify({deployment_id:main.id,uses_functions:main.uses_functions,branch:project.production_branch,script_name_present:!!project.production_script_name}));
           console.log('TEST_READONLY',JSON.stringify(test?{deployment_id:test.id,uses_functions:test.uses_functions,branch:test.deployment_trigger?.metadata?.branch,commit:test.deployment_trigger?.metadata?.commit_hash,environment:test.environment}:{found:false}));
           if(!test)throw Error('Canonical Cloudflare TEST deployment not verified in latest 100; do not overwrite');
