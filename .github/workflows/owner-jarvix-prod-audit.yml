@@ -1,0 +1,43 @@
+name: Owner JARVIX production overlay read-only safety audit
+on:
+  push:
+    branches: [owner-jarvix-prod-safe-release-20261109]
+    paths:
+      - scripts/owner-jarvix-production-overlay.mjs
+      - .github/workflows/owner-jarvix-prod-audit.yml
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Confirm script syntax
+        run: |
+          node --check scripts/owner-jarvix-production-overlay.mjs
+          node --check tests/jarvix-production-acceptance.mjs
+      - name: Read real production asset snapshot and overlay JARVIX changes only
+        run: node scripts/owner-jarvix-production-overlay.mjs
+      - name: Verify staged JavaScript syntax
+        run: |
+          node --check artifacts/jarvix-safe-dist/deepsyq-site-shell.js
+          node --check artifacts/jarvix-safe-dist/jarvix-chat.js
+          node --check artifacts/jarvix-safe-dist/jarvix-activity-drawer.js
+      - name: Save public asset preservation manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvix-public-production-snapshot
+          path: artifacts/jarvix-safe-audit/manifest.json
+          retention-days: 7
+          if-no-files-found: ignore
