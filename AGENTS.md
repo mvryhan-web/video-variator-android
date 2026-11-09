@@ -9,6 +9,8 @@
 - **Only these TWO links appear as current user-facing environments.** Cloudflare creates immutable `<hash>.deepsyq.pages.dev` addresses for every deployment, and old ones may remain visitable; they are technical historical artifacts, not current test sites. Do NOT claim old URLs were deleted. All old per-PR preview workflows need migration to the stable TEST lane before their next owner-facing publication.
 - Written rules alone do not revoke deploy tokens or enforce branch permissions; verify Cloudflare/GitHub protections separately before claiming technical exclusivity.
 
+**Verified Cloudflare API 2026-11-09 11:07 UTC (read-only):** `2fa7fbd4.deepsyq.pages.dev` is the CURRENT production deployment: `environment=production`, `branch=deepsyq-platform`, `trigger=ad_hoc`, `commit_dirty=true`, `uses_functions=true`, deployment commit metadata `3a45020a7f150d2dbce72b00b20f0de2743511fd` (not present as a retrievable GitHub repository commit). **This is NOT Antigravity TEST.** The inspection did not identify the human publisher. No exact `https://test.deepsyq.pages.dev` branch alias was found among the last 80 deployments; do NOT tell the owner that stable TEST is live until it has been deployed with the COMPLETE original Worker/Functions and verified. Audit: https://github.com/mvryhan-web/video-variator-android/actions/runs/42606643537 .
+
 ---
 
 ## OWNER D28 — 2026-11-09 — ASSEMBLED CAR / ONE REQUEST = ONE SURGICAL CHANGE
