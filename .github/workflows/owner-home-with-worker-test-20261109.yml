@@ -85,6 +85,16 @@ jobs:
           const test=list.find(d=>(d.aliases||[]).includes('https://test.deepsyq.pages.dev'));
           assert(test&&test.environment==='preview'&&test.deployment_trigger?.metadata?.branch==='test','Stable TEST alias absent or wrong environment');
           // Replacing an already dynamic TEST Worker without matching its source would be unsafe.
+          console.log('CURRENT_TEST_WORKER',JSON.stringify({id:test.id,created:test.created_on,commit:test.deployment_trigger?.metadata?.commit_hash,dirty:test.deployment_trigger?.metadata?.commit_dirty,uses_functions:test.uses_functions,preview_script:project.preview_script_name}));
+          try{
+            const script=project.preview_script_name;
+            if(script){
+              const workerRes=await fetch('https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID+'/workers/scripts/'+encodeURIComponent(script)+'/content/v2',{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(16000)});
+              const bytes=workerRes.ok?Buffer.from(await workerRes.arrayBuffer()):Buffer.alloc(0);
+              const src=bytes.toString('utf8');
+              console.log('TEST_WORKER_SOURCE_ACCESS',JSON.stringify({http:workerRes.status,bytes:bytes.length,hasHomeRoutes:src.includes('/api/inspiration')&&src.includes('/api/config'),hasJarvix:src.includes('/api/jarvix/chat')}));
+            }
+          }catch(err){console.log('TEST_WORKER_SOURCE_ACCESS_ERROR',String(err).slice(0,150));}
           assert(test.uses_functions!==true,'Existing TEST already has Functions; stop before replacing a live Worker');
           fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_DEPLOYMENT_BEFORE='+main.id+'\n');
           console.log('PREDEPLOY_ISOLATION_OK',JSON.stringify({candidate:current.slice(0,12),testBranch:'test',existingTestUsesFunctions:test.uses_functions,previewStripeConfigured:false}));
