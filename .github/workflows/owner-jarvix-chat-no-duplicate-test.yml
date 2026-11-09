@@ -1,0 +1,46 @@
+name: Owner JARVIX Chat one history - scoped no-spend browser QA
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - 'app/src/main/assets/deepsyq-site-shell.js'
+      - 'tests/jarvix-chat-single-history.browser.test.mjs'
+      - '.github/workflows/owner-jarvix-chat-no-duplicate-test.yml'
+permissions:
+  contents: read
+jobs:
+  single-chat-ui:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+      JARVIX_QUOTA_DATABASE_URL: ''
+      JARVIX_FREE_LLM_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: JavaScript syntax and no duplicate Chat mount
+        run: |
+          node --check app/src/main/assets/deepsyq-site-shell.js
+          node --check tests/jarvix-chat-single-history.browser.test.mjs
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const s=fs.readFileSync('app/src/main/assets/deepsyq-site-shell.js','utf8');
+          assert(s.includes("if (['generate-studio', 'generate-studio.html'].includes(path))"));
+          assert(!s.includes("['jarvix-chat', 'jarvix-chat.html', 'generate-studio'"));
+          JS
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Real desktop and mobile browser (no payments)
+        run: node --test tests/jarvix-chat-single-history.browser.test.mjs
