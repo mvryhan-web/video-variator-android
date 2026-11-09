@@ -72,7 +72,7 @@
       </div>
 
       <section class="card workspace">
-        <div class="sectionHead"><div><h3 data-i18n="newProject">New variation</h3><p data-i18n="newProjectSub">Choose one or more videos. Completed files are saved automatically.</p></div><span id="engineBadge" class="statusDot" data-i18n="engineStandby">Engine standby</span></div>
+        <div class="sectionHead"><div><h2 data-i18n="newProject" style="font-size:22px;margin:0 0 4px">Видео-уникализатор</h2><p data-i18n="newProjectSub">Choose one or more videos. Completed files are saved automatically.</p></div><span id="engineBadge" class="statusDot" data-i18n="engineStandby">Engine standby</span></div>
         <div class="pickerGrid singlePicker">
           <label class="picker">
             <input id="fileInput" type="file" accept="video/*" multiple hidden>
@@ -166,7 +166,29 @@
       </div>
       <section class="card privacyPanel"><h3>Privacy & security</h3><div class="privacyPoint"><i>✓</i><span>HTTPS is enforced for production web traffic.</span></div><div class="privacyPoint"><i>✓</i><span>Raw video processing stays on-device whenever supported.</span></div><div class="privacyPoint"><i>✓</i><span>Stripe handles card data; Video Uniquifier does not store card numbers.</span></div><div class="privacyPoint"><i>✓</i><span>Google and Apple identity tokens are verified on the server.</span></div></section>
     </section>
-  </main>
+  
+<section id="videoUniquifierGuide" class="card" style="margin-top:24px;padding:24px;line-height:1.6">
+  <h2 style="font-size:20px;margin-bottom:12px;color:#f1f5f9">О сервисе «Видео-уникализатор»</h2>
+  <p style="color:#cbd5e1;margin-bottom:12px">
+    <strong>Видео-уникализатор DeepSyQ</strong> — это интеллектуальный инструмент для авторов контента, арбитражников и маркетологов, позволяющий создавать уникальные цифровые копии видеороликов для публикации в TikTok, Instagram Reels, YouTube Shorts и других медиа-платформах.
+  </p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:16px">
+    <div style="background:rgba(255,255,255,0.04);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.08)">
+      <h3 style="font-size:15px;color:#38bdf8;margin-bottom:6px">⚡ Визуальная вариативность</h3>
+      <p style="font-size:13px;color:#94a3b8;margin:0">Тонкая цветокоррекция, микросдвиг кадров, метаданные и незаметные глазу корректировки для полной уникализации видеоряда.</p>
+    </div>
+    <div style="background:rgba(255,255,255,0.04);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.08)">
+      <h3 style="font-size:15px;color:#a855f7;margin-bottom:6px">🎵 Аудио-чистка и баланс</h3>
+      <p style="font-size:13px;color:#94a3b8;margin:0">Устранение фоновых артефактов, модификация аудиохэша без потери качества звука.</p>
+    </div>
+    <div style="background:rgba(255,255,255,0.04);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.08)">
+      <h3 style="font-size:15px;color:#10b981;margin-bottom:6px">🔒 100% приватность</h3>
+      <p style="font-size:13px;color:#94a3b8;margin:0">Локальная обработка на устройстве пользователя. Ваши исходные видеофайлы не сохраняются на сторонних серверах.</p>
+    </div>
+  </div>
+</section>
+
+</main>
 </div>
 
 <div id="authModal" class="modal" hidden>
