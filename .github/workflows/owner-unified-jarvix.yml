@@ -1,0 +1,99 @@
+name: Owner unified JARVIX current DEV four-page TEST publish
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/jarvix-activity-drawer.js'
+      - 'app/src/main/assets/jarvix-chat.js'
+      - 'app/src/main/assets/jarvix-chat.css'
+      - 'app/src/main/assets/deepsyq-site-shell.js'
+      - 'tests/jarvix-activity-drawer.browser.test.mjs'
+      - 'tests/jarvix-activity-preview-smoke.mjs'
+      - '.github/workflows/owner-unified-jarvix.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recent-history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      PRODUCT_WATCHER_ENABLED: 'false'
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install project dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install Chromium for isolated browser acceptance
+        run: npx playwright install --with-deps chromium
+      - name: Verify JARVIX and Studio history drawer with no paid requests
+        run: node --test tests/jarvix-activity-drawer.browser.test.mjs
+      - name: Publish verified JARVIX drawer only to isolated Cloudflare TEST branch
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 645 && github.head_ref == 'owner-unified-jarvix-main-integration-20261108' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+          PREVIEW_BRANCH: owner-unified-jarvix-main-integration-20261108
+        run: |
+          set -euo pipefail
+          if [ -z "${CLOUDFLARE_API_TOKEN}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID}" ]; then
+            echo '::error::Cloudflare credentials not available to GitHub Actions. No deployment attempted. Configure repo Actions secret CLOUDFLARE_API_TOKEN and secret or variable CLOUDFLARE_ACCOUNT_ID; never share the token in chat.'
+            exit 1
+          fi
+          curl --fail --silent --show-error -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/deepsyq" \
+            > /tmp/deepsyq-pages-project.json
+          node --input-type=module -e 'import fs from "node:fs";const p=JSON.parse(fs.readFileSync("/tmp/deepsyq-pages-project.json","utf8"));const b=p.result?.production_branch;if(p.success!==true||!b||b===process.env.PREVIEW_BRANCH){console.error("Cloudflare production branch could not be safely excluded. Aborting.");process.exit(1)}console.log("Verified Cloudflare Pages production branch differs from this isolated preview branch.")'
+          node --input-type=module -e 'import fs from "node:fs";const p=JSON.parse(fs.readFileSync("/tmp/deepsyq-pages-project.json","utf8"));const d=p.result?.canonical_deployment;const latest=p.result?.latest_deployment;console.log("CLOUDFLARE_RELEASE_AUDIT",JSON.stringify({project:p.result?.name,production_branch:p.result?.production_branch,production_deployment:{id:d?.id,branch:d?.deployment_trigger?.metadata?.branch,commit:d?.deployment_trigger?.metadata?.commit_hash},latest_deployment:{id:latest?.id,branch:latest?.deployment_trigger?.metadata?.branch,commit:latest?.deployment_trigger?.metadata?.commit_hash}}))'
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq \
+            --branch="${PREVIEW_BRANCH}" \
+            --commit-hash="${{ github.sha }}" | tee /tmp/jarvix-pages-deploy.log
+          DEPLOY_URL=$(grep -Eo 'https://[a-z0-9-]+\.deepsyq\.pages\.dev' /tmp/jarvix-pages-deploy.log | head -n1)
+          if [[ ! "$DEPLOY_URL" =~ ^https://[a-z0-9-]+\.deepsyq\.pages\.dev$ ]]; then echo '::error::Cannot confirm isolated Cloudflare URL'; exit 1; fi
+          echo "JARVIX_TEST_PREVIEW_URL=${DEPLOY_URL}" >> "$GITHUB_ENV"
+          echo 'Deployment requested for isolated branch preview only; MAIN was not targeted.'
+      - name: Verify real deployed Cloudflare TEST pages in desktop and mobile Chromium
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 645 && github.head_ref == 'owner-unified-jarvix-main-integration-20261108' && github.event.pull_request.head.repo.full_name == github.repository
+        run: node tests/jarvix-activity-preview-smoke.mjs
+      - name: Read-only compare working domain against reviewed TEST assets
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 645 && github.head_ref == 'owner-unified-jarvix-main-integration-20261108' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          JARVIX_WORKING_URL: https://deepsyq.app
+        run: |
+          node --input-type=module <<'JAVASCRIPT'
+          import {createHash} from 'node:crypto';
+          const files=['deepsyq-site-shell.js','jarvix-activity-drawer.js','jarvix-chat.css','jarvix-chat.js','jarvix-chat.html','generate-studio.html','generate-studio.js','deepsyq.html','pricing.html','pricing-page.js','jarvis-core.js','studio-classic-theme.css','deepsyq-logo.png'];
+          const origins=[process.env.JARVIX_WORKING_URL,process.env.JARVIX_TEST_PREVIEW_URL];
+          if(!/^https:\/\/[a-z0-9-]+\.deepsyq\.pages\.dev$/.test(origins[1]||''))throw Error('No isolated TEST URL');
+          let unrelated=0;for(const path of files){
+            const data=await Promise.all(origins.map(async origin=>{
+              try{const res=await fetch(origin+'/'+path,{signal:AbortSignal.timeout(8000),redirect:'follow'});const bytes=Buffer.from(await res.arrayBuffer());
+                return{status:res.status,sha:createHash('sha256').update(bytes).digest('hex').slice(0,12),size:bytes.length,contentType:res.headers.get('content-type')};
+              }catch(error){return{error:String(error)}}
+            }));
+            const same=data[0]?.sha&&data[0].sha===data[1]?.sha;
+            const expected=['deepsyq-site-shell.js','jarvix-activity-drawer.js','jarvix-chat.css','jarvix-chat.js','jarvix-chat.html'].includes(path);
+            if(!same&&!expected)unrelated++;
+            console.log('PRODUCTION_READONLY_DIFF',JSON.stringify({file:path,identical:!!same,expected,working:data[0],preview:data[1]}));
+          }
+          console.log('PRODUCTION_READONLY_SUMMARY',{unrelatedChanges:unrelated,published:false});
+          JAVASCRIPT
+      - name: Keep actual Cloudflare TEST screenshots for owner review
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.number == 645 && github.head_ref == 'owner-unified-jarvix-main-integration-20261108'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvix-cloudflare-real-desktop-mobile
+          path: artifacts/jarvix-live-preview/*.png
+          if-no-files-found: ignore
+          retention-days: 7

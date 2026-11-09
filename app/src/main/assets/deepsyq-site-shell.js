@@ -315,6 +315,11 @@
   document.body.classList.add('deepsyq-sitewide-shell');
   document.body.prepend(scrim, toggle, sidebar);
 
+  // One shared JARVIX recent drawer for Chat/Image/Video/Audio; no duplicate chat.
+  if (['jarvix-chat', 'jarvix-chat.html', 'generate-studio', 'generate-studio.html'].includes(path)) {
+    import('./jarvix-activity-drawer.js').catch(error => console.warn('JARVIX activity unavailable:', error?.message));
+  }
+
   // Dynamic live re-translation listener
   const refreshLanguage = () => {
     const dict = t();
