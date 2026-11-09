@@ -15,7 +15,7 @@ export function openWorkspace(url, title = 'Everyday Tool') {
     'audio-studio.html': 'Audio Studio',
     'canvas.html': 'Canvas'
   };
-  frame.src = url;
+  if (frame.getAttribute('src') !== url) frame.src = url;
   if (headTitle) headTitle.textContent = titleMap[url] || title;
   if (popout) popout.href = url;
   pane.hidden = false;
@@ -147,6 +147,54 @@ window.addEventListener('jarvis:limit-reached', async (e) => {
   await save();
   render();
 });
+
+// One JARVIX conversation: Image, Video and Audio are native Studio tools inside the chat.
+const creationModes=Object.freeze({image:'Image',video:'Video',audio:'Audio'});
+function switchJarvixMode(requested,{updateUrl=true}={}){
+ const mode=Object.hasOwn(creationModes,requested)?requested:'auto';
+ try{sessionStorage.setItem('jarvix_composer_mode',mode);}catch{}
+ const header=document.querySelector('.j-chat-toolbar h1');
+ if(header)header.textContent=mode==='auto'?'JARVIX Chat':'JARVIX '+creationModes[mode];
+ if(mode==='auto'){
+  const pane=$('jWorkspacePane'),frame=$('jWorkspaceFrame');
+  if(pane)pane.hidden=true;
+  if(frame)frame.src='about:blank';
+  document.body.classList.remove('has-chat-workspace','jarvix-creation-mode');
+ }else{
+  openWorkspace('generate-studio.html?studio='+encodeURIComponent(mode)+'&jarvix_embedded=1','JARVIX '+creationModes[mode]);
+  document.body.classList.add('jarvix-creation-mode');
+ }
+ for(const link of document.querySelectorAll('#dsSiteSidebar a[href*="jarvix-chat.html"]')){
+   const href=new URL(link.href,location.href);
+   const current=(href.searchParams.get('mode')||'auto')===mode;
+   if(current)link.setAttribute('aria-current','page');
+   else link.removeAttribute('aria-current');
+ }
+ document.querySelector('#jChatForm')?.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode},bubbles:true}));
+ if(updateUrl){
+  const url=new URL(location.href);
+  if(mode==='auto')url.searchParams.delete('mode');else url.searchParams.set('mode',mode);
+  history.replaceState(null,'',url.pathname+url.search+url.hash);
+ }
+ window.dispatchEvent(new CustomEvent('jarvix:unified-mode',{detail:{mode}}));
+ return mode;
+}
+document.addEventListener('click',event=>{
+ const link=event.target.closest?.('a[href]');
+ if(!link||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.altKey||event.shiftKey)return;
+ const url=new URL(link.href,location.href);
+ if(url.pathname!==location.pathname||url.searchParams.has('new')||url.searchParams.has('tool'))return;
+ if(url.searchParams.has('mode')&&!Object.hasOwn(creationModes,url.searchParams.get('mode')))return;
+ event.preventDefault();
+ switchJarvixMode(url.searchParams.get('mode')||'auto');
+},true);
+$('jChatForm').addEventListener('jarvix:mode',event=>{
+ if(event.detail?.mode && Object.hasOwn(creationModes,event.detail.mode) &&
+    !document.body.classList.contains('jarvix-creation-mode'))switchJarvixMode(event.detail.mode);
+});
+// Restore original conversation independently from tool/mode selection on any reload.
+switchJarvixMode(new URLSearchParams(location.search).get('mode')||'auto',{updateUrl:false});
+window.addEventListener('popstate',()=>switchJarvixMode(new URLSearchParams(location.search).get('mode')||'auto',{updateUrl:false}));
 
 // Auto-open tool if specified in URL query
 try {
