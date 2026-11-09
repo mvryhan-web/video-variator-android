@@ -2,8 +2,8 @@
 # Root is the DEEPSYQ workspace; keep the browser URL at /.
 / /deepsyq.html 200
 
-# The legacy index is Video Uniquifier, NOT the site's homepage.
-/index.html /video-uniquifier.html 302
+# The physical index.html now contains DEEPSYQ Home; explicit /index.html is its alias.
+/index.html / 301
 
 # Preserve old bookmarks without creating duplicate public pages.
 /dashboard /deepsyq.html 302

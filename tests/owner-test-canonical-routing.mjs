@@ -16,13 +16,14 @@ const map = new Map(routes.map(line => {
 
 test('TEST entry points are unambiguous', () => {
   assert.deepEqual(map.get('/'), { destination: '/deepsyq.html', code: 200 });
-  assert.deepEqual(map.get('/index.html'), { destination: '/video-uniquifier.html', code: 302 });
+  assert.deepEqual(map.get('/index.html'), { destination: '/', code: 301 });
   assert.deepEqual(map.get('/ai-agents'), { destination: '/jarvix-chat.html', code: 302 });
   assert.deepEqual(map.get('/dashboard'), { destination: '/deepsyq.html', code: 302 });
   assert.ok(!map.has('/jarvix-chat.'), 'Unknown dotted route must not redirect to another tool');
   assert.ok(routes.every(line => !/^\/\*/.test(line)), 'Do not add an index.html wildcard fallback');
   assert.match(file('404.html'), /<title>Page not found/i);
   assert.match(file('deepsyq.html'), /<title>Deepsyq/);
+  assert.equal(file('index.html'), file('deepsyq.html'), 'The physical index must serve DEEPSYQ Home, not Video Uniquifier');
   assert.match(file('jarvix-chat.html'), /<title>JARVIS Chat/);
   assert.match(file('video-uniquifier.html'), /<title>Video Uniquifier/);
 });
@@ -32,6 +33,7 @@ test('approved home navigation links directly to the right pages', () => {
   assert.match(home, /href="jarvix-chat.html"[^>]*aria-label="JARVIX"/);
   assert.doesNotMatch(home, /href="ai-agents.html"[^>]*aria-label="JARVIX"/);
   assert.match(home, /href="video-uniquifier.html"[^>]*aria-label="Video Uniquifier"/);
+  assert.match(home, /class="unique-tool" href="video-uniquifier.html"/);
   const shell = file('deepsyq-site-shell.js');
   assert.match(shell, /url:'video-uniquifier.html', key: 'legacy'/);
   for (const mode of ['image', 'video', 'audio']) {
@@ -44,6 +46,8 @@ test('all 33 HTML documents refer only to existing local files', () => {
   assert.equal(pages.length, 33);
   for (const page of pages) {
     const source = file(page);
+    assert.match(source, /<title[^>]*>[^<]+<\/title>/i, 'Missing title for ' + page);
+    assert.doesNotMatch(source, /href=["']index\.html(?:["'#?])/i, 'Old video tool index link in ' + page);
     const links = source.matchAll(/(?:href|action)\s*=\s*(["'])(.*?)\1/gi);
     for (const [, , href] of links) {
       if (!href || /^(?:#|https?:|mailto:|tel:|javascript:|data:|blob:|\/\/)/i.test(href)) continue;
