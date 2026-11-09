@@ -257,7 +257,7 @@ test('AI Apps Inspiration reuses Home gallery: filters videos and copies the rea
  await page.route('**/api/templates',route=>route.fulfill({json:{items:templates}}));
  await page.route('**/api/inspiration?**',route=>route.fulfill({json:{items:examples,pagination:{hasMore:false}}}));
  let paid=0;
- page.on('request',r=>{if(r.method()==='POST'&&/\\/api\\/(?:studio\\/jobs|billing|ai-billing)/.test(new URL(r.url()).pathname))paid++;});
+ page.on('request',r=>{const path=new URL(r.url()).pathname;if(r.method()==='POST'&&['/api/studio/jobs','/api/billing','/api/ai-billing'].some(prefix=>path.startsWith(prefix)))paid++;});
  await page.setViewportSize({width:390,height:844});
  await page.goto('/ai-apps.html');
  await expect(page.locator('#inspirationPreview')).toBeVisible();
