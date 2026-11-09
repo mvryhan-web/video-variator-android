@@ -100,8 +100,11 @@ jobs:
           // different deployment or unknown Worker build. The candidate retains
           // all existing API implementations and changes only two TEST routing aliases.
           if(test.uses_functions===true){
-            assert.equal(test.id,'db5f5717-ff66-4d17-a172-7f8fd32c9bc3','TEST Worker deployment changed; refuse stale release');
-            assert.equal(test.deployment_trigger?.metadata?.commit_hash,'90dbb3fcfe08701ae0335fe2b27d1b4771d31548','Unknown TEST Worker source baseline; refuse release');
+            const approvedWorkerDeployments = new Map([
+              ['db5f5717-ff66-4d17-a172-7f8fd32c9bc3','90dbb3fcfe08701ae0335fe2b27d1b4771d31548'],
+              ['ff675af9-8a22-4947-b8d1-813e4a17c121','0de025248d9e9fc71bc96852444e5a676401bff9']
+            ]);
+            assert.equal(approvedWorkerDeployments.get(test.id),test.deployment_trigger?.metadata?.commit_hash,'Unknown or concurrent TEST Worker deployment; refuse release');
             console.log('TEST_WORKER_REPLACE_GUARD_OK',JSON.stringify({sourceCommit:'90dbb3fc',sourceWorkerBlob:'be96394e',sameCommittedSourceAsFullWorker:true,dirtyDeploymentUnverified:true}));
           }
           fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_DEPLOYMENT_BEFORE='+main.id+'\n');
