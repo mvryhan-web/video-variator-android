@@ -1,3 +1,4 @@
+import {openHomeStudioSettings} from './home-studio-settings.js';
 import {stopJarvixGuidedTour} from './jarvix-guided-tour.js';
 import {makeId,conversationStore} from './jarvix-conversations.js';
 import {bindComposer,trackViewport} from './jarvix-composer.js';
@@ -17,6 +18,15 @@ if(form?.hasAttribute('data-jarvix-chat')){
    await store.save(conversation);sessionStorage.setItem('jarvix_active_conversation',conversation.id);location.assign('jarvix-chat.html');
   }catch(e){status.textContent=e.message;busy=false;button.disabled=false;}
  }});
+ 
+const gearBtn = document.getElementById('studioSettingsBtn');
+if (gearBtn) {
+  gearBtn.onclick = (e) => {
+    e.preventDefault();
+    openHomeStudioSettings({gear: gearBtn, mode: 'image'});
+  };
+}
+
  trackViewport(document.getElementById('homeQuickBar'));
  window.addEventListener('storage',e=>{if(e.key==='vv_token'){composer.clear();composer.stop();status.textContent='Account changed. Reload before sending.';}});
 }

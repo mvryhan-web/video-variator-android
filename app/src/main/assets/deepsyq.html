@@ -88,7 +88,74 @@
 </script>
 <link rel="stylesheet" href="deepsyq-mobile-shell.css">
 <script type="module" blocking="render" src="deepsyq-mobile-shell.js"></script>
-<link rel="stylesheet" href="jarvix-chat.css"><link rel="stylesheet" href="deepsyq-home-neon-cinema-fix-20261107.css?v=20261107-edge-clear1"><script type="module" src="jarvix-home-chat.js"></script></head>
+<link rel="stylesheet" href="jarvix-chat.css?v=20261109-gold4"><link rel="stylesheet" href="deepsyq-home-neon-cinema-fix-20261107.css?v=20261107-edge-clear1"><script type="module" src="jarvix-home-chat.js?v=20261109-gold4"></script>
+<style id="homeGoldenComposer">
+/* OWNER-DIRECTIVE: GOLDEN COMPOSER BORDER & GLOW AROUND INPUT PANEL */
+#homeQuickBar #homeQuickForm,
+#homeQuickBar .jarvix-compose,
+#homeQuickForm[data-jarvix-chat],
+:where(#homeQuickForm).j-neon-composer {
+  box-sizing: border-box !important;
+  border: 2px solid transparent !important;
+  border-radius: 999px !important;
+  background: linear-gradient(120deg, #0b0f1cf8, #050814fa) padding-box,
+              linear-gradient(115deg, #d99436, #ffbf52 43%, #dd872a 70%, #e7aa54) border-box !important;
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.45), 0 0 28px rgba(255, 191, 82, 0.3), 0 8px 32px rgba(0, 0, 0, 0.8), inset 0 0 18px rgba(217, 119, 6, 0.2) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+#homeQuickBar #homeQuickForm:is(:hover, :focus-within),
+#homeQuickBar .jarvix-compose:is(:hover, :focus-within),
+#homeQuickForm[data-jarvix-chat]:is(:hover, :focus-within),
+:where(#homeQuickForm).j-neon-composer:is(:hover, :focus-within) {
+  border: 2px solid transparent !important;
+  background: linear-gradient(120deg, #10162af8, #080c1dfa) padding-box,
+              linear-gradient(115deg, #f59e0b, #fbbf24 43%, #d97706 70%, #fcd34d) border-box !important;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.75), 0 0 38px rgba(255, 191, 82, 0.5), 0 8px 36px rgba(0, 0, 0, 0.85), inset 0 0 24px rgba(245, 158, 11, 0.35) !important;
+}
+
+#homeQuickBar textarea#homeQuickPrompt {
+  color: #fef08a !important;
+}
+
+#homeQuickBar textarea#homeQuickPrompt::placeholder {
+  color: rgba(254, 240, 138, 0.65) !important;
+}
+
+#homeQuickBar #jPlus {
+  border-color: rgba(245, 158, 11, 0.7) !important;
+  background: radial-gradient(circle at 50% 45%, #2d2315 0%, #1a1409 58%, #0e0903 100%) !important;
+  box-shadow: 0 0 0 1.5px rgba(255, 191, 82, 0.35), 0 0 14px rgba(245, 158, 11, 0.7), inset 0 0 8px rgba(245, 158, 11, 0.4) !important;
+  color: #ffbf52 !important;
+  text-shadow: 0 0 6px #fef08a !important;
+}
+
+#homeQuickBar #homeQuickSubmit,
+#homeQuickBar .j-send {
+  color: #ffbf52 !important;
+}
+
+#homeQuickBar #homeQuickSubmit .j-send-plane,
+#homeQuickBar .j-send .j-send-plane {
+  stroke: #ffbf52 !important;
+  filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.8)) !important;
+}
+
+#homeQuickBar #jMic,
+#homeQuickBar .j-settings-shortcut,
+#homeQuickBar #studioSettingsBtn {
+  color: #f59e0b !important;
+}
+
+#homeQuickBar .j-settings-shortcut:hover,
+#homeQuickBar #studioSettingsBtn:hover,
+#homeQuickBar #jMic:hover {
+  background: rgba(245, 158, 11, 0.18) !important;
+  color: #fef08a !important;
+}
+</style>
+
+</head>
 <body class="home-neon"><a class="skip" href="#workspace">Skip to workspace</a>
 <aside id="sidebar" aria-label="Deepsyq navigation"><div class="sidebar-head"><a class="brand" href="deepsyq.html" aria-label="Deepsyq Home"><span class="mark"><img src="deepsyq-logo.png" alt="" width="35" height="35" decoding="async"></span><span class="brand-name">Deepsyq</span></a></div>
 <nav aria-label="Main navigation">

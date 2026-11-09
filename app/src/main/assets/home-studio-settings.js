@@ -75,8 +75,7 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   if(!host.isConnected)return;
   let doc;
   try{
-   if(frame.contentWindow.location.origin!==location.origin||
-      !frame.contentWindow.location.pathname.includes('generate-studio'))return close();
+   if(frame.contentWindow.location.origin!==location.origin)return close();
    doc=frame.contentDocument;
   }catch{return close();}
    let hub=doc?.getElementById('studioSettingsHub');
