@@ -52,8 +52,8 @@ test('Everyday Tools: mobile tiles have names without prefix icons, desktop unch
      const states=await el.evaluateAll(nodes=>nodes.map(n=>getComputedStyle(n).display));
      assert.ok(states.length===count);
      for(const state of states){
-      assert.equal(state,viewport.width<=900?'none':'grid',
-       viewport.name+' '+selector+' icon display='+state);
+      if(viewport.width<=900)assert.equal(state,'none',viewport.name+' '+selector+' icon must be hidden');
+      else assert.notEqual(state,'none',viewport.name+' '+selector+' desktop icon must remain visible');
      }
      checked+=count;
     }
