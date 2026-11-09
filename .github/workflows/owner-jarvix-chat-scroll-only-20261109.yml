@@ -4,6 +4,7 @@ on:
     branches: [deepsyq-platform]
     paths:
       - 'app/src/main/assets/jarvix-chat.css'
+      - 'app/src/main/assets/jarvix-chat.js'
       - 'tests/jarvix-chat-scroll-boundary.browser.test.mjs'
       - '.github/workflows/owner-jarvix-chat-scroll-only-20261109.yml'
 permissions:
@@ -33,6 +34,7 @@ jobs:
           cache: npm
       - name: Verify only JARVIX Chat CSS was modified in runtime
         run: |
+          node --check app/src/main/assets/jarvix-chat.js
           node --check tests/jarvix-chat-scroll-boundary.browser.test.mjs
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
