@@ -1,0 +1,89 @@
+name: Owner mobile Pricing mid-card carousel browser QA no spend
+on:
+  push:
+    branches: [owner-pricing-midcard-qa-20261109]
+    paths: ['.github/workflows/owner-pricing-midcard-qa-20261109.yml']
+permissions: {contents: read}
+jobs:
+  pricing-visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: |
+          node --check app/src/main/assets/pricing-page.js
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Start isolated local static app (no live payments)
+        run: |
+          python3 -m http.server 4321 --bind 127.0.0.1 --directory app/src/main/assets >/tmp/pricing-server.log 2>&1 &
+          for i in $(seq 1 20); do if curl -fsS http://127.0.0.1:4321/pricing.html -o /dev/null; then exit 0; fi; sleep .5; done
+          exit 1
+      - name: Check 320 / 390 / 650 px phones and 1360 px desktop, mid-card arrows, 5/5, no checkout
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          const files=[];
+          try{
+            for(const [label,width,height] of [
+              ['phone-320',320,760],['phone-390',390,844],['phone-650',650,850],['desktop',1360,900]
+            ]){
+              const mobile=width<=700;
+              const ctx=await browser.newContext({viewport:{width,height},isMobile:mobile,hasTouch:mobile});
+              const page=await ctx.newPage();
+              const paid=[];
+              page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:billing|ai-billing|stripe|checkout)/i.test(r.url()))paid.push(r.url())});
+              try{
+                const res=await page.goto('http://127.0.0.1:4321/pricing.html',{waitUntil:'domcontentloaded',timeout:40000});
+                assert.equal(res?.status(),200,label+' page');
+                const cards=page.locator('#planCards .price-plan');
+                await cards.first().waitFor({state:'visible',timeout:20000});
+                assert.equal(await cards.count(),5,label+' number of plans');
+                assert.equal(await page.locator('#plansHeading').count(),0,label+' old heading removed');
+                assert.equal(await page.locator('#priceBillingPromo').count(),0,label+' tiny promo removed');
+                const track=page.locator('#planCards');
+                const display=await track.evaluate(e=>getComputedStyle(e).display);
+                const creditCards=await page.locator('#creditCards .price-credit-card').count();
+                assert.equal(creditCards,5,label+' credit packs preserved');
+                if(mobile){
+                  assert.equal(display,'flex',label+' mobile carousel');
+                  assert(await page.locator('#pricePlanPrev').isVisible(),label+' prev arrow visible');
+                  assert(await page.locator('#pricePlanNext').isVisible(),label+' next arrow visible');
+                  assert.equal((await page.locator('#pricePlanPosition').textContent()).trim(),'1 / 5');
+                  const centers=await page.evaluate(()=>{
+                    const track=document.querySelector('#planCards').getBoundingClientRect();
+                    const a=document.querySelector('#pricePlanPrev').getBoundingClientRect();
+                    const b=document.querySelector('#pricePlanNext').getBoundingClientRect();
+                    const pill=document.querySelector('#pricePlanPosition').getBoundingClientRect();
+                    return {trackX:track.x,trackWidth:track.width,cardCenterY:track.y+track.height/2,
+                      leftCenterY:a.y+a.height/2,rightCenterY:b.y+b.height/2,
+                      leftX:a.x,rightEnd:b.right,pillTop:pill.top,trackBottom:track.bottom};
+                  });
+                  assert(Math.abs(centers.leftCenterY-centers.cardCenterY)<38,label+' left arrow not at middle');
+                  assert(Math.abs(centers.rightCenterY-centers.cardCenterY)<38,label+' right arrow not at middle');
+                  assert(centers.leftX<centers.trackX+50&&centers.rightEnd>centers.trackX+centers.trackWidth-50,label+' arrows not at sides');
+                  assert(centers.pillTop>=centers.trackBottom-10,label+' 1/5 indicator not below card');
+                  await page.locator('#pricePlanNext').click();
+                  await page.waitForFunction(()=>document.querySelector('#pricePlanPosition').textContent.includes('2 / 5'),null,{timeout:10000});
+                  await page.locator('#priceBillingYearly').click();
+                  await page.waitForFunction(()=>document.querySelector('#pricePlanPosition').textContent.includes('2 / 5'),null,{timeout:10000});
+                  await page.locator('#priceBillingMonthly').click();
+                  await page.waitForFunction(()=>document.querySelector('#pricePlanPosition').textContent.includes('2 / 5'),null,{timeout:10000});
+                  await track.evaluate(el=>el.scrollTo({left:el.scrollWidth,behavior:'instant'}));
+                  await page.waitForFunction(()=>document.querySelector('#pricePlanPosition').textContent.includes('5 / 5'),null,{timeout:10000});
+                  assert.equal(await page.locator('#pricePlanNext').isDisabled(),true,label+' next disabled at end');
+                }else{
+                  assert.equal(display,'grid','desktop original 5-col grid');
+                  assert.equal(await page.locator('#pricePlanPrev').isVisible(),false,'desktop no arrow');
+                }
+                assert.deepEqual(paid,[],label+' no checkout requests');
+                console.log('PRICING_MIDCARD_BROWSER_PASS',label,JSON.stringify({display,plans:5,creditPacks:creditCards}));
+              }finally{await ctx.close()}
+            }
+          }finally{await browser.close()}
+          JS
