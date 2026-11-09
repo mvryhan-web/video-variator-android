@@ -1,0 +1,107 @@
+name: Canvas Basic Local QA - D29 TEST release gated
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'app/src/main/assets/canvas.html'
+      - 'app/src/main/assets/canvas-workspace.js'
+      - 'app/src/main/assets/canvas-workspace.css'
+      - '.github/workflows/owner-canvas-basic-preview.yml'
+permissions:
+  contents: read
+jobs:
+  preview:
+    if: github.head_ref == 'owner-canvas-basic-workspace-20261109'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      AI_BILLING_MODE: test
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Scope and syntax
+        run: |
+          set -euo pipefail
+          git fetch origin deepsyq-platform
+          git merge-base --is-ancestor FETCH_HEAD HEAD
+          git diff --name-only FETCH_HEAD HEAD > /tmp/canvas-files
+          while IFS= read -r f; do
+            case "$f" in
+              app/src/main/assets/canvas.html|app/src/main/assets/canvas-workspace.js|app/src/main/assets/canvas-workspace.css|.github/workflows/owner-canvas-basic-preview.yml) ;;
+              *) echo "::error::Unexpected path $f"; exit 1;;
+            esac
+          done < /tmp/canvas-files
+          node --check app/src/main/assets/canvas-workspace.js
+      - name: Install test browser
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Local Canvas browser QA only; D29 TEST deploy is gated on full Worker bundle
+        run: |
+          set -euo pipefail
+          python3 -m http.server 3019 --bind 127.0.0.1 --directory app/src/main/assets >/tmp/canvas-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID' EXIT
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -fsS http://127.0.0.1:3019/canvas.html >/dev/null; then break; fi
+            sleep 1
+          done
+          export TEST_URL=http://127.0.0.1:3019
+          mkdir -p artifacts/canvas
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try {
+            for(const [name,width,mobile] of [['desktop',1365,false],['mobile390',390,true],['mobile320',320,true]]) {
+              const ctx=await browser.newContext({viewport:{width,height:900},isMobile:mobile,hasTouch:mobile});
+              try {
+                const page=await ctx.newPage();
+                const response=await page.goto(process.env.TEST_URL+'/canvas.html',{waitUntil:'domcontentloaded',timeout:30000});
+                assert.equal(response?.status(),200);
+                await page.locator('#cwNodes .cw-node').first().waitFor({timeout:20000});
+                assert.equal(await page.locator('#cwNodes .cw-node').count(),1);
+                await page.locator('#cwNodes textarea').fill('Emerald ceramic vase on a wooden table');
+                await page.locator('[data-cw-add="image"]').click();
+                assert.equal(await page.locator('#cwNodes .cw-node').count(),2);
+                await page.locator('#cwNodes .cw-node').nth(1).getByRole('button',{name:'Link'}).click();
+                await page.locator('#cwNodes .cw-node').first().locator('.cw-node-handle').click();
+                assert.equal(await page.locator('#cwEdges path').count(),1);
+                await page.locator('#cwZoomIn').click();
+                assert.equal(await page.locator('#cwZoomLabel').innerText(),'115%');
+                page.once('dialog',d=>d.accept('Canvas '+name));
+                await page.locator('#cwSave').click();
+                await page.getByText('Project saved in this browser.').waitFor({timeout:10000});
+                await page.reload({waitUntil:'domcontentloaded'});
+                await page.locator('#cwNodes .cw-node').nth(1).waitFor({timeout:20000});
+                assert.equal(await page.locator('#cwNodes textarea').inputValue(),'Emerald ceramic vase on a wooden table');
+                assert.equal(await page.locator('#cwEdges path').count(),1);
+                await page.locator('#cwOpen').click();
+                await page.locator('#cwProjectsDialog').waitFor({state:'visible'});
+                assert.equal(await page.locator('#cwProjectList button').count(),1);
+                await page.locator('#cwProjectsClose').click();
+                await page.locator('#cwGenerate').click();
+                await page.locator('#cwStudioOverlay').waitFor({state:'visible',timeout:20000});
+                assert.match(await page.locator('#cwStudioFrame').getAttribute('src'),/generate-studio.html/);
+                await page.screenshot({path:'artifacts/canvas/'+name+'.png',fullPage:true});
+                console.log('PASS '+name+' add, connect, zoom, save, restore, Studio overlay');
+              } finally {await ctx.close();}
+            }
+          } finally {await browser.close();}
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canvas-basic-test-screens
+          path: artifacts/canvas/*.png
+          if-no-files-found: ignore
+          retention-days: 7

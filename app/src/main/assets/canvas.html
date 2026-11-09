@@ -3,8 +3,8 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Canvas · Deepsyq</title><meta name="description" content="DeepSyQ Infinite Canvas: interactive spatial workspace for visual prompt design, multi-model generation, and generative multimedia storytelling.">
 <meta name="robots" content="noindex,follow"><meta name="theme-color" content="#080d1d">
-<link rel="stylesheet" href="deepsyq.css"><link rel="stylesheet" href="deepsyq-global-theme.css"><link rel="stylesheet" href="canvas-page.css"><link rel="stylesheet" href="jarvis-core.css?v=5.0">
-<script defer src="deepsyq-site-shell.js?v=5.0"></script><script type="module" src="canvas-editor.js"></script><script type="module" src="jarvis-core.js"></script>
+<link rel="stylesheet" href="deepsyq.css"><link rel="stylesheet" href="deepsyq-global-theme.css"><link rel="stylesheet" href="canvas-page.css"><link rel="stylesheet" href="canvas-workspace.css"><link rel="stylesheet" href="jarvis-core.css?v=5.0">
+<script defer src="deepsyq-site-shell.js?v=5.0"></script><script type="module" src="canvas-editor.js"></script><script type="module" src="canvas-workspace.js"></script><script type="module" src="jarvis-core.js"></script>
 <link rel="canonical" href="https://deepsyq.app/canvas.html">
 <meta property="og:url" content="https://deepsyq.app/canvas.html">
 <meta property="og:site_name" content="DeepSyQ">
@@ -19,6 +19,54 @@
   <div class="top-actions"><a href="generate-studio.html?studio=image" class="top-link">Image Studio</a><a href="pricing.html" class="top-link">Pricing</a></div>
 </header>
 <main id="canvasPageMain">
+<section id="canvasWorkspace" class="canvas-workspace" aria-labelledby="cwTitle">
+  <div class="cw-head">
+    <div><p class="caption">YOUR CREATIVE WORKSPACE</p><h2 id="cwTitle">Canvas workspace</h2><p>Arrange ideas, photos and videos on one canvas. Connect blocks, keep your projects and generate using the existing DEEPSYQ Studio.</p></div>
+    <span id="cwProjectName">Untitled project</span>
+  </div>
+  <div class="cw-toolbar" role="toolbar" aria-label="Canvas tools">
+    <button type="button" data-cw-add="prompt">+ Prompt</button>
+    <button type="button" data-cw-add="image">+ Image</button>
+    <button type="button" data-cw-add="video">+ Video</button>
+    <button type="button" data-cw-add="audio">+ Audio</button>
+    <button type="button" id="cwUpload">Upload photo</button>
+    <span class="cw-space" aria-hidden="true"></span>
+    <button type="button" id="cwConnect">Connect</button>
+    <button type="button" id="cwDelete">Remove block</button>
+    <button type="button" class="cw-primary" id="cwGenerate">Generate in Canvas ↗</button>
+    <span class="cw-space" aria-hidden="true"></span>
+    <button type="button" id="cwNew">New</button>
+    <button type="button" id="cwOpen">Open</button>
+    <button type="button" id="cwSave" class="cw-primary">Save project</button>
+  </div>
+  <div class="cw-stage">
+    <div id="cwViewport" class="cw-viewport" tabindex="0" aria-label="Canvas: drag empty space to pan, drag block headers to move, select blocks to connect">
+      <div id="cwWorld" class="cw-world">
+        <svg id="cwEdges" class="cw-edges" viewBox="0 0 3000 2200" aria-hidden="true"></svg>
+        <div id="cwNodes" class="cw-nodes"></div>
+      </div>
+    </div>
+    <div class="cw-hint">Drag blocks to move · Drag the background to pan · Click Link, then another block</div>
+    <div class="cw-zoom" aria-label="Canvas zoom">
+      <button type="button" id="cwZoomOut" aria-label="Zoom out">−</button>
+      <span id="cwZoomLabel" aria-live="polite">100%</span>
+      <button type="button" id="cwZoomIn" aria-label="Zoom in">+</button>
+      <button type="button" id="cwZoomReset" aria-label="Reset zoom">Reset</button>
+    </div>
+  </div>
+  <p id="cwStatus" role="status" aria-live="polite">Preparing Canvas…</p>
+  <input id="cwFile" type="file" hidden>
+  <dialog id="cwProjectsDialog" class="cw-dialog" aria-label="Saved Canvas projects">
+    <h3>Saved Canvas projects</h3><p>Saved on this device, for this signed-in account or browser guest.</p>
+    <div id="cwProjectList" class="cw-project-list"></div>
+    <div class="cw-dialog-actions"><button id="cwProjectsClose" type="button">Close</button></div>
+  </dialog>
+  <div id="cwStudioOverlay" class="cw-studio-overlay" hidden>
+    <div class="cw-studio-top"><span>DEEPSYQ Studio · Inside Canvas</span><button id="cwStudioClose" type="button">← Back to Canvas</button></div>
+    <iframe id="cwStudioFrame" title="DEEPSYQ generation Studio" src="about:blank" loading="lazy"></iframe>
+  </div>
+</section>
+
 <section id="canvasFeature" class="landing-feature canvas-feature" aria-labelledby="canvasFeatureTitle"><div class="landing-feature-heading"><div><p class="caption">CREATE YOUR WAY</p><h2 id="canvasFeatureTitle">Canvas</h2><p>Start with a prompt, bring your own photos and continue in the real Image or Video Studio.</p></div><a href="generate-studio.html?studio=image">Open Image Studio ↗</a></div><div class="canvas-feature-layout"><div class="canvas-feature-guide"><p class="caption">YOUR NEXT CREATIVE START</p><h3>One idea.<br>Endless possibilities.</h3><p>Explore a look, make the prompt your own, and bring your references into your creative workspace.</p><div class="canvas-workflow" aria-label="Canvas workflow"><span><b>01</b> Find your inspiration</span><span><b>02</b> Shape your prompt</span><span><b>03</b> Continue in Studio</span></div><a class="canvas-try-link" href="#quickCreateForm">✦ Try Canvas ↗</a></div><div id="canvasExampleGrid" class="canvas-example-grid" aria-label="Canvas inspiration examples"><button type="button" class="canvas-example" data-creative-example="creative50-crystal-orchard" aria-label="Explore Crystal Orchard prompt"><img src="/media/creative/creative50-20261021/01-crystal-orchard.webp" alt="Crystal Orchard" loading="lazy" decoding="async" width="480" height="270"></button><button type="button" class="canvas-example" data-creative-example="creative50-silk-waterfall" aria-label="Explore Silk Waterfall prompt"><img src="/media/creative/creative50-20261021/02-silk-waterfall.webp" alt="Silk Waterfall" loading="lazy" decoding="async" width="480" height="270"></button><button type="button" class="canvas-example" data-creative-example="creative50-cloud-ceramics" aria-label="Explore Cloud Ceramics prompt"><img src="/media/creative/creative50-20261021/03-cloud-ceramics.webp" alt="Cloud Ceramics" loading="lazy" decoding="async" width="480" height="270"></button><button type="button" class="canvas-example" data-creative-example="creative50-coral-library" aria-label="Explore Coral Library prompt"><img src="/media/creative/creative50-20261021/04-coral-library.webp" alt="Coral Library" loading="lazy" decoding="async" width="480" height="270"></button><button type="button" class="canvas-example" data-creative-example="creative50-magnetic-petals" aria-label="Explore Magnetic Petals prompt"><img src="/media/creative/creative50-20261021/05-magnetic-petals.webp" alt="Magnetic Petals" loading="lazy" decoding="async" width="480" height="270"></button><button type="button" class="canvas-example" data-creative-example="creative50-folded-horizon" aria-label="Explore Folded Horizon prompt"><img src="/media/creative/creative50-20261021/06-folded-horizon.webp" alt="Folded Horizon" loading="lazy" decoding="async" width="480" height="270"></button><button type="button" class="canvas-example" data-creative-example="creative50-obsidian-hummingbird" aria-label="Explore Obsidian Hummingbird prompt"><img src="/media/creative/creative50-20261021/07-obsidian-hummingbird.webp" alt="Obsidian Hummingbird" loading="lazy" decoding="async" width="480" height="270"></button><button type="button" class="canvas-example" data-creative-example="creative50-marble-tide" aria-label="Explore Marble Tide prompt"><img src="/media/creative/creative50-20261021/08-marble-tide.webp" alt="Marble Tide" loading="lazy" decoding="async" width="480" height="270"></button><button type="button" class="canvas-example" data-creative-example="creative50-nebula-couture" aria-label="Explore Nebula Couture prompt"><img src="/media/creative/creative50-20261021/09-nebula-couture.webp" alt="Nebula Couture" loading="lazy" decoding="async" width="480" height="270"></button></div><div class="canvas-feature-editor"><form id="quickCreateForm" class="quick-create" aria-labelledby="quickCreateTitle">
 <label id="quickCreateTitle" for="quickCreatePrompt">Start with your idea</label>
 <textarea id="quickCreatePrompt" rows="3" maxlength="2000" required placeholder="Describe what you want to create…"></textarea>
