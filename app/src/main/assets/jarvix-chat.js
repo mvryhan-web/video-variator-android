@@ -35,6 +35,42 @@ import {bindComposer,trackViewport} from './jarvix-composer.js';
 import {getJarvixSessionId,getJarvixLanguage,speakJarvis} from './jarvis-core.js';
 import {saveStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id),status=text=>$('jStatus').textContent=text;
+// Render a human-readable title before async conversation storage can finish.
+// Subsequent mode changes still use the existing setChatHeaderMode handler below.
+const initialChatTitle=$('jActiveModeLabel');
+if(initialChatTitle && !['image','video','audio'].includes(new URLSearchParams(location.search).get('mode'))){
+  initialChatTitle.textContent='Чат';
+  initialChatTitle.dataset.mode='auto';
+}
+// MOBILE CHAT ONLY. The shared mobile header is taller than the desktop header.
+// Fit the EXISTING dock into the visible screen and react to the soft keyboard.
+function fitJarvixMobileChat(){
+  const main=document.querySelector('main.jarvix-chat');
+  if(!main)return;
+  if(!matchMedia('(max-width:760px)').matches){
+    main.style.removeProperty('--j-mobile-visible-height');
+    return;
+  }
+  const vv=window.visualViewport;
+  const visibleTop=vv?.offsetTop||0;
+  const visibleBottom=visibleTop+(vv?.height||innerHeight);
+  const mainTop=main.getBoundingClientRect().top;
+  const height=Math.max(80,Math.floor(visibleBottom-Math.max(mainTop,visibleTop)-8));
+  main.style.setProperty('--j-mobile-visible-height',height+'px');
+}
+let mobileChatFrame=0;
+function queueMobileChatFit(){
+  if(mobileChatFrame)cancelAnimationFrame(mobileChatFrame);
+  mobileChatFrame=requestAnimationFrame(()=>{mobileChatFrame=0;fitJarvixMobileChat();});
+}
+window.addEventListener('resize',queueMobileChatFit,{passive:true});
+window.addEventListener('pageshow',queueMobileChatFit);
+window.addEventListener('orientationchange',queueMobileChatFit);
+window.visualViewport?.addEventListener('resize',queueMobileChatFit,{passive:true});
+window.visualViewport?.addEventListener('scroll',queueMobileChatFit,{passive:true});
+window.addEventListener('scroll',queueMobileChatFit,{passive:true});
+$('jInput')?.addEventListener('focus',queueMobileChatFit);
+queueMobileChatFit();
 const store=await conversationStore();let conversation=null,busy=false,epoch=0,controller=null,config=null,urls=[];
 const headers=()=>({'Content-Type':'application/json',...(localStorage.getItem('vv_token')?{Authorization:'Bearer '+localStorage.getItem('vv_token')}:{})});
 async function api(path,body){store.guard();const r=await fetch(path,{method:body?'POST':'GET',headers:headers(),cache:'no-store',...(body?{body:JSON.stringify(body)}:{}),signal:controller?.signal});store.guard();const d=await r.json();if(!r.ok)throw Error(d.message||d.error||'Request failed');return d;}
