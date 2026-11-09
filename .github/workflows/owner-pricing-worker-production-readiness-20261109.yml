@@ -1,0 +1,71 @@
+name: Owner Pricing Worker access and live asset parity READ ONLY
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/owner-pricing-worker-production-readiness-20261109.yml'
+permissions:
+  contents: read
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      CF_PAGES: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_WORKERS: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
+      CF_ALT: ${{ secrets.CF_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify production Worker source permission and served pricing asset hashes WITHOUT deploying
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          import {createHash} from 'node:crypto';
+          const account=process.env.CF_ACCOUNT;
+          const credentials=[['CLOUDFLARE_API_TOKEN',process.env.CF_PAGES],['CLOUDFLARE_WORKERS_API_TOKEN',process.env.CF_WORKERS],['CF_API_TOKEN',process.env.CF_ALT]].filter(([,v])=>!!v);
+          assert.match(account||'',/^[a-f0-9]{32}$/);
+          assert(process.env.CF_PAGES);
+          const api='https://api.cloudflare.com/client/v4';
+          const request=async(path,token)=>{
+            const res=await fetch(api+path,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(15000)});
+            const b=Buffer.from(await res.arrayBuffer());
+            let json;
+            if((res.headers.get('content-type')||'').includes('json'))try{json=JSON.parse(b.toString('utf8'))}catch{}
+            return {status:res.status,ok:res.ok,bytes:b.length,mime:res.headers.get('content-type'),json,digest:res.ok?createHash('sha256').update(b).digest('hex').slice(0,16):null};
+          };
+          const project=(await request('/accounts/'+account+'/pages/projects/deepsyq',process.env.CF_PAGES)).json?.result;
+          assert.equal(project?.production_branch,'deepsyq-platform');
+          const base=project?.canonical_deployment?.id;
+          assert(base,'Missing canonical production');
+          const dep=(await request('/accounts/'+account+'/pages/projects/deepsyq/deployments/'+base,process.env.CF_PAGES)).json?.result;
+          assert.equal(dep?.uses_functions,true,'Live backend Worker is not present');
+          assert(Object.keys(dep?.files||{}).length>100,'Live asset manifest unavailable');
+          const script=project.production_script_name;
+          assert(script,'Missing Worker name');
+          console.log('LIVE_BASELINE',JSON.stringify({deployment:base,uses_functions:dep.uses_functions,manifest_count:Object.keys(dep.files).length,worker:script}));
+          let access=false;
+          for(const [name,token] of credentials){
+            const path='/accounts/'+account+'/workers/scripts/'+encodeURIComponent(script);
+            const r=await request(path+'/content/v2',token);
+            const alt=await request(path,token);
+            const settings=await request(path+'/settings',token);
+            console.log('WORKER_SOURCE_PROBE',JSON.stringify({secret_name:name,content_v2:r.status,script:alt.status,settings:settings.status,content_bytes:r.bytes,sha16:r.digest}));
+            if(r.ok&&r.bytes>0||alt.ok&&alt.bytes>0)access=true;
+          }
+          const digest=b=>createHash('sha256').update(b).digest('hex').slice(0,16);
+          let matches=0;
+          for(const file of ['pricing.html','pricing-page.css','pricing-page.js']){
+            const source=fs.readFileSync('app/src/main/assets/'+file);
+            const res=await fetch('https://deepsyq.app/'+file+'?readiness='+Date.now(),{headers:{'Cache-Control':'no-cache'},signal:AbortSignal.timeout(15000)});
+            const body=Buffer.from(await res.arrayBuffer());
+            const same=res.ok&&digest(body)===digest(source);
+            if(same)matches++;
+            console.log('PRICING_SOURCE_PARITY',JSON.stringify({file,http:res.status,identical:same,git_sha16:digest(source),live_sha16:digest(body),has_carousel:file==='pricing.html'?body.toString('utf8').includes('id="pricePlanPrev"'):undefined}));
+          }
+          console.log('FINAL_READINESS',JSON.stringify({worker_readable:access,pricing_parity:matches+'/3',production_deployment:base,published:false}));
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'Read-only Cloudflare verification. Worker source readable: '+access+'. Pricing files match Git: '+matches+'/3. Production deployment: '+base+'. No deploy performed.\n');
+          JS
