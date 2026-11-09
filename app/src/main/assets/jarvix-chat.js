@@ -5,8 +5,14 @@ export function openWorkspace(url, title = 'Everyday Tool') {
     location.assign(url);
     return;
   }
+  let targetUrl = url;
+  if (targetUrl === 'index.html' || targetUrl === 'video-uniquifier-app.html' || targetUrl === 'video-uniquifier.html') {
+    targetUrl = 'video-uniquifier.html?embed=chat';
+  }
   const titleMap = {
     'index.html': 'Video Uniquifier',
+    'video-uniquifier.html': 'Video Uniquifier',
+    'video-uniquifier-app.html': 'Video Uniquifier',
     'free-tools.html': 'Everyday Tools',
     'free-tools.html#compress-photos': 'Compress Photos',
     'free-tools.html#compress-video': 'Compress Video',
@@ -15,12 +21,13 @@ export function openWorkspace(url, title = 'Everyday Tool') {
     'audio-studio.html': 'Audio Studio',
     'canvas.html': 'Canvas'
   };
-  frame.src = url;
-  if (headTitle) headTitle.textContent = titleMap[url] || title;
-  if (popout) popout.href = url;
+  frame.src = targetUrl;
+  if (headTitle) headTitle.textContent = titleMap[url] || titleMap[targetUrl] || title;
+  if (popout) popout.href = targetUrl;
   pane.hidden = false;
   document.body.classList.add('has-chat-workspace');
 }
+window.openWorkspace = openWorkspace;
 import {ACTION_ROUTES,extractAction,resolveActionModel} from './jarvix-action-plan.js';
 import {downloadResult,mediaExtension} from './jarvix-result-cache.js';
 import {makeId,conversationStore,resolveMode} from './jarvix-conversations.js';
@@ -32,7 +39,7 @@ const store=await conversationStore();let conversation=null,busy=false,epoch=0,c
 const headers=()=>({'Content-Type':'application/json',...(localStorage.getItem('vv_token')?{Authorization:'Bearer '+localStorage.getItem('vv_token')}:{})});
 async function api(path,body){store.guard();const r=await fetch(path,{method:body?'POST':'GET',headers:headers(),cache:'no-store',...(body?{body:JSON.stringify(body)}:{}),signal:controller?.signal});store.guard();const d=await r.json();if(!r.ok)throw Error(d.message||d.error||'Request failed');return d;}
 async function save(){conversation=await store.save(conversation);await historyList();}
-async function historyList(){const rows=await store.list();$('jHistory').replaceChildren();for(const r of rows){const o=document.createElement('option');o.value=r.id;o.textContent=r.title;o.selected=r.id===conversation?.id;$('jHistory').append(o);}window.dispatchEvent(new Event('jarvix:history-changed'));}
+async function historyList(){const rows=await store.list();$('jHistory').replaceChildren();for(const r of rows){const o=document.createElement('option');o.value=r.id;o.textContent=r.title;o.selected=r.id===conversation?.id;$('jHistory').append(o);}}
 const node=(tag,text)=>{const n=document.createElement(tag);if(text)n.textContent=text;return n;};
 function showFile(parent,file){const box=node('div'),url=URL.createObjectURL(file);urls.push(url);const el=node(file.type.startsWith('image/')?'img':file.type.startsWith('video/')?'video':file.type.startsWith('audio/')?'audio':'a');el.src=url;if(el.tagName==='IMG')el.alt=file.name||'Attachment';else if(el.tagName==='A'){el.href=url;el.download=file.name;el.textContent=file.name;}else el.controls=true;box.append(el);parent.append(box);}
 function render(){for(const url of urls)URL.revokeObjectURL(url);urls=[];const area=$('jMessages');area.replaceChildren();if(!conversation.messages.length){const empty=node('div');empty.className='j-empty';empty.append(node('h2','What would you like to create?'));area.append(empty);}
@@ -77,16 +84,17 @@ async function processMessage(message){
   // Opening an existing page or preparing a Studio prompt costs 0 AI credits.
   const command=message.mode==='auto'&&!(message.files||[]).length?extractAction(message.text):null;
   if(command?.intent==='NAVIGATE'){
-   const label=({ru:'Открываю раздел DEEPSYQ.',en:'Opening the DEEPSYQ section.',fr:'Ouverture de la section DEEPSYQ.',es:'Abriendo la sección DEEPSYQ.'})[getJarvixLanguage()]||'Opening the DEEPSYQ section.';
+   const label=({ru:'Открываю инструмент прямо здесь в чате.',en:'Opening the DEEPSYQ section.',fr:'Ouverture de la section DEEPSYQ.',es:'Abriendo la sección DEEPSYQ.'})[getJarvixLanguage()]||'Opening the DEEPSYQ section.';
    const response={id:makeId(),role:'assistant',text:label,toolAction:{kind:'navigate',target:command.target,url:command.url},createdAt:Date.now()};
-   message.status='sent';conversation.messages.push(response);await save();render();store.guard();location.assign(command.url);return;
+   message.status='sent';conversation.messages.push(response);await save();render();store.guard();openWorkspace(command.url,command.target);return;
   }
   if(command?.intent==='GENERATE_MEDIA'&&command.raw_prompt){
    const label=({ru:'Подготовил запрос для Studio. Откройте студию и проверьте модель и стоимость перед созданием. Генерация и списание кредитов не запускаются автоматически.',en:'Your Studio prompt is ready. Open Studio to review the model and cost. No generation or credit charge has started.',fr:'Votre demande est prête dans Studio. Vérifiez le modèle et le coût avant de lancer. Aucun débit automatique.',es:'Tu solicitud está lista para Studio. Revisa el modelo y el coste antes de empezar. No hay cobro automático.'})[getJarvixLanguage()]||'Your Studio prompt is ready.';
    const response={id:makeId(),role:'assistant',text:label,toolAction:{kind:'prepare-studio',target:command.target,url:command.url,prompt:command.raw_prompt,ratio:command.aspect_ratio},createdAt:Date.now()};
    message.status='sent';conversation.messages.push(response);await save();render();return;
   }
-  let mode=message.mode==='auto'?'text':resolveMode(message.text,message.mode);
+  let mode=resolveMode(message.text,message.mode);
+  if(['image','video','audio'].includes(mode))setChatHeaderMode(mode);
   if(message.mode==='auto'&&mode==='text'&&/измен|сделай.*(ярче|темнее)|ещё|change|brighter|darker|modifier|cambiar/i.test(message.text)){const previous=[...conversation.messages].reverse().find(m=>m.role==='assistant'&&m.jobId);if(previous)mode=previous.kind;}
   let answer;
   if(mode==='text'){
@@ -117,14 +125,98 @@ async function processMessage(message){
 }
 const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();const m={id:makeId(),role:'user',text,mode,files,status:'pending',createdAt:Date.now()};if(!conversation.messages.length)conversation.title=text.slice(0,60);conversation.messages.push(m);await save();composer.clear();render();await run(()=>processMessage(m));}catch(e){status(e.message);}}});
 $('jStop').onclick=()=>{controller?.abort();$('jStop').hidden=true;status('Browser waiting stopped. Already submitted generation tasks are not cancelled.');};
-$('jNew').onclick=async()=>{if(busy)return;conversation=store.create('jarvix-'+makeId());sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);await save();render();};
-$('jHistory').onchange=async()=>{if(busy)return;const next=await store.get($('jHistory').value);if(!next)return;conversation=next;sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);await historyList();render();await restoreResults();};
+function resetToDefaultChat(startNew = true) {
+  try {
+    sessionStorage.removeItem('jarvix_composer_mode');
+    history.replaceState(null, '', 'jarvix-chat.html');
+    setChatHeaderMode('auto');
+    window.dispatchEvent(new CustomEvent('jarvix:mode', { detail: { mode: 'auto' } }));
+  } catch(err){}
+  if (typeof minimizeWorkspace === 'function') minimizeWorkspace();
+  if (startNew) {
+    if (busy) return;
+    conversation = store.create('jarvix-' + makeId());
+    sessionStorage.setItem('jarvix_session_id', conversation.sessionId);
+    sessionStorage.setItem('jarvix_active_conversation', conversation.id);
+    save().then(render);
+  }
+}
+window.resetToDefaultChat = resetToDefaultChat;
+window.addEventListener('jarvix:reset-chat', () => resetToDefaultChat(true));
+
+$('jNew').onclick = () => resetToDefaultChat(true);
+$('jHistory').onchange=async()=>{if(busy)return;const next=await store.get($('jHistory').value);if(!next)return;conversation=next;sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);render();await restoreResults();};
 function freeze(){try{store.guard();}catch{++epoch;controller?.abort();composer.stop();for(const u of urls)URL.revokeObjectURL(u);$('jMessages').replaceChildren();$('jChatForm').hidden=true;status('Account changed. Reload to open the correct private conversations.');}}
 window.addEventListener('storage',freeze);window.addEventListener('focus',freeze);window.addEventListener('pageshow',freeze);
-const requestedNew=new URLSearchParams(location.search).get('new')==='1';if(requestedNew){const clean=new URL(location.href);clean.searchParams.delete('new');history.replaceState(null,'',clean.pathname+clean.search+clean.hash);sessionStorage.removeItem('jarvix_active_conversation');}conversation=(requestedNew?null:await store.get(sessionStorage.getItem('jarvix_active_conversation')))||store.create(requestedNew?'jarvix-'+makeId():getJarvixSessionId());sessionStorage.setItem('jarvix_active_conversation',conversation.id);sessionStorage.setItem('jarvix_session_id',conversation.sessionId);await save();render();trackViewport();await restoreResults();
+conversation=await store.get(sessionStorage.getItem('jarvix_active_conversation'))||store.create(getJarvixSessionId());sessionStorage.setItem('jarvix_active_conversation',conversation.id);await save();render();trackViewport();await restoreResults();
 const pending=conversation.messages.find(m=>m.status==='pending');if(pending)await run(()=>processMessage(pending));
 
 window.addEventListener('jarvix:conversation-updated',async()=>{if(busy)return;const next=await store.get(sessionStorage.getItem('jarvix_active_conversation'));if(!next)return;conversation=next;render();const pending=conversation.messages.find(m=>m.status==='pending');if(pending)await run(()=>processMessage(pending));});
+
+const modeHeaderLabels={
+  ru:{text:'ЧАТ',auto:'ЧАТ',image:'ИЗОБРАЖЕНИЕ',video:'ВИДЕО',audio:'АУДИО',music:'АУДИО'},
+  en:{text:'CHAT',auto:'CHAT',image:'IMAGE',video:'VIDEO',audio:'AUDIO',music:'AUDIO'}
+};
+function setChatHeaderMode(m){
+  const labelEl=$('jActiveModeLabel');if(!labelEl)return;
+  const lang=(localStorage.getItem('deepsyq_home_language')||document.documentElement.lang||'ru').startsWith('ru')?'ru':'en';
+  const norm=m==='music'?'audio':(m||'auto');
+  const dict=modeHeaderLabels[lang]||modeHeaderLabels.ru;
+  labelEl.textContent=dict[norm]||(norm==='auto'?dict.auto:norm.toUpperCase());
+  labelEl.dataset.mode=norm;
+}
+window.addEventListener('jarvix:mode',e=>{if(e.detail?.mode)setChatHeaderMode(e.detail.mode);});
+try{const st=sessionStorage.getItem('jarvix_composer_mode');if(st)setChatHeaderMode(st);}catch{}
+try {
+  const _sp = new URLSearchParams(location.search);
+  const _initMode = _sp.get('mode') || _sp.get('studio');
+  if (_initMode) {
+    const _norm = _initMode.toLowerCase() === 'music' ? 'audio' : _initMode.toLowerCase();
+    if (['video', 'audio', 'image'].includes(_norm)) {
+      sessionStorage.setItem('jarvix_composer_mode', _norm);
+      setChatHeaderMode(_norm);
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('jarvix:mode', { detail: { mode: _norm } }));
+      }, 50);
+    }
+  }
+} catch (e) {}
+
+const composerInput=$('jInput');
+if(composerInput){
+  composerInput.addEventListener('input',()=>{
+    const val=composerInput.value.trim();
+    if(!val){try{setChatHeaderMode(sessionStorage.getItem('jarvix_composer_mode')||'auto');}catch{}return;}
+    const detected=resolveMode(val,'auto');
+    if(['image','video','audio'].includes(detected))setChatHeaderMode(detected);
+  });
+}
+
+const wpPane=$('jWorkspacePane');
+if(wpPane){
+  let touchStartX=null,touchStartY=null;
+  wpPane.addEventListener('touchstart',e=>{
+    const t=e.touches?.[0];if(t){touchStartX=t.clientX;touchStartY=t.clientY;}
+  },{passive:true});
+  wpPane.addEventListener('touchend',e=>{
+    if(touchStartX===null)return;
+    const t=e.changedTouches?.[0];
+    if(t){
+      const dx=t.clientX-touchStartX,dy=t.clientY-touchStartY;
+      if(dx<-45&&Math.abs(dx)>Math.abs(dy)){
+        $('jWorkspaceClose')?.click();
+      }
+    }
+    touchStartX=null;touchStartY=null;
+  },{passive:true});
+}
+
+const expandBtn = $('jWorkspaceExpand');
+if (expandBtn) {
+  expandBtn.onclick = () => {
+    $('jWorkspacePane')?.classList.toggle('j-workspace-expanded');
+  };
+}
 
 if ($('jWorkspaceClose')) {
   $('jWorkspaceClose').onclick = () => {
@@ -155,3 +247,178 @@ try {
     setTimeout(() => openWorkspace(initialTool), 300);
   }
 } catch (_) {}
+
+
+
+// --- ChatGPT-style Chat Dropdown under JARVIX Title ---
+function initChatMenuDrawer() {
+  const titleBtn = $('jChatTitleBtn');
+  const dropdown = $('jChatDropdown');
+  const backdrop = $('jDropdownBackdrop');
+  const newBtn = $('jMenuNewChat');
+  const historyListEl = $('jMenuHistoryList');
+
+  if (!titleBtn || !dropdown) return;
+
+  const openDropdown = async () => {
+    await updateHistoryList();
+    dropdown.hidden = false;
+    titleBtn.setAttribute('aria-expanded', 'true');
+    titleBtn.classList.add('open');
+  };
+
+  const closeDropdown = () => {
+    dropdown.hidden = true;
+    titleBtn.setAttribute('aria-expanded', 'false');
+    titleBtn.classList.remove('open');
+  };
+
+  titleBtn.onclick = (e) => {
+    e.stopPropagation();
+    if (dropdown.hidden) openDropdown();
+    else closeDropdown();
+  };
+
+  if (backdrop) backdrop.onclick = () => closeDropdown();
+
+  if (newBtn) {
+    newBtn.onclick = () => {
+      closeDropdown();
+      resetToDefaultChat(true);
+      const input = $('jInput');
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+    };
+  }
+
+  const vuPill = $('jQuickVideoUniquifier');
+  if (vuPill) {
+    vuPill.onclick = () => openWorkspace('video-uniquifier.html?embed=chat', 'Видео-уникализатор');
+  }
+
+  const slidersBtn = $('jSlidersBtn');
+  if (slidersBtn) {
+    slidersBtn.onclick = () => {
+      const pm = $('jPlusMenu');
+      if (pm) pm.hidden = !pm.hidden;
+    };
+  }
+
+  const orbBtn = $('jOrbBtn');
+  if (orbBtn) {
+    orbBtn.onclick = () => {
+      const mic = $('jMic');
+      if (mic) mic.click();
+    };
+  }
+
+  function formatDate(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    const isYesterday = new Date(now.setDate(now.getDate() - 1)).toDateString() === d.toDateString();
+    const ru = (getJarvixLanguage() || 'ru').startsWith('ru');
+    if (isToday) return ru ? 'Сегодня' : 'Today';
+    if (isYesterday) return ru ? 'Вчера' : 'Yesterday';
+    const months = ru ? ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'] : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return d.getDate() + ' ' + months[d.getMonth()];
+  }
+
+  async function updateHistoryList() {
+    if (!historyListEl) return;
+    const rows = await store.list();
+    historyListEl.replaceChildren();
+
+    const ru = (getJarvixLanguage() || 'ru').startsWith('ru');
+
+    if (!rows.length) {
+      const emptyMsg = node('div', ru ? 'Нет сохранённых диалогов' : 'No saved conversations');
+      emptyMsg.style.cssText = 'color:#64748b;font-size:12px;padding:8px 6px;text-align:center;';
+      historyListEl.append(emptyMsg);
+      return;
+    }
+
+    for (const r of rows) {
+      const item = node('button');
+      item.type = 'button';
+      item.className = 'j-dropdown-conv-item' + (r.id === conversation?.id ? ' active' : '');
+
+      const infoBox = node('div');
+      infoBox.className = 'j-conv-info';
+      const icon = node('span', '💬');
+      icon.className = 'j-conv-icon';
+      const title = node('span', r.title || (ru ? 'Новый диалог' : 'New chat'));
+      title.className = 'j-conv-title';
+      infoBox.append(icon, title);
+
+      const date = node('span', formatDate(r.updatedAt || r.createdAt));
+      date.className = 'j-conv-date';
+
+      item.append(infoBox, date);
+
+      item.onclick = async () => {
+        closeDropdown();
+        conversation = await store.get(r.id);
+        render();
+        await historyList();
+      };
+
+      historyListEl.append(item);
+    }
+  }
+
+  // Pre-load history list
+  updateHistoryList().catch(() => {});
+}
+
+export function minimizeWorkspace() {
+  const pane = $('jWorkspacePane');
+  if (pane) {
+    pane.classList.add('j-minimized');
+    if ($('jWorkspaceMinibar')) $('jWorkspaceMinibar').hidden = false;
+  }
+}
+
+export function expandWorkspace() {
+  const pane = $('jWorkspacePane');
+  if (pane) {
+    pane.classList.remove('j-minimized');
+    if ($('jWorkspaceMinibar')) $('jWorkspaceMinibar').hidden = true;
+  }
+}
+
+// Listen to postMessage from embedded tools
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'vu:processing_started') {
+    const vc = e.data.variants || '2';
+    const msg = ({
+      ru: '⚡ Video Uniquifier: обработка запущена (' + vc + ' вар.)',
+      en: '⚡ Video Uniquifier: processing started (' + vc + ' var.)'
+    })[getJarvixLanguage()] || ('⚡ Video Uniquifier: processing started (' + vc + ' var.)');
+    if ($('jMinibarText')) $('jMinibarText').textContent = msg;
+    minimizeWorkspace();
+  }
+  if (e.data?.type === 'vu:completed') {
+    const msg = ({
+      ru: '✓ Video Uniquifier: готово! Разверните для скачивания',
+      en: '✓ Video Uniquifier: ready! Expand to download'
+    })[getJarvixLanguage()] || '✓ Video Uniquifier: ready!';
+    if ($('jMinibarText')) $('jMinibarText').textContent = msg;
+  }
+});
+
+// Bind top workspace actions
+if ($('jWorkspaceMinimize')) {
+  $('jWorkspaceMinimize').onclick = () => minimizeWorkspace();
+}
+if ($('jMinibarExpandBtn')) {
+  $('jMinibarExpandBtn').onclick = () => expandWorkspace();
+}
+if ($('jMinibarCloseBtn')) {
+  $('jMinibarCloseBtn').onclick = () => $('jWorkspaceClose')?.click();
+}
+
+initChatMenuDrawer();

@@ -1,28 +1,92 @@
-<!doctype html><html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><title>JARVIX Chat · Deepsyq</title><meta name="robots" content="noindex"><link rel="stylesheet" href="generate-studio.css"><link rel="stylesheet" href="studio-classic-theme.css"><link rel="stylesheet" href="deepsyq-mobile-shell.css"><link rel="stylesheet" href="jarvis-core.css">
-<link rel="stylesheet" href="jarvix-chat.css"><script defer src="deepsyq-site-shell.js"></script><script type="module" blocking="render" src="deepsyq-mobile-shell.js"></script><script type="module" src="jarvix-chat.js"></script></head><body><header class="topbar"><a href="deepsyq.html" class="back">← Back</a><a href="deepsyq.html" class="brand"><span class="brand-mark"><img src="deepsyq-logo.png" alt="" width="31" height="31"></span>Deepsyq</a></header><main class="jarvix-chat"><div class="j-chat-toolbar"><h1>JARVIX Chat</h1><select id="jHistory" class="j-history" aria-label="Conversation history"></select><button id="jNew" type="button">New chat</button><button id="jStop" type="button" hidden>Stop waiting</button></div><section id="jMessages" class="j-messages" aria-label="Conversation messages" aria-live="polite"></section><div class="j-chat-bottom"><div id="jAttachments" class="j-attachments"></div><form id="jChatForm" class="jarvix-compose"><button type="button" id="jPlus" aria-label="Add files or choose mode" aria-expanded="false" aria-controls="jPlusMenu">+</button><div id="jPlusMenu" class="j-plus-menu j-hub-menu" aria-label="DEEPSYQ quick access" hidden>
-<button class="j-hub-tile" type="button" data-j-mode="image" aria-pressed="false"><span class="j-hub-glyph" data-j-icon="image" aria-hidden="true"></span><strong>Image</strong></button>
-<button class="j-hub-tile" type="button" data-j-mode="video" aria-pressed="false"><span class="j-hub-glyph" data-j-icon="video" aria-hidden="true"></span><strong>Video</strong></button>
-<button class="j-hub-tile" type="button" data-j-mode="audio" aria-pressed="false"><span class="j-hub-glyph" data-j-icon="audio" aria-hidden="true"></span><strong>Audio</strong></button>
-<a class="j-hub-tile" href="free-tools.html"><span class="j-hub-glyph" data-j-icon="tools" aria-hidden="true"></span><strong>Tools</strong></a>
-<a class="j-hub-tile" href="ai-apps.html"><span class="j-hub-glyph" data-j-icon="apps" aria-hidden="true"></span><strong>AI Apps</strong></a>
-<a class="j-hub-tile" href="deepsyq.html#inspirationPreview"><span class="j-hub-glyph" data-j-icon="inspiration" aria-hidden="true"></span><strong>Inspiration</strong></a>
-<button class="j-hub-tile" type="button" id="jAttach"><span class="j-hub-glyph j-hub-upload" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M4 15v5h16v-5"/></svg></span><strong>Upload</strong></button>
-<a class="j-hub-tile" href="my-creations.html"><span class="j-hub-glyph" data-j-icon="history" aria-hidden="true"></span><strong>Assets</strong></a>
-</div><input id="jFiles" type="file" multiple accept="image/png,image/jpeg,video/mp4,audio/mpeg,audio/wav,text/plain" hidden><label for="jInput" class="sr-only">Message JARVIS</label><textarea id="jInput" rows="1" maxlength="2000" required placeholder="Message JARVIS…"></textarea><button id="jMic" type="button" aria-label="Voice input"><svg width="20" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v4M8 23h8"/></svg></button><button class="j-send" id="jSend" type="submit" aria-label="Send message"><svg class="j-send-plane" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button></form><p id="jStatus" role="status" class="j-status"></p></div>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><title>JARVIS Chat · Deepsyq</title><meta name="robots" content="noindex"><link rel="stylesheet" href="generate-studio.css"><link rel="stylesheet" href="studio-classic-theme.css"><link rel="stylesheet" href="deepsyq-mobile-shell.css"><link rel="stylesheet" href="jarvis-core.css">
+<link rel="stylesheet" href="jarvix-chat.css"><script defer src="deepsyq-site-shell.js"></script><script type="module" blocking="render" src="deepsyq-mobile-shell.js"></script><script type="module" src="jarvix-chat.js"></script></head><body><header class="topbar"><button type="button" id="dsSiteNavToggle" class="ds-site-nav-toggle-btn" aria-label="Toggle navigation" title="Меню">☰</button><a href="deepsyq.html" class="brand"><span class="brand-mark"><img src="deepsyq-logo.png" alt="" width="31" height="31"></span>Deepsyq</a></header><main class="jarvix-chat"><div class="j-chat-toolbar">
+  <button type="button" id="jChatTitleBtn" class="j-title-menu-btn" aria-haspopup="true" aria-expanded="false" title="Диалоги и новый чат">
+    <span class="j-title-brand-text">JARVIX</span>
+    <span class="j-title-dot">·</span>
+    <span class="j-title-mode-badge"><span id="jActiveModeLabel" data-mode="chat">ЧАТ</span> <span class="j-title-chevron">∨</span></span>
+  </button>
+  <select id="jHistory" class="j-history" aria-label="Conversation history" hidden></select>
+  <button id="jNew" type="button" hidden>New chat</button>
+  <button id="jStop" type="button" hidden>Stop waiting</button>
+
+  <!-- ChatGPT-style Clean Dropdown (opens under JARVIX Title) -->
+  <div id="jChatDropdown" class="j-chat-dropdown" hidden>
+    <div id="jDropdownBackdrop" class="j-dropdown-backdrop"></div>
+    <div class="j-dropdown-panel">
+      <button type="button" id="jMenuNewChat" class="j-dropdown-new-chat-btn">
+        <span class="j-new-plus">＋</span>
+        <span class="j-new-text">Новый чат</span>
+      </button>
+      <div class="j-dropdown-divider"></div>
+      <div class="j-dropdown-section-title">История диалогов</div>
+      <div id="jMenuHistoryList" class="j-dropdown-history-list"></div>
+      <div class="j-dropdown-footer">
+        <a href="pricing.html" class="j-dropdown-footer-link">👑 Тарифы платформы</a>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- Workspace Tool Pane docked at the TOP of the Chat -->
 <div id="jWorkspacePane" class="j-workspace-pane" hidden>
   <div class="j-workspace-header">
     <div class="j-workspace-title-box">
       <span class="j-workspace-badge">TOOL</span>
-      <h3 id="jWorkspaceTitle">Everyday Tools</h3>
+      <h3 id="jWorkspaceTitle">Video Uniquifier</h3>
     </div>
     <div class="j-workspace-actions">
-      <a id="jWorkspacePopout" class="j-workspace-btn" href="#" target="_blank" title="Open full screen" aria-label="Open full screen">↗</a>
-      <button type="button" id="jWorkspaceClose" class="j-workspace-btn j-workspace-close" title="Close tool" aria-label="Close tool">✕</button>
+      <button type="button" id="jWorkspaceMinimize" class="j-workspace-btn" title="Свернуть наверх" aria-label="Свернуть">▴</button>
+      <button type="button" id="jWorkspaceExpand" class="j-workspace-btn" title="Развернуть" aria-label="Развернуть">⛶</button>
+      <a id="jWorkspacePopout" class="j-workspace-btn" href="#" target="_blank" title="Открыть на весь экран" aria-label="Open full screen">↗</a>
+      <button type="button" id="jWorkspaceClose" class="j-workspace-btn j-workspace-close" title="Закрыть инструмент" aria-label="Close tool">✕</button>
+    </div>
+  </div>
+  <div id="jWorkspaceMinibar" class="j-workspace-minibar" hidden>
+    <span class="j-minibar-pulse">⚡</span>
+    <span id="jMinibarText" class="j-minibar-text">Video Uniquifier: обработка видео запущена...</span>
+    <div class="j-minibar-actions">
+      <button type="button" id="jMinibarExpandBtn" class="j-minibar-btn">Развернуть ▾</button>
+      <button type="button" id="jMinibarCloseBtn" class="j-minibar-btn">✕</button>
     </div>
   </div>
   <div class="j-workspace-body">
     <iframe id="jWorkspaceFrame" class="j-workspace-frame" title="DeepSyQ Tool Workspace" src="about:blank"></iframe>
   </div>
+</div>
+
+<section id="jMessages" class="j-messages" aria-label="Conversation messages" aria-live="polite">
+  <div id="jEmptyHero" class="j-empty-hero">
+    <h2 id="jEmptyHeroTitle">Чем я могу помочь вам сегодня?</h2>
+  </div>
+</section>
+
+<div class="j-chat-bottom">
+  <div id="jAttachments" class="j-attachments"></div>
+  <div class="j-composer-card">
+    <form id="jChatForm" class="jarvix-compose">
+      <button type="button" id="jPlus" aria-label="Add files or choose mode" aria-expanded="false" aria-controls="jPlusMenu">+</button>
+      <div id="jPlusMenu" class="j-plus-menu j-hub-menu" aria-label="DEEPSYQ quick access" hidden>
+        <button class="j-hub-tile" type="button" data-j-mode="image" aria-pressed="false"><span class="j-hub-glyph" data-j-icon="image" aria-hidden="true"></span><strong>Image</strong></button>
+        <button class="j-hub-tile" type="button" data-j-mode="video" aria-pressed="false"><span class="j-hub-glyph" data-j-icon="video" aria-hidden="true"></span><strong>Video</strong></button>
+        <button class="j-hub-tile" type="button" data-j-mode="audio" aria-pressed="false"><span class="j-hub-glyph" data-j-icon="audio" aria-hidden="true"></span><strong>Audio</strong></button>
+        <a class="j-hub-tile" href="free-tools.html"><span class="j-hub-glyph" data-j-icon="tools" aria-hidden="true"></span><strong>Tools</strong></a>
+        <a class="j-hub-tile" href="ai-apps.html"><span class="j-hub-glyph" data-j-icon="apps" aria-hidden="true"></span><strong>AI Apps</strong></a>
+        <a class="j-hub-tile" href="deepsyq.html#inspirationPreview"><span class="j-hub-glyph" data-j-icon="inspiration" aria-hidden="true"></span><strong>Inspiration</strong></a>
+        <button class="j-hub-tile" type="button" id="jAttach"><span class="j-hub-glyph j-hub-upload" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M4 15v5h16v-5"/></svg></span><strong>Upload</strong></button>
+        <a class="j-hub-tile" href="my-creations.html"><span class="j-hub-glyph" data-j-icon="history" aria-hidden="true"></span><strong>Assets</strong></a>
+      </div>
+      <input id="jFiles" type="file" multiple accept="image/png,image/jpeg,video/mp4,audio/mpeg,audio/wav,text/plain" hidden>
+      <label for="jInput" class="sr-only">Сообщение для JARVIX</label>
+      <textarea id="jInput" rows="1" maxlength="2000" required placeholder="Сообщение для JARVIX…"></textarea>
+      <button id="jMic" type="button" aria-label="Голосовой ввод"><svg width="20" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v4M8 23h8"/></svg></button>
+      <button type="button" id="jSlidersBtn" class="j-sliders-btn" aria-label="Режимы и инструменты"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></button>
+      <button class="j-send" id="jSend" type="submit" aria-label="Отправить сообщение"><svg class="j-send-plane" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button>
+      <button type="button" id="jOrbBtn" class="j-orb-btn" aria-label="Ассистент JARVIX"><span class="j-orb-glow-inner"></span></button>
+    </form>
+    <div class="j-subtools-bar">
+      <button type="button" id="jQuickVideoUniquifier" class="j-subtool-pill"><span class="j-subtool-icon">▤</span> Видео-уникализатор</button>
+    </div>
+  </div>
+  <p id="jStatus" role="status" class="j-status"></p>
 </div>
 </main></body></html>
