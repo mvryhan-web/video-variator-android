@@ -69,3 +69,13 @@ graphify-out/
 **/*.png
 **/*.jpg
 **/*.jpeg
+
+# Repository-wide AST build: index runtime source only, never developer fixtures,
+# documentation or orchestration code (which contains synthetic secret sentinels).
+/.agents/
+/.github/
+/docs/
+/tools/
+/tests/
+/scripts/
+/content-ideas/
