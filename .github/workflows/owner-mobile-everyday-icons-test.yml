@@ -1,0 +1,95 @@
+name: Owner Everyday Tools mobile-only no prefix icons TEST
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - app/src/main/assets/everyday-utility-art.css
+      - tests/everyday-tools-mobile-icons.browser.test.mjs
+      - .github/workflows/owner-mobile-everyday-icons-test.yml
+permissions:
+  contents: read
+concurrency:
+  group: owner-mobile-everyday-icons-preview
+  cancel-in-progress: true
+jobs:
+  verify-and-publish-test:
+    if: github.event.pull_request.number == 651 && github.head_ref == 'owner-mobile-everyday-tools-no-prefix-icons-20261109' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      PRODUCT_WATCHER_ENABLED: 'false'
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      PREVIEW_BRANCH: owner-mobile-everyday-tools-no-prefix-icons-20261109
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Reject preview from stale DEV
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/deepsyq-platform:refs/remotes/origin/deepsyq-platform
+          git merge-base --is-ancestor refs/remotes/origin/deepsyq-platform HEAD
+      - name: Install no-spend browser test dependencies
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Validate existing 22 illustrated tools and mobile-only icon cleanup
+        run: |
+          node --test tests/everyday-utility-gallery-unit.mjs
+          node --test tests/everyday-tools-mobile-icons.browser.test.mjs
+      - name: Verify exact Cloudflare project, MAIN Worker and rollback ID
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" -o /tmp/everyday-prod-before.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const p=JSON.parse(fs.readFileSync('/tmp/everyday-prod-before.json','utf8'));
+          if(!p.success||p.result?.production_branch!=='deepsyq-platform'||!p.result.canonical_deployment?.id)throw Error('Unsafe Cloudflare environment');
+          fs.appendFileSync(process.env.GITHUB_ENV,'PRODUCTION_ID_BEFORE='+p.result.canonical_deployment.id+'\n');
+          console.log('PRODUCTION_ID_SAVED',p.result.canonical_deployment.id);
+          JS
+      - name: Publish only isolated Cloudflare TEST branch
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq \
+            --branch="$PREVIEW_BRANCH" \
+            --commit-hash="${{ github.event.pull_request.head.sha }}" | tee /tmp/everyday-preview-deploy.log
+          PREVIEW_URL=$(grep -Eo 'https://[a-z0-9-]+\.deepsyq\.pages\.dev' /tmp/everyday-preview-deploy.log | head -n1)
+          if [[ ! "$PREVIEW_URL" =~ ^https://[a-z0-9-]+\.deepsyq\.pages\.dev$ ]]; then exit 1; fi
+          echo "EVERYDAY_TEST_URL=$PREVIEW_URL" >> "$GITHUB_ENV"
+          echo "EVERYDAY_CLOUDFLARE_TEST_URL=$PREVIEW_URL"
+      - name: Verify actual published TEST on phone, tablet and desktop
+        run: node --test tests/everyday-tools-mobile-icons.browser.test.mjs
+      - name: Confirm MAIN unchanged after TEST release
+        run: |
+          set -euo pipefail
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" -o /tmp/everyday-prod-after.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const p=JSON.parse(fs.readFileSync('/tmp/everyday-prod-after.json','utf8'));
+          if(!p.success||p.result?.production_branch!=='deepsyq-platform'||p.result?.canonical_deployment?.id!==process.env.PRODUCTION_ID_BEFORE)throw Error('Unexpected MAIN change');
+          console.log('MAIN_WORKER_AND_DEPLOYMENT_UNCHANGED',p.result.canonical_deployment.id);
+          JS
+      - name: Save visual before/after mobile and desktop screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: everyday-mobile-clean-title-evidence
+          path: artifacts/everyday-mobile-cleanup/*.png
+          retention-days: 7
+          if-no-files-found: ignore
