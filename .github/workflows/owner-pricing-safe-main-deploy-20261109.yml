@@ -87,7 +87,7 @@ jobs:
           }catch{throw Error('Production source Worker cannot be resolved from Git');}
           assert.equal(currentWorker,desiredWorker,'BLOCKED_MAIN: changed Worker source, do not replace live backend');
           const changed=execFileSync('git',['diff','--name-only',deployed,process.env.TARGET_SHA,'--','app/src/main/assets'],{encoding:'utf8'}).trim().split('\n').filter(Boolean).sort();
-          const allowed=new Set(['app/src/main/assets/pricing.html','app/src/main/assets/pricing-page.js','app/src/main/assets/pricing-page.css','app/src/main/assets/jarvix-chat.css','app/src/main/assets/jarvix-chat.html','app/src/main/assets/deepsyq.html']);
+          const allowed=new Set(['app/src/main/assets/pricing.html','app/src/main/assets/pricing-page.js','app/src/main/assets/pricing-page.css','app/src/main/assets/jarvix-chat.css','app/src/main/assets/jarvix-chat.html','app/src/main/assets/jarvix-chat.js','app/src/main/assets/deepsyq.html']);
           assert(changed.length>0&&changed.every(name=>allowed.has(name)),'Unexpected static changes in full DEV build: '+JSON.stringify(changed));
           const deployment=await api('/accounts/'+account+'/pages/projects/deepsyq/deployments/'+d.id);
           assert.equal(deployment.status,200,'Original deployment not restorable');
