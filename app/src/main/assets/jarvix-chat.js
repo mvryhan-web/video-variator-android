@@ -28,6 +28,8 @@ import {bindComposer,trackViewport} from './jarvix-composer.js';
 import {getJarvixSessionId,getJarvixLanguage,speakJarvis} from './jarvis-core.js';
 import {saveStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id),status=text=>$('jStatus').textContent=text;
+const creationModes=Object.freeze({image:'Image',video:'Video',audio:'Audio'});
+let activeJarvixMode='auto';
 const store=await conversationStore();let conversation=null,busy=false,epoch=0,controller=null,config=null,urls=[];
 const headers=()=>({'Content-Type':'application/json',...(localStorage.getItem('vv_token')?{Authorization:'Bearer '+localStorage.getItem('vv_token')}:{})});
 async function api(path,body){store.guard();const r=await fetch(path,{method:body?'POST':'GET',headers:headers(),cache:'no-store',...(body?{body:JSON.stringify(body)}:{}),signal:controller?.signal});store.guard();const d=await r.json();if(!r.ok)throw Error(d.message||d.error||'Request failed');return d;}
@@ -81,12 +83,14 @@ async function processMessage(message){
    const response={id:makeId(),role:'assistant',text:label,toolAction:{kind:'navigate',target:command.target,url:command.url},createdAt:Date.now()};
    message.status='sent';conversation.messages.push(response);await save();render();store.guard();if(['image','video','audio'].includes(command.target))switchJarvixMode(command.target);else location.assign(command.url);return;
   }
-  if(command?.intent==='GENERATE_MEDIA'&&command.raw_prompt){
+  if(command?.intent==='GENERATE_MEDIA'&&['image','video','audio'].includes(command.target)){
    const label=({ru:'Подготовил запрос для Studio. Откройте студию и проверьте модель и стоимость перед созданием. Генерация и списание кредитов не запускаются автоматически.',en:'Your Studio prompt is ready. Open Studio to review the model and cost. No generation or credit charge has started.',fr:'Votre demande est prête dans Studio. Vérifiez le modèle et le coût avant de lancer. Aucun débit automatique.',es:'Tu solicitud está lista para Studio. Revisa el modelo y el coste antes de empezar. No hay cobro automático.'})[getJarvixLanguage()]||'Your Studio prompt is ready.';
    const response={id:makeId(),role:'assistant',text:label,toolAction:{kind:'prepare-studio',target:command.target,url:command.url,prompt:command.raw_prompt,ratio:command.aspect_ratio},createdAt:Date.now()};
-   message.status='sent';conversation.messages.push(response);await save();render();return;
+   await saveStudioHandoff({kind:command.target==='audio'?'music':command.target,prompt:command.raw_prompt||message.text,settings:command.aspect_ratio?{ratio:command.aspect_ratio}:{},source:'jarvix-chat'});
+    message.status='sent';conversation.messages.push(response);await save();render();
+    switchJarvixMode(command.target);return;
   }
-  let mode=message.mode==='auto'?'text':resolveMode(message.text,message.mode);
+  let mode=message.mode='auto'?'text':resolveMode(message.text,message.mode);
   if(message.mode==='auto'&&mode==='text'&&/измен|сделай.*(ярче|темнее)|ещё|change|brighter|darker|modifier|cambiar/i.test(message.text)){const previous=[...conversation.messages].reverse().find(m=>m.role==='assistant'&&m.jobId);if(previous)mode=previous.kind;}
   let answer;
   if(mode==='text'){
@@ -149,8 +153,6 @@ window.addEventListener('jarvis:limit-reached', async (e) => {
 });
 
 // One JARVIX conversation: Image, Video and Audio are native Studio tools inside the chat.
-const creationModes=Object.freeze({image:'Image',video:'Video',audio:'Audio'});
-let activeJarvixMode='auto';
 function switchJarvixMode(requested,{updateUrl=true}={}){
  const mode=Object.hasOwn(creationModes,requested)?requested:'auto';
  activeJarvixMode=mode;
