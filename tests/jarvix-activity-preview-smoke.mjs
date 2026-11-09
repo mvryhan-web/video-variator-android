@@ -27,6 +27,7 @@ try{
   ]){
    const name=route==='jarvix-chat.html'?'chat':new URLSearchParams(route.split('?')[1]).get('studio');
    try{
+    if (page.url().startsWith(base+'/')) await page.evaluate(()=>sessionStorage.removeItem('jarvix_activity_open_v2'));
     const response=await page.goto(base+'/'+route,{waitUntil:'domcontentloaded',timeout:30000});
     assert.equal(response?.status(),200,route+' HTTP status');
     try {
@@ -53,7 +54,19 @@ try{
      throw absence;
     }
     const expand=page.locator('#jarvixActivityToggle');
-    if(await expand.getAttribute('aria-expanded')==='false')await expand.click();
+    const initialExpanded=(await expand.getAttribute('aria-expanded'))==='true';
+    assert.equal(initialExpanded,!viewport.mobile,'first visit must be discoverable without prior click: '+viewport.name+' '+route);
+    if (viewport.mobile) {
+      assert.match(await expand.textContent(),/JARVIX Chat/,'mobile closed drawer must have a visible title');
+      const closedBox=await expand.boundingBox();
+      assert.ok(closedBox&&closedBox.x>=0&&closedBox.x+closedBox.width<=viewport.width+1,'mobile title button inside screen');
+    } else {
+      assert.equal(await page.locator('#jarvixActivityPanel').isVisible(),true,'desktop panel visible on first visit');
+    }
+    await page.screenshot({path:`${folder}/${viewport.name}-${name}-first-visit.png`,fullPage:false});
+    console.log('JARVIX_FIRST_VISIT_VISIBLE',viewport.name,route,
+      initialExpanded?'open JARVIX Chat panel':'labeled JARVIX Chat tab');
+    if(!initialExpanded)await expand.click();
     await page.locator('#jarvixActivityPanel').waitFor({state:'visible',timeout:7000});
     assert.equal(await page.locator('#jarvixActivityPanel h2').textContent(),'JARVIX Chat');
     if (name==='chat') assert.equal(await page.locator('.j-chat-toolbar h1').textContent(),'JARVIX Chat', 'same title inside chat');
