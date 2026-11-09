@@ -665,9 +665,11 @@ body.jarvix-activity-enabled:not(.jarvix-activity-open) .jarvix-activity-toggle{
 @media(prefers-reduced-motion:reduce){.jarvix-activity-toggle,.jarvix-activity-panel{transition:none!important}}
 
 /* Owner D28: JARVIX Chat ONLY — no global cockpit header; keep compact right-side utilities. */
-body.jarvix-chat-page > header,
-body.jarvix-chat-page > .ds-desktop-header-spacer,
-body.jarvix-chat-page > .ds-mobile-header-spacer{display:none!important}
+html body.jarvix-chat-page > header,
+html body.jarvix-chat-page > .ds-desktop-header-spacer,
+html body.jarvix-chat-page > .ds-desktop-header-spacer:not([hidden]),
+html body.jarvix-chat-page > .ds-mobile-header-spacer,
+html body.jarvix-chat-page.ds-mobile-layout > .ds-mobile-header-spacer{display:none!important}
 body.jarvix-chat-page main.jarvix-chat{
   height:var(--j-viewport,100dvh)!important;
   padding-top:calc(66px + env(safe-area-inset-top,0px))!important;
@@ -707,8 +709,8 @@ body.jarvix-chat-page .j-chat-quick-help p{
   body.jarvix-chat-page .j-chat-quick-actions :is(a,summary,select){
     min-height:34px;padding:6px 7px;border-radius:9px;
   }
-  body.jarvix-chat-page .ds-site-mobile-toggle,
-  body.jarvix-chat-page .ds-mobile-menu{
+  html body.jarvix-chat-page.ds-mobile-layout.j-action-workspace .ds-site-mobile-toggle,
+  html body.jarvix-chat-page.ds-mobile-layout.j-action-workspace .ds-mobile-menu{
     position:fixed!important;top:calc(8px + env(safe-area-inset-top,0px))!important;
     left:7px!important;right:auto!important;bottom:auto!important;
     z-index:1002!important;visibility:visible!important;
