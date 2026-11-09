@@ -249,7 +249,7 @@ async function generateNode(n){
  if(!accountOK())return;
  if(!n||n.type!=='prompt')return say('Select a Prompt block to generate.');
  if(!n.prompt.trim())return say('Write a description in your Prompt block first.');
- const refs=edges.filter(e=>e.to===n.id).map(e=>nodeById(e.from)).filter(x=>x?.type==='image'&&x.file).slice(0,4).map(x=>x.file);
+ const refs=edges.filter(e=>e.to===n.id).map(e=>nodeById(e.from)).filter(x=>x?.type==='image'&&x.file&&['image/png','image/jpeg'].includes(x.file.type)&&x.file.size<=1024*1024).slice(0,4).map(x=>x.file);
  try{
   say('Preparing Studio inside Canvas. No generation or credit charge has started.');
   await saveStudioHandoff({kind:n.kind,prompt:n.prompt.trim(),settings:n.ratio?{ratio:n.ratio}:{},files:refs,source:'canvas-workspace'});
@@ -261,9 +261,39 @@ async function generateNode(n){
  }catch(error){say('Cannot prepare Studio: '+error.message);}
 }
 $('cwGenerate').onclick=()=>{const n=nodeById(selected)||nodes.find(x=>x.type==='prompt');void generateNode(n);};
+function closeStudio(){
+ $('cwStudioFrame').src='about:blank';
+ $('cwStudioOverlay').hidden=true;
+ document.body.classList.remove('cw-studio-open');
+}
+$('cwStudioImport').onclick=async()=>{
+ if(!accountOK())return;
+ const message=$('cwStudioMessage');
+ try{
+  // Existing Studio owns job success, credits, auth and the media preview.
+  // Read only a finished same-origin Blob; no generation API call is made here.
+  const doc=$('cwStudioFrame').contentDocument;
+  const media=doc?.querySelector('#media img[src], #media video[src], #media audio[src]');
+  if(!media)throw Error('No finished Studio result is visible yet.');
+  const src=media.currentSrc||media.src;
+  if(!src||!src.startsWith('blob:')||new URL(src).origin!==location.origin)throw Error('Studio result is not a local finished media preview.');
+  const response=await fetch(src);
+  if(!response.ok)throw Error('Could not read the completed Studio result.');
+  const blob=await response.blob();
+  const kind=blob.type.startsWith('image/')?'image':blob.type.startsWith('video/')?'video':blob.type.startsWith('audio/')?'audio':null;
+  const max=kind==='image'?1024*1024:kind==='video'?20*1024*1024:10*1024*1024;
+  if(!kind||!blob.size||blob.size>max)throw Error('Result is too large for local Canvas storage. Download it from Studio instead.');
+  if(!accountOK())return;
+  const ext=blob.type==='image/svg+xml'?'svg':blob.type==='image/jpeg'?'jpg':kind==='image'?'png':kind==='video'?'mp4':'mp3';
+  const file=new File([blob],'studio-result-'+Date.now()+'.'+ext,{type:blob.type});
+  const index=nodes.length;
+  addNode(kind,130+(index%3)*310,110+Math.floor(index/3)*260,file);
+  closeStudio();say('Studio result added to Canvas. Save the project to keep it on this device.');
+ }catch(error){message.textContent=error.message||'Could not add Studio result.';}
+};
 $('cwStudioClose').onclick=()=>{
- if(!confirm('Close Studio? Any job already submitted to the server can still be checked in Studio History.'))return;
- $('cwStudioFrame').src='about:blank';$('cwStudioOverlay').hidden=true;document.body.classList.remove('cw-studio-open');say('Returned to Canvas. Studio results are available through Studio History.');
+ if(!confirm('Close Studio? Any job already submitted can still be checked in Studio History.'))return;
+ closeStudio();say('Returned to Canvas. Studio results are available through Studio History.');
 };
 window.addEventListener('storage',event=>{if(event.key==='vv_token')accountOK();});
 document.addEventListener('visibilitychange',accountOK);
