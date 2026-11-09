@@ -71,7 +71,7 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   window.addEventListener('resize',position);
  };
 
- frame.addEventListener('load',()=>{
+ frame.addEventListener('load',async()=>{
   if(!host.isConnected)return;
   let doc;
   try{
@@ -80,6 +80,29 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
    doc=frame.contentDocument;
   }catch{return close();}
    let hub=doc?.getElementById('studioSettingsHub');
+   if(!hub && /\\/jarvix-chat(?:\\.html)?$/.test(location.pathname)){
+     // JARVIX Chat only: Studio may initialize its existing settings hub
+     // after the iframe load event. Wait for the original hub, not a copy.
+     hub=await new Promise(resolve=>{
+       let tries=0;
+       const poll=setInterval(()=>{
+         let candidate=null;
+         try{candidate=frame.contentDocument?.getElementById('studioSettingsHub');}catch{}
+         if(candidate||!host.isConnected||!visible||++tries>=45){
+           clearInterval(poll);
+           resolve(candidate);
+         }
+       },80);
+     });
+     if(!hub){
+       close();
+       const status=document.getElementById('jStatus');
+       if(status)status.textContent='Настройки студии не загрузились. Попробуйте ещё раз.';
+       if(current?.gear===gear)current=null;
+       host.remove();
+       return;
+     }
+   }
    if(!hub){let r=0;const iv=setInterval(()=>{r++;try{hub=frame.contentDocument?.getElementById('studioSettingsHub');}catch{}if(hub){clearInterval(iv);if(!hub.open)hub.showModal();host.dataset.ready='true';host.style.visibility='visible';hub.addEventListener('close',close);}},100);}
   // Native model and format child dialogs originally sit inside Studio main.
   // Place them alongside the native parent dialog in THIS isolated frame so
