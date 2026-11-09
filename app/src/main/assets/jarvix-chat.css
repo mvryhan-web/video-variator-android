@@ -1503,3 +1503,12 @@ main.jarvix-chat:has(> #jChatDropdown:not([hidden])){
   grid-column:1!important;grid-row:5!important;
  }
 }
+
+
+/* The existing mobile JARVIX platform header and its spacer are 156px,
+   not the standard 132px mobile shell. Keep the original composer onscreen. */
+@media(max-width:760px){
+ body.j-action-workspace.ds-mobile-layout main.jarvix-chat{
+  height:calc(var(--j-viewport,100dvh) - 156px - env(safe-area-inset-top,0px))!important;
+ }
+}
