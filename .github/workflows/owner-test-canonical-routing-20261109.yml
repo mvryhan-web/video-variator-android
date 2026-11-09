@@ -6,6 +6,11 @@ on:
       - 'app/src/main/assets/404.html'
       - 'app/src/main/assets/_redirects'
       - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/index.html'
+      - 'app/src/main/assets/video-uniquifier.html'
+      - 'app/src/main/assets/avatar-studio.html'
+      - 'app/src/main/assets/deepsyq-vs-deepseek.html'
+      - 'app/src/main/assets/design-gallery.html'
       - 'app/src/main/assets/deepsyq-site-shell.js'
       - 'app/src/main/assets/jarvix-studio.html'
       - 'tests/owner-test-canonical-routing.mjs'
@@ -85,7 +90,7 @@ jobs:
             ['/jarvix-chat','JARVIS Chat'],
             ['/jarvix-chat.html','JARVIS Chat'],
             ['/video-uniquifier','Video Uniquifier'],
-            ['/index.html','Video Uniquifier'],
+            ['/index.html','Deepsyq'],
             ['/ai-agents','JARVIS Chat'],
             ['/dashboard','Deepsyq']
           ];
@@ -103,10 +108,13 @@ jobs:
           }
           const pages=fs.readdirSync('app/src/main/assets').filter(name=>name.endsWith('.html')&&name!=='404.html');
           assert.equal(pages.length,33);
+          const htmlTitle = html => (html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i)||[])[1]?.trim();
           for (const name of pages){
             const res=await request('/'+name);
             assert.equal(res.status,200,'HTML route broken: '+name);
             assert.match(res.html,/<html/i,'Wrong response for '+name);
+            const expected=fs.readFileSync('app/src/main/assets/'+name,'utf8');
+            assert.equal(htmlTitle(res.html),htmlTitle(expected),'Wrong page content served for '+name);
           }
           console.log('LIVE_TEST_PASSED',pages.length+' HTML pages, canonical routes and 404');
           NODE
