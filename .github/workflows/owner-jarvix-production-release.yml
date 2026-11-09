@@ -1,0 +1,168 @@
+name: Owner JARVIX exact production release with live-asset preservation
+on:
+  push:
+    branches:
+      - owner-jarvix-prod-safe-release-20261109
+    paths:
+      - docs/OWNER_JARVIX_PRODUCTION_RELEASE_GO_20261109.txt
+permissions:
+  contents: read
+jobs:
+  surgical-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      PRODUCT_WATCHER_ENABLED: 'false'
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      CF_PROJECT: deepsyq
+      CF_PROD_BRANCH: deepsyq-platform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify latest reviewed main code and zero unrelated release source edits
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/deepsyq-platform:refs/remotes/origin/deepsyq-platform
+          if [ "$(git diff --name-only origin/deepsyq-platform HEAD -- app/src/main/assets | wc -l)" -ne 0 ]; then
+            echo "::error::Release branch diverged from reviewed DEV static assets"
+            exit 1
+          fi
+          printf "CURRENT_DEV_SHA=%s\n" "$(git rev-parse origin/deepsyq-platform)" >> "$GITHUB_ENV"
+          node --check scripts/owner-jarvix-production-overlay.mjs
+          node --check tests/jarvix-production-acceptance.mjs
+      - name: Install zero-spend browser test dependencies
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Verify Cloudflare project, production branch, and save rollback deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$CF_PROJECT" \
+            -o /tmp/jarvix-preprod.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const x=JSON.parse(fs.readFileSync('/tmp/jarvix-preprod.json','utf8'));
+          const p=x.result||{};
+          if(!x.success||p.production_branch!==process.env.CF_PROD_BRANCH||!p.canonical_deployment?.id)throw Error('Cannot verify existing production rollback target or branch');
+          fs.appendFileSync(process.env.GITHUB_ENV,'PREV_CANONICAL_ID='+p.canonical_deployment.id+'\n');
+          console.log('BACKUP_DEPLOYMENT_CONFIRMED',p.canonical_deployment.id,p.production_branch);
+          JS
+      - name: Build production snapshot with ONLY JARVIX code changes
+        run: node scripts/owner-jarvix-production-overlay.mjs
+      - name: Confirm generated bundle syntax and private history behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check artifacts/jarvix-safe-dist/deepsyq-site-shell.js
+          node --check artifacts/jarvix-safe-dist/jarvix-chat.js
+          node --check artifacts/jarvix-safe-dist/jarvix-activity-drawer.js
+          cp -a artifacts/jarvix-safe-dist/. app/src/main/assets/
+          node --test tests/jarvix-activity-drawer.browser.test.mjs
+      - name: Deploy production-preserving candidate to isolated Cloudflare preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy artifacts/jarvix-safe-dist \
+            --project-name="$CF_PROJECT" \
+            --branch=owner-jarvix-live-preserved-20261109 \
+            --commit-hash="$CURRENT_DEV_SHA" \
+            | tee /tmp/jarvix-canary.log
+          PREVIEW_URL="$(grep -Eo 'https://[a-z0-9-]+\.deepsyq\.pages\.dev' /tmp/jarvix-canary.log | head -n1)"
+          if [[ ! "$PREVIEW_URL" =~ ^https://[a-z0-9-]+\.deepsyq\.pages\.dev$ ]]; then exit 1; fi
+          echo "JARVIX_TEST_PREVIEW_URL=$PREVIEW_URL" >> "$GITHUB_ENV"
+          echo "PREVIEW_URL=$PREVIEW_URL"
+      - name: Gate production release on 8 real previews and byte-identical protected assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/jarvix-production-acceptance.mjs
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import {createHash} from 'node:crypto';
+          const m=JSON.parse(fs.readFileSync('artifacts/jarvix-safe-audit/manifest.json','utf8'));
+          for(const [path,expected] of Object.entries(m.protected)){
+            const res=await fetch(process.env.JARVIX_TEST_PREVIEW_URL+'/'+path,{signal:AbortSignal.timeout(12000)});
+            if(!res.ok)throw Error('Missing canary protected '+path+': '+res.status);
+            const sha=createHash('sha256').update(Buffer.from(await res.arrayBuffer())).digest('hex');
+            if(sha!==expected)throw Error('Protected production asset differs in canary: '+path);
+            console.log('CANARY_PRESERVED',path,sha.slice(0,12));
+          }
+          JS
+      - name: Recheck production has not changed during staging
+        shell: bash
+        run: |
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$CF_PROJECT" \
+            -o /tmp/jarvix-prelaunch.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const x=JSON.parse(fs.readFileSync('/tmp/jarvix-prelaunch.json','utf8'));
+          if(!x.success||x.result?.canonical_deployment?.id!==process.env.PREV_CANONICAL_ID||x.result?.production_branch!==process.env.CF_PROD_BRANCH)throw Error('Production changed concurrently: cancel launch');
+          console.log('PRODUCTION_UNCHANGED_SINCE_SNAPSHOT');
+          JS
+      - name: OWNER GO — publish to deepsyq.app, test, auto-rollback if unexpected
+        shell: bash
+        run: |
+          set -euo pipefail
+          rollback() {
+            trap - ERR
+            echo "::error::Production smoke/protection failed. Rolling back to saved deployment."
+            curl -fsS -X POST -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$CF_PROJECT/deployments/$PREV_CANONICAL_ID/rollback" \
+              > /tmp/jarvix-rollback.json || true
+          }
+          trap rollback ERR
+          npx --yes wrangler@4 pages deploy artifacts/jarvix-safe-dist \
+            --project-name="$CF_PROJECT" \
+            --branch="$CF_PROD_BRANCH" \
+            --commit-hash="$CURRENT_DEV_SHA" \
+            | tee /tmp/jarvix-production-deploy.log
+          PASS=0
+          for attempt in 1 2 3; do
+            if JARVIX_TEST_PREVIEW_URL=https://deepsyq.app node tests/jarvix-production-acceptance.mjs; then
+              PASS=1
+              break
+            fi
+            sleep 8
+          done
+          if [ "$PASS" -ne 1 ]; then
+            echo "::error::Main site did not pass real browser smoke"
+            exit 1
+          fi
+          JARVIX_TEST_PREVIEW_URL=https://deepsyq.app node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import {createHash} from 'node:crypto';
+          const m=JSON.parse(fs.readFileSync('artifacts/jarvix-safe-audit/manifest.json','utf8'));
+          for(const [path,expected] of Object.entries(m.protected)){
+            const r=await fetch('https://deepsyq.app/'+path,{signal:AbortSignal.timeout(12000)});
+            if(!r.ok)throw Error('Production protected route missing: '+path);
+            const h=createHash('sha256').update(Buffer.from(await r.arrayBuffer())).digest('hex');
+            if(h!==expected)throw Error('Production regression on protected file: '+path);
+            console.log('PRODUCTION_PRESERVED',path,h.slice(0,12));
+          }
+          JS
+          trap - ERR
+          echo 'OWNER_PRODUCTION_RELEASE_SUCCESS https://deepsyq.app/jarvix-chat.html'
+      - name: Archive safety manifest and browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvix-owner-release-evidence
+          path: |
+            artifacts/jarvix-safe-audit/manifest.json
+            artifacts/jarvix-live-preview/*.png
+          retention-days: 7
+          if-no-files-found: ignore
