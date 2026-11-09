@@ -1,3 +1,14 @@
+## OWNER D32 — 2026-11-09 — PRODUCTION-FIRST; TEST IS RESERVE
+
+**New explicit owner instruction, effective immediately; supersedes D29 and older TEST-first/publish-only-to-TEST rules solely on the default publication destination. Applies to Coordinator P, Administrator, Antigravity and every future DEEPSYQ executor.**
+
+1. **Publish new owner-requested and accepted changes directly to MAIN `https://deepsyq.app` as the normal destination.** Do not treat TEST publication as a mandatory first step or ask for a separate routine deployment confirmation after the owner assigns the change. Keep the edit strictly scoped to what the owner requested.
+2. **Keep TEST `https://test.deepsyq.pages.dev` as a reserve/rollback/diagnostic environment.** Use it only when specifically requested or when a risky change cannot be safely verified without isolated testing; it must not replace or silently diverge from MAIN.
+3. **Safety gates remain binding.** MAIN already has a Cloudflare Pages Worker/Functions, live generation, Neon, Stripe, authorization and user credits. Never do a static-only Pages deployment to production, overwrite an unverified Worker, change financial secrets/credits, or bypass D31 protected pricing. Before each production release verify matching Worker/Functions and bindings, backup/rollback, exact diff, security and readiness; verify the live result afterward.
+4. **If a safe MAIN deployment cannot be proven, stop and report `BLOCKED_MAIN — NOT PUBLISHED` with the exact obstacle.** The owner’s production-first preference is not permission to break working services, erase data, or ignore security checks. Do not claim completion without a verified live production deployment.
+
+---
+
 # ==============================================================================
 # D31 / OWNER RULE — 2026-11-09 — PERMANENT LOCK: PRICING & AI CREDITS FREEZE
 # ==============================================================================
