@@ -151,13 +151,23 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   // Do not alter the shared Studio controls or any desktop/Home layout.
   if(location.pathname.endsWith('/jarvix-chat.html')&&innerWidth<=760){
    style.textContent+=`
+    #studioSettingsHub.composer-popover{
+     display:grid!important;grid-template-columns:minmax(0,1fr) 44px!important;
+     align-items:start!important;
+    }
     #studioSettingsHub>h2{
-     display:block!important;min-height:48px!important;
-     margin:0 0 12px!important;padding-right:52px!important;
+     grid-column:1!important;grid-row:1!important;
+     display:block!important;min-height:44px!important;
+     margin:0 0 12px!important;padding:4px 4px 0 0!important;
     }
     #studioSettingsHub>button:nth-child(2){
-     position:absolute!important;top:2px!important;right:12px!important;
-     float:none!important;margin:0!important;z-index:2!important;
+     grid-column:2!important;grid-row:1!important;
+     position:static!important;align-self:start!important;
+     justify-self:end!important;float:none!important;
+     margin:0!important;z-index:2!important;
+    }
+    #studioSettingsHub>:is(#studioTypePicker,#modelButton,#settingsButton){
+     grid-column:1 / -1!important;
     }
    `;
   }

@@ -82,11 +82,12 @@ jobs:
               const heading=el.querySelector(':scope > h2')?.getBoundingClientRect();
               return {x:x&&{top:x.top,bottom:x.bottom,left:x.left,right:x.right},first:first&&{top:first.top,bottom:first.bottom},heading:heading&&{top:heading.top,bottom:heading.bottom}};
             });
+            console.log('JARVIX_MOBILE_SETTINGS_RECT',JSON.stringify({url:page.url(),rect}));
+            await page.screenshot({path:'artifacts/jarvix-live-preview/mobile-jarvix-settings-x.png'});
             assert(rect.x&&rect.first&&rect.heading,'native Settings controls are present');
             assert(rect.x.bottom<=rect.first.top-3,'Mobile Settings X overlaps creation row');
             assert(rect.x.top>=0,'Mobile Settings X is offscreen');
             console.log('JARVIX_MOBILE_SETTINGS_X_PASS',JSON.stringify({url:page.url(),rect}));
-            await page.screenshot({path:'artifacts/jarvix-live-preview/mobile-jarvix-settings-x.png'});
             await frame.locator('#studioSettingsHub > button:nth-child(2)').click();
             await page.waitForFunction(()=>document.querySelector('#homeStudioSettingsHost')?.style.display==='none',null,{timeout:8000});
             console.log('JARVIX_MOBILE_SETTINGS_CLOSE_PASS');
