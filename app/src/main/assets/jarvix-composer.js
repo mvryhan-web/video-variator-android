@@ -26,7 +26,7 @@ export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
  const voice=bindVoiceInput({mic,input,form,onError});
  form.addEventListener('submit',async e=>{e.preventDefault();await voice.stop();if(!input.value.trim())return;await onSend({text:input.value.trim(),mode,files:[...files]});});
  input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();form.requestSubmit();}});
- return {clear(){input.value='';files=[];render();},add(file){files=validateAttachments([...files,file]);render();input.focus();},stop(){void voice.abort();}};
+ return {setMode(next){if(!['auto','text','image','video','audio'].includes(next))return false;mode=next==='text'?'auto':next;try{sessionStorage.setItem('jarvix_composer_mode',mode);}catch{}for(const item of menu.querySelectorAll('[data-j-mode]'))item.setAttribute('aria-pressed',String(item.dataset.jMode===mode));reportMode();return true;},getMode(){return mode;},clear(){input.value='';files=[];render();},add(file){files=validateAttachments([...files,file]);render();input.focus();},stop(){void voice.abort();}};
 }
 export function trackViewport(root){
  const update=()=>{const v=window.visualViewport;document.documentElement.style.setProperty('--j-viewport',(v?.height||innerHeight)+'px');if(root)document.documentElement.style.setProperty('--jarvix-compose-height',root.getBoundingClientRect().height+'px');};
