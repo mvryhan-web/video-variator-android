@@ -204,6 +204,7 @@
       el.setAttribute('aria-label', 'JARVIX AI');
       el.title = 'JARVIX — AI Voice Butler & Chat';
       el.onclick = (e) => {
+        if (e.defaultPrevented) return;
         if (!e.metaKey && !e.ctrlKey) {
           e.preventDefault();
           location.assign('jarvix-chat.html');
