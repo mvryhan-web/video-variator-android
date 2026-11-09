@@ -60,6 +60,36 @@ jobs:
           }
           console.log('SOURCE_AUDIT_SUMMARY',JSON.stringify({total:paths.length,changed,unreadable,allIdentical:changed.length===0,readOnly:true}));
           JS
+      - name: Validate Pages asset hash algorithm on EXISTING production file (READ ONLY)
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet blake3 --break-system-packages
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const prod=JSON.parse(fs.readFileSync('/tmp/pages-deployment.json','utf8')).result;
+          const url=(prod.url||'https://deepsyq.app')+'/jarvix-composer-design.js';
+          const response=await fetch(url,{signal:AbortSignal.timeout(12000)});
+          if(!response.ok)throw Error('Could not fetch immutable production asset '+response.status);
+          fs.writeFileSync('/tmp/actual-live-composer.js',Buffer.from(await response.arrayBuffer()));
+          console.log('EXPECTED_PAGES_ASSET_HASH',prod.files['/jarvix-composer-design.js']);
+          JS
+          python3 - <<'PY'
+          import base64
+          from blake3 import blake3
+          from pathlib import Path
+          import json
+          d=Path('/tmp/actual-live-composer.js').read_bytes()
+          info=json.loads(Path('/tmp/pages-deployment.json').read_text())['result']
+          expected=info['files']['/jarvix-composer-design.js']
+          formulas={
+            'raw_plus_js':blake3(d+b'js').hexdigest()[:32],
+            'base64_plus_js':blake3(base64.b64encode(d)+b'js').hexdigest()[:32],
+            'raw':blake3(d).hexdigest()[:32],
+            'base64':blake3(base64.b64encode(d)).hexdigest()[:32]
+          }
+          print('PAGES_HASH_PROVENANCE',json.dumps({'expected':expected,'formulas':formulas,'match':[name for name,h in formulas.items() if h==expected]}))
+          if expected not in formulas.values():raise SystemExit('Cannot verify exact Cloudflare Pages hashing; BLOCK safe release')
+          PY
       - name: Check tracked historical composer variants against currently served file
         run: |
           python3 - <<'PY'
