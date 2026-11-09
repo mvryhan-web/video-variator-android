@@ -41,13 +41,15 @@ jobs:
             url:d.url,
             aliases:(d.aliases||[]).filter(x=>x.endsWith('.deepsyq.pages.dev')),
             branch:d.deployment_trigger?.metadata?.branch,
+            trigger:d.deployment_trigger?.type,
+            commit_dirty:d.deployment_trigger?.metadata?.commit_dirty,
             sha:d.deployment_trigger?.metadata?.commit_hash,
             created:d.created_on,
             uses_functions:d.uses_functions,
             environment:d.environment
           }):null;
           const byHash=arr.find(d=>d.url?.includes('2fa7fbd4.deepsyq.pages.dev'));
-          const stable=arr.find(d=>(d.aliases||[]).some(x=>x.includes('test.deepsyq.pages.dev')));
+          const stable=arr.find(d=>(d.aliases||[]).some(x=>x==='https://test.deepsyq.pages.dev'));
           const main=p.canonical_deployment;
           console.log('D29_CF_READONLY',JSON.stringify({
             project:p.name,production_branch:p.production_branch,
