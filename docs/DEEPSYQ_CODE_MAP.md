@@ -1,21 +1,256 @@
-# DEEPSYQ — Graphify code map (server only)
+# DEEPSYQ — Graphify code map (server, web, Android)
 
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
-> Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
+> Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `a06bbf1836cc7252e52d3bf3655ad2fef50d7c77`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` | Indexed files: 62 | Named symbols: 177 | Checked relations: 50
+Source commit: `cb3be2321775d1e3c0534615970c4aed37dcc4c3`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 117 | Named symbols: 366 | Checked relations: 62
 
 ## Topic finder (matching filenames)
 
-- **Credits, payments and pricing:** `server/generation-purchased-provider-boundary.js`, `server/generation-subscription-credits.js`, `server/generation-wallet.js`
-- **Video, providers and jobs:** `server/compare-ai-mock-worker.js`, `server/free-ai-provider.js`, `server/generation-provider.js`, `server/generation-purchased-provider-boundary.js`, `server/generation-storage.js`, `server/generation-video-submit-uncertainty.js`, `server/generation-worker.js`, `server/product-watcher/worker.js`, `server/telegram-video-core.js`, `server/telegram-video.js`
-- **Image, Canvas and Home:** `server/deepsyq-preview.js`, `server/generation-openai-image.js`
-- **Audio and voice:** `server/jarvix-voice.js`, `server/speech.js`
-- **AI Apps, Inspiration, History:** `server/generation-inspiration.js`, `server/tool-policy.js`, `server/workspace-card-sections.js`, `server/workspace-job-view.js`, `server/workspace-project-policy.js`
+- **Credits, payments and pricing:** `app/src/main/assets/ai-pricing.js`, `app/src/main/assets/home-credit-store.js`, `app/src/main/assets/pricing-page.js`, `app/src/main/assets/pricing-wallet.js`, `server/generation-purchased-provider-boundary.js`, `server/generation-subscription-credits.js`, `server/generation-wallet.js`
+- **Video, providers and jobs:** `app/src/main/assets/ffmpeg-worker.js`, `app/src/main/assets/video-compression-args.mjs`, `app/src/main/java/com/videovariator/app/MainActivity.java`, `app/src/main/java/com/videovariator/app/ProcessingService.java`, `app/src/main/java/com/videovariator/app/TeleprompterActivity.java`, `server/compare-ai-mock-worker.js`, `server/free-ai-provider.js`, `server/generation-provider.js`, `server/generation-purchased-provider-boundary.js`, `server/generation-storage.js`, `server/generation-video-submit-uncertainty.js`, `server/generation-worker.js`, `server/product-watcher/worker.js`, `server/telegram-video-core.js`, `server/telegram-video.js`
+- **Image, Canvas and Home:** `app/src/main/assets/audio-studio.js`, `app/src/main/assets/avatar-studio.js`, `app/src/main/assets/canvas-editor.js`, `app/src/main/assets/generate-studio.js`, `app/src/main/assets/jarvix-studio-page.js`, `app/src/main/assets/studio-job-progress.js`, `server/deepsyq-preview.js`, `server/generation-openai-image.js`
+- **Audio and voice:** `app/src/main/assets/audio-studio.js`, `app/src/main/assets/jarvix-owner-speech.js`, `app/src/main/assets/jarvix-tour-v3-audio.js`, `app/src/main/assets/speech-client.js`, `app/src/main/assets/voice-agent-controller.js`, `server/jarvix-voice.js`, `server/speech.js`
+- **AI Apps, Inspiration, History:** `app/src/main/assets/ai-apps.js`, `app/src/main/assets/ai-pricing.js`, `app/src/main/assets/ai-template-product-name.js`, `app/src/main/assets/audio-studio.js`, `app/src/main/assets/avatar-studio.js`, `app/src/main/assets/bootstrap.js`, `app/src/main/assets/canvas-editor.js`, `app/src/main/assets/deepsyq-admin.js`, `app/src/main/assets/deepsyq-canonical-nav-icons.js`, `app/src/main/assets/deepsyq-unified-platform-header.js`, `app/src/main/assets/deepsyq.js`, `app/src/main/assets/ffmpeg-worker.js`, `app/src/main/assets/folder.js`, `app/src/main/assets/generate-models.js`, `app/src/main/assets/generate-studio.js`, `app/src/main/assets/home-creative-examples.js`, `app/src/main/assets/home-credit-store.js`, `app/src/main/assets/home-experience.js`, `app/src/main/assets/home-inspiration.js`, `app/src/main/assets/inspiration.js`, `app/src/main/assets/jarvis-core.js`, `app/src/main/assets/jarvix-action-plan.js`, `app/src/main/assets/jarvix-chat.js`, `app/src/main/assets/jarvix-clip-library.js`, `app/src/main/assets/jarvix-guided-tour.js`, `app/src/main/assets/jarvix-home-chat.js`, `app/src/main/assets/jarvix-navigation-reply.js`, `app/src/main/assets/jarvix-owner-speech.js`, `app/src/main/assets/jarvix-studio-page.js`, `app/src/main/assets/jarvix-tour-plan.js`
 - **Accounts and security:** `server/email-auth.js`, `server/generation-trial-policy.js`, `server/product-watcher/lite-delivery-policy.js`, `server/product-watcher/scheduler-state-policy.js`, `server/tool-policy.js`, `server/user-agent-plan.js`, `server/user-agent-stage1-local-draft.js`, `server/workspace-project-policy.js`
+- **JARVIX unified chat and composer:** `app/src/main/assets/jarvis-core.js`, `app/src/main/assets/jarvix-action-plan.js`, `app/src/main/assets/jarvix-chat.js`, `app/src/main/assets/jarvix-clip-library.js`, `app/src/main/assets/jarvix-guided-tour.js`, `app/src/main/assets/jarvix-home-chat.js`, `app/src/main/assets/jarvix-navigation-reply.js`, `app/src/main/assets/jarvix-owner-speech.js`, `app/src/main/assets/jarvix-studio-page.js`, `app/src/main/assets/jarvix-tour-plan.js`, `app/src/main/assets/jarvix-tour-v3-audio.js`, `app/src/main/assets/jarvix-tour-v3-script.js`, `server/jarvix-brain.js`, `server/jarvix-free-llm.js`, `server/jarvix-voice.js`
+- **Pricing and subscriptions:** `app/src/main/assets/ai-pricing.js`, `app/src/main/assets/pricing-page.js`, `app/src/main/assets/pricing-wallet.js`, `server/generation-subscription-credits.js`
+- **Android app:** `app/src/main/java/com/videovariator/app/MainActivity.java`, `app/src/main/java/com/videovariator/app/ProcessingService.java`, `app/src/main/java/com/videovariator/app/TeleprompterActivity.java`
+
+## Frontend page inventory (filenames only, not Graphify AST)
+
+`app/src/main/assets/ai-agents.html` · `app/src/main/assets/ai-apps.html` · `app/src/main/assets/ai-pricing.html` · `app/src/main/assets/ai-privacy.html` · `app/src/main/assets/audio-studio.html` · `app/src/main/assets/avatar-studio.html` · `app/src/main/assets/canvas.html` · `app/src/main/assets/compare-ai.html` · `app/src/main/assets/contact.html` · `app/src/main/assets/cookie.html` · `app/src/main/assets/deepsyq-admin.html` · `app/src/main/assets/deepsyq-vs-deepseek.html` · `app/src/main/assets/deepsyq.html` · `app/src/main/assets/design-gallery.html` · `app/src/main/assets/free-tools.html` · `app/src/main/assets/generate-studio.html` · `app/src/main/assets/index.html` · `app/src/main/assets/jarvix-chat.html` · `app/src/main/assets/jarvix-studio.html` · `app/src/main/assets/mobile-utility.html` · `app/src/main/assets/my-creations.html` · `app/src/main/assets/photo-collage.html` · `app/src/main/assets/pricing.html` · `app/src/main/assets/product-watcher-admin.html` · `app/src/main/assets/refund.html` · `app/src/main/assets/simple-background-remover.html` · `app/src/main/assets/smart-reminders.html` · `app/src/main/assets/telegram-free-mini.html` · `app/src/main/assets/teleprompter.html` · `app/src/main/assets/terms.html` · `app/src/main/assets/video-uniquifier.html` · `app/src/main/assets/virtual-pet.html` · `app/src/main/assets/voice-agent-preview.html`
+
+## Frontend CSS inventory (filenames only)
+
+`app/src/main/assets/ai-apps.css` · `app/src/main/assets/ai-pricing-cinematic.css` · `app/src/main/assets/ai-pricing.css` · `app/src/main/assets/ai-privacy.css` · `app/src/main/assets/approved-page-design.css` · `app/src/main/assets/auth-email.css` · `app/src/main/assets/canvas-home-compact.css` · `app/src/main/assets/canvas-page.css` · `app/src/main/assets/creator-pages.css` · `app/src/main/assets/creator-showcase.css` · `app/src/main/assets/deepsyq-admin.css` · `app/src/main/assets/deepsyq-global-theme.css` · `app/src/main/assets/deepsyq-home-neon-cinema-fix-20261107.css` · `app/src/main/assets/deepsyq-mobile-shell.css` · `app/src/main/assets/deepsyq-platform-embedded.css` · `app/src/main/assets/deepsyq-seo.css` · `app/src/main/assets/deepsyq-unified-platform-header.css` · `app/src/main/assets/deepsyq.css` · `app/src/main/assets/everyday-tools-visual.css` · `app/src/main/assets/everyday-utility-art.css` · `app/src/main/assets/free-tools.css` · `app/src/main/assets/generate-studio.css` · `app/src/main/assets/home-everyday-art.css` · `app/src/main/assets/home-inspiration.css` · `app/src/main/assets/home-triptych-video.css` · `app/src/main/assets/inspiration-gallery-detail.css` · `app/src/main/assets/inspiration.css` · `app/src/main/assets/jarvis-core.css` · `app/src/main/assets/jarvix-action-design.css` · `app/src/main/assets/jarvix-approved-orb.css` · `app/src/main/assets/jarvix-chat.css` · `app/src/main/assets/lumina-terms.css` · `app/src/main/assets/mobile-utility.css` · `app/src/main/assets/photo-collage.css` · `app/src/main/assets/pricing-page.css` · `app/src/main/assets/pricing-wallet.css` · `app/src/main/assets/product-polish.css` · `app/src/main/assets/simple-background-remover.css` · `app/src/main/assets/smart-reminders.css` · `app/src/main/assets/startup.css` · `app/src/main/assets/studio-classic-theme.css` · `app/src/main/assets/studio-composer-popovers.css` · `app/src/main/assets/studio-premium-panels.css` · `app/src/main/assets/studio-quickstart.css` · `app/src/main/assets/studio.css` · `app/src/main/assets/styles.css` · `app/src/main/assets/telegram-free-mini.css` · `app/src/main/assets/teleprompter.css` · `app/src/main/assets/theme.css` · `app/src/main/assets/tool-access.css` · `app/src/main/assets/tools-hub.css` · `app/src/main/assets/v3.css` · `app/src/main/assets/v5.css` · `app/src/main/assets/video-uniquifier-reference.css` · `app/src/main/assets/virtual-pet.css`
+
+## Android Java/Kotlin files (filenames only)
+
+`app/src/main/java/com/videovariator/app/MainActivity.java` · `app/src/main/java/com/videovariator/app/ProcessingService.java` · `app/src/main/java/com/videovariator/app/TeleprompterActivity.java`
 
 ## Source symbol map
+
+### `app/src/main/assets/ai-apps.js`
+
+all (L4) · accountLogout (L159)
+
+### `app/src/main/assets/ai-pricing.js`
+
+accountToken (L4) · privateRequests (L5) · checkoutRequests (L5)
+
+### `app/src/main/assets/ai-template-product-name.js`
+
+VALID_TYPES (L1) · LOCAL_INPUTS (L2)
+
+### `app/src/main/assets/audio-studio.js`
+
+lang (L5) · copy (L6) · trimCopy (L12) · videoAudioCopy (L18) · trimPreview (L62) · videoPreview (L138)
+
+### `app/src/main/assets/avatar-studio.js`
+
+lang (L6) · dict (L8) · policy (L24) · qualities (L25) · inputIds (L26) · savedIds (L27) · recordChunks (L29) · restored (L30) · urls (L31) · ttsWaiters (L213) · googleSamples (L361) · previewCache (L362)
+
+### `app/src/main/assets/bootstrap.js`
+
+bootstrap.js (L1)
+
+### `app/src/main/assets/canvas-editor.js`
+
+quickCreateForm (L5) · quickCreateDropzone (L6) · quickPromptStarters (L18) · quickReferences (L33) · quickPreviewUrls (L33) · quickDraftKeyPromise (L39)
+
+### `app/src/main/assets/deepsyq-admin.js`
+
+ownerTokenAtOpen (L266)
+
+### `app/src/main/assets/deepsyq-canonical-nav-icons.js`
+
+paths (L8) · iconKeys (L21)
+
+### `app/src/main/assets/deepsyq-unified-platform-header.js`
+
+labels (L6)
+
+### `app/src/main/assets/deepsyq.js`
+
+deepsyq.js (L1) · mobileMenu (L9) · homeLang (L185) · homeI18n (L186) · promo (L227) · inviteDialog (L229) · requestedIdentityToken (L566)
+
+### `app/src/main/assets/ffmpeg-worker.js`
+
+T (L9)
+
+### `app/src/main/assets/folder.js`
+
+folder.js (L1)
+
+### `app/src/main/assets/generate-models.js`
+
+MODELS (L37) · RAW_MODEL_CATALOG (L42) · MODEL_CATALOG (L75)
+
+### `app/src/main/assets/generate-studio.js`
+
+curLang (L19) · studioI18n (L26) · hintEl (L36) · requested (L39) · config (L41) · catalog (L41) · refs (L42) · historyThumbUrls (L61) · drafts (L63) · studioDocumentToken (L214) · studioRequests (L216) · walletKinds (L270) · imageEditPrompts (L493) · cropDialog (L508) · cropRatio (L511) · cropZoom (L511) · cropX (L511) · cropY (L511) · studioDialogAnchors (L720) · UNCERTAIN_VIDEO_ERRORS (L814) · targetJobId (L1488) · aiCheckoutState (L1491)
+
+### `app/src/main/assets/home-creative-examples.js`
+
+CREATIVE_EXAMPLES (L1)
+
+### `app/src/main/assets/home-credit-store.js`
+
+root (L2) · status (L2)
+
+### `app/src/main/assets/home-experience.js`
+
+neighborVideos (L10) · slides (L18) · failedSlides (L18) · ideas (L439) · modeToStudio (L444)
+
+### `app/src/main/assets/home-inspiration.js`
+
+items (L238) · previewVideos (L239)
+
+### `app/src/main/assets/inspiration.js`
+
+inspiration.js (L1)
+
+### `app/src/main/assets/jarvis-core.js`
+
+JARVIX_ONBOARDING (L77) · jarvixContext (L80) · cachedVoices (L87) · WORLD_CITIES (L377)
+
+### `app/src/main/assets/jarvix-action-plan.js`
+
+ACTION_ROUTES (L2)
+
+### `app/src/main/assets/jarvix-chat.js`
+
+urls (L38) · composer (L126) · pending (L152) · modeHeaderLabels (L156) · composerInput (L185) · wpPane (L195) · expandBtn (L214)
+
+### `app/src/main/assets/jarvix-clip-library.js`
+
+answerRules (L3) · library (L74) · prepareStaticClips (L75) · getStaticClip (L76) · findCatalogReply (L77)
+
+### `app/src/main/assets/jarvix-guided-tour.js`
+
+v3DialogsOpened (L114)
+
+### `app/src/main/assets/jarvix-home-chat.js`
+
+form (L5) · status (L5) · input (L5)
+
+### `app/src/main/assets/jarvix-navigation-reply.js`
+
+replies (L2)
+
+### `app/src/main/assets/jarvix-owner-speech.js`
+
+actionAudio (L5) · actionWords (L5) · OWNER_GREETING_TEXT (L30)
+
+### `app/src/main/assets/jarvix-studio-page.js`
+
+currentSessionId (L11) · SAMPLES_DATA (L16) · terminalLogs (L141) · chatInput (L142) · sendBtn (L143) · stateInspector (L144)
+
+### `app/src/main/assets/jarvix-tour-plan.js`
+
+TOUR_KEY (L2) · RECORDED_CUES (L26) · SECTION_BEATS (L78)
+
+### `app/src/main/assets/jarvix-tour-v3-audio.js`
+
+LANGUAGES (L6)
+
+### `app/src/main/assets/jarvix-tour-v3-script.js`
+
+TOUR_V3_VERSION (L5) · TOUR_V3_DATA (L6)
+
+### `app/src/main/assets/mobile-utility.js`
+
+mode (L7) · fileTypes (L21) · timeModes (L30) · redactRects (L31) · redactPreviewUrls (L33)
+
+### `app/src/main/assets/onboarding-options.js`
+
+copy (L3)
+
+### `app/src/main/assets/owner-home-hero-headings.js`
+
+OWNER_HOME_HERO_HEADINGS (L1)
+
+### `app/src/main/assets/photo-collage-core.js`
+
+MAX_COLLAGE_FILES (L2) · MAX_COLLAGE_FILE_BYTES (L3) · MAX_COLLAGE_TOTAL_BYTES (L4)
+
+### `app/src/main/assets/photo-collage.js`
+
+lang (L2) · dict (L3)
+
+### `app/src/main/assets/pricing-page.js`
+
+art (L10) · numeral (L37) · verifiedQuality (L59) · sharedAccess (L65) · monthlyDetails (L73) · planned (L74) · annualPlanKeys (L89) · creditRequestIds (L117) · creditOptions (L200) · authModal (L284) · fallbackPlanConfig (L339)
+
+### `app/src/main/assets/pricing-wallet.js`
+
+currentToken (L7) · pending (L8) · labels (L46)
+
+### `app/src/main/assets/product-watcher-admin.js`
+
+base (L1) · alertAdvice (L26)
+
+### `app/src/main/assets/reminder-input-parser.js`
+
+ruMonths (L5) · enMonths (L6) · frMonths (L7) · ukMonths (L8) · dayPatterns (L9)
+
+### `app/src/main/assets/reminder-photo.js`
+
+lng (L6) · input (L8) · scan (L8) · preview (L9) · text (L9) · textLine (L9) · status (L10) · candidates (L10) · photoOwner (L13)
+
+### `app/src/main/assets/simple-background-remover.js`
+
+source (L3) · result (L3) · srcCtx (L3) · outCtx (L3) · selected (L4)
+
+### `app/src/main/assets/smart-reminders.js`
+
+locale (L4) · tomorrow (L211) · renderedAccountToken (L357)
+
+### `app/src/main/assets/speech-client.js`
+
+voices (L2) · languages (L3)
+
+### `app/src/main/assets/startup.js`
+
+startup.js (L1)
+
+### `app/src/main/assets/studio-job-progress.js`
+
+stages (L3)
+
+### `app/src/main/assets/sw.js`
+
+sw.js (L1) · APP_SHELL (L2)
+
+### `app/src/main/assets/teleprompter.js`
+
+teleprompter.js (L1)
+
+### `app/src/main/assets/theme.js`
+
+theme.js (L1)
+
+### `app/src/main/assets/video-compression-args.mjs`
+
+PRESETS (L6)
+
+### `app/src/main/assets/voice-agent-controller.js`
+
+VOICE_AGENT_STATES (L13) · VoiceAgentController (L23)
+
+### `app/src/main/java/com/videovariator/app/MainActivity.java`
+
+MainActivity.java (L1) · MainActivity (L49) · WebViewClient (L136) · WebChromeClient (L145) · AndroidBridge (L459)
+
+### `app/src/main/java/com/videovariator/app/ProcessingService.java`
+
+ProcessingService.java (L1) · ProcessingService (L11)
+
+### `app/src/main/java/com/videovariator/app/TeleprompterActivity.java`
+
+TeleprompterActivity.java (L1) · TeleprompterActivity (L43) · OnBackPressedCallback (L87)
 
 ### `server/ai-migrations.js`
 
