@@ -28,6 +28,54 @@ import {bindComposer,trackViewport} from './jarvix-composer.js';
 import {getJarvixSessionId,getJarvixLanguage,speakJarvis} from './jarvis-core.js';
 import {saveStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id),status=text=>$('jStatus').textContent=text;
+
+/* Compact JARVIX-only actions. Existing global shell, other routes and chat state remain untouched. */
+function installJarvixChatQuickActions(){
+  const account=document.getElementById('jQuickAccount');
+  const pricing=document.getElementById('jQuickPricing');
+  const language=document.getElementById('jQuickLang');
+  const help=document.querySelector('.j-chat-quick-help');
+  const helpTitle=document.getElementById('jQuickHelp');
+  const helpText=document.getElementById('jQuickHelpText');
+  if(!account||!pricing||!language||!help||!helpTitle||!helpText)return;
+  const labels={
+    en:{login:'Log in',account:'Account',pricing:'Pricing',help:'Help',language:'Language',hint:'Type your message below, or press + to open Image, Video, Audio and file tools.'},
+    ru:{login:'Войти',account:'Аккаунт',pricing:'Тарифы',help:'Помощь',language:'Язык',hint:'Напишите сообщение ниже или нажмите +, чтобы открыть Image, Video, Audio и загрузку файлов.'},
+    fr:{login:'Connexion',account:'Compte',pricing:'Tarifs',help:'Aide',language:'Langue',hint:'Écrivez votre message ci-dessous ou appuyez sur + pour ouvrir Image, Video, Audio et les fichiers.'},
+    es:{login:'Acceder',account:'Cuenta',pricing:'Precios',help:'Ayuda',language:'Idioma',hint:'Escribe abajo o pulsa + para abrir Image, Video, Audio y los archivos.'}
+  };
+  const current=()=>{
+    try{
+      const value=(localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang')||document.documentElement.lang||'en').slice(0,2).toLowerCase();
+      return labels[value]?value:'en';
+    }catch{return 'en';}
+  };
+  const refresh=()=>{
+    const lng=current(),t=labels[lng];
+    let token='';try{token=localStorage.getItem('vv_token')||'';}catch{}
+    language.value=lng;language.setAttribute('aria-label',t.language);
+    account.textContent=token?t.account:t.login;
+    account.href=token?'index.html?view=profile':'deepsyq.html?panel=login';
+    pricing.textContent=t.pricing;
+    helpTitle.textContent=t.help;
+    helpText.textContent=t.hint;
+  };
+  language.addEventListener('change',()=>{
+    try{localStorage.setItem('deepsyq_home_language',language.value);}catch{}
+    window.dispatchEvent(new Event('deepsyq:lang'));
+    refresh();
+  });
+  window.addEventListener('deepsyq:lang',refresh);
+  window.addEventListener('storage',e=>{
+    if(['vv_token','deepsyq_home_language','deepsyq_lang'].includes(e.key))refresh();
+  });
+  window.addEventListener('pageshow',refresh);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')help.open=false;});
+  document.addEventListener('click',e=>{if(help.open&&!help.contains(e.target))help.open=false;});
+  refresh();
+}
+installJarvixChatQuickActions();
+
 const store=await conversationStore();let conversation=null,busy=false,epoch=0,controller=null,config=null,urls=[];
 const headers=()=>({'Content-Type':'application/json',...(localStorage.getItem('vv_token')?{Authorization:'Bearer '+localStorage.getItem('vv_token')}:{})});
 async function api(path,body){store.guard();const r=await fetch(path,{method:body?'POST':'GET',headers:headers(),cache:'no-store',...(body?{body:JSON.stringify(body)}:{}),signal:controller?.signal});store.guard();const d=await r.json();if(!r.ok)throw Error(d.message||d.error||'Request failed');return d;}
