@@ -1,4 +1,5 @@
 name: Owner JARVIX Chat compact header - isolated TEST only
+# Rerun after the JARVIX-only mobile/header spacer specificity fix.
 on:
   pull_request:
     types: [opened, synchronize, reopened]
