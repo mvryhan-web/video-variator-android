@@ -19,6 +19,7 @@ jobs:
       OPENAI_API_KEY: ''
       STRIPE_SECRET_KEY: ''
       DATABASE_URL: ''
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -147,6 +148,7 @@ jobs:
       OPENAI_API_KEY: ''
       STRIPE_SECRET_KEY: ''
       DATABASE_URL: ''
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -198,7 +200,7 @@ jobs:
           const p=JSON.parse(fs.readFileSync('/tmp/project-after.json','utf8'));
           const d=JSON.parse(fs.readFileSync('/tmp/deployments-after.json','utf8'));
           if(!p.success||p.result?.canonical_deployment?.id!==process.env.MAIN_BEFORE)throw Error('MAIN changed');
-          const test=d.result.find(x=>x.environment==='preview'&&x.deployment_trigger?.metadata?.branch==='test'&&x.deployment_trigger?.metadata?.commit_hash===process.env.GITHUB_SHA);
+          const test=d.result.find(x=>x.environment==='preview'&&x.deployment_trigger?.metadata?.branch==='test'&&x.deployment_trigger?.metadata?.commit_hash===process.env.EXPECTED_SHA);
           if(!test)throw Error('Stable TEST exact commit not verified in Cloudflare');
           console.log('TEST_DEPLOYMENT_BRANCH',test.deployment_trigger.metadata.branch);
           console.log('TEST_USES_FUNCTIONS',test.uses_functions);
