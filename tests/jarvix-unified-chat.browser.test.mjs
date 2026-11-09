@@ -48,7 +48,11 @@ try{
      assert.equal(await page.evaluate(()=>sessionStorage.getItem('jarvix_active_conversation')),id,'NO new conversation on mode toggle');
      assert.equal(await page.locator('#jMessages').innerHTML(),before,'transcript preserved');
      await page.frameLocator('#jWorkspaceFrame').locator('#creator').waitFor({timeout:25000});
-     assert.match(await page.frameLocator('#jWorkspaceFrame').locator('#taskTitle').innerText(),/video|image|audio|song|track|music|create/i);
+     const native=page.frameLocator('#jWorkspaceFrame');
+     const kind=mode==='audio'?'music':mode;
+     await native.locator('.studio-nav [data-kind="'+kind+'"][aria-pressed="true"]').waitFor({timeout:22000});
+     assert.equal(await native.locator('#modelButton').count(),1,'original model picker');
+     assert.equal(await native.locator('#generate').count(),1,'original submit and credits flow');
     }
     await page.evaluate(()=>document.querySelector('#dsSiteSidebar a[href="jarvix-chat.html"]')?.click());
     await page.locator('#jWorkspacePane').waitFor({state:'hidden',timeout:10000});
