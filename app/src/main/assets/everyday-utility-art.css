@@ -200,30 +200,30 @@ body[data-approved-page="free-tools"] .et-owner-voice-card .et-photo-cta{
 /* Owner mobile-only cleanup: no tiny square, letter or glyph before tool names.
    The large illustrated artwork, titles, descriptions, links and desktop stay intact. */
 @media (max-width:900px){
-  body[data-approved-page="free-tools"] main.free-tools-page .quick-tool-list .hub-tile>.hub-icon,
-  body[data-approved-page="free-tools"] main.free-tools-page .quick-tool-icon,
-  body[data-approved-page="free-tools"] main.free-tools-page .et-gallery .et-card>.et-icon,
-  body[data-approved-page="free-tools"] #mobileUtilityGrid.et-photo-grid>a.et-photo-card>.utility-tile-icon,
-  body[data-approved-page="free-tools"] main.free-tools-page .et-owner-voice-card>.hub-icon,
-  body[data-approved-page="free-tools"] main.free-tools-page .et-owner-voice-card>.utility-tile-icon{
+  body main.free-tools-page .quick-tool-list .hub-tile>.hub-icon,
+  body main.free-tools-page .quick-tool-icon,
+  body main.free-tools-page .et-gallery .et-card>.et-icon,
+  body #mobileUtilityGrid.et-photo-grid>a.et-photo-card>.utility-tile-icon,
+  body main.free-tools-page .et-owner-voice-card>.hub-icon,
+  body main.free-tools-page .et-owner-voice-card>.utility-tile-icon{
     display:none!important;
   }
-  body[data-approved-page="free-tools"] main.free-tools-page .et-gallery .et-card>.et-card-copy{
+  body main.free-tools-page .et-gallery .et-card>.et-card-copy{
     max-width:100%!important;
   }
-  body[data-approved-page="free-tools"] main.free-tools-page .et-gallery .et-card .et-card-button{
+  body main.free-tools-page .et-gallery .et-card .et-card-button{
     left:0!important;
   }
-  body[data-approved-page="free-tools"] #mobileUtilityGrid.et-photo-grid>a.et-photo-card>strong,
-  body[data-approved-page="free-tools"] #mobileUtilityGrid.et-photo-grid>a.et-photo-card>small{
+  body #mobileUtilityGrid.et-photo-grid>a.et-photo-card>strong,
+  body #mobileUtilityGrid.et-photo-grid>a.et-photo-card>small{
     left:12px!important;width:calc(52% - 14px)!important;
   }
-  body[data-approved-page="free-tools"] #mobileUtilityGrid.et-photo-grid>a.et-photo-card>.et-photo-cta{
+  body #mobileUtilityGrid.et-photo-grid>a.et-photo-card>.et-photo-cta{
     left:12px!important;
   }
-  body[data-approved-page="free-tools"] main.free-tools-page .et-owner-voice-card>strong,
-  body[data-approved-page="free-tools"] main.free-tools-page .et-owner-voice-card>small,
-  body[data-approved-page="free-tools"] main.free-tools-page .et-owner-voice-card>.et-photo-cta{
+  body main.free-tools-page .et-owner-voice-card>strong,
+  body main.free-tools-page .et-owner-voice-card>small,
+  body main.free-tools-page .et-owner-voice-card>.et-photo-cta{
     left:12px!important;
   }
 }
