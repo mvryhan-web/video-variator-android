@@ -7,7 +7,7 @@ export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
   openHomeStudioSettings({gear:form.querySelector('.j-settings-shortcut'),mode:selected});}});
  if(innerWidth<361)input.placeholder='Message…';
  let mode='auto',files=[];
- try{const stored=sessionStorage.getItem('jarvix_composer_mode');if(['image','video','audio'].includes(stored))mode=stored;}catch{}
+ try{const _reqMode=new URLSearchParams(location.search).get('mode')||new URLSearchParams(location.search).get('studio');const stored=sessionStorage.getItem('jarvix_composer_mode');if(_reqMode&&['image','video','audio'].includes(stored)){mode=stored;}else if(!_reqMode){mode='auto';sessionStorage.removeItem('jarvix_composer_mode');}}catch{}
  const reportMode=()=>form.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode},bubbles:true}));
  const plus=document.getElementById('jPlus'),menu=document.getElementById('jPlusMenu'),fileInput=document.getElementById('jFiles'),attachments=document.getElementById('jAttachments'),mic=document.getElementById('jMic');
  function render(){attachments.replaceChildren();files.forEach((f,i)=>{const b=document.createElement('button');b.type='button';b.textContent=f.name+' ×';b.setAttribute('aria-label','Remove '+f.name);b.onclick=()=>{files.splice(i,1);render();};attachments.append(b);});}

@@ -1346,3 +1346,17 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
   border-color: #38bdf8 !important;
   color: #fff !important;
 }
+
+/* Mobile Half-Screen Dropdown */
+@media (max-width: 768px) {
+  .j-dropdown-panel {
+    max-height: 50vh !important;
+    max-height: 50dvh !important;
+    overflow-y: auto !important;
+  }
+  .j-dropdown-history-list {
+    max-height: calc(50vh - 110px) !important;
+    max-height: calc(50dvh - 110px) !important;
+    overflow-y: auto !important;
+  }
+}
