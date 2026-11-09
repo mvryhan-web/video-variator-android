@@ -9,7 +9,7 @@
  const selected=params.get('studio')==='video'?'video':(params.get('studio')==='audio'||params.get('studio')==='music')?'audio':'image';
  const embedded=window.parent!==window && params.get('jarvix_embedded')==='1';
  if(embedded)document.documentElement.classList.add('jarvix-embedded-studio');
- else if(!params.has('standalone_studio'))location.replace('jarvix-chat.html?mode='+selected);
+ // Keep direct historical URLs as compatibility tools; normal navigation uses only JARVIX.
 })();
 </script>
 <style>
