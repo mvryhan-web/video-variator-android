@@ -48,7 +48,7 @@ function render(){for(const url of urls)URL.revokeObjectURL(url);urls=[];const a
     }
   if(valid&&action.kind==='prepare-studio'&&['image','video','audio'].includes(action.target)&&typeof action.prompt==='string'&&action.prompt.trim()){
    const button=node('button',({ru:'Продолжить в Studio',en:'Continue in Studio',fr:'Continuer dans Studio',es:'Continuar en Studio'}[getJarvixLanguage()]||'Continue in Studio'));button.type='button';
-   button.onclick=async()=>{try{store.guard();await saveStudioHandoff({kind:action.target==='audio'?'music':action.target,prompt:action.prompt,settings:action.ratio?{ratio:action.ratio}:{},source:'jarvix-chat'});store.guard();location.assign(action.url);}catch(e){status(e.message);}};
+   button.onclick=async()=>{try{store.guard();await saveStudioHandoff({kind:action.target==='audio'?'music':action.target,prompt:action.prompt,settings:action.ratio?{ratio:action.ratio}:{},source:'jarvix-chat'});store.guard();if(['image','video','audio'].includes(action.target))switchJarvixMode(action.target);else location.assign(action.url);}catch(e){status(e.message);}};
    item.append(button);
   }
  }
@@ -79,7 +79,7 @@ async function processMessage(message){
   if(command?.intent==='NAVIGATE'){
    const label=({ru:'Открываю раздел DEEPSYQ.',en:'Opening the DEEPSYQ section.',fr:'Ouverture de la section DEEPSYQ.',es:'Abriendo la sección DEEPSYQ.'})[getJarvixLanguage()]||'Opening the DEEPSYQ section.';
    const response={id:makeId(),role:'assistant',text:label,toolAction:{kind:'navigate',target:command.target,url:command.url},createdAt:Date.now()};
-   message.status='sent';conversation.messages.push(response);await save();render();store.guard();location.assign(command.url);return;
+   message.status='sent';conversation.messages.push(response);await save();render();store.guard();if(['image','video','audio'].includes(command.target))switchJarvixMode(command.target);else location.assign(command.url);return;
   }
   if(command?.intent==='GENERATE_MEDIA'&&command.raw_prompt){
    const label=({ru:'Подготовил запрос для Studio. Откройте студию и проверьте модель и стоимость перед созданием. Генерация и списание кредитов не запускаются автоматически.',en:'Your Studio prompt is ready. Open Studio to review the model and cost. No generation or credit charge has started.',fr:'Votre demande est prête dans Studio. Vérifiez le modèle et le coût avant de lancer. Aucun débit automatique.',es:'Tu solicitud está lista para Studio. Revisa el modelo y el coste antes de empezar. No hay cobro automático.'})[getJarvixLanguage()]||'Your Studio prompt is ready.';
@@ -112,7 +112,7 @@ async function processMessage(message){
   }
   message.status='sent';conversation.messages.push(answer);await save();render();if(answer.jobId)await poll(answer);
  }catch(e){message.status=message.status==='sent'?'sent':e.name==='AbortError'?'interrupted':'error';message.error=e.message;await save();if(e.name!=='AbortError'){
-   status(e.message);if(message.voiceAction)speakJarvis(/credit|balance/i.test(e.message)?'Недостаточно кредитов':'Уточните промпт');const link=node('button','Open request in Studio');link.type='button';link.onclick=async()=>{const mode=resolveMode(message.text,message.mode),kind=mode==='audio'?'music':mode==='text'?'image':mode;const files=(message.files||[]).filter(f=>['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024);try{await saveStudioHandoff({kind,prompt:message.text,files,source:'jarvix-chat'});location.assign('generate-studio.html?studio='+(kind==='music'?'audio':kind));}catch(e){status(e.message);}};$('jStatus').append(link);
+   status(e.message);if(message.voiceAction)speakJarvis(/credit|balance/i.test(e.message)?'Недостаточно кредитов':'Уточните промпт');const link=node('button','Open request in Studio');link.type='button';link.onclick=async()=>{const mode=resolveMode(message.text,message.mode),kind=mode==='audio'?'music':mode==='text'?'image':mode;const files=(message.files||[]).filter(f=>['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024);try{await saveStudioHandoff({kind,prompt:message.text,files,source:'jarvix-chat'});switchJarvixMode(kind==='music'?'audio':kind);}catch(e){status(e.message);}};$('jStatus').append(link);
   }if(e.name==='AbortError')throw e;}
 }
 const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();const m={id:makeId(),role:'user',text,mode:activeJarvixMode==='auto'?'auto':activeJarvixMode,files,status:'pending',createdAt:Date.now()};if(!conversation.messages.length)conversation.title=text.slice(0,60);conversation.messages.push(m);await save();composer.clear();render();await run(()=>processMessage(m));}catch(e){status(e.message);}}});
@@ -155,6 +155,7 @@ function switchJarvixMode(requested,{updateUrl=true}={}){
  const mode=Object.hasOwn(creationModes,requested)?requested:'auto';
  activeJarvixMode=mode;
  try{sessionStorage.setItem('jarvix_composer_mode',mode);}catch{}
+ for(const button of document.querySelectorAll('#jPlusMenu [data-j-mode]'))button.setAttribute('aria-pressed',String(button.dataset.jMode===mode));
  const header=document.querySelector('.j-chat-toolbar h1');
  if(header)header.textContent=mode==='auto'?'JARVIX Chat':'JARVIX '+creationModes[mode];
  if(mode==='auto'){
