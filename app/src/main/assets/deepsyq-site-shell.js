@@ -128,7 +128,9 @@
     { label: 'Pricing', icon: '＄', url:'pricing.html', key: 'pricing' }
   ];
 
-  const path = location.pathname.split('/').pop() || 'deepsyq.html';
+  const name = location.pathname.split('/').pop() || 'deepsyq.html';
+  // Cloudflare Pages redirects .html to clean URL; preserve the same JARVIX sidebar state.
+  const path = ['deepsyq','jarvix-chat','generate-studio'].includes(name) ? name+'.html' : name;
   const query = new URLSearchParams(location.search);
   const active = path === 'generate-studio.html' ?
     (query.get('view') === 'history' ? 'history' :
