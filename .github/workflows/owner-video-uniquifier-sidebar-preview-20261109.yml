@@ -1,11 +1,9 @@
 name: Owner Video Uniquifier sidebar - isolated TEST preview
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  push:
+    branches: [owner-move-video-uniquifier-nav-20261109]
     paths:
-      - 'app/src/main/assets/deepsyq-site-shell.js'
-      - 'tests/deepsyq-sitewide-visual-unit.mjs'
       - '.github/workflows/owner-video-uniquifier-sidebar-preview-20261109.yml'
 
 permissions:
@@ -13,7 +11,7 @@ permissions:
 
 jobs:
   isolated-preview:
-    if: github.event.pull_request.number == 653 && github.head_ref == 'owner-move-video-uniquifier-nav-20261109' && github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'push' && github.ref == 'refs/heads/owner-move-video-uniquifier-nav-20261109'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -29,7 +27,7 @@ jobs:
       - name: Checkout exact owner navigation change
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
       - name: Confirm current DEV is preserved
         run: |
@@ -70,7 +68,7 @@ jobs:
       - name: Deploy only isolated Cloudflare branch preview
         run: |
           set -euo pipefail
-          npx --yes wrangler@4 pages deploy app/src/main/assets --project-name=deepsyq --branch="$PREVIEW_BRANCH" --commit-hash="${{ github.event.pull_request.head.sha }}" | tee /tmp/cloudflare-preview.log
+          npx --yes wrangler@4 pages deploy app/src/main/assets --project-name=deepsyq --branch="$PREVIEW_BRANCH" --commit-hash="${{ github.sha }}" | tee /tmp/cloudflare-preview.log
           DEPLOY_URL=$(grep -Eo 'https://[a-z0-9-]+\.deepsyq\.pages\.dev' /tmp/cloudflare-preview.log | head -n1)
           if [[ ! "$DEPLOY_URL" =~ ^https://[a-z0-9-]+\.deepsyq\.pages\.dev$ ]]; then echo "Preview URL missing"; exit 1; fi
           echo "VU_TEST_URL=$DEPLOY_URL" >> "$GITHUB_ENV"
