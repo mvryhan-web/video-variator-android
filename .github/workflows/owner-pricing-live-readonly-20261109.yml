@@ -65,3 +65,49 @@ jobs:
           }
           console.log('READ_ONLY_CHECK_COMPLETE');
           JS
+      - name: Install no-spend browser dependencies
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Real mobile and desktop on LIVE Pricing, no payments
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try{
+            for(const [name,width,height] of [['mobile-390',390,844],['mobile-650',650,850],['desktop',1360,900]]){
+              const mobile=name.startsWith('mobile'),ctx=await browser.newContext({viewport:{width,height},isMobile:mobile,hasTouch:mobile});
+              const page=await ctx.newPage(),paid=[];
+              page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:billing|ai-billing|stripe|payments|checkout)/i.test(r.url()))paid.push(r.url())});
+              try{
+                const response=await page.goto('https://deepsyq.app/pricing.html?qa='+Date.now(),{waitUntil:'domcontentloaded',timeout:35000});
+                assert.equal(response.status(),200,name+' response');
+                const cards=page.locator('#planCards .price-plan');
+                await cards.first().waitFor({state:'visible',timeout:20000});
+                assert.equal(await cards.count(),5,name+' five plan cards');
+                await page.waitForTimeout(350);
+                const display=await page.locator('#planCards').evaluate(e=>getComputedStyle(e).display);
+                const track=page.locator('#planCards');
+                if(mobile){
+                  assert.equal(display,'flex',name+' flex track');
+                  assert(await page.locator('#pricePlanNext').isVisible(),name+' next visible');
+                  assert.equal((await page.locator('#pricePlanPosition').textContent()).trim(),'1 / 5',name+' first');
+                  await page.locator('#pricePlanNext').click();
+                  await page.waitForFunction(()=>document.querySelector('#planCards').scrollLeft>100,null,{timeout:9000});
+                  await page.waitForFunction(()=>document.querySelector('#pricePlanPosition').textContent.includes('2 / 5'),null,{timeout:9000});
+                  await page.locator('#priceBillingYearly').click();
+                  await page.waitForFunction(()=>document.querySelector('#pricePlanPosition').textContent.includes('2 / 5'),null,{timeout:9000});
+                  await page.locator('#priceBillingMonthly').click();
+                  assert.equal(await cards.count(),5,name+' cards retained');
+                } else {
+                  assert.equal(display,'grid','Desktop grid unchanged');
+                  assert.equal(await page.locator('#pricePlanNext').isVisible(),false,'Desktop arrows absent');
+                }
+                assert.deepEqual(paid,[],name+' no payment request');
+                console.log('MAIN_CAROUSEL_BROWSER_PASS',name,JSON.stringify({display,plans:5}));
+              } finally {await ctx.close()}
+            }
+          }finally{await browser.close()}
+          JS
