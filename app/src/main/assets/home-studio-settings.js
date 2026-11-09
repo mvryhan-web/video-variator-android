@@ -149,7 +149,7 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   `;
   // JARVIX Chat mobile only: reserve a separate title row for the close X.
   // Do not alter the shared Studio controls or any desktop/Home layout.
-  if(location.pathname.endsWith('/jarvix-chat.html')&&innerWidth<=760){
+  if(/\/jarvix-chat(?:\.html)?\/?$/.test(location.pathname)&&innerWidth<=760){
    style.textContent+=`
     #studioSettingsHub.composer-popover{
      display:grid!important;grid-template-columns:minmax(0,1fr) 44px!important;
