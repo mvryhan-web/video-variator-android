@@ -678,3 +678,7 @@ body.jarvix-creation-mode .jarvix-chat>.j-workspace-pane{
  border-left:0!important;border-top:1px solid #00e5ff25;border-radius:12px;
  box-shadow:none;z-index:1;
 }
+
+/* On Home, this is the canonical JARVIX entry. No redundant lower navigation link,
+   especially no Video Uniquifier shortcut below the chat. Mode selection stays in +. */
+#homeQuickBar[data-canonical-jarvix-home] .j-mode-rail a{display:none!important}
