@@ -83,6 +83,7 @@ if(failures.length){
  console.error('LIVE_SNAPSHOT_FAILED',JSON.stringify(failures.slice(0,60)));
  throw Error('Live snapshot has '+failures.length+' errors. Deployment forbidden.');
 }
+if(report.missing.length>Math.max(50,Math.ceil(paths.length*.15)))throw Error('Too many public assets missing from production; refusing broad release: '+report.missing.length+'/'+paths.length);
 const getLive=async p=>readFile(at(audit,p),'utf8');
 const getCandidate=async p=>readFile(at(root,p),'utf8');
 const one=(text,oldPart,newPart,label)=>{
