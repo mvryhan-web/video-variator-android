@@ -17,10 +17,10 @@ function homeNavigationTarget(label){
  return href;
 }
 
-test('Primary navigation opens the named creation studio',()=>{
- assert.equal(homeNavigationTarget('Image studio'),'generate-studio.html?studio=image');
- assert.equal(homeNavigationTarget('Video studio'),'generate-studio.html?studio=video');
- assert.equal(homeNavigationTarget('Audio studio'),'generate-studio.html?studio=audio');
+test('Primary navigation opens modes of the ONE JARVIX Chat',()=>{
+ assert.equal(homeNavigationTarget('Image studio'),'jarvix-chat.html?mode=image');
+ assert.equal(homeNavigationTarget('Video studio'),'jarvix-chat.html?mode=video');
+ assert.equal(homeNavigationTarget('Audio studio'),'jarvix-chat.html?mode=audio');
  assert.match(studio,/requested==='audio'\?'music'/,'Audio URL must select the Music/Audio editor');
 });
 
@@ -39,7 +39,7 @@ test('Canvas, My Creations and JARVIX links have correct existing destinations',
  assert.ok(!home.includes('id="quickCreateForm"'),'Home must not retain Canvas editor');
  assert.ok(source('canvas.html').includes('id="quickCreateForm"'),'Canvas editor must exist on dedicated page');
  assert.ok(!home.includes('id="recentCreations"'),'Removed Home history cards must not be restored');
- assert.equal(homeNavigationTarget('JARVIX'),'ai-agents.html','Current published Jarvix destination must exist');
+ assert.equal(homeNavigationTarget('JARVIX'),'jarvix-chat.html','Current published Jarvix destination must exist');
  assert.equal(homeNavigationTarget('My Creations'),'my-creations.html');
  assert.ok(!home.includes('Affiliate program coming soon'),'Retired navigation must be absent');
 });

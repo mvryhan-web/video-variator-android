@@ -110,10 +110,10 @@
     { section:'Home' },
     { label: 'Home', icon: '⌂', url:'deepsyq.html', key: 'home' },
     { section:'Creation' },
-    { label: 'Image', icon: '▧', url:'generate-studio.html?studio=image', key: 'image' },
-    { label: 'Video', icon: '▷', url:'generate-studio.html?studio=video', key: 'video' },
+    { label: 'Image', icon: '▧', url:'jarvix-chat.html?mode=image', key: 'image' },
+    { label: 'Video', icon: '▷', url:'jarvix-chat.html?mode=video', key: 'video' },
     { label:'Agent',icon:'✦', pending:false, isJarvix: true, url:'jarvix-chat.html', key: 'agents' },
-    { label: 'Audio', icon: '♫', url:'generate-studio.html?studio=audio', key: 'audio' },
+    { label: 'Audio', icon: '♫', url:'jarvix-chat.html?mode=audio', key: 'audio' },
     { section:'Tools' },
     { label: 'AI Apps', icon: '◇', url:'ai-apps.html', key: 'apps' },
     { label: 'Canvas', icon: '✎', url:'canvas.html', key: 'canvas' },
@@ -128,13 +128,15 @@
     { label: 'Pricing', icon: '＄', url:'pricing.html', key: 'pricing' }
   ];
 
-  const path = location.pathname.split('/').pop() || 'deepsyq.html';
+  const routeName = location.pathname.split('/').pop() || 'deepsyq.html';
+  // Cloudflare Pages serves clean URLs (/jarvix-chat) for .html assets.
+  const path = ['deepsyq','jarvix-chat','generate-studio'].includes(routeName) ? routeName+'.html' : routeName;
   const query = new URLSearchParams(location.search);
   const active = path === 'generate-studio.html' ?
     (query.get('view') === 'history' ? 'history' :
       query.get('studio') === 'video' ? 'video' :
         ['audio', 'music'].includes(query.get('studio')) ? 'audio' : 'image') :
-    path === 'jarvix-chat.html' ? 'agents' : path === 'my-creations.html' ? 'history' : path === 'voice-agent-preview.html' ? 'voice' : path === 'virtual-pet.html' ? 'pet' : path === 'ai-agents.html' ? 'agents' : path === 'canvas.html' ? 'canvas' : path === 'ai-apps.html' ? 'apps' : path === 'inspiration.html' ? 'inspiration' :
+    path === 'jarvix-chat.html' ? (['image','video','audio'].includes(query.get('mode')) ? query.get('mode') : 'agents') : path === 'my-creations.html' ? 'history' : path === 'voice-agent-preview.html' ? 'voice' : path === 'virtual-pet.html' ? 'pet' : path === 'ai-agents.html' ? 'agents' : path === 'canvas.html' ? 'canvas' : path === 'ai-apps.html' ? 'apps' : path === 'inspiration.html' ? 'inspiration' :
       ['pricing.html', 'ai-pricing.html'].includes(path) ? 'pricing' :
         ['index.html', 'video-uniquifier.html'].includes(path) ? 'legacy' :
           ['free-tools.html', 'audio-studio.html', 'avatar-studio.html', 'mobile-utility.html',
