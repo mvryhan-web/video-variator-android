@@ -147,6 +147,20 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
    #studioSettingsHub>:is(#studioTypePicker,#modelButton,#settingsButton) .composer-chevron{margin-left:auto!important;}
    #studioSettingsHub.composer-popover::backdrop{background:transparent!important;}
   `;
+  // JARVIX Chat mobile only: reserve a separate title row for the close X.
+  // Do not alter the shared Studio controls or any desktop/Home layout.
+  if(location.pathname.endsWith('/jarvix-chat.html')&&innerWidth<=760){
+   style.textContent+=`
+    #studioSettingsHub>h2{
+     display:block!important;min-height:48px!important;
+     margin:0 0 12px!important;padding-right:52px!important;
+    }
+    #studioSettingsHub>button:nth-child(2){
+     position:absolute!important;top:2px!important;right:12px!important;
+     float:none!important;margin:0!important;z-index:2!important;
+    }
+   `;
+  }
   doc.head.append(style);
   // The native Studio script already opens this real hub for ?settings=1.
   if(!hub.open)hub.showModal();
