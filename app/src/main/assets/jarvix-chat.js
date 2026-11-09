@@ -282,6 +282,12 @@ function initChatMenuDrawer() {
   if (backdrop) backdrop.onclick = () => closeDropdown();
   const closeBtn = $('jDrawerClose');
   if (closeBtn) closeBtn.onclick = () => closeDropdown();
+  dropdown.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeDropdown();
+      titleBtn.focus();
+    }
+  });
 
   if (newBtn) {
     newBtn.onclick = () => {
@@ -348,10 +354,16 @@ function initChatMenuDrawer() {
       item.append(infoBox, date);
 
       item.onclick = async () => {
-        closeDropdown();
-        conversation = await store.get(r.id);
+        if (busy) return;
+        const next = await store.get(r.id);
+        if (!next) return;
+        conversation = next;
+        sessionStorage.setItem('jarvix_session_id', conversation.sessionId);
+        sessionStorage.setItem('jarvix_active_conversation', conversation.id);
         render();
         await historyList();
+        await restoreResults();
+        closeDropdown();
       };
 
       historyListEl.append(item);

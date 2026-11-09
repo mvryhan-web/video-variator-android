@@ -1,6 +1,6 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><title>JARVIS Chat · Deepsyq</title><meta name="robots" content="noindex"><link rel="stylesheet" href="generate-studio.css"><link rel="stylesheet" href="studio-classic-theme.css"><link rel="stylesheet" href="deepsyq-mobile-shell.css"><link rel="stylesheet" href="jarvis-core.css">
 <link rel="stylesheet" href="jarvix-chat.css"><script defer src="deepsyq-site-shell.js"></script><script type="module" blocking="render" src="deepsyq-mobile-shell.js"></script><script type="module" src="jarvix-chat.js"></script></head><body><header class="topbar"><button type="button" id="dsSiteNavToggle" class="ds-site-nav-toggle-btn" aria-label="Toggle navigation" title="Меню">☰</button><a href="deepsyq.html" class="brand"><span class="brand-mark"><img src="deepsyq-logo.png" alt="" width="31" height="31"></span>Deepsyq</a></header><main class="jarvix-chat"><div class="j-chat-toolbar">
-  <button type="button" id="jChatTitleBtn" class="j-title-menu-btn" aria-haspopup="true" aria-expanded="false" title="Диалоги и новый чат">
+  <button type="button" id="jChatTitleBtn" class="j-title-menu-btn" aria-haspopup="true" aria-expanded="false" aria-controls="jChatDropdown" title="Диалоги и новый чат">
     <span class="j-title-brand-text">JARVIX</span>
     <span class="j-title-dot">·</span>
     <span class="j-title-mode-badge"><span id="jActiveModeLabel" data-mode="chat">ЧАТ</span> <span class="j-title-chevron">∨</span></span>
@@ -9,7 +9,9 @@
   <button id="jNew" type="button" hidden>New chat</button>
   <button id="jStop" type="button" hidden>Stop waiting</button>
 
-  <!-- Lightweight Sliding Drawer (opens smoothly on JARVIX title click) -->
+</div>
+
+  <!-- Existing JARVIX conversation history; no separate chat or page. -->
   <div id="jChatDropdown" class="j-sliding-drawer" hidden>
     <div id="jDropdownBackdrop" class="j-drawer-backdrop"></div>
     <aside class="j-drawer-panel" aria-label="Диалоги JARVIX">
@@ -23,14 +25,14 @@
       <div class="j-drawer-action-row">
         <button type="button" id="jMenuNewChat" class="j-drawer-new-item">
           <span class="j-drawer-plus">＋</span>
-          <span>Новый диалог</span>
+          <span>Новый чат</span>
         </button>
       </div>
-      <div class="j-drawer-subhead">История диалогов</div>
+      <div class="j-drawer-subhead">Недавние</div>
       <div id="jMenuHistoryList" class="j-drawer-history-list"></div>
+      <a class="j-drawer-account" href="index.html#profile">Аккаунт</a>
     </aside>
   </div>
-</div>
 
 <!-- Workspace Tool Pane docked at the TOP of the Chat -->
 <div id="jWorkspacePane" class="j-workspace-pane" hidden>
