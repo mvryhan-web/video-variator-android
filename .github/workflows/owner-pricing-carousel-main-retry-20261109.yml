@@ -1,0 +1,103 @@
+name: Owner mobile Pricing direct MAIN safety-gated release
+on:
+  push:
+    branches: [owner-pricing-carousel-main-retry-20261109]
+    paths: [.github/workflows/owner-pricing-carousel-main-retry-20261109.yml]
+permissions: {contents: read}
+concurrency:
+  group: deepsyq-main-pricing-exact-release
+  cancel-in-progress: false
+jobs:
+  check-and-release:
+    if: github.repository == 'mvryhan-web/video-variator-android'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      DEV_SHA: 65bd9af271eb34303931dfad23ab01476a1ac549
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Verify exact latest DEV and targeted mobile Pricing code
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin deepsyq-platform
+          test "$(git rev-parse FETCH_HEAD)" = "$DEV_SHA" || { echo '::error::DEV advanced; cannot ship stale site'; exit 1; }
+          node --check app/src/main/assets/pricing-page.js
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const r='app/src/main/assets/';
+          const h=fs.readFileSync(r+'pricing.html','utf8');
+          const j=fs.readFileSync(r+'pricing-page.js','utf8');
+          const c=fs.readFileSync(r+'pricing-page.css','utf8');
+          for(const id of ['pricePlanPrev','pricePlanNext','pricePlanPosition','priceBillingMonthly','priceBillingYearly','planCards','creditCards'])assert(h.includes('id="'+id+'"'),id);
+          assert(j.includes('function movePlanCarousel'));
+          assert(j.includes('const previousPlan=planCarouselIndex()'));
+          assert(c.includes('scroll-snap-type:x mandatory'));
+          assert(fs.existsSync(r+'_worker.js'));
+          console.log('PRICING_CAROUSEL_CODE_READY');
+          JS
+      - name: Verify original live Cloudflare Worker and no regressions before upload
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          const t=process.env.CF_TOKEN,a=process.env.CF_ACCOUNT,base='https://api.cloudflare.com/client/v4';
+          assert(t&&/^[a-f0-9]{32}$/.test(a||''),'Cloudflare secret/account unavailable');
+          const get=(url)=>fetch(base+url,{headers:{Authorization:'Bearer '+t},signal:AbortSignal.timeout(18000)});
+          const pRes=await get('/accounts/'+a+'/pages/projects/deepsyq');
+          assert(pRes.ok,'Pages project HTTP '+pRes.status);
+          const p=(await pRes.json()).result;
+          assert(p.name==='deepsyq'&&p.production_branch==='deepsyq-platform','Not canonical MAIN');
+          const d=p.canonical_deployment;
+          assert(d?.id&&d.uses_functions===true,'LIVE MAIN Worker missing');
+          const w=p.production_script_name;
+          assert(/^pages-worker--[a-z0-9-]+-production$/.test(w||''),'Original Worker identity unavailable');
+          console.log('PRODUCTION_BASELINE',JSON.stringify({id:d.id,uses_functions:true}));
+          const source=await get('/accounts/'+a+'/workers/scripts/'+encodeURIComponent(w)+'/content/v2');
+          console.log('LIVE_WORKER_READ_HTTP',source.status);
+          assert(source.ok,'BLOCKED_MAIN: Cannot read existing Worker; no safe way to preserve payments, login, credits');
+          const actual=Buffer.from(await source.arrayBuffer());
+          const expected=fs.readFileSync('app/src/main/assets/_worker.js');
+          const sha=b=>createHash('sha256').update(b).digest('hex');
+          assert.equal(sha(actual),sha(expected),'BLOCKED_MAIN: Production Worker not identical to repository Worker');
+          const settings=await get('/accounts/'+a+'/workers/scripts/'+encodeURIComponent(w)+'/settings');
+          assert(settings.ok,'BLOCKED_MAIN: Cannot verify original Worker bindings HTTP '+settings.status);
+          const sourceSha=d.deployment_trigger?.metadata?.commit_hash;
+          assert(/^[0-9a-f]{40}$/.test(sourceSha||''),'BLOCKED_MAIN: Production source SHA unavailable');
+          try{execFileSync('git',['cat-file','-e',sourceSha+'^{commit}']);}catch{throw Error('BLOCKED_MAIN: Production source is not a known Git commit');}
+          const changed=execFileSync('git',['diff','--name-only',sourceSha,process.env.DEV_SHA,'--','app/src/main/assets'],{encoding:'utf8'}).trim().split('\n').filter(Boolean).sort();
+          const expectedPaths=['app/src/main/assets/pricing-page.css','app/src/main/assets/pricing-page.js','app/src/main/assets/pricing.html'];
+          assert.deepEqual(changed,expectedPaths,'BLOCKED_MAIN: Unrelated files differ; full Pages upload unsafe');
+          assert(d.deployment_trigger?.metadata?.commit_dirty!==true,'BLOCKED_MAIN: Production has untracked changes');
+          fs.appendFileSync(process.env.GITHUB_ENV,'PROTECTED_MAIN_DEPLOYMENT_ID='+d.id+'\n');
+          console.log('WORKER_UNCHANGED_AND_ONLY_PRICING_DELTA_VERIFIED');
+          JS
+      - name: Publish to existing canonical MAIN preserving full original Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy app/src/main/assets --project-name=deepsyq --branch=deepsyq-platform --commit-hash="$DEV_SHA"
+      - name: Verify the working MAIN route and Worker
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          const r=await fetch('https://deepsyq.app/pricing.html',{headers:{'cache-control':'no-cache'}});
+          assert.equal(r.status,200);
+          const h=await r.text();
+          for(const x of ['pricePlanPrev','pricePlanNext','pricePlanPosition'])assert(h.includes('id="'+x+'"'));
+          const p=await fetch('https://deepsyq.app/api/config');
+          assert.equal(p.status,200);
+          const j=await p.json();
+          assert(j&&typeof j==='object');
+          console.log('LIVE_MAIN_CAROUSEL_AND_WORKER_PASS');
+          JS
