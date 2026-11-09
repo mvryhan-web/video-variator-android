@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `3497d45988cb5ac539016ec75a1bec161f50d2d0`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `adf435979513a42fc6a2edc1e4788fbdab58324f`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 118 | Named symbols: 378 | Checked relations: 74
 
 ## Topic finder (matching filenames)
@@ -20,7 +20,7 @@ Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code 
 
 ## Frontend page inventory (filenames only, not Graphify AST)
 
-`app/src/main/assets/ai-agents.html` · `app/src/main/assets/ai-apps.html` · `app/src/main/assets/ai-pricing.html` · `app/src/main/assets/ai-privacy.html` · `app/src/main/assets/audio-studio.html` · `app/src/main/assets/avatar-studio.html` · `app/src/main/assets/canvas.html` · `app/src/main/assets/compare-ai.html` · `app/src/main/assets/contact.html` · `app/src/main/assets/cookie.html` · `app/src/main/assets/deepsyq-admin.html` · `app/src/main/assets/deepsyq-vs-deepseek.html` · `app/src/main/assets/deepsyq.html` · `app/src/main/assets/design-gallery.html` · `app/src/main/assets/free-tools.html` · `app/src/main/assets/generate-studio.html` · `app/src/main/assets/index.html` · `app/src/main/assets/jarvix-chat.html` · `app/src/main/assets/jarvix-studio.html` · `app/src/main/assets/mobile-utility.html` · `app/src/main/assets/my-creations.html` · `app/src/main/assets/photo-collage.html` · `app/src/main/assets/pricing.html` · `app/src/main/assets/product-watcher-admin.html` · `app/src/main/assets/refund.html` · `app/src/main/assets/simple-background-remover.html` · `app/src/main/assets/smart-reminders.html` · `app/src/main/assets/telegram-free-mini.html` · `app/src/main/assets/teleprompter.html` · `app/src/main/assets/terms.html` · `app/src/main/assets/video-uniquifier.html` · `app/src/main/assets/virtual-pet.html` · `app/src/main/assets/voice-agent-preview.html`
+`app/src/main/assets/404.html` · `app/src/main/assets/ai-agents.html` · `app/src/main/assets/ai-apps.html` · `app/src/main/assets/ai-pricing.html` · `app/src/main/assets/ai-privacy.html` · `app/src/main/assets/audio-studio.html` · `app/src/main/assets/avatar-studio.html` · `app/src/main/assets/canvas.html` · `app/src/main/assets/compare-ai.html` · `app/src/main/assets/contact.html` · `app/src/main/assets/cookie.html` · `app/src/main/assets/deepsyq-admin.html` · `app/src/main/assets/deepsyq-vs-deepseek.html` · `app/src/main/assets/deepsyq.html` · `app/src/main/assets/design-gallery.html` · `app/src/main/assets/free-tools.html` · `app/src/main/assets/generate-studio.html` · `app/src/main/assets/index.html` · `app/src/main/assets/jarvix-chat.html` · `app/src/main/assets/jarvix-studio.html` · `app/src/main/assets/mobile-utility.html` · `app/src/main/assets/my-creations.html` · `app/src/main/assets/photo-collage.html` · `app/src/main/assets/pricing.html` · `app/src/main/assets/product-watcher-admin.html` · `app/src/main/assets/refund.html` · `app/src/main/assets/simple-background-remover.html` · `app/src/main/assets/smart-reminders.html` · `app/src/main/assets/telegram-free-mini.html` · `app/src/main/assets/teleprompter.html` · `app/src/main/assets/terms.html` · `app/src/main/assets/video-uniquifier.html` · `app/src/main/assets/virtual-pet.html` · `app/src/main/assets/voice-agent-preview.html`
 
 ## Frontend CSS inventory (filenames only)
 
@@ -78,7 +78,7 @@ labels (L6)
 
 ### `app/src/main/assets/deepsyq.js`
 
-deepsyq.js (L1) · mobileMenu (L9) · homeLang (L185) · homeI18n (L186) · promo (L227) · inviteDialog (L229) · requestedIdentityToken (L566)
+deepsyq.js (L1) · mobileMenu (L9) · homeLang (L185) · homeI18n (L186) · promo (L227) · inviteDialog (L229) · requestedIdentityToken (L594)
 
 ### `app/src/main/assets/ffmpeg-worker.js`
 
