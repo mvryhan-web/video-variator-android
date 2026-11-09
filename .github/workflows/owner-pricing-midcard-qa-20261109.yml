@@ -16,6 +16,13 @@ jobs:
           node --check app/src/main/assets/pricing-page.js
           npm ci --ignore-scripts --no-audit --no-fund
           npx playwright install --with-deps chromium
+      - name: Owner-approved Pricing HTML CSS JS hash provenance
+        shell: bash
+        run: |
+          for f in app/src/main/assets/pricing.html app/src/main/assets/pricing-page.css app/src/main/assets/pricing-page.js; do
+            echo "PRICING_APPROVED_SHA256 $(sha256sum "$f")"
+            echo "PRICING_APPROVED_BLOB $(git hash-object "$f") $f"
+          done
       - name: Start isolated local static app (no live payments)
         run: |
           python3 -m http.server 4321 --bind 127.0.0.1 --directory app/src/main/assets >/tmp/pricing-server.log 2>&1 &
