@@ -9,21 +9,26 @@
   <button id="jNew" type="button" hidden>New chat</button>
   <button id="jStop" type="button" hidden>Stop waiting</button>
 
-  <!-- ChatGPT-style Clean Dropdown (opens under JARVIX Title) -->
-  <div id="jChatDropdown" class="j-chat-dropdown" hidden>
-    <div id="jDropdownBackdrop" class="j-dropdown-backdrop"></div>
-    <div class="j-dropdown-panel">
-      <button type="button" id="jMenuNewChat" class="j-dropdown-new-chat-btn">
-        <span class="j-new-plus">＋</span>
-        <span class="j-new-text">Новый чат</span>
-      </button>
-      <div class="j-dropdown-divider"></div>
-      <div class="j-dropdown-section-title">История диалогов</div>
-      <div id="jMenuHistoryList" class="j-dropdown-history-list"></div>
-      <div class="j-dropdown-footer">
-        <a href="pricing.html" class="j-dropdown-footer-link">👑 Тарифы платформы</a>
+  <!-- Lightweight Sliding Drawer (opens smoothly on JARVIX title click) -->
+  <div id="jChatDropdown" class="j-sliding-drawer" hidden>
+    <div id="jDropdownBackdrop" class="j-drawer-backdrop"></div>
+    <aside class="j-drawer-panel" aria-label="Диалоги JARVIX">
+      <div class="j-drawer-header">
+        <div class="j-drawer-title-group">
+          <span class="j-drawer-glow-dot"></span>
+          <span class="j-drawer-heading">Диалоги JARVIX</span>
+        </div>
+        <button type="button" id="jDrawerClose" class="j-drawer-close" aria-label="Закрыть">✕</button>
       </div>
-    </div>
+      <div class="j-drawer-action-row">
+        <button type="button" id="jMenuNewChat" class="j-drawer-new-item">
+          <span class="j-drawer-plus">＋</span>
+          <span>Новый диалог</span>
+        </button>
+      </div>
+      <div class="j-drawer-subhead">История диалогов</div>
+      <div id="jMenuHistoryList" class="j-drawer-history-list"></div>
+    </aside>
   </div>
 </div>
 

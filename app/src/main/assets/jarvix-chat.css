@@ -996,101 +996,144 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
   transform: rotate(180deg) !important;
 }
 
-/* Dropdown Menu (ChatGPT-style list under JARVIX Title) */
-.j-chat-dropdown {
-  position: absolute !important;
-  top: calc(100% + 4px) !important;
-  left: 0 !important;
-  z-index: 1000 !important;
-}
-.j-chat-dropdown[hidden] {
-  display: none !important;
-}
-.j-dropdown-backdrop {
+/* Lightweight Modern Sliding Drawer (opens smoothly on JARVIX Title) */
+.j-sliding-drawer {
   position: fixed !important;
   inset: 0 !important;
-  background: rgba(0, 0, 0, 0.35) !important;
-  backdrop-filter: blur(2px) !important;
-  z-index: 998 !important;
+  z-index: 2000 !important;
+  display: flex !important;
+  transition: opacity 0.22s ease !important;
 }
-.j-dropdown-panel {
+.j-sliding-drawer[hidden] {
+  display: none !important;
+}
+.j-drawer-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  background: rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  cursor: pointer !important;
+  z-index: 1 !important;
+  animation: jFadeIn 0.2s ease !important;
+}
+@keyframes jFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.j-drawer-panel {
   position: relative !important;
-  width: 300px !important;
-  max-width: calc(100vw - 32px) !important;
-  background: linear-gradient(165deg, #0d1730 0%, #070d1e 100%) !important;
-  border: 1px solid rgba(56, 189, 248, 0.28) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.12) !important;
-  padding: 10px !important;
-  box-sizing: border-box !important;
-  backdrop-filter: blur(14px) !important;
-  z-index: 999 !important;
-  animation: jDropdownDown 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  width: 320px !important;
+  max-width: 86vw !important;
+  height: 100% !important;
+  height: 100dvh !important;
+  background: rgba(9, 14, 28, 0.96) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 16px 0 45px rgba(0, 0, 0, 0.7) !important;
   display: flex !important;
   flex-direction: column !important;
+  padding: 20px 16px !important;
+  box-sizing: border-box !important;
+  z-index: 2 !important;
+  animation: jSlideInLeft 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
-@keyframes jDropdownDown {
-  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+@keyframes jSlideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
 }
-
-/* + Новый чат Button (clean, ChatGPT style, no neon yellow) */
-.j-dropdown-new-chat-btn {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  color: #f8fafc !important;
-  border-radius: 10px !important;
-  padding: 10px 14px !important;
-  font-size: 14px !important;
-  font-weight: 600 !important;
+.j-drawer-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding-bottom: 14px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  margin-bottom: 14px !important;
+}
+.j-drawer-title-group {
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
+}
+.j-drawer-glow-dot {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: #38bdf8 !important;
+  box-shadow: 0 0 10px #38bdf8 !important;
+}
+.j-drawer-heading {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+  color: #ffffff !important;
+}
+.j-drawer-close {
+  background: transparent !important;
+  border: none !important;
+  color: #94a3b8 !important;
+  font-size: 16px !important;
+  padding: 4px 8px !important;
   cursor: pointer !important;
+  border-radius: 6px !important;
+  transition: color 0.15s, background 0.15s !important;
+}
+.j-drawer-close:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+.j-drawer-action-row {
+  margin-bottom: 10px !important;
+}
+.j-drawer-new-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
   width: 100% !important;
+  padding: 11px 14px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
   box-sizing: border-box !important;
-  transition: background 0.15s, border-color 0.15s, transform 0.1s !important;
+  transition: all 0.18s ease !important;
 }
-.j-dropdown-new-chat-btn:hover {
-  background: rgba(255, 255, 255, 0.14) !important;
-  border-color: rgba(56, 189, 248, 0.4) !important;
-  transform: translateY(-1px);
+.j-drawer-new-item:hover {
+  background: rgba(56, 189, 248, 0.12) !important;
+  border-color: rgba(56, 189, 248, 0.35) !important;
+  color: #38bdf8 !important;
 }
-.j-new-plus {
+.j-drawer-plus {
   font-size: 16px !important;
   color: #38bdf8 !important;
   line-height: 1 !important;
 }
-
-.j-dropdown-divider {
-  height: 1px !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  margin: 10px 0 8px !important;
-}
-
-.j-dropdown-section-title {
+.j-drawer-subhead {
   font-size: 11px !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.8px !important;
+  letter-spacing: 0.08em !important;
   color: #64748b !important;
-  padding: 2px 6px 6px !important;
+  padding: 8px 6px 6px !important;
 }
-
-.j-dropdown-history-list {
-  max-height: 250px !important;
+.j-drawer-history-list {
+  flex: 1 1 auto !important;
   overflow-y: auto !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 3px !important;
+  padding-right: 2px !important;
 }
-
-.j-dropdown-conv-item {
+.j-drawer-history-list .j-dropdown-conv-item {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 8px 10px !important;
-  border-radius: 8px !important;
+  padding: 10px 12px !important;
+  border-radius: 10px !important;
   font-size: 13px !important;
   color: #cbd5e1 !important;
   background: transparent !important;
@@ -1101,10 +1144,14 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
   box-sizing: border-box !important;
   transition: background 0.15s, color 0.15s !important;
 }
-.j-dropdown-conv-item:hover,
-.j-dropdown-conv-item.active {
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: #fff !important;
+.j-drawer-history-list .j-dropdown-conv-item:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+}
+.j-drawer-history-list .j-dropdown-conv-item.active {
+  background: rgba(56, 189, 248, 0.14) !important;
+  color: #38bdf8 !important;
+  font-weight: 600 !important;
 }
 .j-conv-info {
   display: flex !important;
@@ -1125,25 +1172,6 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
   color: #64748b !important;
   margin-left: 8px !important;
   flex-shrink: 0 !important;
-}
-
-.j-dropdown-footer {
-  margin-top: 8px !important;
-  padding-top: 8px !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-.j-dropdown-footer-link {
-  display: block !important;
-  padding: 8px 10px !important;
-  border-radius: 8px !important;
-  font-size: 13px !important;
-  color: #f59e0b !important;
-  text-decoration: none !important;
-  font-weight: 600 !important;
-  transition: background 0.15s !important;
-}
-.j-dropdown-footer-link:hover {
-  background: rgba(245, 158, 11, 0.12) !important;
 }
 
 /* Messages area in the center */

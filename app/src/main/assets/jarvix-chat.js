@@ -280,6 +280,8 @@ function initChatMenuDrawer() {
   };
 
   if (backdrop) backdrop.onclick = () => closeDropdown();
+  const closeBtn = $('jDrawerClose');
+  if (closeBtn) closeBtn.onclick = () => closeDropdown();
 
   if (newBtn) {
     newBtn.onclick = () => {
