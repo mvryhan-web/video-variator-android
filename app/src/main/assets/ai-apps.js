@@ -1,4 +1,5 @@
 import {templateSupport,prepareTemplatePrompt} from './ai-template-product-name.js';
+import {renderHomeInspiration} from './home-inspiration.js';
 const $=id=>document.getElementById(id);
 const PAGE_SIZE=12;
 let all=[],shownLimit=PAGE_SIZE;
@@ -168,3 +169,28 @@ if(accountLogout){
  });
 }
 load();
+
+// Reuse the existing Home Inspiration renderer and the SAME published catalog.
+// No duplicate gallery, unapproved example videos, or paid model requests.
+async function loadInspiration(){
+ const status=$('inspirationStatus');
+ const feed=[];
+ try{
+  for(let offset=0,page=0;page<4;page++){
+   const response=await fetch('/api/inspiration?featured=true&limit=60&offset='+offset,{cache:'no-store'});
+   if(!response.ok)throw Error('INSPIRATION_UNAVAILABLE');
+   const data=await response.json();
+   const entries=Array.isArray(data.items)?data.items:[];
+   feed.push(...entries);
+   if(!entries.length||!data.pagination?.hasMore)break;
+   const next=Number(data.pagination.nextOffset);
+   if(!Number.isSafeInteger(next)||next<=offset)break;
+   offset=next;
+  }
+  renderHomeInspiration(feed);
+  status.hidden=true;
+ }catch(_){
+  status.textContent='Inspiration is temporarily unavailable. Please try again later.';
+ }
+}
+loadInspiration();
