@@ -131,7 +131,7 @@ jobs:
           };
           let active=false;
           for(let attempt=0;attempt<12;attempt++){
-            const deployments=await get(projectUrl+'/deployments?per_page=30&page=1');
+            const deployments=await get(projectUrl+'/deployments?per_page=20&page=1');
             const d=deployments.find(v=>(v.aliases||[]).includes('https://test.deepsyq.pages.dev'));
             if(d?.deployment_trigger?.metadata?.commit_hash===process.env.GITHUB_SHA){
               assert(d.uses_functions===true,'CRITICAL: Worker not present in TEST deployment');
