@@ -1174,179 +1174,6 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
   width: 100% !important;
 }
 
-.j-composer-card {
-  border: 1px solid rgba(56, 189, 248, 0.28) !important;
-  border-radius: 24px !important;
-  padding: 8px 14px 10px !important;
-  background: rgba(10, 16, 34, 0.92) !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65), 0 0 16px rgba(56, 189, 248, 0.08) !important;
-  backdrop-filter: blur(14px) !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 6px !important;
-  width: min(840px, 100%) !important;
-  margin: 0 auto !important;
-  box-sizing: border-box !important;
-  transition: border-color 0.2s, box-shadow 0.2s !important;
-}
-.j-composer-card:focus-within {
-  border-color: rgba(56, 189, 248, 0.55) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.75), 0 0 22px rgba(56, 189, 248, 0.16) !important;
-}
-
-.j-composer-card .jarvix-compose {
-  border: none !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  gap: 8px !important;
-  width: 100% !important;
-  display: flex !important;
-  align-items: center !important;
-}
-
-.j-composer-card #jPlus {
-  width: 40px !important;
-  height: 40px !important;
-  min-width: 40px !important;
-  min-height: 40px !important;
-  border-radius: 50% !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-  color: #f8fafc !important;
-  font-size: 22px !important;
-  font-weight: 400 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  cursor: pointer !important;
-  padding: 0 !important;
-  transition: all 0.15s ease !important;
-}
-.j-composer-card #jPlus:hover {
-  background: rgba(255, 255, 255, 0.12) !important;
-  border-color: #38bdf8 !important;
-  color: #38bdf8 !important;
-  transform: scale(1.04);
-}
-
-.j-composer-card textarea#jInput {
-  flex: 1 !important;
-  background: rgba(15, 23, 42, 0.7) !important;
-  border: 1px solid rgba(56, 189, 248, 0.16) !important;
-  border-radius: 999px !important;
-  padding: 10px 18px !important;
-  color: #f8fafc !important;
-  font-size: 15px !important;
-  line-height: 1.4 !important;
-  resize: none !important;
-  min-height: 40px !important;
-  max-height: 120px !important;
-  outline: none !important;
-  box-sizing: border-box !important;
-  transition: border-color 0.15s !important;
-}
-.j-composer-card textarea#jInput::placeholder {
-  color: #64748b !important;
-}
-.j-composer-card textarea#jInput:focus {
-  border-color: rgba(56, 189, 248, 0.45) !important;
-}
-
-.j-composer-card #jMic,
-.j-composer-card #jSlidersBtn {
-  background: transparent !important;
-  border: none !important;
-  color: #94a3b8 !important;
-  padding: 6px !important;
-  min-width: 36px !important;
-  min-height: 36px !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  transition: color 0.15s ease !important;
-}
-.j-composer-card #jMic:hover,
-.j-composer-card #jSlidersBtn:hover {
-  color: #f8fafc !important;
-}
-
-.j-composer-card .j-send {
-  background: linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%) !important;
-  border: none !important;
-  color: #030712 !important;
-  border-radius: 50% !important;
-  width: 38px !important;
-  height: 38px !important;
-  min-width: 38px !important;
-  min-height: 38px !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 0 !important;
-  box-shadow: 0 0 12px rgba(14, 165, 233, 0.35) !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
-}
-.j-composer-card .j-send:hover {
-  transform: scale(1.06);
-  box-shadow: 0 0 18px rgba(14, 165, 233, 0.55) !important;
-}
-.j-composer-card .j-send svg,
-.j-composer-card .j-send svg.j-send-plane {
-  fill: #030712 !important;
-  stroke: #030712 !important;
-  width: 18px !important;
-  height: 18px !important;
-}
-
-.j-composer-card #jOrbBtn {
-  width: 34px !important;
-  height: 34px !important;
-  min-width: 34px !important;
-  min-height: 34px !important;
-  border-radius: 50% !important;
-  border: 1px solid rgba(56, 189, 248, 0.6) !important;
-  background: radial-gradient(circle at 40% 35%, #38bdf8 0%, #0369a1 70%, #0284c7 100%) !important;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.55), inset 0 0 8px rgba(255, 255, 255, 0.4) !important;
-  cursor: pointer !important;
-  padding: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
-}
-.j-composer-card #jOrbBtn:hover {
-  transform: scale(1.08);
-  box-shadow: 0 0 18px rgba(56, 189, 248, 0.85) !important;
-}
-
-.j-composer-card .j-subtools-bar {
-  display: flex !important;
-  align-items: center !important;
-  padding: 2px 2px 0 !important;
-}
-.j-composer-card .j-subtool-pill {
-  background: rgba(15, 23, 42, 0.8) !important;
-  border: 1px solid rgba(56, 189, 248, 0.25) !important;
-  border-radius: 999px !important;
-  color: #cbd5e1 !important;
-  font-size: 12.5px !important;
-  font-weight: 600 !important;
-  padding: 4px 12px !important;
-  cursor: pointer !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  transition: all 0.15s ease !important;
-}
-.j-composer-card .j-subtool-pill:hover {
-  background: rgba(56, 189, 248, 0.12) !important;
-  border-color: #38bdf8 !important;
-  color: #fff !important;
-}
-
 /* Mobile Half-Screen Dropdown */
 @media (max-width: 768px) {
   .j-dropdown-panel {
@@ -1381,4 +1208,68 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
     width: calc(100vw - 24px) !important;
     max-width: calc(100vw - 24px) !important;
   }
+}
+
+/* Image 1 Exact Restoration: Clean pill dock for JARVIX Chat */
+.jarvix-chat .j-chat-bottom {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 840px !important;
+  margin: 0 auto !important;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+.jarvix-chat .j-chat-bottom .jarvix-compose {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  padding: 6px 12px !important;
+  border: 1px solid #30498566 !important;
+  border-radius: 999px !important;
+  background: linear-gradient(105deg, #101c40e8, #07132be8) !important;
+  box-shadow: inset 0 0 20px #030b2a52 !important;
+}
+
+.jarvix-chat .j-chat-bottom .jarvix-compose textarea#jInput {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: 0 !important;
+  min-height: 44px !important;
+  max-height: 100px !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: #f0f6ff !important;
+  font-size: 15px !important;
+  padding: 10px 8px !important;
+  line-height: 1.35 !important;
+  resize: none !important;
+}
+
+.jarvix-chat .j-chat-bottom .jarvix-compose textarea#jInput::placeholder {
+  color: #8da2c0 !important;
+  opacity: 0.9 !important;
+}
+
+/* Exactly matching Image 1 golden send plane and buttons */
+.jarvix-chat .j-chat-bottom .jarvix-compose .j-send {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #ffbf52 !important;
+  padding: 6px !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.jarvix-chat .j-chat-bottom .jarvix-compose .j-send .j-send-plane {
+  width: 25px !important;
+  height: 25px !important;
+  stroke: #ffbf52 !important;
+  fill: none !important;
+  filter: drop-shadow(0 0 3px #ffbf5270) !important;
 }
