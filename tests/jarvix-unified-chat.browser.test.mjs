@@ -31,6 +31,16 @@ try{
      const a=page.locator('#sidebar a[href="jarvix-chat.html?mode='+mode+'"]');
      assert.equal(await a.count(),1,'Home sidebar '+mode);
     }
+    assert.equal(await page.locator('#homeQuickForm').count(),0,'old Home quick form removed');
+    await page.locator('#homeQuickBar #jChatForm').waitFor({state:'visible',timeout:18000});
+    assert.equal(await page.locator('#homeQuickBar .j-mode-rail a[href="index.html"]').count(),0,'no lower Video Uniquifier');
+    await page.locator('#homeQuickPrompt').fill('Создай видео про лес утром');
+    await page.locator('#homeQuickSubmit').click();
+    await page.waitForURL(url=>url.pathname.endsWith('/jarvix-chat.html')&&url.searchParams.get('mode')==='video',{timeout:22000});
+    await page.locator('#jWorkspacePane:not([hidden])').waitFor({timeout:22000});
+    assert.match(await page.locator('#jWorkspaceFrame').getAttribute('src'),/studio=video&jarvix_embedded=1/);
+    const homeConversation=await page.evaluate(()=>sessionStorage.getItem('jarvix_active_conversation'));
+    assert(homeConversation,'Home uses the single persisted JARVIX session');
     await page.goto(base+'/jarvix-chat.html?mode=image',{waitUntil:'domcontentloaded',timeout:30000});
     await page.locator('#jChatForm').waitFor({timeout:22000});
     await page.locator('#jWorkspacePane:not([hidden])').waitFor({timeout:22000});
@@ -57,6 +67,7 @@ try{
     await page.evaluate(()=>document.querySelector('#dsSiteSidebar a[href="jarvix-chat.html"]')?.click());
     await page.locator('#jWorkspacePane').waitFor({state:'hidden',timeout:10000});
     assert.equal(new URL(page.url()).pathname,'/jarvix-chat.html');
+    assert.equal(await page.evaluate(()=>sessionStorage.getItem('jarvix_active_conversation')),homeConversation);
     assert.equal(new URL(page.url()).searchParams.has('mode'),false);
     assert.equal(await page.evaluate(()=>sessionStorage.getItem('jarvix_active_conversation')),id);
     assert.equal(await page.locator('#jMessages').innerHTML(),before);
