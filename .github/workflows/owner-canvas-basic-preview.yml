@@ -131,3 +131,83 @@ jobs:
           path: artifacts/canvas/*.png
           if-no-files-found: ignore
           retention-days: 7
+
+  deploy-stable-test:
+    needs: preview
+    if: github.head_ref == 'owner-canvas-basic-workspace-20261109' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    concurrency:
+      group: deepsyq-owner-d29-stable-test
+      cancel-in-progress: false
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      AI_BILLING_MODE: test
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Inspect canonical MAIN and stable TEST before release
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq"
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API" > /tmp/project-before.json
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API/deployments?per_page=100&page=1" > /tmp/deployments-before.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const p=JSON.parse(fs.readFileSync('/tmp/project-before.json','utf8'));
+          const d=JSON.parse(fs.readFileSync('/tmp/deployments-before.json','utf8'));
+          if(!p.success||p.result?.production_branch!=='deepsyq-platform'||!p.result?.canonical_deployment?.id||!d.success||!Array.isArray(d.result))throw Error('Cloudflare safety inspection failed');
+          const existing=d.result.filter(v=>v.environment==='preview'&&v.deployment_trigger?.metadata?.branch==='test');
+          if(existing.length){
+            console.log('Existing TEST deployments:',existing.length);
+            const mostRecent=existing.sort((a,b)=>new Date(b.created_on)-new Date(a.created_on))[0];
+            console.log('TEST_CURRENT_SHA',mostRecent.deployment_trigger?.metadata?.commit_hash,'uses_functions',mostRecent.uses_functions);
+            throw Error('A stable TEST already exists: refuse to overwrite another executor without baseline reconciliation');
+          }
+          fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_BEFORE='+p.result.canonical_deployment.id+'\n');
+          console.log('TEST_BRANCH_UNOCCUPIED; MAIN_BASELINE_CAPTURED');
+          JS
+      - name: Publish new static Canvas-only TEST (never MAIN)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy app/src/main/assets --project-name=deepsyq --branch=test --commit-hash="${{ github.event.pull_request.head.sha }}" | tee /tmp/deploy.log
+          cat /tmp/deploy.log | grep -Eo 'https://[a-z0-9-]+[.]deepsyq[.]pages[.]dev' | head -n1
+          echo "STABLE_TEST_URL=https://test.deepsyq.pages.dev/canvas.html"
+      - name: Verify MAIN unchanged and TEST target published
+        shell: bash
+        run: |
+          set -euo pipefail
+          API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq"
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API" > /tmp/project-after.json
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API/deployments?per_page=100&page=1" > /tmp/deployments-after.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const p=JSON.parse(fs.readFileSync('/tmp/project-after.json','utf8'));
+          const d=JSON.parse(fs.readFileSync('/tmp/deployments-after.json','utf8'));
+          if(!p.success||p.result?.canonical_deployment?.id!==process.env.MAIN_BEFORE)throw Error('MAIN changed');
+          const test=d.result.find(x=>x.environment==='preview'&&x.deployment_trigger?.metadata?.branch==='test'&&x.deployment_trigger?.metadata?.commit_hash===process.env.GITHUB_SHA);
+          if(!test)throw Error('Stable TEST exact commit not verified in Cloudflare');
+          console.log('TEST_DEPLOYMENT_BRANCH',test.deployment_trigger.metadata.branch);
+          console.log('TEST_USES_FUNCTIONS',test.uses_functions);
+          console.log('MAIN_UNCHANGED_VERIFIED');
+          JS
+          for i in 1 2 3 4 5 6 7 8; do
+            code=$(curl -L -s -o /tmp/testcanvas.html -w '%{http_code}' https://test.deepsyq.pages.dev/canvas.html || true)
+            if [ "$code" = "200" ] && grep -q 'id="canvasWorkspace"' /tmp/testcanvas.html; then echo "STABLE_TEST_CANVAS_HTTP_200"; exit 0; fi
+            sleep 5
+          done
+          echo "::error::TEST alias did not serve Canvas"
+          exit 1
