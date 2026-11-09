@@ -991,36 +991,38 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
 
 /* Dropdown Menu (ChatGPT-style list under JARVIX Title) */
 .j-chat-dropdown {
-  position: absolute !important;
-  top: calc(100% + 4px) !important;
-  left: 0 !important;
+  /* JARVIX Chat only: full-height history, anchored beneath the existing title. */
+  position: fixed !important;
+  top: var(--j-chat-menu-top, 120px) !important;
+  left: var(--j-chat-menu-left, 12px) !important;
+  bottom: env(safe-area-inset-bottom, 0px) !important;
+  width: min(338px, calc(100vw - 24px)) !important;
+  min-height: 0 !important;
   z-index: 1000 !important;
 }
 .j-chat-dropdown[hidden] {
   display: none !important;
 }
-.j-dropdown-backdrop {
-  position: fixed !important;
-  inset: 0 !important;
-  background: rgba(0, 0, 0, 0.35) !important;
-  backdrop-filter: blur(2px) !important;
-  z-index: 998 !important;
-}
-.j-dropdown-panel {
+.jarvix-chat #jDropdownBackdrop { display: none !important; }
+.jarvix-chat .j-dropdown-panel {
   position: relative !important;
-  width: 300px !important;
-  max-width: calc(100vw - 32px) !important;
-  background: linear-gradient(165deg, #0d1730 0%, #070d1e 100%) !important;
-  border: 1px solid rgba(56, 189, 248, 0.28) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.12) !important;
-  padding: 10px !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  background: #0b1429 !important;
+  border: 1px solid rgba(56, 189, 248, 0.26) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.38) !important;
+  padding: 12px !important;
   box-sizing: border-box !important;
-  backdrop-filter: blur(14px) !important;
+  backdrop-filter: none !important;
   z-index: 999 !important;
-  animation: jDropdownDown 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  animation: jDropdownDown 0.18s ease-out !important;
   display: flex !important;
   flex-direction: column !important;
+  overflow: hidden !important;
 }
 @keyframes jDropdownDown {
   from { opacity: 0; transform: translateY(-8px) scale(0.97); }
@@ -1071,7 +1073,9 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
 }
 
 .j-dropdown-history-list {
-  max-height: 250px !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
   overflow-y: auto !important;
   display: flex !important;
   flex-direction: column !important;
@@ -1121,7 +1125,7 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
 }
 
 .j-dropdown-footer {
-  margin-top: 8px !important;
+  margin-top: auto !important;
   padding-top: 8px !important;
   border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
@@ -1174,17 +1178,16 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
   width: 100% !important;
 }
 
-/* Mobile Half-Screen Dropdown */
 @media (max-width: 768px) {
-  .j-dropdown-panel {
-    max-height: 50vh !important;
-    max-height: 50dvh !important;
-    overflow-y: auto !important;
+  .jarvix-chat .j-dropdown-panel {
+    height: 100% !important;
+    max-height: none !important;
+    overflow: hidden !important;
   }
-  .j-dropdown-history-list {
-    max-height: calc(50vh - 110px) !important;
-    max-height: calc(50dvh - 110px) !important;
-    overflow-y: auto !important;
+  .jarvix-chat .j-dropdown-history-list {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
   }
 }
 
@@ -1273,3 +1276,6 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
   fill: none !important;
   filter: drop-shadow(0 0 3px #ffbf5270) !important;
 }
+
+.jarvix-chat #jActiveModeLabel[data-mode="auto"],
+.jarvix-chat #jActiveModeLabel[data-mode="text"]{text-transform:none!important;}
