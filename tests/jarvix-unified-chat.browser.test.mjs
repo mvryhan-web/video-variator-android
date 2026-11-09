@@ -42,7 +42,7 @@ try{
     const homeConversation=await page.evaluate(()=>sessionStorage.getItem('jarvix_active_conversation'));
     assert(homeConversation,'Home uses the single persisted JARVIX session');
     await page.goto(base+'/jarvix-chat.html?mode=image',{waitUntil:'domcontentloaded',timeout:30000});
-    await page.locator('#jChatForm').waitFor({timeout:22000});
+    await page.locator('#jChatForm').waitFor({state:'attached',timeout:22000}); // Native creation mode hides the chat composer visually, but keeps the one conversation.
     await page.locator('#jWorkspacePane:not([hidden])').waitFor({timeout:22000});
     assert.match(await page.locator('.j-chat-toolbar h1').innerText(),/JARVIX Image/);
     assert.match(await page.locator('#jWorkspaceFrame').getAttribute('src'),/generate-studio\.html\?studio=image&jarvix_embedded=1/);
