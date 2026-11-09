@@ -146,7 +146,7 @@ function selectJarvixMode(next,{fromComposer=false,writeUrl=true}={}){
   $('jWorkspacePane').hidden=true;
   $('jWorkspaceFrame').src='about:blank';
   document.body.classList.remove('has-chat-workspace');
- }else{
+ }else if(!fromComposer||!$('jWorkspacePane').hidden){
   const target='generate-studio.html?studio='+mode+'&embedded=1';
   openWorkspace(target,'JARVIX '+selected);
  }
