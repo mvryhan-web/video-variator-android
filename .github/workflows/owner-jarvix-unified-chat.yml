@@ -1,0 +1,73 @@
+name: Owner JARVIX one-chat TEST acceptance
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/jarvix-*.js'
+      - 'app/src/main/assets/jarvix-*.css'
+      - 'app/src/main/assets/jarvix-chat.html'
+      - 'app/src/main/assets/generate-studio.html'
+      - 'app/src/main/assets/deepsyq-site-shell.js'
+      - 'tests/jarvix-unified-cloudflare-live.mjs'
+      - '.github/workflows/owner-jarvix-unified-chat.yml'
+permissions:
+  contents: read
+jobs:
+  test-and-isolated-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      PRODUCT_WATCHER_ENABLED: 'false'
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify syntax without AI or billing requests
+        run: |
+          node --check app/src/main/assets/jarvix-unified-studio-chat.js
+          node --check app/src/main/assets/jarvix-activity-drawer.js
+          node --check app/src/main/assets/jarvix-chat.js
+          node --check app/src/main/assets/deepsyq-site-shell.js
+          node --check tests/jarvix-unified-cloudflare-live.mjs
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Deploy only isolated JARVIX TEST preview after guarded Cloudflare project check
+        if: github.event_name == 'pull_request' && github.head_ref == 'owner-jarvix-unified-chat-20261108' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+          BRANCH_PREVIEW: jarvix-unified-test
+        run: |
+          set -euo pipefail
+          if [ -z "${CLOUDFLARE_API_TOKEN}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID}" ]; then
+            echo '::error::Cloudflare GitHub Actions credentials are missing; no deployment.'
+            exit 1
+          fi
+          curl --fail --silent --show-error -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/deepsyq" \
+            > /tmp/deepsyq-project.json
+          node --input-type=module -e 'import fs from "node:fs";const p=JSON.parse(fs.readFileSync("/tmp/deepsyq-project.json","utf8"));const b=p.result?.production_branch;if(p.success!==true||!b||b===process.env.BRANCH_PREVIEW){throw Error("Unsafe Cloudflare Pages branch. Aborting.")}console.log("CLOUDFLARE_CONFIGURED_PRODUCTION_BRANCH="+b);console.log("CANONICAL_PAGES_DOMAIN="+(p.result?.subdomain||"unknown"));'
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq \
+            --branch="${BRANCH_PREVIEW}" \
+            --commit-hash="${{ github.event.pull_request.head.sha }}"
+      - name: Browser test real 4 pages and 1 conversation on mobile and desktop
+        if: github.event_name == 'pull_request' && github.head_ref == 'owner-jarvix-unified-chat-20261108' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          JARVIX_UNIFIED_TEST_URL: https://jarvix-unified-test.deepsyq.pages.dev
+        run: node tests/jarvix-unified-cloudflare-live.mjs
+      - name: Upload real desktop/mobile screenshots
+        if: always() && github.event_name == 'pull_request' && github.head_ref == 'owner-jarvix-unified-chat-20261108'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvix-one-chat-four-pages
+          path: artifacts/jarvix-unified/*.png
+          if-no-files-found: ignore
+          retention-days: 7
