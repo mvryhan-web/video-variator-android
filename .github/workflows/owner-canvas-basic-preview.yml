@@ -106,6 +106,12 @@ jobs:
                 await page.locator('#cwStudioImport').click();
                 await page.locator('#cwStudioOverlay').waitFor({state:'hidden',timeout:10000});
                 assert.equal(await page.locator('#cwNodes .cw-node').count(),3,name+' simulated Studio result import');
+                const returned=page.locator('#cwNodes .cw-node').nth(2);
+                const visible=await returned.boundingBox();
+                assert.ok(visible&&visible.x<width&&visible.x+visible.width>0,name+' imported result should be in viewport');
+                await returned.getByRole('button',{name:'Crop 1:1'}).click();
+                const mime=await returned.locator('img').evaluate(async img=>(await(await fetch(img.src)).blob()).type);
+                assert.equal(mime,'image/png',name+' PNG transparency-safe output');
                 page.once('dialog',d=>d.accept('Canvas '+name));
                 await page.locator('#cwSave').click();
                 await page.getByText('Project saved in this browser.').waitFor({timeout:10000});
