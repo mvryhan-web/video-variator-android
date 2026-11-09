@@ -1,0 +1,134 @@
+name: Owner canonical routing - stable TEST only
+on:
+  push:
+    branches: [test]
+    paths:
+      - 'app/src/main/assets/404.html'
+      - 'app/src/main/assets/_redirects'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq-site-shell.js'
+      - 'app/src/main/assets/jarvix-studio.html'
+      - 'tests/owner-test-canonical-routing.mjs'
+      - '.github/workflows/owner-test-canonical-routing-20261109.yml'
+permissions:
+  contents: read
+concurrency:
+  group: owner-test-canonical-routing
+  cancel-in-progress: true
+jobs:
+  verify-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Audit all 33 local HTML pages and approved routes
+        run: node --test tests/owner-test-canonical-routing.mjs
+      - name: Verify TEST target and capture immutable MAIN deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = test
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          curl --fail --silent --show-error \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" \
+            > /tmp/pages-before.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const obj=JSON.parse(fs.readFileSync('/tmp/pages-before.json','utf8'));
+          if(obj.success!==true || obj.result?.name!=='deepsyq' ||
+              obj.result?.production_branch!=='deepsyq-platform' ||
+              !obj.result?.canonical_deployment?.id) {
+            throw Error('Cloudflare production branch guard failed. Nothing deployed.');
+          }
+          fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_DEPLOYMENT_BEFORE='+obj.result.canonical_deployment.id+'\n');
+          console.log('Preflight passed: TEST branch distinct from production.');
+          NODE
+      - name: Deploy reviewed routing to stable Cloudflare TEST branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq \
+            --branch=test \
+            --commit-hash="$GITHUB_SHA"
+      - name: Verify live TEST routes and all HTML page HTTP responses
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const base='https://test.deepsyq.pages.dev';
+          const request=async(path,manual=false)=>{
+            const res=await fetch(base+path,{redirect:manual?'manual':'follow',signal:AbortSignal.timeout(15000),headers:{'Cache-Control':'no-cache'}});
+            return {status:res.status,url:res.url,location:res.headers.get('location'),html:await res.text()};
+          };
+          // After deployment, wait only for the stable alias to serve the new routing revision.
+          let ready=false;
+          for(let attempt=0;attempt<8;attempt++){
+            const missing=await request('/jarvix-chat.');
+            const home=await request('/');
+            if(missing.status===404 && home.status===200 && /<title>Deepsyq/i.test(home.html)){ready=true;break;}
+            await new Promise(resolve=>setTimeout(resolve,3000));
+          }
+          assert.ok(ready,'Stable TEST alias did not switch to correct Home and genuine 404.');
+          const cases=[
+            ['/','Deepsyq'],
+            ['/deepsyq','Deepsyq'],
+            ['/jarvix-chat','JARVIS Chat'],
+            ['/jarvix-chat.html','JARVIS Chat'],
+            ['/video-uniquifier','Video Uniquifier'],
+            ['/index.html','Video Uniquifier'],
+            ['/ai-agents','JARVIS Chat'],
+            ['/dashboard','Deepsyq']
+          ];
+          for(const [route,title] of cases){
+            const res=await request(route);
+            assert.equal(res.status,200,route+' must return HTTP 200 at its correct target');
+            assert.ok(res.html.includes('<title>'+title),route+' rendered wrong page at '+res.url);
+            console.log('ROUTE_OK',route,res.url);
+          }
+          for(const bad of ['/jarvix-chat.','/totally-unknown-route-20261109','/product-video']){
+            const res=await request(bad);
+            assert.equal(res.status,404,bad+' must return true 404, never Video Uniquifier');
+            assert.doesNotMatch(res.html,/<title>Video Uniquifier/);
+            console.log('ROUTE_404',bad);
+          }
+          const pages=fs.readdirSync('app/src/main/assets').filter(name=>name.endsWith('.html')&&name!=='404.html');
+          assert.equal(pages.length,33);
+          for (const name of pages){
+            const res=await request('/'+name);
+            assert.equal(res.status,200,'HTML route broken: '+name);
+            assert.match(res.html,/<html/i,'Wrong response for '+name);
+          }
+          console.log('LIVE_TEST_PASSED',pages.length+' HTML pages, canonical routes and 404');
+          NODE
+      - name: Assert MAIN Cloudflare deployment unchanged
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${MAIN_DEPLOYMENT_BEFORE:-}" ]; then
+            echo 'MAIN guard baseline absent; refusing to claim isolated deployment.'
+            exit 1
+          fi
+          curl --fail --silent --show-error \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" \
+            > /tmp/pages-after.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const obj=JSON.parse(fs.readFileSync('/tmp/pages-after.json','utf8'));
+          if(obj.success!==true || obj.result?.production_branch!=='deepsyq-platform' ||
+             obj.result?.canonical_deployment?.id!==process.env.MAIN_DEPLOYMENT_BEFORE){
+            throw Error('MAIN Cloudflare deployment changed: investigation required');
+          }
+          console.log('MAIN_UNCHANGED_CONFIRMED');
+          NODE
