@@ -1,3 +1,17 @@
+## OWNER D28 — 2026-11-09 — ASSEMBLED CAR / ONE REQUEST = ONE SURGICAL CHANGE
+
+**CURRENT OWNER SCOPE RULE. Effective immediately for Coordinator P, Administrator, Antigravity and any future executor. D28 clarifies the scope of D27; D27's verified publication, TEST/MAIN separation and security/billing safeguards remain in force. If historical instructions below demand a whole-project audit for a local task, D28 overrides that demand.**
+
+1. **An assembled car, not a rebuild.** DEEPSYQ is an existing, approved platform. If the Owner asks to change a headlight's color, change ONLY that headlight; do not rebuild the car. If the Owner asks to move one button, edit ONLY that button's existing code/style. Preserve every neighboring control, page, component, route, model, setting, design, API and user datum.
+2. **No whole-project inspection by default.** Go straight to the Owner-named page/component/element. Read only its current relevant source, its direct dependencies when necessary, and the minimum instructions needed to act safely. Do NOT re-audit the whole repository, repeat recovery procedures, inventory unrelated PRs/issues, or inspect all F1–F6/BASE items for each small request. A broad audit requires the Owner's explicit request or a specific demonstrated risk that cannot be isolated.
+3. **Fast and scoped execution.** Locate -> inspect the narrow affected range -> make the smallest correct diff -> run only relevant syntax/targeted checks -> deploy to an isolated Cloudflare TEST Preview when the requested work changes the website -> verify the exact requested result on the real URL, including mobile if relevant -> report. Do not treat unrelated failing CI as permission to alter unrelated code or claim an unverified success.
+4. **No collateral changes.** No redesigns, refactors, global reformatting, dependency upgrades, replacement of entire files with old snapshots, unrelated cleanup, or speculative improvements. If another area appears broken, report it separately and do not touch it unless the Owner authorizes that area. Do not duplicate existing systems.
+5. **One instruction is not an invitation to extra work.** Do not repeatedly check the same HEAD or re-explain the entire project unless the specific task or concurrent edits require it. The smallest necessary pre-change check and focused post-change verification are enough.
+6. **Example (scope only, not a new implementation request):** Mobile JARVIX Chat -> Studio Settings -> close X overlapping Image/Video/Audio: adjust only that close X positioning and necessary local styling. Do not change the Image/Video/Audio fields, other Studio Settings, universal header, JARVIX functions, Pricing or Video Uniquifier.
+7. **Completion and authority.** Owner approval remains required for MAIN/production. Do not spend money on tests, bypass required security/financial gates, or declare website work DONE before permitted Cloudflare TEST publication and targeted live verification. If blocked, say BLOCKED / NOT PUBLISHED with the concrete reason. A GitHub-only rule/documentation change is effective when committed to the intended GitHub branch; it does not itself require a website deployment.
+
+---
+
 ## OWNER D27 — 2026-11-09 — COMPLETE THE TASK THROUGH VERIFIED PUBLICATION
 
 **HIGHEST PRIORITY CURRENT OWNER RULE, effective immediately. It supersedes all D26/D25/D24 "administrator-only", "P audit-only", "do not deploy", and "commit/PR is completion" restrictions. The old wording below is historical and NOT an instruction to stop work.**
