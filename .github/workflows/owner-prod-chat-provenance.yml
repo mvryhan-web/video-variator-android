@@ -30,6 +30,7 @@ jobs:
           if(!p?.id)throw Error('No canonical deployment');
           fs.appendFileSync(process.env.GITHUB_ENV,'DEPLOYMENT_ID='+p.id+'\n');
           JS
+          DEPLOYMENT_ID=$(node -e "const p=require('/tmp/pages-project.json');process.stdout.write(p.result.canonical_deployment.id)")
           curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq/deployments/$DEPLOYMENT_ID" > /tmp/pages-deployment.json
           node --input-type=module <<'JS'
           import fs from 'node:fs';
