@@ -51,7 +51,9 @@ jobs:
           assert.ok(source.includes("{ label: 'Video Uniquifier', icon: '▷', url:'index.html', key: 'legacy' },"));
           assert.ok(!source.includes("url:'generate-studio.html?studio=video', key: 'video'"));
           assert.ok(fs.existsSync('app/src/main/assets/index.html'));
-          console.log('NAV_SCOPE_PASS');
+          const css=fs.readFileSync('app/src/main/assets/deepsyq-platform-embedded.css','utf8');
+          assert.match(css,/body\\.ds-embedded-uniquifier #dashboardView > \\.hero\\.card \\{\\s*display: none !important;/);
+          console.log('NAV_AND_BANNER_SCOPE_PASS');
           JS
       - name: Require isolated Cloudflare Pages project and verify canonical production
         run: |
@@ -95,6 +97,8 @@ jobs:
                 assert.equal(await page.locator('#dsSiteSidebar a[href="index.html"]').count(),1);
                 assert.match(await page.locator('#dsSiteSidebar a[href="index.html"]').innerText(),/Video Uniquifier|Видеоуникализатор/i);
                 assert.equal(await page.locator('#dsSiteSidebar a[href="generate-studio.html?studio=video"]').count(),0);
+                assert.equal(await page.locator('#dashboardView > .hero.card').evaluate(el=>getComputedStyle(el).display),'none','top duplicate Video Uniquifier banner must be hidden');
+                assert.ok(await page.locator('#dashboardView .workspace').isVisible(),'video upload workspace must remain visible');
                 await page.screenshot({path:'artifacts/vu-sidebar/'+device+'.png',fullPage:false});
                 console.log('LIVE_VU_NAV_PASS',device);
               } finally {await context.close();}
