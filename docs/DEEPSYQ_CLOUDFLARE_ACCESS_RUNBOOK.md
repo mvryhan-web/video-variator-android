@@ -6,6 +6,8 @@
 - After the owner explicitly approves one exact TEST revision, publish only it to MAIN without seeking redundant confirmation, but preserve the currently deployed Pages Worker (`uses_functions:true`), API and bindings and have rollback verified. Raw static-only upload to MAIN is forbidden. Existing Worker read 403 is a release blocker until resolved. Keep `BLOCKED_MAIN` honest.
 - Github instructions do not automatically delete old URLs, enforce token access, change Cloudflare project settings, or migrate legacy PR preview workflows. Verify actual stable TEST publication before reporting it as LIVE.
 
+**Verified Cloudflare API 2026-11-09 11:07 UTC (read-only):** `2fa7fbd4.deepsyq.pages.dev` is the CURRENT production deployment: `environment=production`, `branch=deepsyq-platform`, `trigger=ad_hoc`, `commit_dirty=true`, `uses_functions=true`, deployment commit metadata `3a45020a7f150d2dbce72b00b20f0de2743511fd` (not present as a retrievable GitHub repository commit). **This is NOT Antigravity TEST.** The inspection did not identify the human publisher. No exact `https://test.deepsyq.pages.dev` branch alias was found among the last 80 deployments; do NOT tell the owner that stable TEST is live until it has been deployed with the COMPLETE original Worker/Functions and verified. Audit: https://github.com/mvryhan-web/video-variator-android/actions/runs/42606643537 .
+
 ---
 
 # DEEPSYQ — Cloudflare access runbook for every connected ChatGPT conversation
