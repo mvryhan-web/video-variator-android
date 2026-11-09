@@ -2,6 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
+import {mkdir} from 'node:fs/promises';
 import {chromium} from 'playwright';
 
 const port=32988,live=process.env.EVERYDAY_TEST_URL||'';
@@ -70,6 +71,8 @@ test('Everyday Tools: mobile tiles have names without prefix icons, desktop unch
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
     assert.ok(overflow<=1,'No horizontal mobile/desktop overflow: '+overflow);
     assert.deepEqual(posts,[],'No paid requests');
+    await mkdir('artifacts/everyday-mobile-cleanup',{recursive:true});
+    await page.screenshot({path:'artifacts/everyday-mobile-cleanup/'+viewport.name+'.png',fullPage:true});
     console.log('EVERYDAY_MOBILE_PREFIX_ICONS_OK',JSON.stringify({viewport:viewport.name,width:viewport.width,iconsVerified:checked,hidden:viewport.width<=900,overflow}));
    }finally{await ctx.close();}
   }
