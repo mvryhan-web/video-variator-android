@@ -6,6 +6,10 @@ on:
       - 'app/src/main/assets/404.html'
       - 'app/src/main/assets/_redirects'
       - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/ai-apps.html'
+      - 'app/src/main/assets/ai-apps.js'
+      - 'app/src/main/assets/ai-apps.css'
+      - 'app/src/main/assets/free-tools.css'
       - 'app/src/main/assets/index.html'
       - 'app/src/main/assets/video-uniquifier.html'
       - 'app/src/main/assets/avatar-studio.html'
@@ -137,6 +141,17 @@ jobs:
             const expected=fs.readFileSync('app/src/main/assets/'+expectedName,'utf8');
             assert.equal(htmlTitle(res.html),htmlTitle(expected),'Wrong page content served for '+name);
             console.log('PAGE_OK',name,expectedName===name?'':'-> '+expectedName);
+          }
+          // Confirm files required for existing images are really served by the current TEST deployment.
+          for(const [assetPath,mediaType] of [
+            ['/media/everyday-utilities-owner-20261024/scan-pdf.webp','image/'],
+            ['/media/creative/creative50-20261021/01-crystal-orchard.webp','image/'],
+            ['/media/creative/creative50-20261021/manifest.json','application/json']
+          ]){
+            const asset=await fetch(base+assetPath,{headers:{'Cache-Control':'no-cache'},signal:AbortSignal.timeout(15000)});
+            assert.equal(asset.status,200,'TEST image asset unavailable: '+assetPath);
+            assert.ok((asset.headers.get('content-type')||'').includes(mediaType),'TEST image type mismatched: '+assetPath);
+            console.log('TEST_IMAGE_OK',assetPath);
           }
           console.log('LIVE_TEST_PASSED',pages.length+' HTML routes including intentional legacy aliases, canonical routes and 404');
           NODE
