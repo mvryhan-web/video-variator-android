@@ -124,3 +124,21 @@ html:not([data-theme="light"]) .app-card:is(:hover,:focus-within) {
 
 header nav, header nav[hidden] { display: none !important; }
 header { justify-content: space-between; }
+
+/* Owner: show the existing Home Inspiration beneath AI Apps, without restyling its dialog or creating a second catalog. */
+#inspirationPreview.inspiration-preview{margin:48px 0 12px;padding:24px;border:1px solid #41375a;border-radius:20px;background:linear-gradient(145deg,#17172f,#0b1427)}
+#inspirationPreview .section-heading{display:flex;align-items:center;justify-content:space-between;margin:0 0 14px}
+#inspirationPreview .section-heading h2{font-size:clamp(24px,2.5vw,32px);margin:0}
+#inspirationPreview .inspiration-home-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+#inspirationPreview .inspiration-home-tabs button{min-height:40px;cursor:pointer;border:1px solid #655785;border-radius:999px;padding:8px 17px;background:#151a31;color:#e5e6ff;font-size:12px}
+#inspirationPreview .inspiration-home-tabs button[aria-pressed=true]{background:linear-gradient(115deg,#7135bd,#1877a7);border-color:#a372f5;color:#fff}
+#inspirationPreviewGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+#inspirationPreview .inspiration-preview-card{position:relative;display:block;min-width:0;width:100%;aspect-ratio:var(--inspiration-ratio,9 / 16);border:1px solid #3a4f79;border-radius:12px;background:#101b31;overflow:hidden;cursor:pointer}
+#inspirationPreview .inspiration-preview-media{display:block;width:100%;height:100%;overflow:hidden}
+#inspirationPreview .inspiration-preview-media :is(img,video){display:block;width:100%;height:100%;object-fit:cover;pointer-events:none}
+#inspirationPreview .inspiration-preview-card:hover{border-color:#b47cff}
+#inspirationStatus{color:#b8c5dd;font-size:13px}
+#inspirationStatus[hidden]{display:none}
+@media(max-width:1100px){#inspirationPreviewGrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:800px){#inspirationPreviewGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){#inspirationPreview.inspiration-preview{padding:14px;margin-top:36px}#inspirationPreviewGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}}
