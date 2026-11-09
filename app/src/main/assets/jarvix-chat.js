@@ -154,8 +154,8 @@ const pending=conversation.messages.find(m=>m.status==='pending');if(pending)awa
 window.addEventListener('jarvix:conversation-updated',async()=>{if(busy)return;const next=await store.get(sessionStorage.getItem('jarvix_active_conversation'));if(!next)return;conversation=next;render();const pending=conversation.messages.find(m=>m.status==='pending');if(pending)await run(()=>processMessage(pending));});
 
 const modeHeaderLabels={
-  ru:{text:'ЧАТ',auto:'ЧАТ',image:'ИЗОБРАЖЕНИЕ',video:'ВИДЕО',audio:'АУДИО',music:'АУДИО'},
-  en:{text:'CHAT',auto:'CHAT',image:'IMAGE',video:'VIDEO',audio:'AUDIO',music:'AUDIO'}
+  ru:{text:'Чат',auto:'Чат',image:'ИЗОБРАЖЕНИЕ',video:'ВИДЕО',audio:'АУДИО',music:'АУДИО'},
+  en:{text:'Chat',auto:'Chat',image:'IMAGE',video:'VIDEO',audio:'AUDIO',music:'AUDIO'}
 };
 function setChatHeaderMode(m){
   const labelEl=$('jActiveModeLabel');if(!labelEl)return;
@@ -166,7 +166,8 @@ function setChatHeaderMode(m){
   labelEl.dataset.mode=norm;
 }
 window.addEventListener('jarvix:mode',e=>{if(e.detail?.mode)setChatHeaderMode(e.detail.mode);});
-try{const st=sessionStorage.getItem('jarvix_composer_mode');if(st)setChatHeaderMode(st);}catch{}
+// bindComposer initializes before the listener above and used to leave "???" behind.
+try{setChatHeaderMode(sessionStorage.getItem('jarvix_composer_mode')||'auto');}catch{setChatHeaderMode('auto');}
 try {
   const _sp = new URLSearchParams(location.search);
   const _initMode = _sp.get('mode') || _sp.get('studio');
@@ -260,26 +261,45 @@ function initChatMenuDrawer() {
 
   if (!titleBtn || !dropdown) return;
 
-  const openDropdown = async () => {
-    await updateHistoryList();
-    dropdown.hidden = false;
-    titleBtn.setAttribute('aria-expanded', 'true');
-    titleBtn.classList.add('open');
+  // Fixed side panel is positioned below the existing title, not over the top header.
+  const positionDropdown = () => {
+    if (dropdown.hidden) return;
+    const anchor = titleBtn.getBoundingClientRect();
+    const availableWidth = Math.min(338, Math.max(220, innerWidth - 24));
+    const left = Math.max(12, Math.min(anchor.left, innerWidth - availableWidth - 12));
+    dropdown.style.setProperty('--j-chat-menu-top', Math.max(12, Math.min(anchor.bottom + 7, innerHeight - 160)) + 'px');
+    dropdown.style.setProperty('--j-chat-menu-left', left + 'px');
   };
-
   const closeDropdown = () => {
     dropdown.hidden = true;
     titleBtn.setAttribute('aria-expanded', 'false');
     titleBtn.classList.remove('open');
+    document.removeEventListener('pointerdown', closeOnOutside, true);
+    document.removeEventListener('keydown', closeOnEscape, true);
+    window.removeEventListener('resize', positionDropdown);
   };
-
-  titleBtn.onclick = (e) => {
-    e.stopPropagation();
-    if (dropdown.hidden) openDropdown();
+  const closeOnOutside = event => {
+    if (!dropdown.contains(event.target) && !titleBtn.contains(event.target)) closeDropdown();
+  };
+  const closeOnEscape = event => {
+    if (event.key === 'Escape') closeDropdown();
+  };
+  const openDropdown = async () => {
+    dropdown.hidden = false;
+    titleBtn.setAttribute('aria-expanded', 'true');
+    titleBtn.classList.add('open');
+    positionDropdown();
+    document.addEventListener('pointerdown', closeOnOutside, true);
+    document.addEventListener('keydown', closeOnEscape, true);
+    window.addEventListener('resize', positionDropdown);
+    try { await updateHistoryList(); } catch (error) { console.warn('JARVIX history unavailable:', error?.message); }
+  };
+  titleBtn.onclick = event => {
+    event.stopPropagation();
+    if (dropdown.hidden) void openDropdown();
     else closeDropdown();
   };
-
-  if (backdrop) backdrop.onclick = () => closeDropdown();
+  if (backdrop) backdrop.onclick = closeDropdown;
 
   if (newBtn) {
     newBtn.onclick = () => {
