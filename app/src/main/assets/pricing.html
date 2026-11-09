@@ -93,6 +93,12 @@
 </section>
 <section class="price-plans-area" id="plans" aria-labelledby="plansHeading">
   <h2 id="plansHeading" class="price-tools-heading">Video &amp; Everyday Tools Plans</h2>
+  <div class="price-plan-carousel-controls" role="group" aria-label="Browse subscription plans">
+    <button type="button" id="pricePlanPrev" aria-label="Previous plan" aria-controls="planCards" disabled>‹</button>
+    <span id="pricePlanPosition" aria-live="polite" aria-atomic="true">1 / 5</span>
+    <button type="button" id="pricePlanNext" aria-label="Next plan" aria-controls="planCards">›</button>
+  </div>
+
   <div class="price-billing-bar" aria-label="Billing period selection">
     <div class="price-billing-switch" role="group" aria-label="Choose billing period">
       <button type="button" id="priceBillingMonthly" class="is-active" aria-pressed="true">Monthly</button>
