@@ -1,0 +1,137 @@
+name: Owner surgical Video Uniquifier chat TEST using immutable Cloudflare manifest
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/owner-chat-manifest-preview.yml'
+permissions:
+  contents: read
+concurrency:
+  group: owner-chat-one-file-preview
+  cancel-in-progress: true
+jobs:
+  preserve-manifest-preview:
+    if: github.head_ref == 'owner-prod-chat-provenance-20261109' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      PREVIEW_BRANCH: owner-chat-surgical-test-20261109
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install asset content hash verifier (no AI or billing)
+        run: python3 -m pip install --quiet blake3 --break-system-packages
+      - name: Create isolated preview reusing ALL canonical production asset hashes and ONLY modifying chat JS
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import {execFileSync} from 'node:child_process';
+          import assert from 'node:assert/strict';
+          const api='https://api.cloudflare.com/client/v4';
+          const cfToken=process.env.CLOUDFLARE_API_TOKEN;
+          const account=process.env.CLOUDFLARE_ACCOUNT_ID;
+          const branch=process.env.PREVIEW_BRANCH;
+          assert(cfToken&&account&&branch);
+          const headers={Authorization:'Bearer '+cfToken};
+          async function request(url,opts={}){
+            const r=await fetch(url,{...opts,signal:AbortSignal.timeout(30000)});
+            const body=await r.text();
+            let json;
+            try{json=JSON.parse(body)}catch{throw Error('Cloudflare invalid JSON '+r.status+': '+body.slice(0,250))}
+            if(!r.ok||json.success!==true)throw Error('Cloudflare API rejected '+new URL(url).pathname+': '+r.status+': '+JSON.stringify(json.errors||[]).slice(0,400));
+            return json.result===undefined?json:json.result;
+          }
+          const project=await request(api+'/accounts/'+account+'/pages/projects/deepsyq',{headers});
+          assert.equal(project.production_branch,'deepsyq-platform','production branch changed');
+          assert.notEqual(branch,project.production_branch,'must use isolated Preview');
+          const canonical=project.canonical_deployment;
+          assert(canonical?.id&&canonical?.url,'canonical missing');
+          const old=await request(api+'/accounts/'+account+'/pages/projects/deepsyq/deployments/'+canonical.id,{headers});
+          assert.equal(old.uses_functions,true,'unexpected Worker baseline');
+          assert(old.files&&Object.keys(old.files).length>=1000,'production manifest missing');
+          const path='/jarvix-composer-design.js';
+          const currentHash=old.files[path];
+          assert.match(currentHash||'',/^[a-f0-9]{32}$/);
+          const live=await fetch(canonical.url+path,{signal:AbortSignal.timeout(15000)});
+          assert(live.ok,'cannot fetch exact canonical JS');
+          const before=Buffer.from(await live.arrayBuffer()),original=before.toString('utf8');
+          function hash(data){
+            return execFileSync('python3',['-c',"import sys,base64;from blake3 import blake3;d=sys.stdin.buffer.read();print(blake3(base64.b64encode(d)+b'js').hexdigest()[:32])"],{input:data,encoding:'utf8'}).trim();
+          }
+          assert.equal(hash(before),currentHash,'canonical production file hash does not match manifest');
+          const needle=",['Video Uniquifier','index.html','legacy']";
+          assert.equal(original.split(needle).length-1,2,'expected exactly two button entries; source shape changed');
+          const after=original.replaceAll(needle,'');
+          assert(!after.includes("['Video Uniquifier','index.html','legacy']"),'button remains');
+          assert(after.includes("['JARVIX','jarvix-chat.html',null]"),'JARVIX link not preserved');
+          const replacement=Buffer.from(after),newHash=hash(replacement);
+          assert.notEqual(newHash,currentHash);
+          const manifest={...old.files,[path]:newHash};
+          assert.equal(Object.keys(manifest).length,Object.keys(old.files).length);
+          assert.equal(Object.keys(manifest).filter(key=>manifest[key]!==old.files[key]).join(','),path);
+          fs.writeFileSync('/tmp/owner-chat-manifest-baseline.json',JSON.stringify({id:canonical.id,url:canonical.url,uses_functions:old.uses_functions,files:old.files}));
+          console.log('SURGICAL_PREVIEW_PREPARED',JSON.stringify({production_id:canonical.id,oldHash:currentHash,newHash,newBytes:replacement.length,untouched_files:Object.keys(old.files).length-1,changed_files:1,changes:[path],production_published:false}));
+          const uploadData=await request(api+'/accounts/'+account+'/pages/projects/deepsyq/upload-token',{headers});
+          const jwt=uploadData.jwt||uploadData.token;
+          if(!jwt)throw Error('No upload token returned; keys='+Object.keys(uploadData).join(','));
+          const upload=await request(api+'/pages/assets/upload',{method:'POST',headers:{Authorization:'Bearer '+jwt,'Content-Type':'application/json'},body:JSON.stringify([{base64:true,key:newHash,value:replacement.toString('base64'),metadata:{contentType:'application/javascript'}}])});
+          console.log('NEW_SINGLE_ASSET_UPLOADED',JSON.stringify({newHash,success:!!upload}));
+          await request(api+'/pages/assets/upsert-hashes',{method:'POST',headers:{Authorization:'Bearer '+jwt,'Content-Type':'application/json'},body:JSON.stringify({hashes:[newHash]})});
+          const checked=await request(api+'/accounts/'+account+'/pages/projects/deepsyq',{headers});
+          assert.equal(checked.canonical_deployment.id,canonical.id,'MAIN changed concurrently: refusing deploy');
+          const form=new FormData();
+          form.append('branch',branch);
+          form.append('manifest',JSON.stringify(manifest));
+          form.append('commit_hash','${{ github.event.pull_request.head.sha }}');
+          form.append('commit_message','OWNER TEST: surgical removal of Video Uniquifier chat rail, preserve production asset hashes');
+          form.append('commit_dirty','true');
+          const published=await request(api+'/accounts/'+account+'/pages/projects/deepsyq/deployments',{method:'POST',headers,body:form});
+          assert(published.id && published.url,'preview missing URL');
+          assert.match(published.url,/^https:\/\/[a-z0-9-]+\.deepsyq\.pages\.dev$/);
+          fs.appendFileSync(process.env.GITHUB_ENV,'OWNER_SURGICAL_PREVIEW_URL='+published.url+'\nOWNER_SURGICAL_PREVIEW_ID='+published.id+'\nOWNER_PRODUCTION_PREVIEW_BASELINE='+canonical.id+'\n');
+          console.log('ONE_ASSET_PREVIEW_CREATED',JSON.stringify({previewUrl:published.url,previewId:published.id,production_id_unchanged:canonical.id}));
+          JS
+      - name: Check exact preview manifest, Worker preservation and live pages before any MAIN release
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const api='https://api.cloudflare.com/client/v4',account=process.env.CLOUDFLARE_ACCOUNT_ID,secret=process.env.CLOUDFLARE_API_TOKEN;
+          const headers={Authorization:'Bearer '+secret};
+          const id=process.env.OWNER_SURGICAL_PREVIEW_ID,url=process.env.OWNER_SURGICAL_PREVIEW_URL;
+          assert(id&&url);
+          const base=JSON.parse(fs.readFileSync('/tmp/owner-chat-manifest-baseline.json','utf8'));
+          for(let retry=0;retry<10;retry++){
+            const r=await fetch(api+'/accounts/'+account+'/pages/projects/deepsyq/deployments/'+id,{headers});
+            if(!r.ok)throw Error('Preview deployment fetch failed '+r.status);
+            const data=await r.json(),newDep=data.result;
+            if(!data.success)throw Error('Preview deployment API failed');
+            const diff=Object.keys(base.files).filter(path=>base.files[path]!==newDep.files?.[path]);
+            assert.equal(diff.join(','),'/jarvix-composer-design.js','unexpected manifest differences');
+            assert.equal(Object.keys(base.files).length,Object.keys(newDep.files||{}).length,'file inventory changed');
+            console.log('PREVIEW_DEPLOY_CHECK',JSON.stringify({status:newDep.latest_stage?.status||'unknown',oldFunctions:base.uses_functions,newFunctions:newDep.uses_functions,files:Object.keys(newDep.files).length,diff}));
+            if(newDep.latest_stage?.status==='success')break;
+            await new Promise(r=>setTimeout(r,1200));
+          }
+          const r=await fetch(api+'/accounts/'+account+'/pages/projects/deepsyq/deployments/'+id,{headers});
+          const p=(await r.json()).result;
+          if(p.uses_functions!==base.uses_functions)throw Error('BLOCK PROD: Cloudflare Worker not preserved in manifest-only Preview!');
+          const paths=['/jarvix-composer-design.js','/deepsyq.html','/jarvix-chat.html','/generate-studio.html','/pricing.html','/index.html'];
+          for(const path of paths){
+            const res=await fetch(url+path,{signal:AbortSignal.timeout(15000)});
+            assert.equal(res.status,200,path+' not live');
+            const text=await res.text();
+            if(path.endsWith('jarvix-composer-design.js')){
+              assert(!text.includes("['Video Uniquifier','index.html','legacy']"),'Video Uniquifier chat button remains');
+              assert(text.includes("['JARVIX','jarvix-chat.html',null]"),'JARVIX missing');
+            }
+            console.log('PREVIEW_STATIC_PASS',path,res.status);
+          }
+          const production=await fetch(api+'/accounts/'+account+'/pages/projects/deepsyq',{headers});
+          const project=(await production.json()).result;
+          assert.equal(project.canonical_deployment.id,base.id,'MAIN changed during preview: do not publish');
+          console.log('PREVIEW_SUCCESS_FUNCTIONS_PRESERVED_MAIN_UNCHANGED',JSON.stringify({preview:url,production_id:base.id}));
+          JS
