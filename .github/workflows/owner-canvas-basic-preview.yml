@@ -167,7 +167,7 @@ jobs:
           test -n "$CLOUDFLARE_ACCOUNT_ID"
           API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq"
           curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API" > /tmp/project-before.json
-          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API/deployments?per_page=100&page=1" > /tmp/deployments-before.json
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API/deployments?per_page=20&page=1" > /tmp/deployments-before.json
           node --input-type=module <<'JS'
           import fs from 'node:fs';
           const p=JSON.parse(fs.readFileSync('/tmp/project-before.json','utf8'));
@@ -199,7 +199,7 @@ jobs:
           set -euo pipefail
           API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq"
           curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API" > /tmp/project-after.json
-          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API/deployments?per_page=100&page=1" > /tmp/deployments-after.json
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API/deployments?per_page=20&page=1" > /tmp/deployments-after.json
           node --input-type=module <<'JS'
           import fs from 'node:fs';
           const p=JSON.parse(fs.readFileSync('/tmp/project-after.json','utf8'));
