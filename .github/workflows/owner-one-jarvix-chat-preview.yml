@@ -101,7 +101,7 @@ jobs:
                   const response=await page.goto(origin+'/jarvix-chat.html?mode='+mode,{waitUntil:'domcontentloaded',timeout:30000});
                   assert.equal(response?.status(),200);
                   await page.locator('body[data-jarvix-mode="'+mode+'"]').waitFor({timeout:20000});
-                  assert.equal(new URL(page.url()).pathname,'/jarvix-chat.html');
+                  assert.match(new URL(page.url()).pathname,/^\/jarvix-chat(?:\.html)?$/,'same canonical JARVIX path (Cloudflare clean URL accepted)');
                   assert.match(await page.locator('#jWorkspaceFrame').getAttribute('src'),new RegExp('studio='+mode));
                   assert.equal(await page.locator('#jChatForm').count(),1);
                   console.log('ONE_JARVIX_CHAT_MODE_PASS',JSON.stringify({device,mode,pathname:new URL(page.url()).pathname}));
