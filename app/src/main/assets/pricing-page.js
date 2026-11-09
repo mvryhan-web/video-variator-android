@@ -121,11 +121,43 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){accountEpo
 window.addEventListener('pagehide',()=>{accountEpoch++;});
 const paymentScope=()=>({token:token(),epoch:accountEpoch});
 const current=scope=>scope.token===token()&&scope.epoch===accountEpoch&&!document.hidden;
+/* Minimal mobile carousel; monthly/yearly selection retains the current card. */
+const planTrack=byId('planCards');
+const planPrev=byId('pricePlanPrev'),planNext=byId('pricePlanNext'),planPosition=byId('pricePlanPosition');
+function planCarouselIndex(){
+ const cards=Array.from(planTrack.children);
+ if(!cards.length)return 0;
+ const left=planTrack.getBoundingClientRect().left;
+ let index=0,closest=Infinity;
+ cards.forEach((card,i)=>{
+  const delta=Math.abs(card.getBoundingClientRect().left-left);
+  if(delta<closest){closest=delta;index=i;}
+ });
+ return index;
+}
+function refreshPlanCarousel(){
+ const count=planTrack.children.length,index=planCarouselIndex();
+ planPrev.disabled=index===0;
+ planNext.disabled=index>=count-1;
+ planPosition.textContent=count?(index+1)+' / '+count:'0 / 0';
+}
+function movePlanCarousel(direction){
+ const cards=Array.from(planTrack.children);
+ if(!cards.length)return;
+ const index=Math.max(0,Math.min(cards.length-1,planCarouselIndex()+direction));
+ const target=cards[index];
+ const left=planTrack.scrollLeft+target.getBoundingClientRect().left-planTrack.getBoundingClientRect().left;
+ planTrack.scrollTo({left,behavior:'smooth'});
+}
+planPrev.addEventListener('click',()=>movePlanCarousel(-1));
+planNext.addEventListener('click',()=>movePlanCarousel(1));
+planTrack.addEventListener('scroll',()=>requestAnimationFrame(refreshPlanCarousel),{passive:true});
+window.addEventListener('resize',()=>requestAnimationFrame(refreshPlanCarousel));
 function renderPlans(config){
  latestPlanConfig=config;
  toolBillingConfigured=config?.billingConfigured===true;
  googleAuthClientId=typeof config?.googleClientId==='string'?config.googleClientId:'';
- const host=byId('planCards');host.replaceChildren();
+ const host=byId('planCards');const previousPlan=planCarouselIndex();host.replaceChildren();
  for(const p of planned){
   const item=node('article','price-plan price-'+p.key);
   const picture=node('div','price-plan-picture');picture.append(img(p.key)); // exact original approved artwork
@@ -173,6 +205,14 @@ function renderPlans(config){
   item.setAttribute('aria-labelledby',heading.id);
   item.append(picture,body);host.append(item);
  }
+ // Keep the selected tariff in view when switching Monthly / Yearly.
+ if(window.matchMedia('(max-width:700px)').matches){
+  requestAnimationFrame(()=>{
+   const selected=host.children[Math.min(previousPlan,host.children.length-1)];
+   if(selected)host.scrollLeft=selected.offsetLeft-host.firstElementChild.offsetLeft;
+   refreshPlanCarousel();
+  });
+ }else refreshPlanCarousel();
  // No technical/preview banner above the cards; status appears only after a user action.
  message('pricingStatus','');
 }
