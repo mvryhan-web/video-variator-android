@@ -7,6 +7,15 @@ const [home,shell,chat,studio,composer,actions,homeComposer,styles]=await Promis
  'deepsyq.html','deepsyq-site-shell.js','jarvix-chat.js','generate-studio.html',
  'jarvix-composer-design.js','jarvix-action-plan.js','jarvix-home-chat.js','jarvix-chat.css'
 ].map(src));
+test('Home uses main JARVIX Chat composer and respects intent without a second chat',()=>{
+ assert.match(home, /id="homeQuickBar"[^>]*data-canonical-jarvix-home/);
+ assert.match(home, /<form id="jChatForm" data-jarvix-chat/);
+ assert.doesNotMatch(home, /id="homeQuickForm"/);
+ assert.match(homeComposer,/extractAction\(text\)/);
+ assert.match(homeComposer,/saveStudioHandoff\(/);
+ assert.match(homeComposer,/status:creating\|\|target!=='auto'\?'sent':'pending'/);
+ assert.match(styles,/#homeQuickBar\[data-canonical-jarvix-home\] \.j-mode-rail a\{display:none!important\}/);
+});
 test('exactly one canonical JARVIX chat route in all owner Creation sidebar links',()=>{
  for(const mode of ['image','video','audio']){
   const target='jarvix-chat.html?mode='+mode;
