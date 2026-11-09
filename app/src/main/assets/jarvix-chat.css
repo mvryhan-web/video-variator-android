@@ -1317,3 +1317,41 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
   border-color: #ffbf52 !important;
   box-shadow: inset 0 0 16px rgba(245, 158, 11, 0.6), 0 0 16px rgba(255, 191, 82, 0.6) !important;
 }
+
+
+/* Owner: ONLY JARVIX Chat scrolls its conversation, never its header or composer.
+   The page scrollbar was caused by the late desktop 100dvh-56px rule overriding
+   the taller mobile header. Keep the document fixed; allow auto scroll only in
+   the message list once the messages actually exceed its available height. */
+html:has(> body > main.jarvix-chat),
+body:has(> main.jarvix-chat) {
+  height: var(--j-viewport, 100dvh) !important;
+  max-height: var(--j-viewport, 100dvh) !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+body > main.jarvix-chat {
+  /* JS measures the real space below the existing responsive header. */
+  height: var(--j-chat-visible-height, calc(var(--j-viewport, 100dvh) - 56px)) !important;
+  max-height: var(--j-chat-visible-height, calc(var(--j-viewport, 100dvh) - 56px)) !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+body > main.jarvix-chat > .j-chat-toolbar,
+body > main.jarvix-chat > .j-chat-bottom {
+  flex: 0 0 auto !important;
+}
+body > main.jarvix-chat > #jMessages {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scrollbar-gutter: auto !important;
+  overscroll-behavior-y: contain !important;
+}
+@media (max-width: 760px) {
+  body > main.jarvix-chat {
+    height: var(--j-chat-visible-height, calc(var(--j-viewport, 100dvh) - 132px - env(safe-area-inset-top, 0px))) !important;
+    max-height: var(--j-chat-visible-height, calc(var(--j-viewport, 100dvh) - 132px - env(safe-area-inset-top, 0px))) !important;
+  }
+}

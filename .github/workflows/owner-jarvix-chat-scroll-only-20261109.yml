@@ -1,0 +1,98 @@
+name: Owner JARVIX Chat only - conversation scrollbar browser QA
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/jarvix-chat.css'
+      - 'app/src/main/assets/jarvix-chat.js'
+      - 'tests/jarvix-chat-scroll-boundary.browser.test.mjs'
+      - '.github/workflows/owner-jarvix-chat-scroll-only-20261109.yml'
+permissions:
+  contents: read
+jobs:
+  chat-scroll-only:
+    if: github.head_ref == 'p/jarvix-chat-messages-scroll-prod-20261109'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+      JARVIX_QUOTA_DATABASE_URL: ''
+      JARVIX_FREE_LLM_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify only JARVIX Chat CSS was modified in runtime
+        run: |
+          node --check app/src/main/assets/jarvix-chat.js
+          node --check tests/jarvix-chat-scroll-boundary.browser.test.mjs
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const css=readFileSync('app/src/main/assets/jarvix-chat.css','utf8');
+          assert(css.includes('Owner: ONLY JARVIX Chat scrolls its conversation'));
+          assert(css.includes('body > main.jarvix-chat > #jMessages'));
+          assert(css.includes('overflow-y: auto !important;'));
+          JS
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Real desktop and mobile empty/long-chat regression
+        run: node --test tests/jarvix-chat-scroll-boundary.browser.test.mjs
+
+  main-worker-readiness:
+    needs: chat-scroll-only
+    if: github.event.pull_request.number == 677
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Read-only production Worker source and binding preflight
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          const account=process.env.CLOUDFLARE_ACCOUNT_ID,token=process.env.CLOUDFLARE_API_TOKEN;
+          if(!/^[a-f\d]{32}$/i.test(account||'')||!token)throw Error('BLOCKED_MAIN: Cloudflare credentials not configured');
+          const api='https://api.cloudflare.com/client/v4/accounts/'+account;
+          async function request(path){
+            return fetch(api+path,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(14000)});
+          }
+          const projectRes=await request('/pages/projects/deepsyq');
+          assert.equal(projectRes.status,200,'BLOCKED_MAIN: cannot verify Pages project');
+          const projectJson=await projectRes.json();
+          assert.equal(projectJson.success,true);
+          const project=projectJson.result;
+          assert.equal(project.production_branch,'deepsyq-platform');
+          assert.equal(project.canonical_deployment?.uses_functions,true,'BLOCKED_MAIN: live production Worker missing');
+          const script=project.production_script_name;
+          assert(script,'BLOCKED_MAIN: production Worker name missing');
+          const encoded=encodeURIComponent(script);
+          const content=await request('/workers/scripts/'+encoded+'/content/v2');
+          const settings=await request('/workers/scripts/'+encoded+'/settings');
+          console.log('MAIN_WORKER_READINESS',JSON.stringify({
+            productionHasWorker:true,
+            sourceReadHTTP:content.status,
+            settingsReadHTTP:settings.status,
+            mainDeployId:project.canonical_deployment.id
+          }));
+          if(!content.ok||!settings.ok){
+            throw Error('BLOCKED_MAIN: Worker source/settings cannot be read; production deployment refused. Preserve existing auth, payments, credits and APIs.');
+          }
+          const source=await content.text();
+          assert(source.length>1000,'BLOCKED_MAIN: invalid source bundle');
+          const data=await settings.json();
+          assert(data.success!==false,'BLOCKED_MAIN: Worker binding inspection failed');
+          console.log('MAIN_WORKER_READ_AND_SETTINGS_READY_NO_DEPLOY');
+          JS

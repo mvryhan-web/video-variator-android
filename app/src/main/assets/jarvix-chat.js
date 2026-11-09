@@ -35,6 +35,35 @@ import {bindComposer,trackViewport} from './jarvix-composer.js';
 import {getJarvixSessionId,getJarvixLanguage,speakJarvis} from './jarvis-core.js';
 import {saveStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id),status=text=>$('jStatus').textContent=text;
+// Only JARVIX Chat: occupy the actual visible space BELOW the shared header.
+// The document remains fixed; #jMessages alone handles long-chat scrolling.
+const chatViewportRoot=document.querySelector('body > main.jarvix-chat');
+if(chatViewportRoot){
+  let pendingFrame=0;
+  const fitConversation=()=>{
+    pendingFrame=0;
+    if(!chatViewportRoot.isConnected)return;
+    const view=window.visualViewport;
+    const visibleBottom=(view?.offsetTop||0)+(view?.height||innerHeight);
+    const top=chatViewportRoot.getBoundingClientRect().top;
+    const height=Math.max(0,Math.floor(visibleBottom-Math.max(0,top)))+'px';
+    if(chatViewportRoot.style.getPropertyValue('--j-chat-visible-height')!==height){
+      chatViewportRoot.style.setProperty('--j-chat-visible-height',height);
+    }
+  };
+  const scheduleConversationFit=()=>{
+    if(pendingFrame)cancelAnimationFrame(pendingFrame);
+    pendingFrame=requestAnimationFrame(fitConversation);
+  };
+  const header=document.querySelector('header.topbar');
+  if(header)new ResizeObserver(scheduleConversationFit).observe(header);
+  new MutationObserver(scheduleConversationFit).observe(document.body,{childList:true});
+  window.addEventListener('resize',scheduleConversationFit,{passive:true});
+  window.addEventListener('pageshow',scheduleConversationFit);
+  window.visualViewport?.addEventListener('resize',scheduleConversationFit,{passive:true});
+  window.visualViewport?.addEventListener('scroll',scheduleConversationFit,{passive:true});
+  scheduleConversationFit();
+}
 const store=await conversationStore();let conversation=null,busy=false,epoch=0,controller=null,config=null,urls=[];
 const headers=()=>({'Content-Type':'application/json',...(localStorage.getItem('vv_token')?{Authorization:'Bearer '+localStorage.getItem('vv_token')}:{})});
 async function api(path,body){store.guard();const r=await fetch(path,{method:body?'POST':'GET',headers:headers(),cache:'no-store',...(body?{body:JSON.stringify(body)}:{}),signal:controller?.signal});store.guard();const d=await r.json();if(!r.ok)throw Error(d.message||d.error||'Request failed');return d;}
