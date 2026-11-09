@@ -257,6 +257,29 @@ $('topLogin')?.addEventListener('click',()=>{
 function markHomeLogin(){const b=$('topLogin');if(b){const t=b.querySelector('.ds-pod-text');const txt=localStorage.getItem('vv_token')?homeLangText().account:homeLangText().login;if(t)t.textContent=txt;else b.textContent=txt;}}
 markHomeLogin();
 // Real owner-approved media only. Playback is disabled for reduced motion/data saver.
+// Keep the existing Home gallery usable when Cloudflare serves static assets
+// without the legacy /api/inspiration endpoint. Only owner-approved TEST
+// manifests already shipped with the site can supply preview entries.
+let approvedHomeFeedPromise;
+function loadApprovedHomeFeed(){
+ if(!approvedHomeFeedPromise){
+  const manifests=[
+   'media/home/owner-20261018/manifest.json',
+   'media/inspiration/openai-20261021/manifest.json',
+   'media/inspiration/owner-20261031/manifest.json',
+   'media/inspiration/owner-next-20261031/manifest.json'
+  ];
+  approvedHomeFeedPromise=Promise.all(manifests.map(async file=>{
+   try{
+    const response=await fetch(new URL(file,import.meta.url),{cache:'force-cache'});
+    if(!response.ok)return [];
+    const manifest=await response.json();
+    return manifest.previewPublicationApproved===true&&Array.isArray(manifest.items)?manifest.items:[];
+   }catch(_){return [];}
+  })).then(groups=>groups.flat().filter(item=>item&&item.featured===true&&item.actionTarget==='studio'&&['video','image'].includes(item.kind)&&typeof item.previewUrl==='string'&&item.previewUrl.startsWith('/media/')&&!item.previewUrl.includes('logo')).map(item=>({...item,id:item.id||item.slug})).sort((a,b)=>(a.sortOrder??100)-(b.sortOrder??100)));
+ }
+ return approvedHomeFeedPromise;
+}
 let inspirationVideoObserver=null;
 function showInspirationVideos(root){
  inspirationVideoObserver?.disconnect();inspirationVideoObserver=null;
@@ -275,8 +298,11 @@ async function loadInspirationPreview(){
   // The owner-locked carousel never promotes Agent-only entries into a Studio CTA.
   void fetch(base+'/api/inspiration?featured=true&kind=video&target=studio&limit=13',{cache:'no-store'})
    .then(async response=>response.ok?response.json():null)
-   .then(feed=>updateInspirationHero(Array.isArray(feed?.items)?feed.items:[]))
-   .catch(()=>updateInspirationHero([]));
+   .then(async feed=>{
+    const items=Array.isArray(feed?.items)?feed.items:[];
+    updateInspirationHero(items.length?items:(await loadApprovedHomeFeed()).filter(item=>item.kind==='video'));
+   })
+   .catch(async ()=>updateInspirationHero((await loadApprovedHomeFeed()).filter(item=>item.kind==='video')));
   const inspirationFeed=[];
    for(let page=0,offset=0;page<4;page++){
     const d=await fetch(base+'/api/inspiration?featured=true&limit=60&offset='+offset,{cache:'no-store'}).then(async response=>response.ok?response.json():({items:[]})).catch(()=>({items:[]}));
@@ -287,7 +313,7 @@ async function loadInspirationPreview(){
     if(!Number.isSafeInteger(nextOffset)||nextOffset<=offset)break;
     offset=nextOffset;
    }
-   const studio=inspirationFeed.filter(x=>x.actionTarget==='studio'&&['video','image'].includes(x.kind)&&!x.previewUrl?.includes('logo')&&!x.previewPosterUrl?.includes('logo'));renderHomeInspiration(studio,()=>showInspirationVideos(root));if(pendingMobileInspirationJump)scrollToMobileInspiration();const ad=await fetch(base+'/api/inspiration?featured=true&target=agent&limit=3',{cache:'no-store'}).then(async response=>response.ok?response.json():({items:[]})).catch(()=>({items:[]}));const agents=Array.isArray(ad.items)?ad.items:[];agentRoot.replaceChildren();for(const item of agents){const card=document.createElement(item.actionPath?'a':'article');card.className='inspiration-preview-card agent-example';if(item.actionPath){card.href=item.actionPath+'?from=inspiration';card.onclick=()=>sessionStorage.setItem('deepsyq_agent_inspiration_start',JSON.stringify({id:item.id,title:item.title,generationType:item.kind,promptTemplate:item.prompt||'',defaultModel:item.defaultModel||null,requiredInputTypes:Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[],defaultSettings:{...(item.defaultSettings||{}),ratio:item.aspectRatio},source:'inspiration',action:'create'}));}const copy=document.createElement('div');const title=document.createElement('strong');title.textContent=item.title;const desc=document.createElement('span');desc.textContent=item.description||item.prompt;copy.append(title,desc);card.append(copy);agentRoot.append(card);}agentSection.hidden=!agents.length;}catch(_){section.hidden=true;agentSection.hidden=true;}
+   const studio=inspirationFeed.filter(x=>x.actionTarget==='studio'&&['video','image'].includes(x.kind)&&!x.previewUrl?.includes('logo')&&!x.previewPosterUrl?.includes('logo'));const gallery=studio.length?studio:await loadApprovedHomeFeed();renderHomeInspiration(gallery,()=>showInspirationVideos(root));if(pendingMobileInspirationJump)scrollToMobileInspiration();const ad=await fetch(base+'/api/inspiration?featured=true&target=agent&limit=3',{cache:'no-store'}).then(async response=>response.ok?response.json():({items:[]})).catch(()=>({items:[]}));const agents=Array.isArray(ad.items)?ad.items:[];agentRoot.replaceChildren();for(const item of agents){const card=document.createElement(item.actionPath?'a':'article');card.className='inspiration-preview-card agent-example';if(item.actionPath){card.href=item.actionPath+'?from=inspiration';card.onclick=()=>sessionStorage.setItem('deepsyq_agent_inspiration_start',JSON.stringify({id:item.id,title:item.title,generationType:item.kind,promptTemplate:item.prompt||'',defaultModel:item.defaultModel||null,requiredInputTypes:Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[],defaultSettings:{...(item.defaultSettings||{}),ratio:item.aspectRatio},source:'inspiration',action:'create'}));}const copy=document.createElement('div');const title=document.createElement('strong');title.textContent=item.title;const desc=document.createElement('span');desc.textContent=item.description||item.prompt;copy.append(title,desc);card.append(copy);agentRoot.append(card);}agentSection.hidden=!agents.length;}catch(_){const fallback=await loadApprovedHomeFeed();if(fallback.length){renderHomeInspiration(fallback,()=>showInspirationVideos(root));if(pendingMobileInspirationJump)scrollToMobileInspiration();}else section.hidden=true;if(agentSection)agentSection.hidden=true;}
 }
 
 async function loadFeaturedWorkflows(){
@@ -361,7 +387,9 @@ async function loadPlanModelCatalog(){
   for(const model of models){const chip=document.createElement('span');chip.className='home-model-chip';chip.textContent=(model.label||model.id)+' · '+String(model.kind||'AI').toUpperCase();root.append(chip);}
  }catch(_){root.textContent='Current model availability could not be loaded. Check Studio before choosing a model.';}
 }
-try{config=await api('/api/config');applyPlatformFeatures();void renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);}catch(_){updateInspirationHero([]);$('paymentStatus').textContent='Plans could not load. Please try again later.';}
+try{config=await api('/api/config');applyPlatformFeatures();void renderPlans();initGoogle();}catch(_){$('paymentStatus').textContent='Plans could not load. Please try again later.';}
+// The carousel and Inspiration must not depend on the billing/config API.
+await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);
 window.addEventListener('load',initGoogle);
 try{const c=await api('/api/studio/config');studioModelMenuConfig=c;if(openModelsKind)renderModelFlyout(openModelsKind);}catch(_){/* The model chooser retains its own availability feedback. */}
 // Read-only dashboard overview. Backend user_id scope is authoritative;
