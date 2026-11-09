@@ -1304,3 +1304,15 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
     font-size: 16px !important; /* iOS keyboard must not auto-zoom and clip the dock */
   }
 }
+
+/* Narrow phones: keep every original control and give the message input room. */
+@media (max-width: 360px) {
+  main.jarvix-chat .j-chat-bottom form#jChatForm {
+    gap: 2px !important;
+    padding: 4px !important;
+  }
+  main.jarvix-chat .j-chat-bottom form#jChatForm textarea#jInput {
+    padding-inline: 3px !important;
+    min-width: 0 !important;
+  }
+}
