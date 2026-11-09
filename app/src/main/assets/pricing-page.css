@@ -320,7 +320,7 @@ body.deepsyq-pricing-page .price-plan-carousel-controls{display:none}
   color:#e7f6ff;font-size:13px;font-weight:800;
  }
  body.deepsyq-pricing-page .price-plan-carousel-controls button{
-  position:absolute;top:calc(50% - 17px);z-index:3;
+  position:absolute;top:calc(50% + 6px);z-index:3;
   display:grid;place-items:center;
   width:40px;height:46px;min-height:46px;padding:0;
   border:1px solid #79cce8;border-radius:15px;
