@@ -1,0 +1,49 @@
+name: Owner F2 V6.3 local microphone preview no-spend acceptance
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/voice-agent-preview.html'
+      - 'tests/voice-agent-preview.spec.mjs'
+      - '.github/workflows/owner-voice-mic-v63.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  voice-local-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      PRODUCT_WATCHER_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install project dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install mock-browser dependencies (no paid AI)
+        run: npx playwright install --with-deps chromium webkit
+      - name: Test existing V6.2 and new V6.3 in Chromium and mobile WebKit
+        run: npx playwright test --config tests/voice-agent-preview.config.mjs
+      # Owner directly requested publication, but ONLY to a non-production
+      # Cloudflare Pages branch preview. Do not modify deepsyq.app or main.
+      - name: Deploy verified V6.3 to isolated Cloudflare Pages TEST branch
+        if: github.event_name == 'pull_request' && github.head_ref == 'owner-v63-local-mic-rms-current-dev-20261108'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Cloudflare GitHub Actions secrets unavailable. No deployment attempted; never paste API keys into chat or PR."
+            exit 1
+          fi
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq \
+            --branch=owner-v63-local-mic-rms-current-dev-20261108 \
+            --commit-hash="${{ github.event.pull_request.head.sha }}"
