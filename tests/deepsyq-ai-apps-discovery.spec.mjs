@@ -240,3 +240,35 @@ test('BASE #30: mobile and desktop Quick Create hand off to Studio without gener
  await expect(page.locator('#consent')).not.toBeChecked();
  expect(posts).toBe(0);
 });
+
+
+test('AI Apps Inspiration reuses Home gallery: filters videos and copies the real prompt without paid calls',async({page})=>{
+ const examples=[
+  {id:'owner-video',slug:'owner-video',title:'Dance transformation',kind:'video',category:'Fashion',
+   actionTarget:'studio',aspectRatio:'9:16',previewUrl:'media/home/neon-20261018/canvas-card.mp4',
+   previewPosterUrl:'media/home/neon-20261018/canvas.webp',prompt:'An original cinematic vertical dance transformation.'},
+  {id:'owner-image',slug:'owner-image',title:'Crystal sculpture',kind:'image',category:'Art',
+   actionTarget:'studio',aspectRatio:'1:1',previewUrl:'media/inspiration/openai-20261021/vertical-01-liquid-chrome-halo.webp',
+   prompt:'An original architectural crystal sculpture.'}
+ ];
+ await page.addInitScript(()=>Object.defineProperty(navigator,'clipboard',{
+  configurable:true,value:{writeText:async text=>{window.__copiedInspiration=text;}}
+ }));
+ await page.route('**/api/templates',route=>route.fulfill({json:{items:templates}}));
+ await page.route('**/api/inspiration?**',route=>route.fulfill({json:{items:examples,pagination:{hasMore:false}}}));
+ let paid=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\\/api\\/(?:studio\\/jobs|billing|ai-billing)/.test(new URL(r.url()).pathname))paid++;});
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/ai-apps.html');
+ await expect(page.locator('#inspirationPreview')).toBeVisible();
+ await expect(page.locator('#inspirationPreview .inspiration-preview-card')).toHaveCount(2);
+ await page.locator('#inspirationPreview [data-inspiration-kind="video"]').click();
+ await expect(page.locator('#inspirationPreview .inspiration-preview-card')).toHaveCount(1);
+ await page.locator('#inspirationPreview .inspiration-preview-card').click();
+ await expect(page.locator('.inspiration-detail-dialog')).toBeVisible();
+ await expect(page.locator('.inspiration-detail-prompt')).toHaveText(examples[0].prompt);
+ await page.getByRole('button',{name:'Copy prompt'}).click();
+ expect(await page.evaluate(()=>window.__copiedInspiration)).toBe(examples[0].prompt);
+ await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ expect(paid).toBe(0);
+});
