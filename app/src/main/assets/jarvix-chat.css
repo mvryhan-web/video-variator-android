@@ -1512,3 +1512,59 @@ main.jarvix-chat:has(> #jChatDropdown:not([hidden])){
   height:calc(var(--j-viewport,100dvh) - 156px - env(safe-area-inset-top,0px))!important;
  }
 }
+
+
+/* JARVIX single-chat viewport lock. Actual top offset is measured by
+   existing jarvix-chat.js after the platform shell places the header. */
+main.jarvix-chat{
+ height:var(--j-chat-available-height,calc(100dvh - 102px))!important;
+ max-height:var(--j-chat-available-height,calc(100dvh - 102px))!important;
+ min-height:0!important;
+}
+.jarvix-chat > #jMessages{
+ min-height:0!important;
+ overflow-y:auto!important;
+ overscroll-behavior:contain!important;
+}
+.jarvix-chat > .j-chat-bottom{
+ position:relative!important;
+ z-index:15!important;
+ align-self:end!important;
+ margin-top:0!important;
+ margin-bottom:0!important;
+ flex-shrink:0!important;
+}
+@media(max-width:760px){
+ body.j-action-workspace.ds-mobile-layout main.jarvix-chat,
+ body.ds-mobile-layout main.jarvix-chat,
+ main.jarvix-chat{
+  height:var(--j-chat-available-height,calc(100dvh - 156px))!important;
+  max-height:var(--j-chat-available-height,calc(100dvh - 156px))!important;
+  min-height:0!important;
+  padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;
+ }
+ .jarvix-chat > #jChatDropdown{
+  height:var(--j-history-drawer-height,min(40dvh,240px))!important;
+  max-height:var(--j-history-drawer-height,min(40dvh,240px))!important;
+  min-height:0!important;
+  overflow:hidden!important;
+ }
+ .jarvix-chat #jChatDropdown .j-drawer-panel{
+  min-height:0!important;
+  height:100%!important;
+  max-height:100%!important;
+ }
+ .jarvix-chat > .j-chat-bottom{
+  grid-row:5!important;
+  position:relative!important;
+  bottom:auto!important;
+  margin-top:0!important;
+  margin-bottom:0!important;
+  padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;
+  z-index:20!important;
+ }
+ .jarvix-chat > #jMessages{
+  min-height:0!important;
+  scrollbar-width:thin;
+ }
+}
