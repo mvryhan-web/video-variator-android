@@ -164,7 +164,7 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
      grid-column:2!important;grid-row:1!important;
      position:static!important;align-self:start!important;
      justify-self:end!important;float:none!important;
-     margin:0!important;z-index:2!important;
+     margin:0!important;transform:translateY(-10px)!important;z-index:2!important;
     }
     #studioSettingsHub>:is(#studioTypePicker,#modelButton,#settingsButton){
      grid-column:1 / -1!important;
