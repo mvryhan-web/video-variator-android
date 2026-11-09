@@ -1,0 +1,54 @@
+name: Owner JARVIX Chat menu and settings scoped browser QA
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/jarvix-chat.css'
+      - 'app/src/main/assets/jarvix-chat.js'
+      - 'app/src/main/assets/home-studio-settings.js'
+      - 'tests/jarvix-chat-sidebar-settings.browser.test.mjs'
+      - '.github/workflows/owner-jarvix-chat-menu-settings-20261109.yml'
+permissions:
+  contents: read
+jobs:
+  jarvix-chat-ui:
+    if: github.head_ref == 'p/jarvix-chat-sidebar-settings-20261109' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+      JARVIX_QUOTA_DATABASE_URL: ''
+      JARVIX_FREE_LLM_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: JS syntax checks
+        run: |
+          node --check app/src/main/assets/jarvix-chat.js
+          node --check app/src/main/assets/home-studio-settings.js
+          node --check tests/jarvix-chat-sidebar-settings.browser.test.mjs
+      - name: Install existing dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Only JARVIX Chat desktop/mobile real-browser UI acceptance
+        run: node --test tests/jarvix-chat-sidebar-settings.browser.test.mjs
+      - name: Upload local preview evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvix-chat-sidebar-settings-desktop-mobile
+          path: artifacts/jarvix-chat-sidebar/*.png
+          retention-days: 7
+          if-no-files-found: ignore
