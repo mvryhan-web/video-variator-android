@@ -1,0 +1,278 @@
+name: OWNER Pricing approved mobile arrows safe MAIN deployment
+on:
+  push:
+    branches: [owner-pricing-safe-main-deploy-20261109]
+    paths: ['.github/workflows/owner-pricing-safe-main-deploy-20261109.yml']
+permissions: {contents: read}
+concurrency:
+  group: owner-deepsyq-main-pricing-release-20261109
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'mvryhan-web/video-variator-android'
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      PREVIEW_BRANCH: owner-pricing-safe-20261109
+      PREVIEW_BASE: https://owner-pricing-safe-20261109.deepsyq.pages.dev
+      MAIN_BASE: https://deepsyq.app
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Select latest full DEV, never a partial PR or static-only bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/deepsyq-platform:refs/remotes/origin/deepsyq-platform
+          git checkout --detach refs/remotes/origin/deepsyq-platform
+          test "$(git rev-parse HEAD)" = "$(git rev-parse refs/remotes/origin/deepsyq-platform)"
+          git merge-base --is-ancestor 07e79bd2de0db59fac8df6350184db702c903a74 HEAD
+          node --check app/src/main/assets/pricing-page.js
+          node --check app/src/main/assets/_worker.js
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const root='app/src/main/assets/';
+          const h=fs.readFileSync(root+'pricing.html','utf8');
+          const c=fs.readFileSync(root+'pricing-page.css','utf8');
+          const j=fs.readFileSync(root+'pricing-page.js','utf8');
+          assert(h.includes('price-plan-carousel-stage') && h.includes('owner-pricing-midcard-v1') && !h.includes('id="plansHeading"') && !h.includes('id="priceBillingPromo"'));
+          assert(c.includes('top:calc(50% + 6px)')&&c.includes('scroll-snap-type:x mandatory'));
+          assert(j.includes('function movePlanCarousel')&&!j.includes('AI Credits Sold Separately'));
+          for(const id of ['pricePlanPrev','pricePlanNext','pricePlanPosition','planCards','creditCards','priceBillingMonthly','priceBillingYearly'])assert(h.includes('id="'+id+'"'));
+          assert(fs.existsSync(root+'_worker.js'),'Worker required in Pages output');
+          console.log('OWNER_PRICING_APPROVED_SOURCE_PASS');
+          JS
+          echo "TARGET_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "TARGET_PRICING_BLOB=$(git rev-parse HEAD:app/src/main/assets/pricing.html)" >> "$GITHUB_ENV"
+      - name: MAIN baseline, bindings, immutable Worker and rollback preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import {execFileSync} from 'node:child_process';
+          const token=process.env.CLOUDFLARE_API_TOKEN,account=process.env.CLOUDFLARE_ACCOUNT_ID;
+          assert(token&&/^[0-9a-f]{32}$/.test(account||''),'Cloudflare Pages credential not configured');
+          const root='https://api.cloudflare.com/client/v4';
+          const api=async route=>{
+            const resp=await fetch(root+route,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(22000)});
+            const body=await resp.json().catch(()=>({}));
+            return {status:resp.status,result:body.result,errorCodes:(body.errors||[]).map(e=>e.code)};
+          };
+          const project=await api('/accounts/'+account+'/pages/projects/deepsyq');
+          assert.equal(project.status,200,'Cannot verify Cloudflare project');
+          const p=project.result,d=p?.canonical_deployment;
+          assert(p.name==='deepsyq'&&p.production_branch==='deepsyq-platform'&&p.source?.type==null,'Unexpected Pages project/production branch/source');
+          assert(d?.id&&d.uses_functions===true,'Production has no Server Worker');
+          assert(/^[0-9a-f]{40}$/.test(d.deployment_trigger?.metadata?.commit_hash||''),'Unknown current production source commit');
+          const prodEnv=p.deployment_configs?.production||{};
+          for(const k of ['DATABASE_URL','STRIPE_SECRET_KEY','STRIPE_WEBHOOK_SECRET','GOOGLE_CLIENT_ID']){
+            assert(Object.hasOwn(prodEnv.env_vars||{},k),'Required production binding name absent: '+k);
+          }
+          assert(Object.hasOwn(prodEnv.r2_buckets||{},'R2_BUCKET'),'Production R2 binding missing');
+          assert(/^pages-worker--[a-z0-9-]+-production$/.test(p.production_script_name||''),'Unexpected production Worker');
+          const workerSettings=await api('/accounts/'+account+'/workers/scripts/'+encodeURIComponent(p.production_script_name)+'/settings');
+          assert.equal(workerSettings.status,200,'Unable to inspect existing Worker settings');
+          const deployed=d.deployment_trigger.metadata.commit_hash;
+          let currentWorker,desiredWorker;
+          try{
+            currentWorker=execFileSync('git',['rev-parse',deployed+':app/src/main/assets/_worker.js'],{encoding:'utf8'}).trim();
+            desiredWorker=execFileSync('git',['rev-parse',process.env.TARGET_SHA+':app/src/main/assets/_worker.js'],{encoding:'utf8'}).trim();
+          }catch{throw Error('Production source Worker cannot be resolved from Git');}
+          assert.equal(currentWorker,desiredWorker,'BLOCKED_MAIN: changed Worker source, do not replace live backend');
+          const changed=execFileSync('git',['diff','--name-only',deployed,process.env.TARGET_SHA,'--','app/src/main/assets'],{encoding:'utf8'}).trim().split('\n').filter(Boolean).sort();
+          const allowed=new Set(['app/src/main/assets/pricing.html','app/src/main/assets/pricing-page.js','app/src/main/assets/pricing-page.css','app/src/main/assets/jarvix-chat.css','app/src/main/assets/jarvix-chat.html','app/src/main/assets/deepsyq.html']);
+          assert(changed.length>0&&changed.every(name=>allowed.has(name)),'Unexpected static changes in full DEV build: '+JSON.stringify(changed));
+          const deployment=await api('/accounts/'+account+'/pages/projects/deepsyq/deployments/'+d.id);
+          assert.equal(deployment.status,200,'Original deployment not restorable');
+          const results={oldDeploymentId:d.id,oldCommit:deployed,oldWorkerBlob:currentWorker,workerName:p.production_script_name,originalConfigKeys:Object.keys(prodEnv.env_vars||{}).sort(),originalR2Keys:Object.keys(prodEnv.r2_buckets||{}).sort(),changed};
+          fs.writeFileSync('/tmp/deepsyq-before.json',JSON.stringify(results));
+          fs.appendFileSync(process.env.GITHUB_ENV,'OLD_MAIN_ID='+d.id+'\n');
+          console.log('PRODUCTION_SAFE_RELEASE_PREFLIGHT',JSON.stringify({deployment:d.id,commit:deployed,workerUnchanged:true,functions:true,bindingNamesChecked:true,changed}));
+          JS
+      - name: Install test browser, no paid providers
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Deploy full unchanged Worker plus latest Pricing to isolated PREVIEW first
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq --branch="$PREVIEW_BRANCH" \
+            --commit-hash="$TARGET_SHA" --commit-dirty=false \
+            --commit-message="Owner Pricing #679: verify full Worker before MAIN" | tee /tmp/pricing-preview-deploy.log
+      - name: Validate real PREVIEW Worker and mobile/desktop carousel
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const origin=process.env.PREVIEW_BASE,token=process.env.CLOUDFLARE_API_TOKEN,acc=process.env.CLOUDFLARE_ACCOUNT_ID;
+          async function get(url){
+            const r=await fetch(url,{headers:{'cache-control':'no-cache'},signal:AbortSignal.timeout(18000)});
+            return {r,text:await r.text()};
+          }
+          let h;
+          for(let attempt=0;attempt<18;attempt++){
+            try{h=await get(origin+'/pricing.html?qa='+Date.now());if(h.r.ok&&h.text.includes('price-plan-carousel-stage'))break}catch{}
+            await new Promise(resolve=>setTimeout(resolve,4500));
+          }
+          assert(h?.r?.ok&&h.text.includes('price-plan-carousel-stage'),'Preview URL did not serve updated Pricing');
+          const c=await get(origin+'/pricing-page.css');
+          const j=await get(origin+'/pricing-page.js');
+          assert(c.r.ok&&c.text.includes('top:calc(50% + 6px)'),'Preview CSS missing arrows');
+          assert(j.r.ok&&!j.text.includes('AI Credits Sold Separately'),'Preview JS older than owner request');
+          const cfg=await get(origin+'/api/config');
+          assert.equal(cfg.r.status,200,'Preview Worker /api/config unhealthy');
+          const headers={Authorization:'Bearer '+token};
+          const dr=await fetch('https://api.cloudflare.com/client/v4/accounts/'+acc+'/pages/projects/deepsyq/deployments?env=preview&per_page=50',{headers,signal:AbortSignal.timeout(18000)});
+          assert.equal(dr.status,200,'Preview deployment list unavailable');
+          const deployments=(await dr.json()).result||[];
+          const mine=deployments.find(x=>x.deployment_trigger?.metadata?.branch===process.env.PREVIEW_BRANCH&&x.deployment_trigger?.metadata?.commit_hash===process.env.TARGET_SHA);
+          assert(mine?.id&&mine?.uses_functions===true,'Preview Pages Worker not preserved');
+          console.log('OWNER_PREVIEW_FUNCTIONS_PASS',mine.id);
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try{
+            for(const [name,width,height] of [['mobile',390,844],['desktop',1360,900]]){
+              const mobile=width<700;
+              const ctx=await browser.newContext({viewport:{width,height},isMobile:mobile,hasTouch:mobile});
+              const page=await ctx.newPage();
+              try{
+                const res=await page.goto(origin+'/pricing.html',{waitUntil:'domcontentloaded',timeout:45000});
+                assert.equal(res.status(),200);
+                await page.locator('#planCards .price-plan').first().waitFor({state:'visible',timeout:20000});
+                assert.equal(await page.locator('#planCards .price-plan').count(),5);
+                assert.equal(await page.locator('#creditCards .price-credit-card').count(),5);
+                assert.equal(await page.locator('#plansHeading').count(),0);
+                assert.equal(await page.locator('#priceBillingPromo').count(),0);
+                const display=await page.locator('#planCards').evaluate(e=>getComputedStyle(e).display);
+                if(mobile){
+                  assert.equal(display,'flex');
+                  await page.locator('#pricePlanNext').click();
+                  await page.waitForFunction(()=>document.querySelector('#pricePlanPosition').textContent.includes('2 / 5'),null,{timeout:10000});
+                  await page.locator('#priceBillingYearly').click();
+                  await page.waitForFunction(()=>document.querySelector('#pricePlanPosition').textContent.includes('2 / 5'),null,{timeout:10000});
+                }else assert.equal(display,'grid');
+                console.log('OWNER_PREVIEW_BROWSER_PASS',name);
+              }finally{await ctx.close()}
+            }
+          }finally{await browser.close()}
+          JS
+      - name: Guard concurrent production changes before deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/deepsyq-platform:refs/remotes/origin/deepsyq-platform
+          test "$(git rev-parse refs/remotes/origin/deepsyq-platform)" = "$TARGET_SHA" || { echo '::error::DEV advanced since Preview, stop rather than publish stale site'; exit 1; }
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          const a=process.env.CLOUDFLARE_ACCOUNT_ID,t=process.env.CLOUDFLARE_API_TOKEN;
+          const r=await fetch('https://api.cloudflare.com/client/v4/accounts/'+a+'/pages/projects/deepsyq',{headers:{Authorization:'Bearer '+t}});
+          assert.equal(r.status,200);
+          const p=(await r.json()).result;
+          assert.equal(p.canonical_deployment.id,process.env.OLD_MAIN_ID,'Someone else published during QA; do not override');
+          assert.equal(p.canonical_deployment.uses_functions,true);
+          console.log('EXCLUSIVE_MAIN_RELEASE_GUARD_PASS',process.env.OLD_MAIN_ID);
+          JS
+      - name: Publish complete production Worker and approved Pricing to MAIN
+        id: production_deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "MAIN_PROMOTION_ATTEMPTED=true" >> "$GITHUB_ENV"
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq --branch=deepsyq-platform \
+            --commit-hash="$TARGET_SHA" --commit-dirty=false \
+            --commit-message="Owner approved: Pricing mobile mid-card carousel #679" | tee /tmp/pricing-main-deploy.log
+      - name: Verify true MAIN site, live payments GET, functions and browser geometry
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const token=process.env.CLOUDFLARE_API_TOKEN,acc=process.env.CLOUDFLARE_ACCOUNT_ID,origin=process.env.MAIN_BASE;
+          const api=async()=>{const r=await fetch('https://api.cloudflare.com/client/v4/accounts/'+acc+'/pages/projects/deepsyq',{headers:{Authorization:'Bearer '+token}});assert.equal(r.status,200);return (await r.json()).result};
+          let p=null;
+          for(let i=0;i<16;i++){
+            p=await api();
+            if(p.canonical_deployment?.deployment_trigger?.metadata?.commit_hash===process.env.TARGET_SHA&&p.canonical_deployment?.id!==process.env.OLD_MAIN_ID)break;
+            await new Promise(resolve=>setTimeout(resolve,4500));
+          }
+          assert(p.canonical_deployment?.id!==process.env.OLD_MAIN_ID,'Cloudflare MAIN deployment did not advance');
+          assert.equal(p.canonical_deployment?.uses_functions,true,'PRODUCTION WORKER MISSING');
+          assert.equal(p.canonical_deployment?.deployment_trigger?.metadata?.commit_hash,process.env.TARGET_SHA,'Other MAIN version deployed');
+          assert.equal(p.production_script_name,JSON.parse((await import('node:fs')).readFileSync('/tmp/deepsyq-before.json','utf8')).workerName,'Worker script changed');
+          const get=async pathname=>{
+            const r=await fetch(origin+pathname,{headers:{'cache-control':'no-cache'},signal:AbortSignal.timeout(20000)});
+            return {status:r.status,text:await r.text(),type:r.headers.get('content-type')};
+          };
+          let h;
+          for(let i=0;i<16;i++){
+            h=await get('/pricing.html?finalOwnerCheck='+Date.now());
+            if(h.status===200&&h.text.includes('owner-pricing-midcard-v1'))break;
+            await new Promise(resolve=>setTimeout(resolve,4000));
+          }
+          assert.equal(h.status,200);
+          assert(h.text.includes('price-plan-carousel-stage')&&h.text.includes('owner-pricing-midcard-v1')&&!h.text.includes('id="plansHeading"')&&!h.text.includes('id="priceBillingPromo"'),'MAIN HTML old version');
+          const [c,j,config,credit,home,chat]=await Promise.all([
+            get('/pricing-page.css?sha='+Date.now()),get('/pricing-page.js?sha='+Date.now()),
+            get('/api/config'),get('/api/ai-billing/config'),
+            get('/deepsyq.html'),get('/jarvix-chat.html')
+          ]);
+          assert.equal(c.status,200);assert(c.text.includes('top:calc(50% + 6px)'));
+          assert.equal(j.status,200);assert(j.text.includes('function movePlanCarousel')&&!j.text.includes('AI Credits Sold Separately'));
+          assert.equal(config.status,200,'MAIN Worker /api/config broken');
+          assert.equal(credit.status,200,'MAIN AI billing config unavailable');
+          assert.equal(home.status,200,'MAIN Home broken');
+          assert.equal(chat.status,200,'MAIN JARVIX chat broken');
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try {
+            const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+            const page=await ctx.newPage();
+            const paid=[];page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:ai-billing|billing|checkout)/.test(r.url()))paid.push(r.url())});
+            const resp=await page.goto(origin+'/pricing.html?browser='+Date.now(),{waitUntil:'domcontentloaded',timeout:45000});
+            assert.equal(resp.status(),200);
+            await page.locator('#planCards .price-plan').first().waitFor({state:'visible',timeout:20000});
+            assert.equal(await page.locator('#planCards .price-plan').count(),5);
+            assert.equal(await page.locator('#creditCards .price-credit-card').count(),5);
+            assert(await page.locator('#pricePlanNext').isVisible());
+            await page.locator('#pricePlanNext').click();
+            await page.waitForFunction(()=>document.querySelector('#pricePlanPosition').textContent.includes('2 / 5'),null,{timeout:12000});
+            await page.locator('#priceBillingYearly').click();
+            await page.waitForFunction(()=>document.querySelector('#pricePlanPosition').textContent.includes('2 / 5'),null,{timeout:12000});
+            assert.deepEqual(paid,[]);
+            await ctx.close();
+          }finally{await browser.close()}
+          console.log('MAIN_OWNER_PRICING_LIVE_VERIFIED',JSON.stringify({deploymentId:p.canonical_deployment.id,sha:process.env.TARGET_SHA,functions:true,home:home.status,jarvix:chat.status,apiConfig:config.status,creditApi:credit.status,planCount:5,creditCount:5}));
+          JS
+          echo "RELEASE_VERIFIED=true" >> "$GITHUB_ENV"
+      - name: Emergency rollback only our own failed MAIN promotion
+        if: always() && env.MAIN_PROMOTION_ATTEMPTED == 'true' && env.RELEASE_VERIFIED != 'true'
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          const acc=process.env.CLOUDFLARE_ACCOUNT_ID,t=process.env.CLOUDFLARE_API_TOKEN,base='https://api.cloudflare.com/client/v4/accounts/'+acc+'/pages/projects/deepsyq';
+          const headers={Authorization:'Bearer '+t};
+          const p=await fetch(base,{headers});
+          if(!p.ok)throw Error('Cannot inspect Cloudflare before emergency rollback');
+          const project=(await p.json()).result;
+          if(project.canonical_deployment?.id===process.env.OLD_MAIN_ID){
+            console.log('MAIN_UNCHANGED_NO_ROLLBACK_NEEDED');process.exit(0);
+          }
+          const actual=project.canonical_deployment?.deployment_trigger?.metadata?.commit_hash;
+          if(actual!==process.env.TARGET_SHA){
+            throw Error('MAIN_CHANGED_BY_OTHER_EXECUTOR: Cannot roll back unrelated deployment');
+          }
+          const r=await fetch(base+'/deployments/'+process.env.OLD_MAIN_ID+'/rollback',{method:'POST',headers});
+          console.log('EMERGENCY_ROLLBACK_HTTP',r.status);
+          assert(r.ok,'Cloudflare rollback API rejected request');
+          console.log('EMERGENCY_ROLLBACK_TO',process.env.OLD_MAIN_ID);
+          JS
