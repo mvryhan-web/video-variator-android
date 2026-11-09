@@ -1,0 +1,70 @@
+name: Owner Nov09 08:00 site rollback - safe release preflight
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/owner-rollback-0800-safe-preflight.yml'
+permissions:
+  contents: read
+jobs:
+  verify-rollback-and-deployment:
+    if: github.event.pull_request.number == 664 && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify exact 08 Paris site snapshot with current single JARVIX preserved
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/deepsyq-platform:refs/remotes/origin/deepsyq-platform
+          git merge-base --is-ancestor origin/deepsyq-platform HEAD
+          CUTOFF=8031ce530296
+          for path in ai-apps.css ai-apps.html ai-apps.js approved-page-design.js deepsyq-mobile-shell.js deepsyq.css index.html video-uniquifier.html; do
+            p=app/src/main/assets/$path
+            test "$(git rev-parse "$CUTOFF:$p")" = "$(git rev-parse "HEAD:$p")" || { echo "::error::08:00 snapshot mismatch: $p"; exit 1; }
+            echo "RESTORED_0800_BLOB $p"
+          done
+          git diff --quiet origin/deepsyq-platform HEAD --             app/src/main/assets/jarvix-chat.html             app/src/main/assets/jarvix-chat.js             app/src/main/assets/jarvix-chat.css             app/src/main/assets/jarvix-conversations.js             app/src/main/assets/jarvix-composer.js             app/src/main/assets/jarvix-composer-design.js             app/src/main/assets/jarvix-activity-drawer.js             app/src/main/assets/home-studio-settings.js             app/src/main/assets/deepsyq.html || { echo '::error::Existing JARVIX source was changed by rollback'; exit 1; }
+          grep -Fq "url:'jarvix-chat.html?mode=image'" app/src/main/assets/deepsyq-site-shell.js
+          grep -Fq "url:'jarvix-chat.html?mode=video'" app/src/main/assets/deepsyq-site-shell.js
+          grep -Fq "url:'jarvix-chat.html?mode=audio'" app/src/main/assets/deepsyq-site-shell.js
+          grep -Fq "url:'jarvix-chat.html'" app/src/main/assets/deepsyq-site-shell.js
+          grep -Fq "url:'deepsyq.html#inspirationPreview'" app/src/main/assets/deepsyq-site-shell.js
+          echo "JARVIX_CURRENT_SOURCE_UNCHANGED"
+          echo "RESTORE_CANDIDATE_NOT_DEPLOYED"
+      - name: Read-only Cloudflare MAIN and canonical TEST preflight
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          const token=process.env.CF_TOKEN,account=process.env.ACCOUNT_ID;
+          if(!token || !/^[a-f\d]{32}$/i.test(account||''))throw Error('Cloudflare API token/account not configured for read-only release safety checks');
+          const root='https://api.cloudflare.com/client/v4/accounts/'+account+'/pages/projects/deepsyq';
+          async function get(url){
+            const r=await fetch(url,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(18000)});
+            if(!r.ok)throw Error('Cloudflare read failed status '+r.status+' at '+new URL(url).pathname);
+            const j=await r.json();
+            if(j.success!==true)throw Error('Cloudflare API failure at '+new URL(url).pathname);
+            return j.result;
+          }
+          const project=await get(root);
+          assert.equal(project.name,'deepsyq');
+          assert.equal(project.production_branch,'deepsyq-platform');
+          const main=project.canonical_deployment;
+          assert(main?.id,'Missing MAIN deployment');
+          const o=await get(root+'/deployments?per_page=100');
+          const all=Array.isArray(o)?o:[];
+          const test=all.find(d=>d.deployment_trigger?.metadata?.branch==='test' && d.environment==='preview');
+          console.log('MAIN_READONLY',JSON.stringify({deployment_id:main.id,uses_functions:main.uses_functions,branch:project.production_branch,script_name_present:!!project.production_script_name}));
+          console.log('TEST_READONLY',JSON.stringify(test?{deployment_id:test.id,uses_functions:test.uses_functions,branch:test.deployment_trigger?.metadata?.branch,commit:test.deployment_trigger?.metadata?.commit_hash,environment:test.environment}:{found:false}));
+          if(!test)throw Error('Canonical Cloudflare TEST deployment not verified in latest 100; do not overwrite');
+          if(main.uses_functions!==true)throw Error('MAIN Worker/Functions unexpectedly missing');
+          if(test.uses_functions!==true)console.log('WARNING: test preview does not preserve Functions; JARVIX runtime cannot be guaranteed by static deploy');
+          console.log('NO_DEPLOY_AND_NO_PAYMENTS: read-only metadata verified');
+          JS
