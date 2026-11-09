@@ -1,3 +1,11 @@
+## OWNER D32 — 2026-11-09 — PRODUCTION FIRST, TEST KEPT IN RESERVE
+
+**Effective immediately. Newer explicit Owner instruction supersedes D29/D28/D27 only with respect to the default destination and TEST-first requirement.** Publish owner-requested accepted changes directly to MAIN **`https://deepsyq.app`** by default; no routine preliminary TEST release or redundant approval prompt for a deployment that is within the owner's assigned task. Reserve **`https://test.deepsyq.pages.dev`** for diagnostics, rollback, or isolation of truly risky changes, not as the routine publication target. This is a standing workflow preference for all agents including Antigravity.
+
+**Do not bypass production safety:** MAIN has a live Pages Worker/Functions and stateful integrations. Static-only upload is forbidden. Verify complete Worker/Functions preservation, bindings for Neon/Stripe/auth/credits, exact minimal diff, rollback and live result before declaring DONE. D31 Pricing/AI Credits freeze remains in force. If safe publication cannot be established (e.g., Worker source retrieval 403), mark **BLOCKED_MAIN — NOT PUBLISHED** and protect the live site. No changes to MAIN are authorized by this documentation update itself.
+
+---
+
 ## OWNER D29 — 2026-11-09 — ONE TEST ADDRESS AND ONE MAIN
 
 **Current deployment destination rule superseding all prior per-PR URLs:** all executors including Antigravity use **TEST `https://test.deepsyq.pages.dev`** (Cloudflare Pages `deepsyq` preview `--branch=test`) and **MAIN `https://deepsyq.app`** only. `deepsyq.pages.dev` is production alias, not TEST. Hash URLs are immutable technical artifacts, never presented as current test links. Serialize TEST publishing; never overwrite another accepted task. After owner specifically approves the exact TEST revision, promptly publish exactly it to MAIN without a redundant confirmation, **only** if original Pages Worker/Functions (`uses_functions:true`), bindings, Stripe, Neon, credits, security and rollback are verified. Static-only deployments are forbidden for MAIN. Until Worker read 403 is resolved, report BLOCKED_MAIN and protect production. Old technical URLs remain accessible unless separately disabled/deleted; policy alone is not access enforcement. Preserve D28 surgical scope.
