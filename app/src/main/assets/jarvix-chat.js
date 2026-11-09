@@ -126,19 +126,23 @@ async function processMessage(message){
 const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();const m={id:makeId(),role:'user',text,mode,files,status:'pending',createdAt:Date.now()};if(!conversation.messages.length)conversation.title=text.slice(0,60);conversation.messages.push(m);await save();composer.clear();render();await run(()=>processMessage(m));}catch(e){status(e.message);}}});
 $('jStop').onclick=()=>{controller?.abort();$('jStop').hidden=true;status('Browser waiting stopped. Already submitted generation tasks are not cancelled.');};
 function resetToDefaultChat(startNew = true) {
+  if (startNew && busy) return;
   try {
     sessionStorage.removeItem('jarvix_composer_mode');
-    history.replaceState(null, '', 'jarvix-chat.html');
     setChatHeaderMode('auto');
     window.dispatchEvent(new CustomEvent('jarvix:mode', { detail: { mode: 'auto' } }));
   } catch(err){}
   if (typeof minimizeWorkspace === 'function') minimizeWorkspace();
   if (startNew) {
-    if (busy) return;
+    // A fresh conversation starts INSIDE the current JARVIX pane; there is no navigation.
+    // Do not persist an empty conversation. The existing send handler saves its first message.
     conversation = store.create('jarvix-' + makeId());
     sessionStorage.setItem('jarvix_session_id', conversation.sessionId);
     sessionStorage.setItem('jarvix_active_conversation', conversation.id);
-    save().then(render);
+    composer.clear();
+    status('');
+    render();
+    historyList().catch(() => {});
   }
 }
 window.resetToDefaultChat = resetToDefaultChat;
@@ -148,7 +152,30 @@ $('jNew').onclick = () => resetToDefaultChat(true);
 $('jHistory').onchange=async()=>{if(busy)return;const next=await store.get($('jHistory').value);if(!next)return;conversation=next;sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);render();await restoreResults();};
 function freeze(){try{store.guard();}catch{++epoch;controller?.abort();composer.stop();for(const u of urls)URL.revokeObjectURL(u);$('jMessages').replaceChildren();$('jChatForm').hidden=true;status('Account changed. Reload to open the correct private conversations.');}}
 window.addEventListener('storage',freeze);window.addEventListener('focus',freeze);window.addEventListener('pageshow',freeze);
-conversation=await store.get(sessionStorage.getItem('jarvix_active_conversation'))||store.create(getJarvixSessionId());sessionStorage.setItem('jarvix_active_conversation',conversation.id);await save();render();trackViewport();await restoreResults();
+conversation=await store.get(sessionStorage.getItem('jarvix_active_conversation'))||store.create(getJarvixSessionId());sessionStorage.setItem('jarvix_active_conversation',conversation.id);if(conversation.messages.length)await save();else await historyList();render();trackViewport();watchChatViewport();await restoreResults();
+
+function sizeChatToVisibleViewport() {
+  const root = document.querySelector('main.jarvix-chat');
+  if (!root) return;
+  const visible = window.visualViewport;
+  const bottom = (visible?.offsetTop || 0) + (visible?.height || window.innerHeight);
+  const top = root.getBoundingClientRect().top;
+  // Subtract the actual platform header rather than assuming 132px or 156px.
+  // Reserve a small bottom margin, including when the mobile keyboard is open.
+  const height = Math.max(200, Math.floor(bottom - top - 10));
+  root.style.setProperty('--j-chat-available-height', height + 'px');
+}
+function watchChatViewport() {
+  const update = () => requestAnimationFrame(sizeChatToVisibleViewport);
+  update();
+  window.addEventListener('resize', update, { passive: true });
+  window.visualViewport?.addEventListener('resize', update, { passive: true });
+  window.visualViewport?.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('pageshow', update);
+  document.fonts?.ready.then(update).catch(() => {});
+}
+watchChatViewport();
+
 const pending=conversation.messages.find(m=>m.status==='pending');if(pending)await run(()=>processMessage(pending));
 
 window.addEventListener('jarvix:conversation-updated',async()=>{if(busy)return;const next=await store.get(sessionStorage.getItem('jarvix_active_conversation'));if(!next)return;conversation=next;render();const pending=conversation.messages.find(m=>m.status==='pending');if(pending)await run(()=>processMessage(pending));});
@@ -291,13 +318,10 @@ function initChatMenuDrawer() {
 
   if (newBtn) {
     newBtn.onclick = () => {
-      closeDropdown();
+      if (busy) return;
       resetToDefaultChat(true);
-      const input = $('jInput');
-      if (input) {
-        input.value = '';
-        input.focus();
-      }
+      closeDropdown();
+      $('jInput')?.focus();
     };
   }
 
