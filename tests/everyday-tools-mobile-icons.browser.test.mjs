@@ -4,22 +4,26 @@ import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {chromium} from 'playwright';
 
-const port=32988,base='http://127.0.0.1:'+port;
+const port=32988,live=process.env.EVERYDAY_TEST_URL||'';
+if(live&&!/^https:\/\/[a-z0-9-]+\.deepsyq\.pages\.dev$/i.test(live))throw Error('TEST must be an isolated Pages preview');
+const base=live||'http://127.0.0.1:'+port;
 test('Everyday Tools: mobile tiles have names without prefix icons, desktop unchanged',async()=>{
- const server=spawn(process.execPath,['server/deepsyq-preview.js'],{
+ const server=live?null:spawn(process.execPath,['server/deepsyq-preview.js'],{
   cwd:process.cwd(),env:{...process.env,PORT:String(port),NODE_ENV:'test',
    DATABASE_URL:'',OPENAI_API_KEY:'',STRIPE_SECRET_KEY:'',AI_BILLING_MODE:'test',
    JARVIX_FREE_LLM_ENABLED:'false'},stdio:['ignore','pipe','pipe']
  });
  let browser;let output='';
- server.stdout.on('data',b=>output+=String(b));
- server.stderr.on('data',b=>output+=String(b));
+ if(server){
+  server.stdout.on('data',b=>output+=String(b));
+  server.stderr.on('data',b=>output+=String(b));
+ }
  try{
   let ready=false;
   for(let i=0;i<110;i++){try{if((await fetch(base+'/free-tools.html')).ok){ready=true;break;}}catch{}
    await new Promise(r=>setTimeout(r,150));
   }
-  assert.ok(ready,'Local preview unavailable '+output.slice(-1000));
+  assert.ok(ready,'Everyday Tools preview unavailable '+output.slice(-1000));
   browser=await chromium.launch({headless:true,args:['--no-sandbox']});
   for(const viewport of [{name:'phone',width:390,height:844},{name:'tablet',width:820,height:1180},{name:'desktop',width:1365,height:900}]){
    const ctx=await browser.newContext({viewport:{width:viewport.width,height:viewport.height}});
@@ -69,5 +73,5 @@ test('Everyday Tools: mobile tiles have names without prefix icons, desktop unch
     console.log('EVERYDAY_MOBILE_PREFIX_ICONS_OK',JSON.stringify({viewport:viewport.name,width:viewport.width,iconsVerified:checked,hidden:viewport.width<=900,overflow}));
    }finally{await ctx.close();}
   }
- }finally{await browser?.close();server.kill('SIGTERM');}
+ }finally{await browser?.close();server?.kill('SIGTERM');}
 });
