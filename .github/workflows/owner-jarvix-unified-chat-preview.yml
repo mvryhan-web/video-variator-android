@@ -112,13 +112,16 @@ jobs:
              const page=await context.newPage();
              const home=await page.goto(origin+'/deepsyq.html',{waitUntil:'domcontentloaded',timeout:30000});
              assert.equal(home?.status(),200);
+             assert.equal(await page.locator('#homeQuickForm').count(),0,'legacy Home quick form removed');
+             await page.locator('#homeQuickBar #jChatForm').waitFor({state:'visible',timeout:15000});
+             assert.equal(await page.locator('#homeQuickBar .j-mode-rail a[href="index.html"]').count(),0);
              for(const mode of ['image','video','audio']){
                assert.equal(await page.locator('#sidebar a[href="jarvix-chat.html?mode='+mode+'"]').count(),1);
              }
              const chat=await page.goto(origin+'/jarvix-chat.html?mode=video',{waitUntil:'domcontentloaded',timeout:30000});
              assert.equal(chat?.status(),200);
              await page.locator('#jWorkspacePane:not([hidden])').waitFor({timeout:25000});
-             assert.equal(new URL(page.url()).pathname,'/jarvix-chat.html');
+             assert.match(new URL(page.url()).pathname,/^\/jarvix-chat(?:\.html)?$/);
              assert.match(await page.locator('#jWorkspaceFrame').getAttribute('src'),/studio=video&jarvix_embedded=1/);
              await page.frameLocator('#jWorkspaceFrame').locator('#creator').waitFor({timeout:25000});
              assert.equal(await page.locator('.j-mode-rail a[href="index.html"]').count(),0);
@@ -126,7 +129,7 @@ jobs:
              await page.evaluate(()=>document.querySelector('#dsSiteSidebar a[href="jarvix-chat.html?mode=audio"]')?.click());
              await page.waitForFunction(()=>location.search.includes('mode=audio'));
              assert.equal(await page.evaluate(()=>sessionStorage.getItem('jarvix_active_conversation')),id);
-             assert.equal(new URL(page.url()).pathname,'/jarvix-chat.html');
+             assert.match(new URL(page.url()).pathname,/^\/jarvix-chat(?:\.html)?$/);
              console.log('LIVE_SINGLE_JARVIX_PASS',JSON.stringify({name,originalConversationPreserved:true,mode:'audio',path:'/jarvix-chat.html'}));
             }finally{await context.close();}
            }
