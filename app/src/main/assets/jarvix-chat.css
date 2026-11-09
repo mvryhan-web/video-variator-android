@@ -8,7 +8,7 @@
 .j-plus-menu button{text-align:left}.j-plus-menu button[aria-pressed=true]{border-color:#09dcf5;background:#173455}
 .j-attachments{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;padding:4px 10px;color:#a8c9e2}.j-attachments button{font-size:12px;min-height:28px;padding:4px 8px}
 body:has(#homeQuickForm[data-jarvix-chat]){padding-bottom:calc(var(--jarvix-compose-height,110px) + env(safe-area-inset-bottom,0px) + 20px)}
-#homeQuickBar:has([data-jarvix-chat]){position:fixed!important;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:calc(260px + (100vw - 260px)/2);transform:translateX(-50%);width:min(840px,calc(100vw - 300px));margin:0!important;z-index:55;max-width:none!important;padding:0!important;background:transparent!important}
+#homeQuickBar:has([data-jarvix-chat]){position:fixed!important;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:calc(240px + (100vw - 240px)/2);transform:translateX(-50%);width:min(840px,calc(100vw - 272px));margin:0!important;z-index:55;max-width:none!important;padding:0!important;background:transparent!important}
 #homeQuickForm[data-jarvix-chat]{display:flex!important}.j-status{font-size:12px;color:#a8bad4;margin:4px 12px}.j-status:empty{display:none}
 .jarvix-chat{height:calc(var(--j-viewport,100dvh) - 78px);display:flex;flex-direction:column;max-width:1000px;margin:auto;padding:10px 20px;box-sizing:border-box;min-height:0;color:#e6efff}
 .j-chat-toolbar{position:relative;display:flex;gap:8px;align-items:center;flex:0 0 auto;flex-wrap:wrap}.j-chat-toolbar h1{font-size:18px;margin:0 auto 0 0}.j-history{max-width:220px;min-width:80px}
@@ -1358,5 +1358,27 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
     max-height: calc(50vh - 110px) !important;
     max-height: calc(50dvh - 110px) !important;
     overflow-y: auto !important;
+  }
+}
+
+/* Perfectly centered docks in available area when sidebar is collapsed */
+@media (min-width: 761px) {
+  body.sidebar-collapsed #homeQuickBar:has([data-jarvix-chat]),
+  body.ds-sidebar-collapsed #homeQuickBar:has([data-jarvix-chat]),
+  body.sidebar-collapsed #studioUniversalDock.j-neon-dock,
+  body.ds-sidebar-collapsed #studioUniversalDock.j-neon-dock {
+    left: calc(64px + (100vw - 64px)/2) !important;
+    transform: translateX(-50%) !important;
+    width: min(840px, calc(100vw - 96px)) !important;
+    max-width: calc(100vw - 80px) !important;
+  }
+}
+@media (max-width: 760px) {
+  #homeQuickBar:has([data-jarvix-chat]),
+  #studioUniversalDock.j-neon-dock {
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
   }
 }

@@ -298,21 +298,7 @@ function initChatMenuDrawer() {
     vuPill.onclick = () => openWorkspace('video-uniquifier.html?embed=chat', 'Видео-уникализатор');
   }
 
-  const slidersBtn = $('jSlidersBtn');
-  if (slidersBtn) {
-    slidersBtn.onclick = () => {
-      const pm = $('jPlusMenu');
-      if (pm) pm.hidden = !pm.hidden;
-    };
-  }
 
-  const orbBtn = $('jOrbBtn');
-  if (orbBtn) {
-    orbBtn.onclick = () => {
-      const mic = $('jMic');
-      if (mic) mic.click();
-    };
-  }
 
   function formatDate(ts) {
     if (!ts) return '';

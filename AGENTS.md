@@ -1,3 +1,13 @@
+
+# ==============================================================================
+# JARVIX SINGLE CHAT — PERMANENT RULE (ВЛАДЕЛЕЦ DEEPSYQ)
+# ==============================================================================
+1. В DEEPSYQ разрешён только один пользовательский JARVIX Chat.
+2. Image, Video и Audio являются режимами единого JARVIX Chat, а не отдельными чатами.
+3. При переключении между Image, Video и Audio пользователь остаётся внутри одного JARVIX Chat; общая история переписки сохраняется.
+4. Оригинальная нижняя панель ввода является защищённым компонентом. Запрещено менять её дизайн, создавать альтернативные версии, добавлять новые сферы справа или дублировать кнопки настроек без прямого разрешения владельца.
+5. На Home, внутри JARVIX Chat и во всех режимах используется одна и та же эталонная нижняя панель ввода.
+
 ## OWNER D29 — 2026-11-09 — TWO CANONICAL DEEPSYQ DEPLOYMENT URLS
 
 **CURRENT OWNER RELEASE RULE for P, Administrator, Antigravity, every executor. Overrides older deployment-URL examples in D28/D27/D26; preserves surgical scope, safety and billing protections.**
