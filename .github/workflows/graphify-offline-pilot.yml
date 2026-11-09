@@ -109,7 +109,17 @@ jobs:
         env:
           SOURCE_SHA: ${{ github.sha }}
         run: |
-          node -e 'const fs=require("fs"); const j=JSON.parse(fs.readFileSync("docs/DEEPSYQ_CODE_MAP.json","utf8")); if(j.schema!==2||j.source_sha!==process.env.SOURCE_SHA||!j.scope.includes('app/src/main/assets/')||!Array.isArray(j.nodes)||!j.nodes.some(n=>n[0].startsWith('app/src/main/assets/'))||!Array.isArray(j.page_files)||j.page_files.length<5||!Array.isArray(j.android_files)||j.android_files.length<1) process.exit(1);'
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const j = JSON.parse(fs.readFileSync('docs/DEEPSYQ_CODE_MAP.json', 'utf8'));
+          if (j.schema !== 2 ||
+              j.source_sha !== process.env.SOURCE_SHA ||
+              !j.scope.includes('app/src/main/assets/') ||
+              !Array.isArray(j.nodes) ||
+              !j.nodes.some(n => n[0].startsWith('app/src/main/assets/')) ||
+              !Array.isArray(j.page_files) || j.page_files.length < 5 ||
+              !Array.isArray(j.android_files) || j.android_files.length < 1) process.exit(1);
+          JS
           grep -Fq "$SOURCE_SHA" docs/DEEPSYQ_CODE_MAP.md
           ACTUAL_SHA="$(git rev-parse HEAD)"
           if [ "$ACTUAL_SHA" != "$SOURCE_SHA" ]; then
