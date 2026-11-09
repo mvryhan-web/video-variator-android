@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync, writeFileSync, readFileSync, rmSync} from 'node:fs';
+import {mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {execFileSync} from 'node:child_process';
@@ -37,4 +37,38 @@ test('Refuses malformed Graphify data or unverifiable SHA',()=>{
     assert.throws(()=>execFileSync(process.execPath,[exporter,f,SHA,out],{stdio:'pipe'}));
     assert.throws(()=>execFileSync(process.execPath,[exporter,f,'latest',out],{stdio:'pipe'}));
   } finally {rmSync(dir,{force:true,recursive:true});}
+});
+
+test('Indexes current server, browser and Android code; publishes filenames, never source text', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'graphify-platform-'));
+  try {
+    const assets = join(dir, 'app/src/main/assets');
+    const java = join(dir, 'app/src/main/java/com/example');
+    mkdirSync(assets, {recursive:true});
+    mkdirSync(java, {recursive:true});
+    writeFileSync(join(assets, 'jarvix-chat.html'), '<div>PRIVATE_USER_TEXT</div>');
+    writeFileSync(join(assets, 'jarvix-chat.css'), 'body{color:red}');
+    writeFileSync(join(java, 'MainActivity.java'), 'class MainActivity {}');
+    const nodes = [
+      ...Array.from({length:10}, (_,i)=>({
+        id:'backend-'+i, label:'serverMethod'+i,
+        source_file:'server/worker.js',source_location:'L'+(i+1)
+      })),
+      {id:'web',label:'launchJarvix',source_file:'app/src/main/assets/jarvix-chat.js',source_location:'L4'},
+      {id:'android',label:'MainActivity',source_file:'app/src/main/java/com/example/MainActivity.java',source_location:'L1'},
+      {id:'excluded',label:'unsafe',source_file:'app/src/main/assets/uploads/secret.js',source_location:'L1'}
+    ];
+    const graph = join(dir, 'graph.json'), out = join(dir, 'map.md');
+    writeFileSync(graph, JSON.stringify({nodes, links:[]}));
+    execFileSync(process.execPath, [exporter,graph,SHA,out], {stdio:'pipe',env:{...process.env,GRAPHIFY_REPO_ROOT:dir}});
+    const md = readFileSync(out,'utf8');
+    const index = JSON.parse(readFileSync(join(dir,'map.json'),'utf8'));
+    assert.equal(index.schema,2);
+    assert.ok(index.nodes.some(x=>x[0]==='app/src/main/assets/jarvix-chat.js'));
+    assert.ok(index.nodes.some(x=>x[0]==='app/src/main/java/com/example/MainActivity.java'));
+    assert.ok(index.page_files.includes('app/src/main/assets/jarvix-chat.html'));
+    assert.ok(index.style_files.includes('app/src/main/assets/jarvix-chat.css'));
+    assert.ok(index.android_files.includes('app/src/main/java/com/example/MainActivity.java'));
+    assert.doesNotMatch(md,/PRIVATE_USER_TEXT|body\{color:red\}|uploads\/secret/);
+  } finally { rmSync(dir, {recursive:true,force:true}); }
 });
