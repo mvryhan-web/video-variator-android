@@ -172,6 +172,8 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   };
   pinRef=pin;
   pin();
+  // Set the mobile X offset on the button itself; native theme rules can override frame CSS.
+  if(innerWidth<=760)hub.querySelector(':scope > button:nth-child(2)')?.style.setProperty('top','4px','important');
   frame.contentWindow.requestAnimationFrame(pin);
   // Never expose the embedded Studio page before its original settings hub
   // and its no-duplicate-layout presentation are both fully initialized.
