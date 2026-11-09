@@ -1,4 +1,5 @@
 import {templateSupport,prepareTemplatePrompt} from './ai-template-product-name.js';
+import {renderHomeInspiration} from './home-inspiration.js';
 const $=id=>document.getElementById(id);
 const PAGE_SIZE=12;
 let all=[],shownLimit=PAGE_SIZE;
@@ -136,99 +137,20 @@ function render(){
  }
 }
 async function load(){
- status.textContent='Loading active templates...';
- apps.replaceChildren();
+ $('status').textContent='Loading active templates…';
+ $('apps').replaceChildren();
  try{
   const response=await fetch('/api/templates',{cache:'no-store'});
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw Error('TEMPLATES_UNAVAILABLE');
-  all=Array.isArray(data.items)?data.items.filter(item=>item.generationType!=='product_video'&&!item.thumbnail?.includes('logo')):[];
-  if(!all.length)throw Error('EMPTY');
+  all=Array.isArray(data.items)?data.items.filter(item=>item.generationType!=='product_video'&&!item.thumbnail?.includes('logo')):[]
   shownLimit=PAGE_SIZE;render();
  }catch(_){
-  try{
-   const r=await fetch('media/creative/creative50-20261021/manifest.json');
-   const m=await r.json();
-   all=(m.items||[]).map(item=>({
-    id:item.id||item.slug,title:item.title,description:item.description,category:item.category||'Creative',
-    generationType:item.kind||'image',thumbnail:item.previewUrl||item.previewPosterUrl,promptTemplate:item.prompt,
-    defaultModel:null,defaultSettings:item.defaultSettings||{},requiredInputTypes:item.requiredInputTypes||[],
-    featured:true,active:true
-   }));
-   shownLimit=PAGE_SIZE;render();
-  }catch(__){
-   status.textContent='Active templates are temporarily unavailable.';
-   apps.replaceChildren();
-   empty('Please try again later, or use Studio without a template.',{retry:true});
-  }
+  $('status').textContent='Active templates are temporarily unavailable. No generation was started.';
+  $('apps').replaceChildren();
+  empty('Please try again later, or use Studio without a template.',{retry:true});
  }
 }
-
-async function loadInspirationInAiApps(){
- const grid = inspirationPreviewGrid;
- if (!grid) return;
- let items = [];
- try {
-  const r = await fetch('/api/inspiration?limit=60',{cache:'no-store'});
-  const d = await r.json().catch(()=>({}));
-  if(r.ok && Array.isArray(d.items) && d.items.length) items = d.items;
-  else throw Error();
- } catch {
-  try {
-   const m1 = await fetch('media/creative/creative50-20261021/manifest.json').then(r=>r.json()).catch(()=>({items:[]}));
-   const m2 = await fetch('media/inspiration/owner-20261031/manifest.json').then(r=>r.json()).catch(()=>({items:[]}));
-   items = [...(m1.items||[]), ...(m2.items||[])];
-  } catch {}
- }
- function renderGrid(kind='all'){
-  grid.replaceChildren();
-  const filtered = items.filter(it => kind==='all' || it.kind===kind);
-  for(const it of filtered){
-   const card = document.createElement('article');
-   card.className = 'inspiration-card';
-   const mediaWrap = document.createElement('div');
-   mediaWrap.className = 'inspiration-card-media';
-   if(it.kind === 'video' && it.previewUrl?.endsWith('.mp4')){
-    const v = document.createElement('video');
-    v.src = it.previewUrl;
-    v.muted = true;
-    v.loop = true;
-    v.playsInline = true;
-    if(it.previewPosterUrl) v.poster = it.previewPosterUrl;
-    mediaWrap.onpointerenter = () => v.play().catch(()=>{});
-    mediaWrap.onpointerleave = () => v.pause();
-    mediaWrap.append(v);
-   } else {
-    const img = document.createElement('img');
-    img.src = it.previewUrl || it.previewPosterUrl || it.thumbnail;
-    img.alt = it.title || 'Inspiration';
-    img.loading = 'lazy';
-    mediaWrap.append(img);
-   }
-   const info = document.createElement('div');
-   info.className = 'inspiration-card-info';
-   const h4 = document.createElement('h4');
-   h4.textContent = it.title || 'Untitled';
-   const p = document.createElement('p');
-   p.textContent = it.prompt || it.description || '';
-   info.append(h4, p);
-   card.append(mediaWrap, info);
-   card.onclick = () => {
-    const mode = it.kind === 'video' ? 'video' : 'image';
-    location.assign('generate-studio.html?studio=' + mode + '&from=inspiration');
-   };
-   grid.append(card);
-  }
- }
- renderGrid('all');
- document.querySelectorAll('#inspirationPreview button[data-inspiration-kind]').forEach(btn => {
-  btn.onclick = () => {
-   document.querySelectorAll('#inspirationPreview button[data-inspiration-kind]').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
-   renderGrid(btn.dataset.inspirationKind);
-  };
- });
-}
-setTimeout(loadInspirationInAiApps, 50);
 $('loadMore').addEventListener('click',()=>{
  shownLimit+=PAGE_SIZE;
  render();
@@ -247,3 +169,23 @@ if(accountLogout){
  });
 }
 load();
+
+
+async function loadInspirationPreview(){
+ try{
+  const r=await fetch('/api/inspiration?limit=60',{cache:'no-store'});
+  const feed=await r.json().catch(()=>({}));
+  if(r.ok&&Array.isArray(feed.items)&&feed.items.length){
+   renderHomeInspiration(feed.items);
+   return;
+  }
+  throw Error('FALLBACK');
+ }catch(_){
+  try{
+   const r=await fetch('media/creative/creative50-20261021/manifest.json');
+   const d=await r.json();
+   renderHomeInspiration((d.items||[]).map(item=>({...item,actionTarget:'studio',kind:item.kind||'image'})));
+  }catch(_){}
+ }
+}
+void loadInspirationPreview();
