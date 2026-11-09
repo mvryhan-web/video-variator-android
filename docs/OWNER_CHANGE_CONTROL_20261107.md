@@ -1,3 +1,9 @@
+## OWNER D29 — 2026-11-09 — ONE TEST ADDRESS AND ONE MAIN
+
+**Current deployment destination rule superseding all prior per-PR URLs:** all executors including Antigravity use **TEST `https://test.deepsyq.pages.dev`** (Cloudflare Pages `deepsyq` preview `--branch=test`) and **MAIN `https://deepsyq.app`** only. `deepsyq.pages.dev` is production alias, not TEST. Hash URLs are immutable technical artifacts, never presented as current test links. Serialize TEST publishing; never overwrite another accepted task. After owner specifically approves the exact TEST revision, promptly publish exactly it to MAIN without a redundant confirmation, **only** if original Pages Worker/Functions (`uses_functions:true`), bindings, Stripe, Neon, credits, security and rollback are verified. Static-only deployments are forbidden for MAIN. Until Worker read 403 is resolved, report BLOCKED_MAIN and protect production. Old technical URLs remain accessible unless separately disabled/deleted; policy alone is not access enforcement. Preserve D28 surgical scope.
+
+---
+
 ## OWNER D28 — 2026-11-09 — ASSEMBLED CAR / ONE REQUEST = ONE SURGICAL CHANGE
 
 **CURRENT OWNER SCOPE RULE. Effective immediately for Coordinator P, Administrator, Antigravity and any future executor. D28 clarifies the scope of D27; D27's verified publication, TEST/MAIN separation and security/billing safeguards remain in force. If historical instructions below demand a whole-project audit for a local task, D28 overrides that demand.**
