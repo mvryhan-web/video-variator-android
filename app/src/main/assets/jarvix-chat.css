@@ -666,3 +666,6 @@ body.jarvix-activity-enabled:not(.jarvix-activity-open) .jarvix-activity-toggle{
 
 /* One JARVIX Chat: native Studio is a connected tool pane, not another routed chat. */
 .jarvix-chat-layout>.jarvix-chat-pane{max-width:none;margin:0;min-width:0;}
+
+/* Keep the existing eight-tile plus menu inside a narrow mobile JARVIX pane. */
+@media(max-width:760px){.jarvix-chat-layout .j-chat-bottom .j-plus-menu{max-width:calc(100vw - 64px)!important;width:min(362px,calc(100vw - 64px))!important;}}
