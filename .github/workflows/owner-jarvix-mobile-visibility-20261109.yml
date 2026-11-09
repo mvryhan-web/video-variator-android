@@ -1,0 +1,40 @@
+name: Owner JARVIX Chat mobile visible composer and Chat label
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - 'app/src/main/assets/jarvix-chat.html'
+      - 'app/src/main/assets/jarvix-chat.css'
+      - 'app/src/main/assets/jarvix-chat.js'
+      - 'tests/jarvix-chat-mobile-dock-title.browser.test.mjs'
+      - '.github/workflows/owner-jarvix-mobile-visibility-20261109.yml'
+permissions:
+  contents: read
+jobs:
+  jarvix-mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+      JARVIX_QUOTA_DATABASE_URL: ''
+      JARVIX_FREE_LLM_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Syntax check
+        run: |
+          node --check app/src/main/assets/jarvix-chat.js
+          node --check tests/jarvix-chat-mobile-dock-title.browser.test.mjs
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Test real mobile layouts 320/360/390/430 and keyboard viewport
+        run: node --test tests/jarvix-chat-mobile-dock-title.browser.test.mjs
