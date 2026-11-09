@@ -1,0 +1,79 @@
+name: DEEPSYQ MAIN Pages deployment provenance and safe-release preflight
+on:
+  push:
+    branches: [owner-main-cloudflare-release-probe-20261109]
+    paths: ['.github/workflows/owner-main-cloudflare-release-probe-20261109.yml']
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Verify production Pages deployment provenance without writes
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import {createHash} from 'node:crypto';
+          import fs from 'node:fs';
+          const token=process.env.CLOUDFLARE_API_TOKEN,account=process.env.CLOUDFLARE_ACCOUNT_ID;
+          if(!token||!/^[0-9a-f]{32}$/.test(account||''))throw Error('Existing Pages token/account ID unavailable');
+          const root='https://api.cloudflare.com/client/v4';
+          const headers={Authorization:'Bearer '+token};
+          const get=async route=>{
+            const res=await fetch(root+route,{headers,signal:AbortSignal.timeout(19000)});
+            const content=await res.text();
+            let data=null;try{data=JSON.parse(content)}catch{}
+            return {status:res.status,data,type:res.headers.get('content-type')};
+          };
+          const project=await get('/accounts/'+account+'/pages/projects/deepsyq');
+          if(project.status!==200||!project.data?.result)throw Error('PAGES_PROJECT_UNAVAILABLE');
+          const p=project.data.result;
+          const d=p.canonical_deployment;
+          console.log('PROJECT_SOURCE',JSON.stringify({
+            name:p.name,production_branch:p.production_branch,
+            sourceType:p.source?.type||null,repoName:p.source?.config?.repo_name||null,repoOwner:p.source?.config?.owner||null,
+            productionScript:p.production_script_name,previewScript:p.preview_script_name,
+            projectUsesFunctions:p.uses_functions,
+            deploymentConfigNames:Object.fromEntries(['production','preview'].map(k=>[k, {
+              envKeys:Object.keys(p.deployment_configs?.[k]?.env_vars||{}),
+              bindingKeys:Object.keys(p.deployment_configs?.[k]?.kv_namespaces||{}),
+              d1Keys:Object.keys(p.deployment_configs?.[k]?.d1_databases||{}),
+              r2Keys:Object.keys(p.deployment_configs?.[k]?.r2_buckets||{}),
+              secretsNames:Object.keys(p.deployment_configs?.[k]?.secrets||{})
+            }])),
+            mainDeployment:{id:d?.id,usesFunctions:d?.uses_functions,env:d?.environment,commit:d?.deployment_trigger?.metadata?.commit_hash,dirty:d?.deployment_trigger?.metadata?.commit_dirty,trigger:d?.deployment_trigger?.type}
+          }));
+          if(d?.id){
+            const info=await get('/accounts/'+account+'/pages/projects/deepsyq/deployments/'+d.id);
+            console.log('DEPLOYMENT_DETAILS',JSON.stringify({status:info.status,usesFunctions:info.data?.result?.uses_functions,sourceType:info.data?.result?.source?.type,stageStatuses:(info.data?.result?.stages||[]).map(s=>[s.name,s.status]),deploymentConfigKeys:Object.keys(info.data?.result?.deployment_configs||{})}));
+          }
+          if(p.production_script_name){
+            const script=encodeURIComponent(p.production_script_name);
+            for(const suffix of ['/content/v2','','/settings']){
+              const res=await get('/accounts/'+account+'/workers/scripts/'+script+suffix);
+              console.log('SCRIPT_READ_STATUS',JSON.stringify({suffix:suffix||'root',status:res.status,errors:(res.data?.errors||[]).map(e=>e.code)}));
+            }
+          }
+          const assetRoot='app/src/main/assets/';
+          const worker=fs.readFileSync(assetRoot+'_worker.js');
+          console.log('GIT_SOURCE_WORKER',JSON.stringify({sha256:createHash('sha256').update(worker).digest('hex'),bytes:worker.length,sha:process.env.GITHUB_SHA}));
+          for(const file of ['pricing.html','pricing-page.css','pricing-page.js']){
+            const bytes=fs.readFileSync(assetRoot+file);
+            console.log('GIT_ASSET_SHA',JSON.stringify({file,sha256:createHash('sha256').update(bytes).digest('hex')}));
+          }
+          for(const file of ['pricing.html','pricing-page.css','pricing-page.js']){
+            const response=await fetch('https://deepsyq.app/'+file+'?safeCheck='+Date.now(),{headers:{'cache-control':'no-cache'},signal:AbortSignal.timeout(19000)});
+            const content=await response.text();
+            const marker=file==='pricing.html'?content.includes('owner-pricing-midcard-v1'):file==='pricing-page.css'?content.includes('top:calc(50% + 6px)'):!content.includes('AI Credits Sold Separately');
+            console.log('LIVE_ASSET',JSON.stringify({file,status:response.status,sha256:createHash('sha256').update(content).digest('hex'),newFeatureMarker:marker}));
+          }
+          const api=await fetch('https://deepsyq.app/api/config',{signal:AbortSignal.timeout(15000)});
+          console.log('LIVE_API_CONFIG',JSON.stringify({status:api.status,type:api.headers.get('content-type')}));
+          JS
