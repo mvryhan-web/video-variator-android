@@ -1317,3 +1317,63 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
   border-color: #ffbf52 !important;
   box-shadow: inset 0 0 16px rgba(245, 158, 11, 0.6), 0 0 16px rgba(255, 191, 82, 0.6) !important;
 }
+
+
+/* ==============================================================================
+   OWNER-DIRECTIVE: GOLDEN AMBER GLOW & BORDER ON HOME QUICKBAR COMPOSER
+   ============================================================================== */
+#homeQuickBar .jarvix-compose,
+#homeQuickForm[data-jarvix-chat],
+:where(#homeQuickForm).j-neon-composer {
+  box-sizing: border-box !important;
+  border: 1.5px solid rgba(245, 158, 11, 0.8) !important;
+  border-radius: 999px !important;
+  background: linear-gradient(115deg, #171106fa, #0b0918fc) !important;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.4), 0 0 24px rgba(245, 158, 11, 0.5), 0 8px 32px rgba(0, 0, 0, 0.8), inset 0 0 16px rgba(245, 158, 11, 0.22) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+#homeQuickBar .jarvix-compose:is(:hover, :focus-within),
+#homeQuickForm[data-jarvix-chat]:is(:hover, :focus-within),
+:where(#homeQuickForm).j-neon-composer:is(:hover, :focus-within) {
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.6), 0 0 32px rgba(245, 158, 11, 0.85), 0 8px 36px rgba(0, 0, 0, 0.85), inset 0 0 24px rgba(245, 158, 11, 0.35) !important;
+}
+
+#homeQuickBar textarea#homeQuickPrompt {
+  color: #fef08a !important;
+}
+
+#homeQuickBar textarea#homeQuickPrompt::placeholder {
+  color: rgba(254, 240, 138, 0.65) !important;
+}
+
+#homeQuickBar #jPlus {
+  border-color: rgba(245, 158, 11, 0.7) !important;
+  background: radial-gradient(circle at 50% 45%, #2d2315 0%, #1a1409 58%, #0e0903 100%) !important;
+  box-shadow: 0 0 0 1.5px rgba(255, 191, 82, 0.35), 0 0 14px rgba(245, 158, 11, 0.7), inset 0 0 8px rgba(245, 158, 11, 0.4) !important;
+  color: #ffbf52 !important;
+  text-shadow: 0 0 6px #fef08a !important;
+}
+
+#homeQuickBar #homeQuickSubmit,
+#homeQuickBar .j-send {
+  color: #ffbf52 !important;
+}
+
+#homeQuickBar #homeQuickSubmit .j-send-plane,
+#homeQuickBar .j-send .j-send-plane {
+  stroke: #ffbf52 !important;
+  filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.8)) !important;
+}
+
+#homeQuickBar #jMic,
+#homeQuickBar .j-settings-shortcut {
+  color: #f59e0b !important;
+}
+
+#homeQuickBar .j-settings-shortcut:hover,
+#homeQuickBar #jMic:hover {
+  background: rgba(245, 158, 11, 0.18) !important;
+  color: #fef08a !important;
+}

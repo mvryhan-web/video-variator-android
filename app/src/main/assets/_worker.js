@@ -1108,8 +1108,11 @@ export default {
     }
 
     
-    // Legacy studio redirects to unified JARVIX Chat
+    // Legacy studio redirects to unified JARVIX Chat (allow ?settings=1 for embedded settings modal)
     if (pathname === '/generate-studio.html' || pathname === '/generate-studio' || pathname === '/jarvix-studio.html' || pathname === '/jarvix-studio' || pathname === '/ai-agents.html' || pathname === '/ai-agents') {
+      if (url.searchParams.get('settings') === '1') {
+        return serveHtmlAsset('/generate-studio', '/generate-studio.html');
+      }
       const studio = url.searchParams.get('studio') || url.searchParams.get('mode');
       const target = studio ? ('/jarvix-chat.html?mode=' + encodeURIComponent(studio)) : '/jarvix-chat.html';
       return Response.redirect(new URL(target, url.origin).toString(), 302);

@@ -21,10 +21,16 @@ export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
  const plus=document.getElementById('jPlus'),menu=document.getElementById('jPlusMenu'),fileInput=document.getElementById('jFiles'),attachments=document.getElementById('jAttachments'),mic=document.getElementById('jMic');
  function render(){attachments.replaceChildren();files.forEach((f,i)=>{const b=document.createElement('button');b.type='button';b.textContent=f.name+' ×';b.setAttribute('aria-label','Remove '+f.name);b.onclick=()=>{files.splice(i,1);render();};attachments.append(b);});}
  plus.onclick=()=>{menu.hidden=!menu.hidden;plus.setAttribute('aria-expanded',String(!menu.hidden));};
- menu.querySelectorAll('[data-j-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.jMode;onMode(mode);
+ menu.querySelectorAll('[data-j-mode]').forEach(b=>b.onclick=(e)=>{
+  const href=b.getAttribute('href');
+  if(href){
+   try{sessionStorage.setItem('jarvix_composer_mode',b.dataset.jMode||'image');}catch{}
+   location.assign(href);
+   return;
+  }
+  mode=b.dataset.jMode;onMode(mode);
   try{sessionStorage.setItem('jarvix_composer_mode',mode);}catch{}
   for(const item of menu.querySelectorAll('[data-j-mode]'))item.setAttribute('aria-pressed',String(item===b));
-  // The + remains a plus: selected mode is indicated only by the shared lower badge.
   plus.textContent='+';menu.hidden=true;plus.setAttribute('aria-expanded','false');reportMode();input.focus();
  });
  for(const item of menu.querySelectorAll('[data-j-mode]'))item.setAttribute('aria-pressed',String(item.dataset.jMode===mode));
