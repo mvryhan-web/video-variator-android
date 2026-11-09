@@ -3,8 +3,10 @@ on:
   push:
     branches:
       - owner-jarvix-visible-default-20261109
+      - fix/jarvix-mobile-settings-close-20261109
     paths:
       - app/src/main/assets/jarvix-activity-drawer.js
+      - app/src/main/assets/home-studio-settings.js
       - app/src/main/assets/jarvix-chat.css
       - tests/jarvix-activity-drawer.browser.test.mjs
       - tests/jarvix-activity-preview-smoke.mjs
@@ -19,6 +21,7 @@ jobs:
       NODE_ENV: test
       AI_BILLING_MODE: test
       PRODUCT_WATCHER_ENABLED: 'false'
+      PREVIEW_BRANCH: ${{ github.ref_name == 'fix/jarvix-mobile-settings-close-20261109' && 'owner-jarvix-settings-x-20261109' || 'owner-jarvix-visible-default-20261109' }}
       OPENAI_API_KEY: ''
       STRIPE_SECRET_KEY: ''
       DATABASE_URL: ''
@@ -45,13 +48,51 @@ jobs:
           node --input-type=module -e 'import fs from "node:fs";const x=JSON.parse(fs.readFileSync("/tmp/cf-project.json","utf8"));if(!x.success||x.result?.production_branch!=="deepsyq-platform")throw Error("Unsafe production branch mismatch");'
           npx --yes wrangler@4 pages deploy app/src/main/assets \
             --project-name=deepsyq \
-            --branch=owner-jarvix-visible-default-20261109 \
+            --branch="$PREVIEW_BRANCH" \
             --commit-hash="${{ github.sha }}" | tee /tmp/jarvix-test-deploy.log
           DEPLOY_URL="$(grep -Eo 'https://[a-z0-9-]+\.deepsyq\.pages\.dev' /tmp/jarvix-test-deploy.log | head -n1)"
           if [[ ! "$DEPLOY_URL" =~ ^https://[a-z0-9-]+\.deepsyq\.pages\.dev$ ]]; then exit 1; fi
           echo "JARVIX_TEST_PREVIEW_URL=$DEPLOY_URL" >> "$GITHUB_ENV"
       - name: Verify actual TEST UI visible without clicking at first visit
         run: node tests/jarvix-activity-preview-smoke.mjs
+      - name: Verify real JARVIX mobile Settings X is above creation type and closes correctly
+        if: github.ref_name == 'fix/jarvix-mobile-settings-close-20261109'
+        run: |
+          mkdir -p artifacts/jarvix-live-preview
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const origin=process.env.JARVIX_TEST_PREVIEW_URL;
+          assert.match(origin,/^https:\/\/[a-z0-9-]+\.deepsyq\.pages\.dev$/);
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try{
+            const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+            const page=await context.newPage();
+            const response=await page.goto(origin+'/jarvix-chat.html',{waitUntil:'domcontentloaded',timeout:30000});
+            assert.equal(response.status(),200,'JARVIX Chat should load on TEST');
+            const gear=page.locator('#jChatForm .j-settings-shortcut');
+            await gear.waitFor({state:'visible',timeout:15000});
+            await gear.click();
+            const frame=page.frameLocator('#homeStudioSettingsFrame');
+            const dialog=frame.locator('#studioSettingsHub');
+            await dialog.waitFor({state:'visible',timeout:20000});
+            const rect=await dialog.evaluate(el=>{
+              const x=el.querySelector(':scope > button:nth-child(2)')?.getBoundingClientRect();
+              const first=el.querySelector('#studioTypePicker')?.getBoundingClientRect();
+              const heading=el.querySelector(':scope > h2')?.getBoundingClientRect();
+              return {x:x&&{top:x.top,bottom:x.bottom,left:x.left,right:x.right},first:first&&{top:first.top,bottom:first.bottom},heading:heading&&{top:heading.top,bottom:heading.bottom}};
+            });
+            assert(rect.x&&rect.first&&rect.heading,'native Settings controls are present');
+            assert(rect.x.bottom<=rect.first.top-3,'Mobile Settings X overlaps creation row');
+            assert(rect.x.top>=0,'Mobile Settings X is offscreen');
+            console.log('JARVIX_MOBILE_SETTINGS_X_PASS',JSON.stringify({url:page.url(),rect}));
+            await page.screenshot({path:'artifacts/jarvix-live-preview/mobile-jarvix-settings-x.png'});
+            await frame.locator('#studioSettingsHub > button:nth-child(2)').click();
+            await page.waitForFunction(()=>document.querySelector('#homeStudioSettingsHost')?.style.display==='none',null,{timeout:8000});
+            console.log('JARVIX_MOBILE_SETTINGS_CLOSE_PASS');
+            await context.close();
+          }finally{await browser.close()}
+          JS
       - name: Save real first-visit desktop/mobile screenshots
         if: always()
         uses: actions/upload-artifact@v4
