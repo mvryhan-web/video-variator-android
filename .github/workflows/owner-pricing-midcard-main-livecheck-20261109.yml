@@ -1,0 +1,50 @@
+name: Owner Pricing mobile mid-card MAIN live check (read only)
+on:
+  push:
+    branches: [owner-pricing-midcard-main-livecheck-20261109]
+    paths: ['.github/workflows/owner-pricing-midcard-main-livecheck-20261109.yml']
+permissions: {contents: read}
+jobs:
+  live-readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Inspect MAIN live HTML CSS JS and current Cloudflare deployment
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          const origin='https://deepsyq.app';
+          const q='?pricingMidcardCheck='+Date.now();
+          const get=async url=>{const r=await fetch(url,{headers:{'cache-control':'no-cache'},signal:AbortSignal.timeout(25000)});return {status:r.status,text:await r.text(),type:r.headers.get('content-type')}};
+          const h=await get(origin+'/pricing.html'+q);
+          const css=await get(origin+'/pricing-page.css'+q);
+          const js=await get(origin+'/pricing-page.js'+q);
+          const config=await get(origin+'/api/config'+q);
+          const htmlNew=h.status===200&&h.text.includes('price-plan-carousel-stage')&&!h.text.includes('id="plansHeading"')&&!h.text.includes('id="priceBillingPromo"')&&h.text.includes('owner-pricing-midcard-v1');
+          const cssNew=css.status===200&&css.text.includes('top:calc(50% + 6px)')&&css.text.includes('scroll-snap-type:x mandatory');
+          const jsNew=js.status===200&&js.text.includes('function movePlanCarousel')&&!js.text.includes('AI Credits Sold Separately');
+          const all=htmlNew&&cssNew&&jsNew;
+          console.log('MAIN_PRICING_MIDCARD_LIVE',JSON.stringify({all,htmlNew,cssNew,jsNew,htmlHttp:h.status,cssHttp:css.status,jsHttp:js.status,workerConfigHttp:config.status,workerConfigJson:config.type?.includes('json')}));
+          const token=process.env.CF_TOKEN,account=process.env.CF_ACCOUNT;
+          if(token&&account){
+            const base='https://api.cloudflare.com/client/v4';
+            const headers={Authorization:'Bearer '+token};
+            const p=await fetch(base+'/accounts/'+account+'/pages/projects/deepsyq',{headers,signal:AbortSignal.timeout(20000)});
+            console.log('CLOUDFLARE_PAGES_PROJECT_HTTP',p.status);
+            if(p.ok){
+              const d=(await p.json()).result;
+              console.log('MAIN_DEPLOYMENT',JSON.stringify({id:d.canonical_deployment?.id,commit:d.canonical_deployment?.deployment_trigger?.metadata?.commit_hash,commitDirty:d.canonical_deployment?.deployment_trigger?.metadata?.commit_dirty,uses_functions:d.canonical_deployment?.uses_functions,script:d.production_script_name}));
+              if(d.production_script_name){
+                const w=await fetch(base+'/accounts/'+account+'/workers/scripts/'+encodeURIComponent(d.production_script_name)+'/content/v2',{headers,signal:AbortSignal.timeout(20000)});
+                console.log('WORKER_SOURCE_READ_HTTP',w.status);
+              }
+            }
+          }
+          if(config.status!==200)process.exitCode=1;
+          JS
