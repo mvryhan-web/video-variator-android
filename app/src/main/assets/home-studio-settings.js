@@ -71,15 +71,39 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   window.addEventListener('resize',position);
  };
 
- frame.addEventListener('load',()=>{
+ frame.addEventListener('load',async()=>{
   if(!host.isConnected)return;
+  const inJarvixChat=location.pathname.endsWith('/jarvix-chat') || location.pathname.endsWith('/jarvix-chat.html');
   let doc;
   try{
+   const studioPath=frame.contentWindow.location.pathname;
    if(frame.contentWindow.location.origin!==location.origin||
-      !frame.contentWindow.location.pathname.endsWith('/generate-studio.html'))return close();
+      !(inJarvixChat?studioPath.includes('generate-studio'):studioPath.endsWith('/generate-studio.html')))return close();
    doc=frame.contentDocument;
   }catch{return close();}
-  const hub=doc?.getElementById('studioSettingsHub');
+  let hub=doc?.getElementById('studioSettingsHub');
+  if(!hub && inJarvixChat){
+    // Only JARVIX Chat: wait for the existing native Studio module after iframe load.
+    hub=await new Promise(resolve=>{
+      let tries=0;
+      const poll=setInterval(()=>{
+        let candidate=null;
+        try{candidate=frame.contentDocument?.getElementById('studioSettingsHub');}catch{}
+        if(candidate||!host.isConnected||!visible||++tries>=45){
+          clearInterval(poll);
+          resolve(candidate);
+        }
+      },80);
+    });
+    if(!hub){
+      close();
+      const status=document.getElementById('jStatus');
+      if(status)status.textContent='Настройки студии не загрузились. Попробуйте ещё раз.';
+      if(current?.gear===gear)current=null;
+      host.remove();
+      return;
+    }
+  }
   if(!hub)return close();
   // Native model and format child dialogs originally sit inside Studio main.
   // Place them alongside the native parent dialog in THIS isolated frame so

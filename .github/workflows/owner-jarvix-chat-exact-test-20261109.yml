@@ -1,0 +1,144 @@
+name: Owner JARVIX Chat-only from latest canonical TEST
+on:
+  pull_request:
+    branches: [test]
+    paths:
+      - 'app/src/main/assets/jarvix-chat.js'
+      - 'app/src/main/assets/jarvix-chat.css'
+      - 'app/src/main/assets/home-studio-settings.js'
+      - 'tests/jarvix-chat-sidebar-settings.browser.test.mjs'
+      - '.github/workflows/owner-jarvix-chat-exact-test-20261109.yml'
+  push:
+    branches: [test]
+    paths:
+      - 'app/src/main/assets/jarvix-chat.js'
+      - 'app/src/main/assets/jarvix-chat.css'
+      - 'app/src/main/assets/home-studio-settings.js'
+      - 'tests/jarvix-chat-sidebar-settings.browser.test.mjs'
+      - '.github/workflows/owner-jarvix-chat-exact-test-20261109.yml'
+permissions:
+  contents: read
+concurrency:
+  group: owner-test-canonical-routing
+  cancel-in-progress: false
+jobs:
+  chat-only-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    env:
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+      JARVIX_QUOTA_DATABASE_URL: ''
+      JARVIX_FREE_LLM_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Syntax on three JARVIX-related files and one targeted test
+        run: |
+          node --check app/src/main/assets/jarvix-chat.js
+          node --check app/src/main/assets/home-studio-settings.js
+          node --check tests/jarvix-chat-sidebar-settings.browser.test.mjs
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Real Chromium desktop and mobile scoped acceptance
+        run: node --test tests/jarvix-chat-sidebar-settings.browser.test.mjs
+      - name: Store local preview screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-jarvix-chat-test-desktop-mobile
+          path: artifacts/jarvix-chat-sidebar/*.png
+          if-no-files-found: ignore
+          retention-days: 7
+  publish-canonical-test:
+    needs: chat-only-qa
+    if: github.event_name == 'push' && github.ref == 'refs/heads/test'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact TEST HEAD and preserve existing Cloudflare MAIN and TEST source
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {execFileSync} from 'node:child_process';
+          import fs from 'node:fs';
+          const here=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+          assert.equal(here,process.env.GITHUB_SHA);
+          const parent=execFileSync('git',['rev-parse','HEAD^1'],{encoding:'utf8'}).trim();
+          const account=process.env.CLOUDFLARE_ACCOUNT_ID,token=process.env.CLOUDFLARE_API_TOKEN;
+          if(!/^[a-f\d]{32}$/i.test(account||'')||!token)throw Error('Cloudflare credentials unavailable');
+          const root='https://api.cloudflare.com/client/v4/accounts/'+account+'/pages/projects/deepsyq';
+          async function get(url){
+            const r=await fetch(url,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(18000)});
+            if(!r.ok)throw Error('Cloudflare read failed HTTP '+r.status);
+            const j=await r.json();
+            if(j.success!==true)throw Error('Cloudflare API reported failure');
+            return j.result;
+          }
+          const project=await get(root);
+          assert.equal(project.production_branch,'deepsyq-platform');
+          const main=project.canonical_deployment;
+          assert(main?.id);
+          const deployments=[];
+          for(let page=1;page<=4;page++){
+            const list=await get(root+'/deployments?per_page=20&page='+page);
+            assert(Array.isArray(list));
+            deployments.push(...list);
+          }
+          const test=deployments.find(d=>(d.aliases||[]).includes('https://test.deepsyq.pages.dev'));
+          console.log('TEST_PREVIOUS_DEPLOYMENT',JSON.stringify({
+            id:test?.id,sha:test?.deployment_trigger?.metadata?.commit_hash,
+            dirty:test?.deployment_trigger?.metadata?.commit_dirty,
+            branch:test?.deployment_trigger?.metadata?.branch,uses_functions:test?.uses_functions
+          }));
+          if(!test||test.deployment_trigger?.metadata?.branch!=='test'||test.environment!=='preview')
+            throw Error('TEST stable alias does not point to an isolated test branch');
+          if(test.uses_functions===true)throw Error('Existing TEST Functions cannot be preserved by static-only deploy');
+          if(test.deployment_trigger?.metadata?.commit_dirty!==false||
+             test.deployment_trigger?.metadata?.commit_hash!==parent)
+            throw Error('TEST changed since branch was reviewed; refusing to overwrite newer work');
+          fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_DEPLOYMENT_BEFORE='+main.id+'\n');
+          console.log('SAFE_LATEST_TEST_PARENT',parent);
+          JS
+      - name: Publish ONLY to the one stable TEST link with no paid API calls
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq --branch=test --commit-hash="$GITHUB_SHA"
+      - name: Verify newest JARVIX asset visible at stable TEST and MAIN unchanged
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          const expected='positionDropdown';
+          let active=false;
+          for(let i=0;i<10;i++){
+            const r=await fetch('https://test.deepsyq.pages.dev/jarvix-chat.js',
+              {headers:{'Cache-Control':'no-cache'},signal:AbortSignal.timeout(15000)});
+            const js=await r.text();
+            if(r.ok&&js.includes(expected)){active=true;break}
+            await new Promise(resolve=>setTimeout(resolve,3000));
+          }
+          assert(active,'Stable TEST still serves previous JARVIX source');
+          const root='https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID+'/pages/projects/deepsyq';
+          const p=await fetch(root,{headers:{Authorization:'Bearer '+process.env.CLOUDFLARE_API_TOKEN}}).then(r=>r.json());
+          assert.equal(p.result?.canonical_deployment?.id,process.env.MAIN_DEPLOYMENT_BEFORE,
+            'MAIN production unexpectedly changed');
+          console.log('LIVE_STABLE_TEST_JARVIX_UPDATED_MAIN_UNCHANGED',process.env.GITHUB_SHA);
+          JS
