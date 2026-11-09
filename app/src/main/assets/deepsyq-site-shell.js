@@ -128,7 +128,9 @@
     { label: 'Pricing', icon: '＄', url:'pricing.html', key: 'pricing' }
   ];
 
-  const path = location.pathname.split('/').pop() || 'deepsyq.html';
+  const routeName = location.pathname.split('/').pop() || 'deepsyq.html';
+  // Cloudflare Pages serves clean URLs (/jarvix-chat) for .html assets.
+  const path = ['deepsyq','jarvix-chat','generate-studio'].includes(routeName) ? routeName+'.html' : routeName;
   const query = new URLSearchParams(location.search);
   const active = path === 'generate-studio.html' ?
     (query.get('view') === 'history' ? 'history' :
