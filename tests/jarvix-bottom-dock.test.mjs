@@ -17,7 +17,7 @@ test('owner correction: existing shared LOWER navigation untouched, no invented 
  assert.doesNotMatch(css,/bottom:clamp\(18px,7vh,72px\)/);
  assert.match(navigation,/dock\.classList\.add\('j-neon-dock'\);dock\.append\(rail\)/);
  assert.match(navigation,/\['JARVIX','jarvix-chat\.html'/);
- assert.match(navigation,/\['Video Uniquifier','index\.html'/);
+ assert.doesNotMatch(navigation,/\['Video Uniquifier','index\.html'/,'No Uniquifier chat rail shortcut');
  assert.match(navigation,/j-active-mode/);
  for(const label of ['Image','Video','Audio','Tools'])assert.ok(navigation.includes("'"+label+"'"),label);
 
