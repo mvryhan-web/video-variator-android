@@ -115,7 +115,18 @@ const where=candidateCss.indexOf(marker);
 if(where<0)throw Error('No reviewed panel CSS');
 const cssAddon=candidateCss.slice(where);
 if(!css.includes(marker))css=css.trimEnd()+'\n'+cssAddon;
-else if(css.slice(css.indexOf(marker))!==cssAddon)throw Error('Production panel CSS conflicts');
+else if(css.slice(css.indexOf(marker))!==cssAddon){
+ // Only the prior reviewed JARVIX drawer block may be replaced.
+ // All production stylesheet bytes preceding this marker stay unchanged.
+ const oldDrawer=css.slice(css.indexOf(marker)).trim();
+ const end='@media(prefers-reduced-motion:reduce){.jarvix-activity-toggle,.jarvix-activity-panel{transition:none!important}}';
+ if(!oldDrawer.endsWith(end)||
+    !oldDrawer.includes('position:fixed;z-index:120;top:164px;left:214px;')||
+    !oldDrawer.includes('.jarvix-activity-panel[hidden]{display:none!important}')||
+    !oldDrawer.includes('.jarvix-activity-toggle{left:12px;top:215px;'))
+   throw Error('Unexpected live drawer CSS; cannot safely replace');
+ css=css.slice(0,css.indexOf(marker))+cssAddon;
+}
 await writeFile(at(dist,'jarvix-chat.css'),css);
 
 let html=await getLive('jarvix-chat.html');
