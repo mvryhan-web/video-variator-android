@@ -21,6 +21,9 @@ const mimeFor=p=>{
  if(['.mp3','.mp4','.wav','.ogg','.webm'].includes(ext))return /audio|video|octet-stream/;
  if(['.woff','.woff2','.ttf','.otf'].includes(ext))return /font|octet-stream/;
  if(ext==='.pdf')return /pdf/;
+ if(['.md','.txt','.xml','.csv'].includes(ext))return /text|xml|csv|octet-stream/;
+ if(ext==='.wasm')return /wasm|octet-stream/;
+ if(ext==='.glb')return /gltf|octet-stream/;
  return null;
 };
 async function allFiles(dir){
@@ -34,7 +37,7 @@ async function allFiles(dir){
 }
 await mkdir(audit,{recursive:true});
 await cp(root,dist,{recursive:true});
-const paths=await allFiles(root);
+const paths=(await allFiles(root)).filter(p=>mimeFor(p));
 const report={origin,preserved:[],matched:0,missing:[],skipped:[],targets:{},protected:{},total:paths.length};
 const failures=[];
 let index=0;
