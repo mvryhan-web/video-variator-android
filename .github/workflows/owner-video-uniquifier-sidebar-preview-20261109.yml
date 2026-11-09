@@ -1,0 +1,122 @@
+name: Owner Video Uniquifier sidebar - isolated TEST preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'app/src/main/assets/deepsyq-site-shell.js'
+      - 'tests/deepsyq-sitewide-visual-unit.mjs'
+      - '.github/workflows/owner-video-uniquifier-sidebar-preview-20261109.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-preview:
+    if: github.event.pull_request.number == 653 && github.head_ref == 'owner-move-video-uniquifier-nav-20261109' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      PREVIEW_BRANCH: owner-move-video-uniquifier-nav-20261109
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+    steps:
+      - name: Checkout exact owner navigation change
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Confirm current DEV is preserved
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/deepsyq-platform:refs/remotes/origin/deepsyq-platform
+          git merge-base --is-ancestor refs/remotes/origin/deepsyq-platform HEAD
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify requested navigation-only difference
+        run: |
+          set -euo pipefail
+          node --check app/src/main/assets/deepsyq-site-shell.js
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const source=fs.readFileSync('app/src/main/assets/deepsyq-site-shell.js','utf8');
+          assert.equal((source.match(/url:'index\.html', key: 'legacy'/g)||[]).length,1);
+          assert.equal((source.match(/key: 'legacy'/g)||[]).length,1);
+          assert.ok(source.includes("{ label: 'Video Uniquifier', icon: '▷', url:'index.html', key: 'legacy' },"));
+          assert.ok(!source.includes("url:'generate-studio.html?studio=video', key: 'video'"));
+          assert.ok(fs.existsSync('app/src/main/assets/index.html'));
+          console.log('NAV_SCOPE_PASS');
+          JS
+      - name: Require isolated Cloudflare Pages project and verify canonical production
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
+          curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" >/tmp/cf-before.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const x=JSON.parse(fs.readFileSync('/tmp/cf-before.json','utf8'));
+          if(x.success!==true || x.result?.name!=='deepsyq' || x.result?.production_branch!=='deepsyq-platform' || x.result?.production_branch===process.env.PREVIEW_BRANCH || !x.result?.canonical_deployment?.id) throw Error('Cloudflare production safety guard failed');
+          fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_DEPLOYMENT_BEFORE='+x.result.canonical_deployment.id+'\n');
+          console.log('MAIN_GUARD_PASS');
+          JS
+      - name: Deploy only isolated Cloudflare branch preview
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy app/src/main/assets --project-name=deepsyq --branch="$PREVIEW_BRANCH" --commit-hash="${{ github.event.pull_request.head.sha }}" | tee /tmp/cloudflare-preview.log
+          DEPLOY_URL=$(grep -Eo 'https://[a-z0-9-]+\.deepsyq\.pages\.dev' /tmp/cloudflare-preview.log | head -n1)
+          if [[ ! "$DEPLOY_URL" =~ ^https://[a-z0-9-]+\.deepsyq\.pages\.dev$ ]]; then echo "Preview URL missing"; exit 1; fi
+          echo "VU_TEST_URL=$DEPLOY_URL" >> "$GITHUB_ENV"
+          echo "Isolated preview: $DEPLOY_URL/index.html" >> "$GITHUB_STEP_SUMMARY"
+      - name: Verify live page and desktop/mobile nav without paid calls
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          mkdir -p artifacts/vu-sidebar
+          node --input-type=module <<'JS'
+          import {chromium} from 'playwright';
+          import assert from 'node:assert/strict';
+          const origin=process.env.VU_TEST_URL;
+          assert.match(origin,/^https:\/\/[a-z0-9-]+\.deepsyq\.pages\.dev$/);
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try {
+            for(const [device,viewport] of [['desktop',{width:1365,height:900}],['mobile',{width:390,height:844}]]){
+              const context=await browser.newContext({viewport,isMobile:device==='mobile',hasTouch:device==='mobile'});
+              try {
+                const page=await context.newPage();
+                const response=await page.goto(origin+'/index.html',{waitUntil:'domcontentloaded',timeout:30000});
+                assert.equal(response?.status(),200);
+                await page.locator('#dsSiteSidebar a[href="index.html"]').first().waitFor({state:'attached',timeout:15000});
+                assert.equal(await page.locator('#dsSiteSidebar a[href="index.html"]').count(),1);
+                assert.match(await page.locator('#dsSiteSidebar a[href="index.html"]').innerText(),/Video Uniquifier|Видеоуникализатор/i);
+                assert.equal(await page.locator('#dsSiteSidebar a[href="generate-studio.html?studio=video"]').count(),0);
+                await page.screenshot({path:'artifacts/vu-sidebar/'+device+'.png',fullPage:false});
+                console.log('LIVE_VU_NAV_PASS',device);
+              } finally {await context.close();}
+            }
+          } finally {await browser.close();}
+          JS
+      - name: Verify MAIN canonical Cloudflare deployment unchanged
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" >/tmp/cf-after.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const x=JSON.parse(fs.readFileSync('/tmp/cf-after.json','utf8'));
+          if(x.success!==true || x.result?.production_branch!=='deepsyq-platform' || x.result?.canonical_deployment?.id!==process.env.MAIN_DEPLOYMENT_BEFORE) throw Error('MAIN changed unexpectedly');
+          console.log('MAIN_UNCHANGED_PASS');
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owner-vu-sidebar-cloudflare-preview
+          path: artifacts/vu-sidebar/*.png
+          if-no-files-found: ignore
+          retention-days: 7
