@@ -1,0 +1,65 @@
+name: Owner chat rail production release safety audit
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/owner-chat-rail-production-readonly-audit.yml'
+permissions:
+  contents: read
+jobs:
+  audit-production:
+    if: github.event.pull_request.number == 644 && github.head_ref == 'owner-remove-uniquifier-chat-rail-20261108'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read-only Cloudflare canonical production deployment
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" > /tmp/prod.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const o=JSON.parse(fs.readFileSync('/tmp/prod.json','utf8'));
+          if(o.success!==true||o.result?.name!=='deepsyq'||o.result?.production_branch!=='deepsyq-platform'||!o.result?.canonical_deployment?.id)throw Error('Unexpected Cloudflare production project or missing deployment');
+          const p=o.result.canonical_deployment;
+          console.log('PRODUCTION_ID',JSON.stringify({id:p.id,branch:p.deployment_trigger?.metadata?.branch,commit:p.deployment_trigger?.metadata?.commit_hash,date:p.created_on}));
+          JS
+      - name: Compare current production served assets against exact PR files without writing
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs/promises';
+          import {createHash} from 'node:crypto';
+          const paths=['jarvix-composer-design.js','jarvix-chat.css','jarvix-chat.js','deepsyq.html','generate-studio.html','generate-studio.js','generate-studio.css','pricing.html','pricing-page.js','pricing-page.css','deepsyq-site-shell.js','deepsyq-mobile-shell.js','deepsyq-mobile-shell.css','jarvis-core.js','studio-composer-popovers.js','studio-composer-popovers.css','jarvix-action-design.css','index.html'];
+          const hash=b=>createHash('sha256').update(b).digest('hex').slice(0,12);
+          let diff=0,failed=0;
+          for(const path of paths){
+            const candidate=await fs.readFile('app/src/main/assets/'+path).catch(()=>null);
+            if(!candidate){console.log('MISSING_SOURCE',path);failed++;continue;}
+            const info=[];
+            for(const site of ['https://deepsyq.app','https://deepsyq.pages.dev']){
+              try{
+                const r=await fetch(site+'/'+path+'?audit=${{ github.event.pull_request.head.sha }}',{signal:AbortSignal.timeout(12000),headers:{'Cache-Control':'no-cache'}});
+                const b=Buffer.from(await r.arrayBuffer());
+                const mime=r.headers.get('content-type')||'';
+                const typeOkay=path.endsWith('.js')?mime.includes('javascript'):path.endsWith('.css')?mime.includes('css'):mime.includes('html');
+                const valid=r.status===200&&typeOkay&&b.length>100;
+                const same=valid&&hash(candidate)===hash(b);
+                info.push({site,status:r.status,mime,size:b.length,sha:hash(b),same});
+                if(site==='https://deepsyq.app'&&!same)diff++;
+                if(!valid)failed++;
+                if(path==='jarvix-composer-design.js'&&valid)console.log('CURRENT_CHAT_RAIL',JSON.stringify({site,videoUniquifierEntries:(b.toString('utf8').match(/Video Uniquifier/g)||[]).length}));
+              }catch(e){info.push({site,error:String(e)});failed++;if(site==='https://deepsyq.app')diff++;}
+            }
+            console.log('RELEASE_COMPARE',JSON.stringify({path,candidateHash:hash(candidate),current:info}));
+          }
+          console.log('RELEASE_DECISION',JSON.stringify({productionMismatches:diff,unreadable:failed,scanned:paths.length,readOnly:true}));
+          if(diff>1||failed)throw Error('Production release blocked: full Pages deploy would overwrite unrelated live assets.'); 
+          JS
