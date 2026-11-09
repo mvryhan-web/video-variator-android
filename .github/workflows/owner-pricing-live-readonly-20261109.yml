@@ -1,0 +1,67 @@
+name: Owner Pricing LIVE read-only verification
+on:
+  push:
+    branches: [owner-pricing-live-readonly-20261109]
+    paths: ['.github/workflows/owner-pricing-live-readonly-20261109.yml']
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Inspect real MAIN Pricing and Cloudflare Worker, zero changes
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          async function get(url,headers={}){
+            const res=await fetch(url,{headers:{...headers,'cache-control':'no-cache'},signal:AbortSignal.timeout(18000),redirect:'follow'});
+            return {res,text:await res.text()};
+          }
+          const origin='https://deepsyq.app';
+          const main=await get(origin+'/pricing.html?ownerCheck='+Date.now());
+          console.log('LIVE_PRICING_HTTP',main.res.status,'HTML_BYTES',main.text.length);
+          const match=main.text.match(/<script[^>]+src=["']([^"']*pricing-page\.js[^"']*)/i);
+          const cssmatch=main.text.match(/<link[^>]+href=["']([^"']*pricing-page\.css[^"']*)/i);
+          const ids=['pricePlanPrev','pricePlanNext','pricePlanPosition','planCards','priceBillingMonthly','priceBillingYearly','creditCards'];
+          const present=Object.fromEntries(ids.map(id=>[id,main.text.includes('id="'+id+'"')]));
+          console.log('LIVE_PRICING_IDS',JSON.stringify(present));
+          console.log('LIVE_PRICING_RESOURCES',JSON.stringify({js:match?.[1]||null,css:cssmatch?.[1]||null}));
+          let jsOk=false,cssOk=false;
+          if(match?.[1]){
+            const j=await get(new URL(match[1],origin+'/pricing.html').href);
+            jsOk=j.res.status===200&&j.text.includes('function movePlanCarousel')&&j.text.includes('planCarouselIndex');
+            console.log('LIVE_CAROUSEL_JS',j.res.status,jsOk,'BYTES',j.text.length);
+          }
+          if(cssmatch?.[1]){
+            const c=await get(new URL(cssmatch[1],origin+'/pricing.html').href);
+            cssOk=c.res.status===200&&c.text.includes('scroll-snap-type:x mandatory')&&c.text.includes('price-plan-carousel-controls');
+            console.log('LIVE_CAROUSEL_CSS',c.res.status,cssOk,'BYTES',c.text.length);
+          }
+          const cfg=await get(origin+'/api/config?ownerCheck='+Date.now());
+          console.log('LIVE_WORKER_CONFIG',cfg.res.status,'JSON',cfg.res.headers.get('content-type'));
+          const live=main.res.status===200&&ids.every(x=>present[x])&&jsOk&&cssOk;
+          console.log('PRICING_CAROUSEL_MAIN_LIVE',live);
+          const t=process.env.CF_TOKEN,a=process.env.CF_ACCOUNT;
+          if(t&&a){
+            const base='https://api.cloudflare.com/client/v4';
+            const headers={Authorization:'Bearer '+t};
+            const p=await get(base+'/accounts/'+a+'/pages/projects/deepsyq',headers);
+            console.log('PAGES_READ_HTTP',p.res.status);
+            if(p.res.ok){
+              const pj=JSON.parse(p.text).result;
+              console.log('CURRENT_MAIN_DEPLOYMENT',JSON.stringify({id:pj.canonical_deployment?.id,uses_functions:pj.canonical_deployment?.uses_functions,commit:pj.canonical_deployment?.deployment_trigger?.metadata?.commit_hash,worker:pj.production_script_name}));
+              if(pj.production_script_name){
+                const w=await fetch(base+'/accounts/'+a+'/workers/scripts/'+encodeURIComponent(pj.production_script_name)+'/content/v2',{headers,signal:AbortSignal.timeout(18000)});
+                console.log('CURRENT_WORKER_READ_HTTP',w.status);
+              }
+            }
+          }
+          console.log('READ_ONLY_CHECK_COMPLETE');
+          JS
