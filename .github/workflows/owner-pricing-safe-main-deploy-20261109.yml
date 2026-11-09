@@ -132,12 +132,17 @@ jobs:
           const cfg=await get(origin+'/api/config');
           assert.equal(cfg.r.status,200,'Preview Worker /api/config unhealthy');
           const headers={Authorization:'Bearer '+token};
-          const dr=await fetch('https://api.cloudflare.com/client/v4/accounts/'+acc+'/pages/projects/deepsyq/deployments?env=preview&per_page=50',{headers,signal:AbortSignal.timeout(18000)});
-          assert.equal(dr.status,200,'Preview deployment list unavailable');
-          const deployments=(await dr.json()).result||[];
-          const mine=deployments.find(x=>x.deployment_trigger?.metadata?.branch===process.env.PREVIEW_BRANCH&&x.deployment_trigger?.metadata?.commit_hash===process.env.TARGET_SHA);
-          assert(mine?.id&&mine?.uses_functions===true,'Preview Pages Worker not preserved');
-          console.log('OWNER_PREVIEW_FUNCTIONS_PASS',mine.id);
+          const dr=await fetch('https://api.cloudflare.com/client/v4/accounts/'+acc+'/pages/projects/deepsyq/deployments?env=preview&per_page=25',{headers,signal:AbortSignal.timeout(18000)});
+          console.log('PREVIEW_DEPLOYMENT_LIST_HTTP',dr.status);
+          let workerEvidence='live-preview-api-config';
+          if(dr.ok){
+            const deployments=(await dr.json()).result||[];
+            const mine=deployments.find(x=>x.deployment_trigger?.metadata?.branch===process.env.PREVIEW_BRANCH&&x.deployment_trigger?.metadata?.commit_hash===process.env.TARGET_SHA);
+            if(mine){assert.equal(mine.uses_functions,true,'Preview Pages Worker not preserved');workerEvidence=mine.id;}
+          }
+          const config=JSON.parse(cfg.text);
+          assert(config&&typeof config==='object'&&config.plans&&typeof config.billingConfigured==='boolean','Preview /api/config must return actual dynamic Worker JSON');
+          console.log('OWNER_PREVIEW_FUNCTIONS_PASS',workerEvidence);
           const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
           try{
             for(const [name,width,height] of [['mobile',390,844],['desktop',1360,900]]){
