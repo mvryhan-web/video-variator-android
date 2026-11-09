@@ -1,0 +1,21 @@
+name: Owner live MAIN route audit - read only
+on:
+  push:
+    branches: [test]
+    paths:
+      - '.github/workflows/owner-main-route-audit-readonly.yml'
+      - 'tests/owner-main-route-audit-readonly.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Probe 33 live production pages and aliases without changing anything
+        run: node tests/owner-main-route-audit-readonly.mjs
