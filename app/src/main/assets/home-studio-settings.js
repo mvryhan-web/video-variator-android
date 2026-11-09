@@ -146,6 +146,14 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
    }
    #studioSettingsHub>:is(#studioTypePicker,#modelButton,#settingsButton) .composer-chevron{margin-left:auto!important;}
    #studioSettingsHub.composer-popover::backdrop{background:transparent!important;}
+   /* Mobile touch layout: keep Close X in the heading, clear of the first mode row. */
+   @media (hover:none) and (pointer:coarse) and (max-width:500px){
+    #studioSettingsHub>h2{display:block!important;min-height:42px!important;
+     padding-right:54px!important;margin-bottom:15px!important;}
+    #studioSettingsHub>button:nth-child(2){position:absolute!important;
+     top:0!important;right:8px!important;float:none!important;
+     margin:0!important;z-index:2!important;}
+   }
   `;
   doc.head.append(style);
   // The native Studio script already opens this real hub for ?settings=1.
