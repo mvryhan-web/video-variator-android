@@ -60,6 +60,31 @@ jobs:
           fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_DEPLOYMENT_BEFORE='+obj.result.canonical_deployment.id+'\n');
           console.log('Preflight passed: TEST branch distinct from production.');
           NODE
+      - name: Protect the existing TEST Worker and Functions from static overwrite
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          const account=process.env.CLOUDFLARE_ACCOUNT_ID;
+          const token=process.env.CLOUDFLARE_API_TOKEN;
+          const root='https://api.cloudflare.com/client/v4/accounts/'+account+'/pages/projects/deepsyq';
+          const get=async url=>{
+            const res=await fetch(url,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(16000)});
+            assert(res.ok,'Cloudflare TEST protection preflight HTTP '+res.status);
+            const body=await res.json();
+            assert(body.success===true,'Cloudflare TEST protection API denied');
+            return body.result;
+          };
+          const project=await get(root);
+          assert.equal(project.production_branch,'deepsyq-platform','Production branch changed');
+          const deployments=[];
+          for(let page=1;page<=4;page++) deployments.push(...await get(root+'/deployments?per_page=20&page='+page));
+          const current=deployments.find(d=>(d.aliases||[]).includes('https://test.deepsyq.pages.dev'));
+          assert(current && current.environment==='preview' && current.deployment_trigger?.metadata?.branch==='test','Could not verify existing stable TEST deployment');
+          console.log('EXISTING_TEST_FUNCTIONS',JSON.stringify({id:current.id,uses_functions:current.uses_functions,commit:current.deployment_trigger?.metadata?.commit_hash}));
+          assert(current.uses_functions===false,'BLOCKED_TEST_PUBLISH: TEST currently runs Cloudflare Functions; do not overwrite it using an unverified static deployment. Preserve Worker, JARVIX, auth and generation.');
+          NODE
       - name: Deploy reviewed routing to stable Cloudflare TEST branch only
         shell: bash
         run: |
