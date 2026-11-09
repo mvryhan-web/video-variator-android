@@ -5,3 +5,9 @@ Production target: Cloudflare Pages project deepsyq, production branch deepsyq-p
 Must preserve live Pricing/Studio/JARVIX-core/media/other public assets, run TEST browser acceptance, compare critical non-target hashes, recheck canonical deployment, and auto-rollback if production smoke fails.
 No new AI provider calls, paid generations, Stripe changes, or key disclosure.
 Explicitly NOT permission to replace existing main site with an older unmerged PR snapshot.
+
+SECOND_OWNER_VISIBILITY_RELEASE_20261109:
+Cause established: old browser first visit had hidden shared drawer, while prior browser tests clicked to show it.
+Owner requested verify actual main site visibility. Release new DEV code 4695eb4bcde93c0373033e92f5443a92abcd1c9f.
+Desktop first visit: show JARVIX Chat history drawer; mobile first visit: show readable JARVIX Chat tab.
+Preserve live Pricing, Studio, media, Jarvis Core, billing/worker. Validate on canary and real deepsyq.app without scripted opening; rollback on failure.
