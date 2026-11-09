@@ -1002,7 +1002,7 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
   position: fixed !important;
   top: var(--j-chat-menu-top, 120px) !important;
   left: var(--j-chat-menu-left, 12px) !important;
-  bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+  bottom: env(safe-area-inset-bottom, 0px) !important;
   width: min(338px, calc(100vw - 24px)) !important;
   min-height: 0 !important;
   z-index: 1000 !important;
