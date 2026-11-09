@@ -122,6 +122,8 @@
     { section:'Library' },
 
     { label: 'My Creations', icon: '▣', url:'my-creations.html', key: 'history' },
+    { section:'Community' },
+    { label: 'Inspiration', icon: '◌', url:'deepsyq.html#inspirationPreview', key: 'inspiration' },
     { section:'More' },
     { label: 'Pricing', icon: '＄', url:'pricing.html', key: 'pricing' }
   ];
