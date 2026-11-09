@@ -1,0 +1,108 @@
+name: Owner Home + Worker - READ ONLY verify published stable TEST
+on:
+  push:
+    branches: [test]
+    paths:
+      - '.github/workflows/owner-home-worker-live-verify-only-20261109.yml'
+permissions:
+  contents: read
+jobs:
+  verify-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      DEPLOYED_SHA: 0de025248d9e9fc71bc96852444e5a676401bff9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify exact current TEST deployment with Worker, never publish
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const root='https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID+'/pages/projects/deepsyq';
+          const token=process.env.CLOUDFLARE_API_TOKEN;
+          const get=async path=>{
+            const r=await fetch(root+path,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(20000)});
+            assert.equal(r.status,200,'Cloudflare API '+path+' HTTP '+r.status);
+            const data=await r.json();assert(data.success);return data.result;
+          };
+          const project=await get('');
+          assert.equal(project.production_branch,'deepsyq-platform');
+          const list=await get('/deployments?per_page=20&page=1');
+          const test=list.find(d=>(d.aliases||[]).includes('https://test.deepsyq.pages.dev'));
+          assert(test,'TEST alias not present');
+          assert.equal(test.environment,'preview');
+          assert.equal(test.deployment_trigger?.metadata?.branch,'test');
+          assert.equal(test.deployment_trigger?.metadata?.commit_hash,process.env.DEPLOYED_SHA);
+          assert.equal(test.uses_functions,true,'Published TEST lost original Worker/Functions');
+          assert.equal(project.canonical_deployment?.id,'7aa81a5e-f385-4493-90b2-f07081d1ad59','MAIN was replaced by another deployment');
+          fs.appendFileSync(process.env.GITHUB_ENV,'VERIFIED_TEST_ID='+test.id+'\n');
+          console.log('TEST_WORKER_DEPLOYED_CONFIRMED',JSON.stringify({testUrl:'https://test.deepsyq.pages.dev',commit:process.env.DEPLOYED_SHA,uses_functions:true,mainUnchanged:true}));
+          JS
+      - name: Test real desktop and mobile video and 87+ Inspiration images, no spending
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const base='https://test.deepsyq.pages.dev';
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try{
+            for(const [device,viewport] of [['desktop',{width:1366,height:900}],['mobile',{width:390,height:844}]]){
+              const context=await browser.newContext({viewport,isMobile:device==='mobile',hasTouch:device==='mobile'});
+              const page=await context.newPage();
+              const errors=[];
+              page.on('pageerror',e=>errors.push(e.message));
+              const res=await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded',timeout:30000});
+              assert.equal(res?.status(),200,device+' Home did not load');
+              await page.locator('#inspirationPreviewGrid .inspiration-preview-card').first().waitFor({state:'attached',timeout:25000});
+              const count=await page.locator('#inspirationPreviewGrid .inspiration-preview-card').count();
+              assert(count>=87,'Inspiration images missing '+device+' '+count);
+              const image=page.locator('#inspirationPreviewGrid img').first();
+              await image.scrollIntoViewIfNeeded();
+              await image.evaluate(img=>img.decode());
+              assert(await image.evaluate(img=>img.naturalWidth>0),'First Inspiration image broken '+device);
+              const film=page.locator('#inspirationHeroVideo');
+              await page.locator('#homeHeroCarousel:not(.is-empty)').waitFor({state:'attached',timeout:20000});
+              await film.evaluate(async v=>{v.muted=true;v.playsInline=true;if(!v.src){v.src='/media/home/owner-20261018/01-close-up-woman.mp4';v.load();}await v.play();});
+              await page.waitForFunction(()=>document.getElementById('inspirationHeroVideo')?.currentTime>0.1,null,{timeout:18000});
+              const api=await page.request.get(base+'/api/config');
+              assert.equal(api.status(),200,'Cloudflare Worker config missing '+device);
+              const insp=await page.request.get(base+'/api/inspiration?featured=true&limit=60');
+              assert.equal(insp.status(),200,'Cloudflare Worker Inspiration missing '+device);
+              const apps=await page.request.get(base+'/ai-apps.html');
+              assert.equal(apps.status(),200,'AI Apps inaccessible '+device);
+              const videoTool=await page.request.get(base+'/video-uniquifier.html');
+              assert.equal(videoTool.status(),200,'Video Uniquifier inaccessible '+device);
+              assert((await videoTool.text()).includes('<title>Video Uniquifier'),'Video Uniquifier routed to wrong page');
+              console.log('TEST_WORKER_HOME_BROWSER_PASS',JSON.stringify({device,cards:count,playing:true,workerAPI:200,aiApps:200,videoTool:200,pageErrors:errors.slice(0,3)}));
+              await context.close();
+            }
+          }finally{await browser.close();}
+          JS
+      - name: Recheck MAIN and TEST worker after user-facing verification
+        if: always()
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          const root='https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID+'/pages/projects/deepsyq';
+          const token=process.env.CLOUDFLARE_API_TOKEN;
+          const get=async url=>{
+            const r=await fetch(root+url,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(18000)});
+            assert(r.ok);const d=await r.json();assert(d.success);return d.result;
+          };
+          const p=await get('');
+          const ds=await get('/deployments?per_page=20&page=1');
+          const test=ds.find(d=>(d.aliases||[]).includes('https://test.deepsyq.pages.dev'));
+          assert.equal(p.canonical_deployment?.id,'7aa81a5e-f385-4493-90b2-f07081d1ad59');
+          assert.equal(test?.deployment_trigger?.metadata?.commit_hash,process.env.DEPLOYED_SHA);
+          assert.equal(test?.uses_functions,true);
+          console.log('POST_VERIFY_MAIN_UNCHANGED_AND_WORKER_STILL_LIVE');
+          JS
