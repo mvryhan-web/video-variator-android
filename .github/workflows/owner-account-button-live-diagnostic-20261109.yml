@@ -1,0 +1,58 @@
+name: Owner read-only LIVE account button diagnostics
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/owner-account-button-live-diagnostic-20261109.yml'
+permissions:
+  contents: read
+jobs:
+  account-nav-readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install browser for public read-only UI test
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Inspect real browser click and target (synthetic identity, no real user data)
+        run: |
+          node --input-type=module <<'JS'
+          import {chromium} from 'playwright';
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try {
+            for(const [name,width,mobile] of [['desktop',1360,false],['mobile',390,true]]){
+              for(const signedIn of [false,true]){
+                const context=await browser.newContext({viewport:{width,height:844},isMobile:mobile,hasTouch:mobile});
+                const page=await context.newPage();
+                if(signedIn){
+                  await page.addInitScript(()=>localStorage.setItem('vv_token','mock-token-no-real-credentials'));
+                  await page.route('**/api/**',async route=>{
+                    const path=new URL(route.request().url()).pathname;
+                    if(path==='/api/me')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({user:{name:'Diagnostic user',email:'diagnostic@example.invalid',id:42,isAdmin:false}})});
+                    if(path==='/api/config')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({googleClientId:'',appleClientId:'',emailAuth:false,billingConfigured:false,features:{},plans:{}})});
+                    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:[],available:0,history:[]})});
+                  });
+                }
+                try{
+                  const errors=[];
+                  page.on('pageerror',e=>errors.push(e.message.slice(0,180)));
+                  const res=await page.goto('https://deepsyq.app/deepsyq.html?owner_account_diagnostic='+Date.now(),{waitUntil:'domcontentloaded',timeout:45000});
+                  await page.locator('#topLogin').waitFor({state:'attached',timeout:10000});
+                  await page.waitForTimeout(900);
+                  const before=await page.evaluate(()=>({button:document.querySelector('#topLogin')?.outerHTML.slice(0,450),tag:document.querySelector('#topLogin')?.tagName,visible:!!document.querySelector('#topLogin')?.getClientRects().length,modalHidden:document.querySelector('#authModal')?.hidden,hash:location.hash}));
+                  await page.locator('#topLogin').click({timeout:15000});
+                  await page.waitForTimeout(1200);
+                  const after=await page.evaluate(()=>({url:location.href,hash:location.hash,modalHidden:document.querySelector('#authModal')?.hidden,visibleProfile:!!document.querySelector('[id=profile], [id=profilePanel], [data-profile]')?.getClientRects().length,accountHeading:[...document.querySelectorAll('h1,h2,[role=dialog]')].filter(e=>e.getClientRects().length).map(e=>e.textContent.trim().slice(0,80)).filter(t=>/account|profile|sign in|my details|аккаунт/i.test(t)).slice(0,5)}));
+                  console.log('ACCOUNT_LIVE_DIAGNOSTIC',JSON.stringify({device:name,signedIn,status:res?.status(),before,after,errors:errors.slice(0,5)}));
+                }catch(err){console.log('ACCOUNT_DIAGNOSTIC_ERROR',JSON.stringify({device:name,signedIn,error:String(err).slice(0,800)}));process.exitCode=1;}
+                finally{await context.close();}
+              }
+            }
+          }finally{await browser.close()}
+          JS
