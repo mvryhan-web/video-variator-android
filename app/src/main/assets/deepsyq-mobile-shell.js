@@ -15,7 +15,7 @@ export function headerAccount(token, lang='en') {
  return {label:labels[lang]||labels.en,href:token?'index.html?view=profile':'deepsyq.html?panel=login'};
 }
 function setupMobileShell() {
-  if(/\/(?:deepsyq|jarvix-chat|generate-studio)\.html$/.test(location.pathname)||location.pathname==='/'){
+  if(/\/(?:deepsyq|jarvix-chat|generate-studio)(?:\.html)?$/.test(location.pathname)||location.pathname==='/'){
     document.body.classList.add('j-action-workspace');
     if(!document.querySelector('link[href="jarvix-action-design.css"]')){const css=document.createElement('link');css.rel='stylesheet';css.href='jarvix-action-design.css';if(matchMedia('(min-width:761px)').matches)css.setAttribute('blocking','render');document.head.append(css);}
   }
