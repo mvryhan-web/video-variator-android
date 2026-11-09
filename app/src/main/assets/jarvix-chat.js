@@ -165,7 +165,7 @@ function sizeChatToVisibleViewport() {
   const height = Math.max(200, Math.floor(bottom - top - 10));
   root.style.setProperty('--j-chat-available-height', height + 'px');
   // Drawer must be less than half the visible phone viewport AND leave chat/input room.
-  const drawerHeight = Math.max(84, Math.min(248, Math.floor((visible?.height || window.innerHeight) * 0.45), Math.floor((height - 170) * 0.68)));
+  const drawerHeight = Math.max(48, Math.min(248, Math.floor((visible?.height || window.innerHeight) * 0.45), Math.floor((height - 170) * 0.68)));
   root.style.setProperty('--j-history-drawer-height', drawerHeight + 'px');
 }
 function watchChatViewport() {
@@ -312,6 +312,9 @@ function initChatMenuDrawer() {
   if (backdrop) backdrop.onclick = () => closeDropdown();
   const closeBtn = $('jDrawerClose');
   if (closeBtn) closeBtn.onclick = () => closeDropdown();
+  $('jInput')?.addEventListener('focus', () => {
+    if (window.matchMedia('(max-width:760px)').matches && !dropdown.hidden) closeDropdown();
+  });
   dropdown.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       closeDropdown();
