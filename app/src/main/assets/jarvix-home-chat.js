@@ -14,7 +14,7 @@ if(form?.hasAttribute('data-jarvix-chat')){
    if(!conversation)conversation=store.create(getJarvixSessionId());
    conversation.title=conversation.messages.length?conversation.title:text.slice(0,60);
    conversation.messages.push({id:makeId(),role:'user',text,mode,files,status:'pending',createdAt:Date.now()});
-   await store.save(conversation);sessionStorage.setItem('jarvix_active_conversation',conversation.id);location.assign('jarvix-chat.html');
+   await store.save(conversation);sessionStorage.setItem('jarvix_active_conversation',conversation.id);location.assign('jarvix-chat.html'+(['image','video','audio'].includes(mode)?'?mode='+mode:''));
   }catch(e){status.textContent=e.message;busy=false;button.disabled=false;}
  }});
  trackViewport(document.getElementById('homeQuickBar'));
