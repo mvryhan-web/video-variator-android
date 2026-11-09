@@ -28,7 +28,7 @@ try{
    const context=await browser.newContext({viewport:{width:layout.width,height:layout.height},isMobile:layout.mobile,hasTouch:layout.mobile});
    await context.addInitScript(()=>{localStorage.setItem('deepsyq_lumina_terms_accepted','true');});
    const page=await context.newPage(),paid=[],errors=[];
-   page.on('pageerror',e=>errors.push(String(e)));
+   page.on('pageerror',e=>errors.push(String(e.stack||e)));
    page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:studio\/jobs|stripe|payments|studio\/estimate)\b/.test(r.url()))paid.push(r.url());});
    try{
     await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded',timeout:30000});
