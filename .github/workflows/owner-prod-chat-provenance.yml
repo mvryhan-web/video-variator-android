@@ -1,0 +1,58 @@
+name: Owner production source provenance read-only
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/owner-prod-chat-provenance.yml'
+permissions:
+  contents: read
+jobs:
+  identify-current-production:
+    if: github.head_ref == 'owner-prod-chat-provenance-20261109' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Inspect canonical Pages deployment provenance without mutations
+        run: |
+          set -euo pipefail
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" > /tmp/pages-project.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const d=JSON.parse(fs.readFileSync('/tmp/pages-project.json','utf8'));
+          if(!d.success||d.result?.production_branch!=='deepsyq-platform')throw Error('Unexpected production');
+          const p=d.result.canonical_deployment;
+          console.log('PROJECT_PRODUCTION',JSON.stringify({branch:d.result.production_branch,primaryDomain:d.result.domains?.map(x=>x.name||x),canonical:{id:p?.id,url:p?.url,commit:p?.deployment_trigger?.metadata?.commit_hash,branch:p?.deployment_trigger?.metadata?.branch}}));
+          if(!p?.id)throw Error('No canonical deployment');
+          fs.appendFileSync(process.env.GITHUB_ENV,'DEPLOYMENT_ID='+p.id+'\n');
+          JS
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq/deployments/$DEPLOYMENT_ID" > /tmp/pages-deployment.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const d=JSON.parse(fs.readFileSync('/tmp/pages-deployment.json','utf8'));
+          if(!d.success)throw Error('Cloudflare deployment not returned');
+          const x=d.result;
+          console.log('DEPLOYMENT_FIELDS',JSON.stringify({keys:Object.keys(x||{}),deployment_trigger:x?.deployment_trigger,source:x?.source,manifest_kind:typeof x?.manifest,manifest_entry_count:typeof x?.manifest==='object'?Object.keys(x.manifest).length:null,metadataKeys:Object.keys(x?.metadata||{}),build_config_keys:Object.keys(x?.build_config||{})}));
+          JS
+      - name: Check tracked historical composer variants against currently served file
+        run: |
+          python3 - <<'PY'
+          import subprocess,urllib.request,hashlib
+          url='https://deepsyq.app/jarvix-composer-design.js'
+          raw=urllib.request.urlopen(url,timeout=12).read()
+          print('CURRENT_FILE',{'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()[:16],'video_uniquifier_entries':raw.count(b"['Video Uniquifier','index.html','legacy']")})
+          path='app/src/main/assets/jarvix-composer-design.js'
+          refs=subprocess.check_output(['git','log','--all','--format=%H','--',path],text=True).splitlines()
+          print('SEARCH_HISTORY',len(refs))
+          found=[]
+          for h in refs[:300]:
+            try:
+              b=subprocess.check_output(['git','show',h+':'+path],stderr=subprocess.DEVNULL)
+              if b==raw:found.append(h)
+            except subprocess.CalledProcessError:pass
+          print('MATCHING_HISTORICAL_SHA',found[:8])
+          PY
