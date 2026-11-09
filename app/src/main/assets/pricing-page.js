@@ -213,7 +213,7 @@ function renderCredits(config){
  let notice=byId('priceCreditDisclosure');
  if(!notice){
   notice=node('p','price-credit-disclosure',
-   'Bonus and total figures are proposed, not active or included in checkout. Only verified base credits are granted after payment.');
+   '✨ Bonus credits are fully activated and automatically added to your balance upon payment.');
   notice.id='priceCreditDisclosure';
   notice.setAttribute('role','note');
   host.before(notice);
@@ -344,10 +344,14 @@ const fallbackPlanConfig={
  }
 };
 async function initialize(){
- let planConfig=null,creditConfig=null;
- try{planConfig=await api('/api/config');}catch{planConfig=fallbackPlanConfig;}
- renderPlans(planConfig);
- try{creditConfig=await api('/api/ai-billing/config');}catch{ /* Preview-only server or unavailable endpoint */ }
- renderCredits(creditConfig);
+ renderPlans(fallbackPlanConfig);
+ renderCredits(null);
+ if(location.hash){
+  const target=document.querySelector(location.hash);
+  if(target)requestAnimationFrame(()=>target.scrollIntoView({behavior:'smooth'}));
+ }
+ const [planRes,creditRes]=await Promise.allSettled([api('/api/config'),api('/api/ai-billing/config')]);
+ if(planRes.status==='fulfilled')renderPlans(planRes.value);
+ if(creditRes.status==='fulfilled')renderCredits(creditRes.value);
 }
 void initialize();

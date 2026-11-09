@@ -1,3 +1,14 @@
+# ==============================================================================
+# D31 / OWNER RULE — 2026-11-09 — PERMANENT LOCK: PRICING & AI CREDITS FREEZE
+# ==============================================================================
+**STRICT PERMANENT RULE FOR ALL AGENTS, COPILOT, ADMINISTRATOR, P, AND ASSISTANTS:**
+1. Under no circumstances may any agent or assistant modify:
+   - \pricing.html   - \pricing-page.js   - \pricing-page.css   - \pricing-wallet.js   - \pricing-wallet.css   - AI credit packages, pricing, or checkout configurations in \_worker.js   WITHOUT DIRECT, EXPLICIT, UNAMBIGUOUS WRITTEN APPROVAL FROM THE DEEPSYQ OWNER.
+2. Bonus credits (1,000+200, 10,000+3,333, etc.) are permanently active and included.
+3. No agent may alter these pages or backend pricing routes during any future task.
+
+---
+
 # OWNER D30 — 2026-11-09 — GRAPHIFY + LATEST INTEGRATED BASELINE
 Before changing code, follow [docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md](../docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md): read today's DEV HEAD, verify Graphify map `source_sha`, reconcile actual deployed TEST SHA, then branch from CURRENT integrated DEV. Never overwrite newer approved changes with yesterday's snapshot. This is required for Administrator, P, Antigravity and future agents, subject to the current owner release permissions. Graphify map is navigation, NOT a real-time task ledger or release proof.
 

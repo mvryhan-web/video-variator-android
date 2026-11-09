@@ -1,3 +1,14 @@
+# ==============================================================================
+# D31 / OWNER RULE — 2026-11-09 — PERMANENT LOCK: PRICING & AI CREDITS FREEZE
+# ==============================================================================
+**STRICT PERMANENT RULE FOR ALL AGENTS, COPILOT, ADMINISTRATOR, P, AND ASSISTANTS:**
+1. Under no circumstances may any agent or assistant modify:
+   - \pricing.html   - \pricing-page.js   - \pricing-page.css   - \pricing-wallet.js   - \pricing-wallet.css   - AI credit packages, pricing, or checkout configurations in \_worker.js   WITHOUT DIRECT, EXPLICIT, UNAMBIGUOUS WRITTEN APPROVAL FROM THE DEEPSYQ OWNER.
+2. Bonus credits (1,000+200, 10,000+3,333, etc.) are permanently active and included.
+3. No agent may alter these pages or backend pricing routes during any future task.
+
+---
+
 
 # ==============================================================================
 # JARVIX SINGLE CHAT — PERMANENT RULE (ВЛАДЕЛЕЦ DEEPSYQ)
