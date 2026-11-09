@@ -108,7 +108,7 @@ jobs:
           }
           const pages=fs.readdirSync('app/src/main/assets').filter(name=>name.endsWith('.html')&&name!=='404.html');
           assert.equal(pages.length,33);
-          const htmlTitle = html => (html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i)||[])[1]?.trim();
+          const htmlTitle = html => (html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)||[])[1]?.trim();
           for (const name of pages){
             const res=await request('/'+name);
             assert.equal(res.status,200,'HTML route broken: '+name);
