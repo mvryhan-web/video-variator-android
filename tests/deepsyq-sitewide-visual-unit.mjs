@@ -52,7 +52,7 @@ test('every secondary navigation destination exists; pending features are not li
   assert.ok(file.endsWith('.html'),url);
   assert.doesNotThrow(()=>readFileSync(new URL(file,root),'utf8'),url);
  }
- for(const required of ['generate-studio.html?studio=image','generate-studio.html?studio=video',
+ for(const required of ['generate-studio.html?studio=image','index.html',
    'generate-studio.html?studio=audio','canvas.html',
    'generate-studio.html?view=history','free-tools.html','ai-apps.html']) assert.ok(urls.includes(required),required);
 });

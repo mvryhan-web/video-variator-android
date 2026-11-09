@@ -109,3 +109,9 @@ body.ds-embedded-uniquifier.ds-vu-nav-collapsed .ds-site-mobile-toggle{left:23px
   transform:none!important;white-space:nowrap!important;
  }
 }
+
+/* Owner 09 Nov: the sidebar now names this tool, so hide the redundant
+   upper Video Uniquifier banner while retaining its DOM initialization hook. */
+body.ds-embedded-uniquifier #dashboardView > .hero.card {
+  display: none !important;
+}
