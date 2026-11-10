@@ -47,23 +47,23 @@ function patchTarget(name,text){
     assert(text.includes("url:'video-uniquifier.html', key: 'legacy'"));
   }else if(name==='deepsyq-mobile-shell.js'){
     text=ensure(text,"href:token?'index.html?view=profile':'deepsyq.html?panel=login'",
-      "href:token?'video-uniquifier.html?view=profile':'deepsyq.html?panel=login'",'mobile shell Account');
+      "href:token?'video-uniquifier.html#profile':'deepsyq.html?panel=login'",'mobile shell Account');
     assert(!text.includes('index.html?view=profile'));
   }else if(name==='deepsyq-unified-platform-header.js'){
-    text=text.replaceAll('video-uniquifier.html#profile','video-uniquifier.html?view=profile');
+    text=text.replaceAll('video-uniquifier.html?view=profile','video-uniquifier.html#profile');
     if(!text.includes("if (login.tagName === 'A') login.href = token ?")){
       const anchor='  right.append(login);';
       assert(text.includes(anchor),'Shared header Account insertion point missing');
       text=text.replace(anchor,
-        "  if (login.tagName === 'A') login.href = token ? 'video-uniquifier.html?view=profile' : 'deepsyq.html?panel=login';\n"+anchor);
+        "  if (login.tagName === 'A') login.href = token ? 'video-uniquifier.html#profile' : 'deepsyq.html?panel=login';\n"+anchor);
     }
-    const outdated="    if (tkn) login.onclick = (e) => { e.preventDefault(); location.assign('video-uniquifier.html?view=profile'); };";
+    const outdated="    if (tkn) login.onclick = (e) => { e.preventDefault(); location.assign('video-uniquifier.html#profile'); };";
     if(text.includes(outdated))text=text.replace(outdated,
-      "    if (login.tagName === 'A') login.href = tkn ? 'video-uniquifier.html?view=profile' : 'deepsyq.html?panel=login';");
+      "    if (login.tagName === 'A') login.href = tkn ? 'video-uniquifier.html#profile' : 'deepsyq.html?panel=login';");
     assert(text.includes("if (login.tagName === 'A') login.href = token ?"),'Account anchor not normalized');
   }else if(name==='deepsyq.js'){
-    text=text.replaceAll('video-uniquifier.html#profile','video-uniquifier.html?view=profile');
-    assert(text.includes("if(localStorage.getItem('vv_token'))location.assign('video-uniquifier.html?view=profile')"),'Home Account button not corrected');
+    text=text.replaceAll('video-uniquifier.html?view=profile','video-uniquifier.html#profile');
+    assert(text.includes("if(localStorage.getItem('vv_token'))location.assign('video-uniquifier.html#profile')"),'Home Account button not corrected');
     assert(text.includes('else openAuth()'),'Guest login must remain functional');
   }
   return text;
@@ -82,7 +82,7 @@ if(mode==='prepare'){
   assert.equal(settings.status,200,'Cannot check current production Worker settings');
   execFileSync('git',['fetch','--no-tags','origin','deepsyq-platform']);
   const dev=git('rev-parse','FETCH_HEAD');
-  for(const sha of ['c442f160df8bc962a12c04811a13a234351f52f9','c4ff242e1a284282d2d4e89941da82e15b5411e9']){
+  for(const sha of ['c442f160df8bc962a12c04811a13a234351f52f9','c4ff242e1a284282d2d4e89941da82e15b5411e9','569e5f64aec49552d4448d94cfae9d6b77b5ce2d']){
     execFileSync('git',['merge-base','--is-ancestor',sha,dev]);
   }
   const oldWorker=git('rev-parse',oldSHA+':app/src/main/assets/_worker.js');
@@ -212,7 +212,7 @@ else if(mode==='preview'||mode==='main'){
         assert.equal(initial.status(),200,label+' start');
         await page.locator('#topLogin').waitFor({state:'visible',timeout:18000});
         await page.locator('#topLogin').click({timeout:12000});
-        await page.waitForURL(u=>u.pathname==='/video-uniquifier.html'&&u.searchParams.get('view')==='profile',{timeout:15000});
+        await page.waitForURL(u=>u.pathname==='/video-uniquifier.html'&&u.hash==='#profile',{timeout:15000});
         await page.locator('#profileView').waitFor({state:'visible',timeout:20000});
         console.log('LIVE_ACCOUNT_FIRST_CLICK_PASS',mode,label);
       }finally{await ctx.close()}
