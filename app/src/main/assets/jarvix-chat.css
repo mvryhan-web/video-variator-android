@@ -1857,3 +1857,42 @@ main.jarvix-chat #jChatDropdown .j-drawer-account-copy small {
   white-space:nowrap!important;
   text-overflow:ellipsis!important;
 }
+
+
+/* JARVIX: history scroll ends ABOVE its account footer, including short phone viewports. */
+main.jarvix-chat #jChatDropdown .j-drawer-panel {
+  grid-template-rows:max-content max-content max-content max-content max-content minmax(0,1fr) max-content!important;
+  overflow:hidden!important;
+}
+main.jarvix-chat #jChatDropdown #jMenuHistoryList:not([hidden]) {
+  display:flex!important;
+  grid-area:history!important;
+  align-self:stretch!important;
+  height:100%!important;
+  max-height:100%!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior-y:contain!important;
+  touch-action:pan-y!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-footer {
+  grid-area:footer!important;
+  align-self:end!important;
+  position:relative!important;
+  z-index:3!important;
+  flex-shrink:0!important;
+  overflow:visible!important;
+}
+/* With history expanded on a phone, temporarily free vertical room by hiding
+   only the Image/Video/Audio shortcuts. They reappear when history collapses. */
+@media (max-width:760px) {
+  main.jarvix-chat #jChatDropdown .j-drawer-panel:has(#jDrawerHistoryToggle[aria-expanded="true"]) .j-drawer-quick-nav [data-j-drawer-mode] {
+    display:none!important;
+  }
+}
+@media (min-width:761px) and (max-height:700px) {
+  main.jarvix-chat #jChatDropdown .j-drawer-panel:has(#jDrawerHistoryToggle[aria-expanded="true"]) .j-drawer-quick-nav [data-j-drawer-mode] {
+    display:none!important;
+  }
+}
