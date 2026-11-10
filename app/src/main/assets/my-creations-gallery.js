@@ -104,7 +104,15 @@ function compactBtn(title,svg,onClick,pressed=false){
  if(pressed)b.setAttribute('aria-pressed','true');
  b.innerHTML=svg;b.addEventListener('click',event=>{event.stopPropagation();onClick()});return b;
 }
-function showOne(item){state.selectedId=item.key;$('mcDetail').hidden=false;render();}
+function showOne(item){
+ state.selectedId=item.key;
+ const detail=$('mcDetail');
+ const header=document.querySelector('.ws-site-header');
+ if(window.matchMedia('(max-width:820px)').matches&&header){
+  detail.style.setProperty('--mc-header-bottom',Math.max(0,Math.ceil(header.getBoundingClientRect().bottom))+'px');
+ }
+ detail.hidden=false;render();
+}
 function buildCard(item){
  const el=document.createElement('article');el.className='mc-card'+(item.wide?' mc-wide':'');el.dataset.key=item.key;
  el.setAttribute('aria-selected',String(item.key===state.selectedId));
