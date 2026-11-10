@@ -48,6 +48,19 @@ jobs:
           deployment=check('/pages/projects/deepsyq/deployments/'+ident,'deployment')
           assert deployment and deployment.get('uses_functions')==True, 'Production Worker missing'
           print('CF_READ_ONLY deployment_meta',{'id':ident,'uses_functions':True,'url':deployment.get('url'),'asset_count':len(deployment.get('files') or {})})
+          trigger=deployment.get('deployment_trigger') or {}
+          print('CF_READ_ONLY source_metadata',{'type':trigger.get('type'),
+             'commit_hash':(trigger.get('metadata') or {}).get('commit_hash'),
+             'commit_dirty':(trigger.get('metadata') or {}).get('commit_dirty'),
+             'environment':deployment.get('environment'),
+             'project_source_type':(p.get('source') or {}).get('type')})
+          import subprocess
+          for file in ['home-inspiration.js','deepsyq.js','ai-apps.js']:
+            key='/'+file
+            raw=open('app/src/main/assets/'+file,'rb').read()
+            print('CF_READ_ONLY task_file',file,{'exists_in_live':key in deployment.get('files',{}),
+              'new_hash_matches_live':deployment.get('files',{}).get(key)==blake3(raw+file.rsplit('.',1)[-1].encode()).hexdigest()[:32]})
+
           for end,label in [
             ('/workers/scripts/'+script+'/versions','worker_versions'),
             ('/workers/scripts/'+script+'/deployments','worker_deployments'),
