@@ -76,6 +76,20 @@ jobs:
                     print('CF_READ_ONLY active_version',{'status':vcheck.status_code,'success':vd.get('success'),
                           'etag':(vs.get('resources') or {}).get('script',{}).get('etag'),
                           'errors':[z.get('code') for z in vd.get('errors') or []]})
+                    beta=S.get(base+'/workers/workers/'+script+'/versions/'+version,
+                      params={'include':'modules'},timeout=20)
+                    try:
+                      bj=beta.json()
+                      br=bj.get('result') or {}
+                      mods=br.get('modules') or []
+                      print('CF_READ_ONLY worker_beta_modules',{
+                        'status':beta.status_code,'success':bj.get('success'),
+                        'keys':sorted(br.keys()) if isinstance(br,dict) else [],
+                        'module_count':len(mods),'module_types':[str(x.get('type','')) for x in mods if isinstance(x,dict)],
+                        'error_codes':[z.get('code') for z in bj.get('errors') or []]})
+                    except Exception:
+                      print('CF_READ_ONLY worker_beta_content_type',beta.status_code,
+                        beta.headers.get('content-type','')[:64])
             except Exception as error:print('CF_READ_ONLY '+label+' exception '+type(error).__name__)
           expected=(deployment.get('files') or {}).get('/404.html') or (deployment.get('files') or {}).get('404.html')
           print('CF_READ_ONLY has_404_in_manifest',bool(expected))
