@@ -225,6 +225,8 @@ async function check(mode){
      promptTemplate:'Create a high quality image with a creative effect, sample '+(i+1),
      defaultSettings:{ratio:'1:1'}
    }));
+   // Intercept the target Studio document only in QA: verify navigation without loading costly Studio startup.
+   await ctx.route('**/generate-studio.html*',r=>r.fulfill({status:200,contentType:'text/html',body:'<!doctype html><title>QA Studio landing</title>'}));
    await ctx.route('**/api/templates*',r=>r.fulfill({
     status:200,contentType:'application/json',body:JSON.stringify({items:fixtures})
    }));
@@ -251,7 +253,7 @@ async function check(mode){
     await first.locator('summary').click();
     assert(await first.locator('.template-preview-content').isVisible(),'Preview does not expand');
     await first.getByRole('button',{name:'Use template'}).click();
-    await page.waitForURL(u=>u.pathname.endsWith('/generate-studio.html')&&u.searchParams.get('from')==='template',{timeout:16000});
+    await page.waitForURL(u=>u.pathname.endsWith('/generate-studio.html')&&u.searchParams.get('from')==='template',{timeout:12000,waitUntil:'commit'});
     console.log('OWNER_AI_APPS_EIGHT_CARDS_BROWSER_PASS',mode,form);
    }finally{await ctx.close()}
   }
