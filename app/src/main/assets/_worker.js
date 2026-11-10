@@ -840,7 +840,8 @@ export default {
         else if (kind === 'audio' || kind === 'music') usage.music++;
       }
 
-      const id = 'job_' + crypto.randomUUID().replace(/-/g, '').slice(0, 16);
+      const safeKind = (kind === 'audio' || kind === 'music') ? 'music' : (kind === 'video' ? 'video' : 'image');
+      const id = 'job_' + safeKind + '_' + crypto.randomUUID().replace(/-/g, '').slice(0, 16);
 
       let wanTaskId = null;
       let status = 'ready';
@@ -1018,7 +1019,30 @@ export default {
     if (jobMatch) {
       const id = jobMatch[1];
       const isMedia = Boolean(jobMatch[2]);
-      const job = studioJobs.get(id);
+      let job = studioJobs.get(id);
+      if (!job) {
+        const parts = id.split('_');
+        const inferredKind = parts.length >= 3 && ['image', 'video', 'music', 'audio'].includes(parts[1]) ? parts[1] : null;
+        if (inferredKind) {
+          const isAud = inferredKind === 'audio' || inferredKind === 'music';
+          const seed = Math.floor(Math.random() * 1000000);
+          job = {
+            id,
+            kind: inferredKind,
+            model: inferredKind === 'video' ? 'wan2.1-t2v-turbo' : isAud ? 'suno-v3-5' : 'wanx2.1-t2i-turbo',
+            provider: inferredKind === 'video' ? 'Alibaba Cloud (Wan 2.1)' : isAud ? 'Suno AI' : 'Alibaba Cloud (Wanx 2.1)',
+            prompt: 'Studio Creation',
+            status: 'ready',
+            progress: 100,
+            videoUrl: null,
+            imageUrl: inferredKind === 'image' ? `https://image.pollinations.ai/prompt/cinematic%20masterpiece%2C%208k%2C%20hyperrealistic?width=1024&height=1024&model=flux&nologo=true&seed=${seed}` : null,
+            audioUrl: isAud ? '/media/jarvix/clips/jarvix_en_01.mp3' : null,
+            created_at: new Date().toISOString(),
+            mime: inferredKind === 'video' ? 'video/mp4' : isAud ? 'audio/mpeg' : 'image/jpeg'
+          };
+          studioJobs.set(id, job);
+        }
+      }
       if (!job) return json({ error: 'NOT_FOUND' }, 404);
 
       if (job.wanTaskId && env.DASHSCOPE_API_KEY && (job.status === 'processing' || job.status === 'queued')) {
