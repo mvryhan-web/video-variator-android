@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `644863da8f6bcdea8366a33a563ae6983d794572`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `53a526ea592ddef124031642aa1e18f8e15d4bdf`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 119 | Named symbols: 391 | Checked relations: 74
 
 ## Topic finder (matching filenames)
@@ -146,7 +146,7 @@ replies (L2)
 
 ### `app/src/main/assets/jarvix-owner-speech.js`
 
-actionAudio (L5) · actionWords (L5) · OWNER_GREETING_TEXT (L30) · TOUR_GREETING_TEXT (L31)
+actionAudio (L6) · actionWords (L6) · OWNER_GREETING_TEXT (L31) · TOUR_GREETING_TEXT (L32)
 
 ### `app/src/main/assets/jarvix-studio-page.js`
 
