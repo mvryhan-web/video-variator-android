@@ -1407,164 +1407,258 @@ body.ds-sidebar-collapsed :is(.topbar, .content > .top, header.top, body > heade
 }
 
 
-/* Existing JARVIX Chat: history is in the layout, never a modal or a new chat. */
+/* OWNER APPROVED JARVIX MENU — same chat and history, desktop + mobile references, 2026-11-10.
+   Only JARVIX Chat is affected. Home, Pricing, Video Uniquifier and other layouts are unchanged. */
 body:has(> main.jarvix-chat){overflow:hidden!important}
 main.jarvix-chat{
- display:grid!important;grid-template-columns:minmax(0,1fr)!important;
- grid-template-rows:auto auto minmax(0,1fr) auto!important;
- align-content:stretch!important;max-width:none!important;min-height:0!important;
- height:calc(var(--j-viewport,100dvh) - 102px)!important;
- box-sizing:border-box!important;padding:12px 18px 20px!important;overflow:hidden!important;
-}
-main.jarvix-chat:has(> #jChatDropdown:not([hidden])){
- grid-template-columns:minmax(250px,272px) minmax(0,1fr)!important;
-}
-.jarvix-chat > .j-chat-toolbar{
- grid-column:1/-1!important;grid-row:1!important;
- position:relative!important;z-index:30!important;min-width:0!important;margin-bottom:8px!important;
-}
-.jarvix-chat .j-title-menu-btn,.jarvix-chat .j-title-brand-text,.jarvix-chat .j-title-mode-badge{
- opacity:1!important;filter:none!important;
-}
-.jarvix-chat > #jWorkspacePane{grid-column:1!important;grid-row:2!important;min-width:0!important}
-.jarvix-chat:has(> #jChatDropdown:not([hidden])) > #jWorkspacePane{grid-column:2!important}
-.jarvix-chat > #jMessages{
- grid-column:1!important;grid-row:3!important;min-width:0!important;min-height:0!important;
- overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;
-}
-.jarvix-chat:has(> #jChatDropdown:not([hidden])) > #jMessages{grid-column:2!important}
-.jarvix-chat #jEmptyHero{min-height:0!important;flex:1 1 auto!important}
-.jarvix-chat > .j-chat-bottom{
- grid-column:1!important;grid-row:4!important;align-self:end!important;
- min-width:0!important;max-width:840px!important;width:100%!important;
- margin:0 auto!important;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;
- box-sizing:border-box!important;
-}
-.jarvix-chat:has(> #jChatDropdown:not([hidden])) > .j-chat-bottom{grid-column:2!important}
-.jarvix-chat > #jChatDropdown{
- position:relative!important;inset:auto!important;z-index:20!important;
- grid-column:1!important;grid-row:2/5!important;align-self:stretch!important;
- display:flex!important;width:100%!important;height:auto!important;
- min-height:0!important;max-width:none!important;overflow:hidden!important;
- opacity:1!important;transition:none!important;
-}
-.jarvix-chat > #jChatDropdown[hidden]{display:none!important}
-.jarvix-chat #jDropdownBackdrop{display:none!important}
-.jarvix-chat #jChatDropdown .j-drawer-panel{
- position:relative!important;inset:auto!important;display:flex!important;flex-direction:column!important;
- box-sizing:border-box!important;flex:1 1 auto!important;width:100%!important;max-width:none!important;
- height:100%!important;min-height:0!important;max-height:none!important;overflow:hidden!important;
- padding:12px 10px!important;background:#081226!important;
- border:0!important;border-right:1px solid rgba(56,189,248,.28)!important;border-radius:0!important;
- box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
- animation:none!important;transform:none!important;
-}
-.jarvix-chat #jChatDropdown .j-drawer-history-list{
- flex:1 1 auto!important;min-height:0!important;overflow-x:hidden!important;overflow-y:auto!important;
- scrollbar-width:thin;
-}
-.jarvix-chat #jChatDropdown .j-conv-info{min-width:0!important}
-.jarvix-chat #jChatDropdown .j-conv-title{
- min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
-}
-.jarvix-chat .j-drawer-account{
- display:flex!important;align-items:center!important;flex:0 0 auto!important;
- min-height:46px!important;margin-top:10px!important;padding:9px 12px!important;
- border-top:1px solid rgba(148,163,184,.22)!important;color:#dcecff!important;
- text-decoration:none!important;font-size:13px!important;font-weight:600!important;
-}
-.jarvix-chat .j-drawer-account:hover{color:#79e5ff!important;background:#162743!important}
-
-/* On narrow screens the same history opens BELOW the JARVIX title.
-   It never covers the header, conversation or fixed original composer. */
-@media(max-width:760px){
- body.ds-mobile-layout main.jarvix-chat,main.jarvix-chat{
-  grid-template-columns:minmax(0,1fr)!important;
-  grid-template-rows:auto auto auto minmax(0,1fr) auto!important;
-  height:calc(var(--j-viewport,100dvh) - 132px - env(safe-area-inset-top,0px))!important;
-  padding:8px 10px calc(12px + env(safe-area-inset-bottom,0px))!important;
- }
- main.jarvix-chat:has(> #jChatDropdown:not([hidden])){grid-template-columns:minmax(0,1fr)!important}
- .jarvix-chat > #jChatDropdown{
-  grid-column:1!important;grid-row:2!important;height:min(38dvh,300px)!important;
-  min-height:0!important;
- }
- .jarvix-chat #jChatDropdown .j-drawer-panel{
-  width:100%!important;max-width:none!important;padding:8px 12px!important;
-  border:1px solid rgba(56,189,248,.26)!important;border-radius:12px!important;
- }
- .jarvix-chat > #jWorkspacePane,.jarvix-chat:has(> #jChatDropdown:not([hidden])) > #jWorkspacePane{
-  grid-column:1!important;grid-row:3!important;
- }
- .jarvix-chat > #jMessages,.jarvix-chat:has(> #jChatDropdown:not([hidden])) > #jMessages{
-  grid-column:1!important;grid-row:4!important;
- }
- .jarvix-chat > .j-chat-bottom,.jarvix-chat:has(> #jChatDropdown:not([hidden])) > .j-chat-bottom{
-  grid-column:1!important;grid-row:5!important;
- }
-}
-
-
-/* The existing mobile JARVIX platform header and its spacer are 156px,
-   not the standard 132px mobile shell. Keep the original composer onscreen. */
-@media(max-width:760px){
- body.j-action-workspace.ds-mobile-layout main.jarvix-chat{
-  height:calc(var(--j-viewport,100dvh) - 156px - env(safe-area-inset-top,0px))!important;
- }
-}
-
-
-/* JARVIX single-chat viewport lock. Actual top offset is measured by
-   existing jarvix-chat.js after the platform shell places the header. */
-main.jarvix-chat{
+ position:relative!important;display:grid!important;align-content:stretch!important;
+ grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto minmax(0,1fr) auto!important;
+ max-width:none!important;min-height:0!important;
  height:var(--j-chat-available-height,calc(100dvh - 102px))!important;
  max-height:var(--j-chat-available-height,calc(100dvh - 102px))!important;
- min-height:0!important;
+ box-sizing:border-box!important;padding:10px 16px 12px!important;overflow:hidden!important;
 }
-.jarvix-chat > #jMessages{
- min-height:0!important;
- overflow-y:auto!important;
- overscroll-behavior:contain!important;
+main.jarvix-chat:has(> #jChatDropdown:not([hidden])){
+ grid-template-columns:clamp(300px,24vw,350px) minmax(0,1fr)!important;
+ column-gap:14px!important;
 }
-.jarvix-chat > .j-chat-bottom{
- position:relative!important;
- z-index:15!important;
- align-self:end!important;
- margin-top:0!important;
- margin-bottom:0!important;
- flex-shrink:0!important;
+main.jarvix-chat > .j-chat-toolbar{
+ grid-column:1/-1!important;grid-row:1!important;position:relative!important;
+ z-index:50!important;min-width:0!important;margin-bottom:8px!important;isolation:isolate!important;
 }
+main.jarvix-chat .j-title-menu-btn,main.jarvix-chat .j-title-brand-text,main.jarvix-chat .j-title-mode-badge{
+ opacity:1!important;filter:none!important;
+}
+main.jarvix-chat .j-title-mode-badge{
+ font-weight:700!important;letter-spacing:.1px!important;text-transform:none!important;
+}
+main.jarvix-chat > #jWorkspacePane{grid-column:1!important;grid-row:2!important;min-width:0!important}
+main.jarvix-chat:has(> #jChatDropdown:not([hidden])) > #jWorkspacePane{grid-column:2!important}
+main.jarvix-chat > #jMessages{
+ grid-column:1!important;grid-row:3!important;min-width:0!important;min-height:0!important;
+ overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;
+ scrollbar-width:thin;
+}
+main.jarvix-chat:has(> #jChatDropdown:not([hidden])) > #jMessages{grid-column:2!important}
+main.jarvix-chat .j-empty{min-width:0!important}
+main.jarvix-chat > .j-chat-bottom{
+ grid-column:1!important;grid-row:4!important;position:relative!important;
+ z-index:15!important;align-self:end!important;justify-self:center!important;
+ width:100%!important;max-width:840px!important;min-width:0!important;min-height:0!important;
+ margin:0!important;padding:9px 12px calc(8px + env(safe-area-inset-bottom,0px))!important;
+ box-sizing:border-box!important;border:1.5px solid #dca137!important;border-radius:27px!important;
+ background:linear-gradient(125deg,rgba(9,21,44,.97),rgba(6,13,32,.98))!important;
+ box-shadow:0 0 14px #dca13736,inset 0 0 14px #dca13712!important;
+}
+main.jarvix-chat:has(> #jChatDropdown:not([hidden])) > .j-chat-bottom{grid-column:2!important}
+main.jarvix-chat .j-chat-bottom .jarvix-compose{
+ border:0!important;background:transparent!important;box-shadow:none!important;
+}
+main.jarvix-chat .j-chat-bottom .jarvix-compose textarea#jInput{
+ min-width:0!important;max-width:100%!important;
+}
+/* The existing drawer is a grid item on desktop, never a modal. */
+main.jarvix-chat > #jChatDropdown{
+ position:relative!important;inset:auto!important;z-index:20!important;
+ grid-column:1!important;grid-row:2/5!important;align-self:stretch!important;
+ display:flex!important;width:100%!important;max-width:none!important;height:100%!important;
+ max-height:none!important;min-height:0!important;overflow:hidden!important;
+ opacity:1!important;transition:none!important;
+}
+main.jarvix-chat > #jChatDropdown[hidden]{display:none!important}
+main.jarvix-chat #jDropdownBackdrop{display:none!important}
+main.jarvix-chat #jChatDropdown .j-drawer-panel{
+ position:relative!important;inset:auto!important;z-index:1!important;
+ display:flex!important;flex-direction:column!important;flex:1 1 auto!important;
+ width:100%!important;min-width:0!important;max-width:none!important;
+ height:100%!important;max-height:none!important;min-height:0!important;
+ padding:12px 14px!important;box-sizing:border-box!important;overflow:hidden!important;
+ border:1px solid transparent!important;border-radius:24px!important;
+ background:linear-gradient(170deg,#071229,#09142c 72%,#0c1027) padding-box,
+ linear-gradient(135deg,#06ceef,#5045a3 52%,#c88d35) border-box!important;
+ box-shadow:0 8px 25px #0007!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ animation:none!important;transform:none!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-header{
+ display:none!important;flex:0 0 auto!important;
+ align-items:center!important;justify-content:space-between!important;
+ margin:0 0 12px!important;padding:0!important;border:0!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-heading{font-size:21px!important;font-weight:800!important;color:#f3f8ff!important}
+main.jarvix-chat #jChatDropdown .j-drawer-close{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ width:38px!important;height:38px!important;padding:0!important;
+ color:#e6efff!important;background:#182441!important;
+ border:1px solid #536ca6!important;border-radius:12px!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-action-row{flex:0 0 auto!important;margin:0 0 13px!important}
+main.jarvix-chat #jChatDropdown .j-drawer-new-item{
+ width:100%!important;min-height:48px!important;padding:10px 16px!important;
+ display:flex!important;align-items:center!important;justify-content:flex-start!important;
+ gap:13px!important;border:1px solid #ffcd6d!important;border-radius:999px!important;
+ background:linear-gradient(130deg,#ffcc5b,#efad2c)!important;
+ color:#10172c!important;font-size:14px!important;font-weight:750!important;
+ box-shadow:0 2px 10px #e8a62f35!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-plus{font-size:23px!important;color:#10172c!important}
+main.jarvix-chat #jChatDropdown .j-drawer-quick-nav{
+ display:flex!important;flex-direction:column!important;flex:0 0 auto!important;
+ gap:1px!important;padding:0 0 12px!important;margin:0 2px 10px!important;
+ border-bottom:1px solid #66789955!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-nav-item{
+ width:100%!important;min-height:36px!important;display:flex!important;
+ align-items:center!important;gap:13px!important;padding:5px 7px!important;
+ border:0!important;border-radius:9px!important;background:transparent!important;
+ box-shadow:none!important;color:#eaf1ff!important;cursor:pointer!important;
+ text-align:left!important;font:600 13px/1.35 system-ui,sans-serif!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-nav-item:hover{
+ background:#2132529a!important;color:#fff!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-nav-icon{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ width:21px!important;min-width:21px!important;color:#ffc34d!important;font-size:20px!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-nav-arrow{
+ margin-left:auto!important;font-size:22px!important;font-weight:400!important;color:#b8cce7!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-conversations-head{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ min-height:31px!important;flex:0 0 auto!important;padding:0 6px!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-subhead{
+ color:#dbe8ff!important;font-size:13px!important;font-weight:750!important;
+ padding:4px 0!important;letter-spacing:.02em!important;text-transform:none!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-conversation-actions{
+ display:flex!important;align-items:center!important;gap:5px!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-conversation-actions button{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ width:27px!important;height:27px!important;border:0!important;border-radius:7px!important;
+ background:transparent!important;color:#c9dcf7!important;font-size:21px!important;
+ cursor:pointer!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-conversation-actions button:hover{background:#243758!important}
+main.jarvix-chat #jChatDropdown .j-drawer-search{
+ flex:0 0 auto!important;width:100%!important;min-height:34px!important;max-height:34px!important;
+ margin:4px 0 6px!important;padding:5px 9px!important;border:1px solid #4b618c!important;
+ border-radius:9px!important;background:#101b35!important;color:#f3f6fc!important;font-size:12px!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-search[hidden]{display:none!important}
+main.jarvix-chat #jChatDropdown .j-drawer-history-list{
+ display:flex!important;flex-direction:column!important;gap:3px!important;
+ flex:1 1 auto!important;min-height:0!important;max-height:none!important;
+ padding:3px 2px!important;overflow-y:auto!important;overflow-x:hidden!important;
+ overscroll-behavior:contain!important;scrollbar-width:thin;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-history-group{
+ margin:6px 6px 3px!important;color:#92a6c3!important;font-size:11px!important;font-weight:700!important;
+}
+main.jarvix-chat #jChatDropdown .j-dropdown-conv-item{
+ min-height:34px!important;padding:7px 6px!important;flex:0 0 auto!important;
+}
+main.jarvix-chat #jChatDropdown .j-conv-info{min-width:0!important}
+main.jarvix-chat #jChatDropdown .j-conv-title{
+ white-space:nowrap!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+main.jarvix-chat #jChatDropdown .j-conv-date{font-size:10px!important;margin-left:6px!important}
+main.jarvix-chat #jChatDropdown .j-drawer-footer{
+ flex:0 0 auto!important;display:flex!important;flex-direction:column!important;gap:1px!important;
+ padding-top:8px!important;margin-top:9px!important;border-top:1px solid #66789955!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-footer-item{
+ width:100%!important;min-height:36px!important;display:flex!important;align-items:center!important;
+ gap:12px!important;padding:6px 9px!important;border:0!important;border-radius:8px!important;
+ background:transparent!important;color:#e5edfd!important;text-decoration:none!important;
+ text-align:left!important;font:600 12px/1.4 system-ui,sans-serif!important;cursor:pointer!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-footer-item>span:first-child{
+ width:21px!important;min-width:21px!important;color:#e5efff!important;font-size:19px!important;text-align:center!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-footer-item:hover{background:#263253!important}
+main.jarvix-chat #jChatDropdown .j-drawer-account{
+ display:flex!important;align-items:center!important;gap:9px!important;
+ width:100%!important;min-height:52px!important;margin:7px 0 0!important;
+ padding:10px 5px 2px!important;border-top:1px solid #66789955!important;
+ background:transparent!important;color:#f2f6ff!important;text-decoration:none!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-avatar{
+ flex:0 0 auto!important;display:inline-grid!important;place-items:center!important;
+ width:31px!important;height:31px!important;border:1px solid #cf972f!important;
+ border-radius:50%!important;background:#47300b!important;color:#ffc65b!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-account-copy{
+ display:flex!important;flex:1!important;flex-direction:column!important;min-width:0!important;gap:3px!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-account-copy strong{
+ overflow:hidden!important;white-space:nowrap!important;text-overflow:ellipsis!important;font-size:12px!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-account-copy small{font-size:10px!important;color:#9eaecb!important}
+main.jarvix-chat #jChatDropdown .j-drawer-account>span:last-child{color:#bbcaea!important}
+
+/* On phone, the SAME panel slides from the left to ~62% width like reference 2.
+   The chat remains behind it; no duplicate page, no dimming, no full-width takeover. */
 @media(max-width:760px){
  body.j-action-workspace.ds-mobile-layout main.jarvix-chat,
- body.ds-mobile-layout main.jarvix-chat,
- main.jarvix-chat{
+ body.ds-mobile-layout main.jarvix-chat,main.jarvix-chat{
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:auto auto minmax(0,1fr) auto!important;
+  column-gap:0!important;
   height:var(--j-chat-available-height,calc(100dvh - 156px))!important;
   max-height:var(--j-chat-available-height,calc(100dvh - 156px))!important;
-  min-height:0!important;
-  padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;
+  padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px))!important;
  }
- .jarvix-chat > #jChatDropdown{
-  height:var(--j-history-drawer-height,min(40dvh,240px))!important;
-  max-height:var(--j-history-drawer-height,min(40dvh,240px))!important;
-  min-height:0!important;
+ main.jarvix-chat:has(> #jChatDropdown:not([hidden])){
+  grid-template-columns:minmax(0,1fr)!important;column-gap:0!important;
+ }
+ main.jarvix-chat > .j-chat-toolbar{grid-column:1!important;grid-row:1!important}
+ main.jarvix-chat > #jWorkspacePane,main.jarvix-chat:has(> #jChatDropdown:not([hidden])) > #jWorkspacePane{
+  grid-column:1!important;grid-row:2!important;
+ }
+ main.jarvix-chat > #jMessages,main.jarvix-chat:has(> #jChatDropdown:not([hidden])) > #jMessages{
+  grid-column:1!important;grid-row:3!important;
+ }
+ main.jarvix-chat > .j-chat-bottom,main.jarvix-chat:has(> #jChatDropdown:not([hidden])) > .j-chat-bottom{
+  grid-column:1!important;grid-row:4!important;justify-self:center!important;
+  margin:0!important;padding:7px 9px calc(9px + env(safe-area-inset-bottom,0px))!important;
+  border-radius:23px!important;
+ }
+ main.jarvix-chat > #jChatDropdown{
+  position:absolute!important;inset:0 auto 0 0!important;
+  display:flex!important;z-index:110!important;
+  grid-column:auto!important;grid-row:auto!important;
+  width:62%!important;max-width:365px!important;
+  height:100%!important;max-height:100%!important;min-height:0!important;
   overflow:hidden!important;
  }
- .jarvix-chat #jChatDropdown .j-drawer-panel{
-  min-height:0!important;
-  height:100%!important;
-  max-height:100%!important;
+ main.jarvix-chat > #jChatDropdown[hidden]{display:none!important}
+ main.jarvix-chat #jChatDropdown .j-drawer-panel{
+  border-radius:0 25px 25px 0!important;padding:14px 11px 11px!important;
+  animation:jApprovedDrawerIn .18s ease-out both!important;
  }
- .jarvix-chat > .j-chat-bottom{
-  grid-row:5!important;
-  position:relative!important;
-  bottom:auto!important;
-  margin-top:0!important;
-  margin-bottom:0!important;
-  padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;
-  z-index:20!important;
+ main.jarvix-chat #jChatDropdown .j-drawer-header{display:flex!important}
+ main.jarvix-chat #jChatDropdown .j-drawer-heading{font-size:19px!important}
+ main.jarvix-chat #jChatDropdown .j-drawer-new-item{
+  min-height:46px!important;padding:9px 12px!important;
  }
- .jarvix-chat > #jMessages{
-  min-height:0!important;
-  scrollbar-width:thin;
- }
+ main.jarvix-chat #jChatDropdown .j-drawer-nav-item{gap:8px!important;font-size:12px!important;min-height:34px!important;padding:5px 4px!important}
+ main.jarvix-chat #jChatDropdown .j-drawer-nav-icon{width:19px!important;min-width:19px!important;font-size:17px!important}
+ main.jarvix-chat #jChatDropdown .j-drawer-history-list{padding-right:1px!important}
+ main.jarvix-chat #jChatDropdown .j-conv-date{display:none!important}
+ main.jarvix-chat #jChatDropdown .j-drawer-footer-item{font-size:11px!important;gap:8px!important}
+ main.jarvix-chat #jChatDropdown .j-drawer-account-copy strong{font-size:11px!important}
+ main.jarvix-chat #jChatDropdown .j-drawer-avatar{width:29px!important;height:29px!important}
+}
+@keyframes jApprovedDrawerIn{from{opacity:.75;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+@media(max-width:375px){
+ main.jarvix-chat > #jChatDropdown{width:66%!important}
+ main.jarvix-chat #jChatDropdown .j-drawer-panel{padding:10px 8px 9px!important}
+ main.jarvix-chat #jChatDropdown .j-drawer-nav-item{font-size:11px!important}
+ main.jarvix-chat #jChatDropdown .j-drawer-account-copy small{font-size:9px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ main.jarvix-chat #jChatDropdown .j-drawer-panel{animation:none!important}
 }
