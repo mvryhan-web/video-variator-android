@@ -1,0 +1,32 @@
+name: Owner Canvas UX3 — read-only live verification
+on:
+  push:
+    branches: [owner-canvas-ux-controls-20261110]
+    paths: ['.github/workflows/owner-canvas-ux-live-verification-20261110.yml']
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Read current MAIN, Canvas UX3 markers, Worker and demo photos
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          const a=process.env.CLOUDFLARE_ACCOUNT_ID,t=process.env.CLOUDFLARE_API_TOKEN;
+          const u='https://api.cloudflare.com/client/v4/accounts/'+a+'/pages/projects/deepsyq';
+          const resp=await fetch(u,{headers:{Authorization:'Bearer '+t}});
+          const data=await resp.json();if(!resp.ok||!data.success)throw Error('Cloudflare project inaccessible');
+          const p=data.result, get=async n=>fetch('https://deepsyq.app/'+n+'?liveUX3='+Date.now());
+          const [html,j,c,photo]=await Promise.all([get('canvas.html'),get('canvas-workspace.js'),get('canvas-workspace.css'),get('media/canvas-demos/20261110/canvas-demo-13.webp')]);
+          const [h,js,css]=await Promise.all([html.text(),j.text(),c.text()]);
+          const result={id:p.canonical_deployment?.id,worker:p.canonical_deployment?.uses_functions,html:html.status,js:j.status,css:c.status,lastPhoto:photo.status,
+           ux3:h.includes('canvas-workspace.js?v=20261110-ux3')&&h.includes('id="cwTextOptions"')&&h.includes('id="cwSettingsPanel"'),
+           editorJS:js.includes('style.transform=')&&js.includes("cwInlineText")&&js.includes('cwMirrorX'),
+           editorCSS:css.includes('position:relative!important')&&css.includes('cw-settings-panel')};
+          console.log('OWNER_CANVAS_UX3_LIVE',JSON.stringify(result));
+          if(!result.worker||result.html!==200||result.js!==200||result.css!==200||result.lastPhoto!==200||!result.ux3||!result.editorJS||!result.editorCSS)throw Error('Canvas UX3 absent or Worker/photos unavailable on MAIN');
+          JS
