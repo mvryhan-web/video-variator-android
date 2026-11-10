@@ -3,8 +3,8 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Canvas · Deepsyq</title><meta name="description" content="DeepSyQ Infinite Canvas: interactive spatial workspace for visual prompt design, multi-model generation, and generative multimedia storytelling.">
 <meta name="robots" content="noindex,follow"><meta name="theme-color" content="#080d1d">
-<link rel="stylesheet" href="deepsyq.css"><link rel="stylesheet" href="deepsyq-global-theme.css"><link rel="stylesheet" href="canvas-page.css"><link rel="stylesheet" href="canvas-workspace.css?v=20261110"><link rel="stylesheet" href="jarvis-core.css?v=5.0">
-<script defer src="deepsyq-site-shell.js?v=5.0"></script><script type="module" src="canvas-workspace.js?v=20261110"></script><script type="module" src="jarvis-core.js"></script>
+<link rel="stylesheet" href="deepsyq.css"><link rel="stylesheet" href="deepsyq-global-theme.css"><link rel="stylesheet" href="canvas-page.css"><link rel="stylesheet" href="canvas-workspace.css?v=20261110-ux2"><link rel="stylesheet" href="jarvis-core.css?v=5.0">
+<script defer src="deepsyq-site-shell.js?v=5.0"></script><script type="module" src="canvas-workspace.js?v=20261110-ux2"></script><script type="module" src="jarvis-core.js"></script>
 <link rel="canonical" href="https://deepsyq.app/canvas.html">
 <meta property="og:url" content="https://deepsyq.app/canvas.html">
 <meta property="og:site_name" content="DeepSyQ">
@@ -19,8 +19,6 @@
   <div class="top-actions"><a href="generate-studio.html?studio=image" class="top-link">Image Studio</a><a href="pricing.html" class="top-link">Pricing</a></div>
 </header>
 <main id="canvasPageMain">
-<span id="canvasFeature" class="cw-sr" aria-hidden="true"></span>
-<span id="quickCreateForm" class="cw-sr" aria-hidden="true"></span>
 <section id="canvasWorkspace" class="cw" aria-label="Canvas creative workspace">
   <div class="cw-workspace-header">
     <div class="cw-title"><h2 id="canvasWorkspaceTitle">Canvas <span aria-hidden="true">✦</span></h2></div>
@@ -28,8 +26,9 @@
       <button type="button" id="cwImageMode" class="cw-mode-active" aria-pressed="true"><span aria-hidden="true">▧</span> Image</button>
       <button type="button" id="cwVideoMode" aria-pressed="false"><span aria-hidden="true">▷</span> Video</button>
     </div>
-    <div class="cw-top-actions"><button type="button" id="cwUndo" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>↶</button><button type="button" id="cwRedo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled>↷</button><label class="cw-zoom-label"><span class="cw-sr">Zoom</span><select id="cwZoom"><option value="75">75%</option><option value="100" selected>100%</option><option value="125">125%</option><option value="150">150%</option></select></label><button type="button" id="cwExport" class="cw-export">↓ <span>Export PNG</span></button></div>
+    <div class="cw-top-actions"><button type="button" id="cwUndo" title="Undo last change" aria-label="Undo last change" disabled><span aria-hidden="true">↶</span><small>Undo</small></button><button type="button" id="cwRedo" title="Redo last change" aria-label="Redo last change" disabled><span aria-hidden="true">↷</span><small>Redo</small></button><div class="cw-zoom-control" role="group" aria-label="Canvas zoom"><button type="button" id="cwZoomOut" aria-label="Zoom out">−</button><input id="cwZoom" type="range" min="50" max="200" step="10" value="100" aria-label="Canvas zoom"><output id="cwZoomValue" for="cwZoom">100%</output><button type="button" id="cwZoomIn" aria-label="Zoom in">+</button></div><button type="button" id="cwExport" class="cw-export" aria-label="Download image as PNG">⬇ <span>Download PNG</span></button></div>
   </div>
+  <div class="cw-shortcuts"><label class="cw-quick-ratio">Format <select id="cwRatioQuick" aria-label="Canvas aspect ratio"><option value="16:9">16:9 · Wide</option><option value="1:1">1:1 · Square</option><option value="4:5">4:5 · Portrait</option><option value="9:16">9:16 · Vertical</option></select></label><button type="button" class="cw-upload-main" id="cwUploadMain">＋ Upload your photo</button></div>
   <div class="cw-workspace-grid">
     <nav class="cw-rail" aria-label="Canvas tools">
       <button type="button" data-cw-tool="design" class="cw-rail-active" aria-pressed="true"><span aria-hidden="true">▦</span><small>Design</small></button>
@@ -39,12 +38,13 @@
       <button type="button" data-cw-tool="photos" aria-pressed="false"><span aria-hidden="true">▧</span><small>Photos</small></button>
       <button type="button" data-cw-tool="templates" aria-pressed="false"><span aria-hidden="true">▣</span><small>Templates</small></button>
       <button type="button" data-cw-tool="background" aria-pressed="false"><span aria-hidden="true">▨</span><small>Background</small></button>
-      <button type="button" data-cw-tool="apps" aria-pressed="false"><span aria-hidden="true">✧</span><small>Studio</small></button>
+      <button type="button" data-cw-tool="apps" aria-pressed="false"><span aria-hidden="true">✧</span><small>AI Studio</small></button>
     </nav>
+    <div id="cwMobileToolDock" class="cw-mobile-tool-dock" aria-live="polite"></div>
     <aside class="cw-library" aria-label="Canvas photo library">
       <div class="cw-library-top"><label class="cw-search"><span class="cw-sr">Search gallery</span><input id="cwGallerySearch" type="search" placeholder="Search photos…" autocomplete="off"></label><div class="cw-categories" role="group" aria-label="Photo categories"><button type="button" class="cw-category-active" data-cw-filter="all">All</button><button type="button" data-cw-filter="portrait">Portrait</button><button type="button" data-cw-filter="product">Product</button><button type="button" data-cw-filter="travel">Travel</button><button type="button" data-cw-filter="lifestyle">Lifestyle</button></div></div>
       <div id="cwToolPane" class="cw-tool-pane" hidden></div>
-      <div class="cw-library-heading"><strong>Gallery</strong><span>13 photos</span></div>
+      <div class="cw-library-heading"><strong>Gallery · 13 photos</strong><button type="button" id="cwGalleryUpload" class="cw-library-upload">＋ Upload photo</button></div>
       <div class="cw-gallery-wrap"><button type="button" id="cwGalleryPrev" class="cw-gallery-arrow" aria-label="Previous gallery photo">‹</button><div id="cwGallery" class="cw-gallery" aria-label="Gallery photos, scroll horizontally on mobile"></div><button type="button" id="cwGalleryNext" class="cw-gallery-arrow" aria-label="Next gallery photo">›</button></div>
       <div class="cw-recent"><strong>Quick ideas</strong><div class="cw-recent-list"><button type="button" data-cw-prompt="portrait">Portrait</button><button type="button" data-cw-prompt="product">Product</button><button type="button" data-cw-prompt="social">Short video</button></div></div>
     </aside>
@@ -57,12 +57,14 @@
         </div>
       </div>
       <div class="cw-frames" aria-label="Canvas pages and sequence"><button type="button" id="cwPlay" title="Preview selected image sequence" aria-label="Preview sequence">▷</button><span id="cwSequenceTime" class="cw-time">Preview</span><div id="cwFrames" class="cw-frame-list"></div><button type="button" id="cwAddFrame" class="cw-frame-add" title="Add current image to sequence" aria-label="Add current image to sequence">+</button></div>
-      <p class="cw-editor-note" id="cwEditorNote">Choose a demo image or upload your own photo. Your edits stay in this browser until you export.</p>
+      <p class="cw-editor-note" id="cwEditorNote">Tap a photo to edit, or upload your own. The editor saves locally until you download.</p>
     </div>
     <aside class="cw-inspector" aria-label="Canvas editing options">
       <div class="cw-tabs" role="tablist" aria-label="Editing tools"><button type="button" data-cw-tab="edit" class="cw-tab-active" role="tab" aria-selected="true">Edit</button><button type="button" data-cw-tab="adjust" role="tab" aria-selected="false">Adjust</button><button type="button" data-cw-tab="effects" role="tab" aria-selected="false">Effects</button></div>
       <div id="cwTabEdit" class="cw-tab-content" role="tabpanel">
-        <div class="cw-edit-buttons"><button type="button" id="cwRemoveBg"><span aria-hidden="true">▧</span>Remove white BG</button><button type="button" id="cwReplace"><span aria-hidden="true">▣</span>Replace</button><button type="button" id="cwCrop"><span aria-hidden="true">⌗</span>Crop</button></div>
+        <div class="cw-edit-buttons"><button type="button" id="cwRemoveBg"><span aria-hidden="true">▧</span>White BG</button><button type="button" id="cwReplace"><span aria-hidden="true">▣</span>Replace</button><button type="button" id="cwCrop"><span aria-hidden="true">⌗</span>Frame / Crop</button></div>
+        <div class="cw-rotate-actions" role="group" aria-label="Rotate photograph"><button id="cwRotateLeft" type="button">⟲ Rotate 90° left</button><button id="cwRotateRight" type="button">⟳ Rotate 90° right</button></div>
+        <div class="cw-fit-actions" role="group" aria-label="Image fit"><button id="cwFitCover" type="button" class="cw-option-active">Fill frame</button><button id="cwFitContain" type="button">Fit photo</button></div>
         <label class="cw-field-title">Position</label><div class="cw-align-row"><button type="button" data-cw-position="left" aria-label="Align image left">⇤</button><button type="button" data-cw-position="center" aria-label="Center image">↔</button><button type="button" data-cw-position="right" aria-label="Align image right">⇥</button><button type="button" data-cw-position="top" aria-label="Align image top">↥</button><button type="button" data-cw-position="bottom" aria-label="Align image bottom">↧</button></div>
         <label class="cw-field-title" for="cwSize">Image size</label><div class="cw-size-row"><input id="cwSize" type="range" min="60" max="180" step="1" value="100" aria-label="Image scale"><output id="cwSizeLabel" for="cwSize">100%</output></div>
         <label class="cw-field-title" for="cwRatio">Aspect ratio</label><select id="cwRatio"><option value="16:9">16:9 · Landscape</option><option value="1:1">1:1 · Square</option><option value="4:5">4:5 · Portrait</option><option value="9:16">9:16 · Vertical</option></select>
@@ -73,7 +75,7 @@
       <div id="cwTabEffects" class="cw-tab-content" role="tabpanel" hidden><p class="cw-effects-caption">Choose a photo treatment</p><div class="cw-preset-grid"><button type="button" class="cw-preset-active" data-cw-effect="original">Original</button><button type="button" data-cw-effect="warm">Warm</button><button type="button" data-cw-effect="vivid">Vivid</button><button type="button" data-cw-effect="noir">Noir</button></div></div>
     </aside>
   </div>
-  <div class="cw-prompt" aria-label="Generate with AI Studio"><label for="cwPrompt" class="cw-sr">Describe what you want to create</label><span class="cw-prompt-star" aria-hidden="true">✧</span><textarea id="cwPrompt" rows="1" maxlength="2000" placeholder="Describe what you want to create…"></textarea><button type="button" id="cwPromptUpload" class="cw-prompt-small" title="Upload your photo" aria-label="Upload your photo">▧</button><button type="button" id="cwSettings" class="cw-prompt-small" title="Open editing settings" aria-label="Open editing settings">☷</button><button type="button" id="cwGenerate" class="cw-primary" title="Open Studio to review and generate your image or video">✧ Generate ↗</button></div>
+  <div class="cw-prompt" aria-label="Generate with AI Studio"><label for="cwPrompt" class="cw-sr">Describe what you want to create</label><span class="cw-prompt-star" aria-hidden="true">✧</span><textarea id="cwPrompt" rows="1" maxlength="2000" placeholder="Describe what you want to create…"></textarea><button type="button" id="cwPromptUpload" class="cw-prompt-small" title="Upload your photo" aria-label="Upload your photo">＋</button><button type="button" id="cwSettings" class="cw-prompt-small" title="Open editing settings" aria-label="Open editing settings">☷</button><button type="button" id="cwGenerate" class="cw-primary" title="Open Studio to review and generate your image or video">✧ Generate ↗</button></div>
   <p class="cw-status" id="cwStatus" role="status" aria-live="polite"></p>
   <input type="file" id="cwUpload" accept="image/png,image/jpeg,image/webp" hidden>
 </section>
