@@ -236,9 +236,11 @@ function render(){
     bubble.append(check);
    }
   }
-  if(m.status==='pending'||(m.role==='user'&&m.status==='processing')||m.status==='interrupted'||m.status==='error'){
-   const retry=node('button',m.status==='error'?'Retry':'Continue');
+  // Remove premature 'Continue' button while processing. Only show retry on actual error when not busy.
+  if(!busy&&(m.status==='error'||m.status==='interrupted')){
+   const retry=node('button',({ru:'Повторить',en:'Retry',fr:'Réessayer',es:'Reintentar'})[getJarvixLanguage()]||'Retry');
    retry.type='button';
+   retry.className='j-retry-btn';
    retry.onclick=()=>run(()=>processMessage(m));
    bubble.append(retry);
   }
@@ -250,6 +252,15 @@ function render(){
   if(actions) item.append(actions);
 
   area.append(item);
+ }
+ if(busy){
+  const typingItem=node('article');
+  typingItem.className='j-message assistant j-typing-message';
+  const typingBubble=node('div');
+  typingBubble.className='j-bubble j-typing-bubble';
+  typingBubble.innerHTML='<span class="j-typing-dot"></span><span class="j-typing-dot"></span><span class="j-typing-dot"></span>';
+  typingItem.append(typingBubble);
+  area.append(typingItem);
  }
  area.scrollTop=area.scrollHeight;
 }

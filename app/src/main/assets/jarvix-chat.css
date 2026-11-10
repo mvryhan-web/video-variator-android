@@ -133,6 +133,14 @@ body:has(#homeQuickForm[data-jarvix-chat]){padding-bottom:calc(var(--jarvix-comp
 .jarvix-chat .j-plus-menu{max-height:min(350px,55dvh);overflow:auto}.jarvix-chat .j-chat-bottom{position:relative}.jarvix-chat .jarvix-compose textarea{background:transparent;border:0}.jarvix-chat .j-message button{margin-top:8px;margin-right:6px;font-size:12px}
 
 /* Legacy footer removed in favor of clean .j-msg-actions */
+
+/* Smooth typing indicator while waiting for Gemini / AI response */
+.j-typing-message{margin-bottom:12px!important}
+.j-typing-bubble{display:inline-flex!important;align-items:center!important;gap:5px!important;padding:12px 16px!important;min-height:18px!important;background:#101d35!important;border:1px solid rgba(255,255,255,0.08)!important;border-radius:20px 20px 20px 6px!important}
+.j-typing-dot{display:inline-block!important;width:6px!important;height:6px!important;border-radius:50%!important;background:rgba(220,235,255,0.6)!important;animation:jTypingBounce 1.4s infinite ease-in-out both!important}
+.j-typing-dot:nth-child(1){animation-delay:-0.32s!important}
+.j-typing-dot:nth-child(2){animation-delay:-0.16s!important}
+@keyframes jTypingBounce{0%,80%,100%{transform:scale(0.3);opacity:0.3}40%{transform:scale(1);opacity:1}}
 /* Owner: same composer width as the existing Universal Studio dock; chat only. */
 .jarvix-chat>.j-chat-bottom.j-neon-dock{
  box-sizing:border-box;width:min(840px,calc(100vw - 300px),100%);max-width:100%;align-self:center;
