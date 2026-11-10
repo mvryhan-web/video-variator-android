@@ -1,3 +1,22 @@
+## OWNER D34 — Cloudflare for all future agents (updated 2026-11-10)
+
+**Verified connection exists; do not request or regenerate an existing token merely because its raw value is invisible.** GitHub Actions stores `CLOUDFLARE_API_TOKEN` as a secret and `CLOUDFLARE_ACCOUNT_ID` as a secret/variable for the `deepsyq` Cloudflare Pages project. The GitHub connector can read the workflow *references* but cannot retrieve the secret itself. Workflow jobs may use it via the GitHub runner with `env:`, never writing the value to source, logs, issues, artifacts, prompts, or chat.
+
+**For any new P/Admin/Antigravity agent:** open `AGENTS.md` first, then this runbook. Existing read-only test `.github/workflows/owner-cloudflare-worker-permissions-audit.yml` now supports `workflow_dispatch`. An authorized repository collaborator can run it from **GitHub → Actions → Owner Cloudflare existing Worker permissions audit (read-only) → Run workflow → deepsyq-platform**. It checks the available token(s) without revealing them. Actions access is governed by GitHub permissions; do not grant unrestricted access to third parties merely to share a token.
+
+Example for existing authorized workflows (names only, no values):
+```yaml
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+```
+
+**Latest observed checks (2026-11-10):** Pages project GET: 200; token verification: 200; Workers list: 200; managed Worker content: 404 (script not found at the queried name on that account); Worker settings: 200; zone lookup `deepsyq.app`: 200; Workers Routes list: 403. Read these as *API scope / resource / script-name findings*, not evidence that the existing secret is absent. Even with a successful Pages API call, **a surgical production release remains blocked until original Worker/Functions, bindings, assets and exact change scope are provably preserved**. No static-only Pages deployment to MAIN. An alternate routed Worker is not authorized when Routes access is 403.
+
+Proof of on-demand zone/route probe: [GitHub Actions 42789870823](https://github.com/mvryhan-web/video-variator-android/actions/runs/42789870823). Earlier Worker audit: [GitHub Actions 42582178313](https://github.com/mvryhan-web/video-variator-android/actions/runs/42582178313). Check fresh results before each deployment.
+
+---
+
 ## OWNER D29 — TWO PERMANENT LINKS — 2026-11-09
 
 - **Canonical TEST**: `https://test.deepsyq.pages.dev`, alias of Pages project `deepsyq` preview branch `test`, upload via `--project-name=deepsyq --branch=test`, then verify stable alias. All executors including Antigravity use ONLY this same owner-facing test endpoint.
