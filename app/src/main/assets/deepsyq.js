@@ -1,5 +1,4 @@
-import {renderHomeInspiration} from './home-inspiration.js';
-import {mergeOwnerVideoInspiration} from './owner-inspiration-20261110.js';
+import {renderHomeInspiration,mergeOwnerVideoInspiration} from './home-inspiration.js';
 import {renderHomeCarousel} from './home-experience.js';
 import {MODEL_CATALOG} from './generate-models.js';
 import {authorizedOnboardingOptions,onboardingResponseTarget} from './onboarding-options.js';

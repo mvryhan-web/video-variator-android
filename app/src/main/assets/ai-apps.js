@@ -1,6 +1,5 @@
 import {templateSupport,prepareTemplatePrompt} from './ai-template-product-name.js';
-import {renderHomeInspiration} from './home-inspiration.js';
-import {mergeOwnerVideoInspiration} from './owner-inspiration-20261110.js';
+import {renderHomeInspiration,mergeOwnerVideoInspiration} from './home-inspiration.js';
 const $=id=>document.getElementById(id);
 const PAGE_SIZE=12;
 let all=[],shownLimit=PAGE_SIZE;
