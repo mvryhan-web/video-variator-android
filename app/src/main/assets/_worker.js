@@ -985,7 +985,7 @@ export default {
       // Try Gemini API first if configured
       if (env.GEMINI_API_KEY) {
         try {
-          const context = history.slice(-6).map(x => (x.role === 'user' ? 'User: ' : 'JARVIS: ') + x.content).join('\n');
+          const context = history.slice(-16).map(x => (x.role === 'user' ? 'User: ' : 'JARVIS: ') + x.content).join('\n');
           const prompt = (context ? context + '\n' : '') + 'User: ' + message + '\nJARVIS:';
           const rules = INSTRUCTIONS + ' Отвечай на языке ' + language + '. Текст максимум 2 предложения.';
           const candidateModels = ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-2.5-flash', 'gemini-3.8-flash'];
@@ -1025,7 +1025,7 @@ export default {
               model: 'gpt-4o-mini',
               messages: [
                 { role: 'system', content: INSTRUCTIONS + ' Language: ' + language },
-                ...history.slice(-6),
+                ...history.slice(-16),
                 { role: 'user', content: message }
               ],
               max_tokens: 200
@@ -1048,7 +1048,7 @@ export default {
       }
 
       history.push({ role: 'user', content: message }, { role: 'assistant', content: replyText });
-      if (history.length > 20) history.splice(0, history.length - 20);
+      if (history.length > 48) history.splice(0, history.length - 48);
       jarvixSessions.set(sid, history);
 
       return json({
