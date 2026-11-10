@@ -77,7 +77,7 @@
   if (!document.getElementById('topJarvisBtn')) {
     const jarvisCss = document.createElement('link');
     jarvisCss.rel = 'stylesheet';
-    jarvisCss.href = 'jarvis-core.css?v=7.0';
+    jarvisCss.href = 'jarvis-core.css?v=7.1';
     document.head.append(jarvisCss);
 
     const jarvisScript = document.createElement('script');
@@ -94,7 +94,7 @@
       jBtn.className = 'top-jarvis-btn';
       jBtn.setAttribute('aria-label', 'Activate JARVIX AI');
       jBtn.title = 'JARVIX — AI Voice Commander & Compare';
-      jBtn.innerHTML = '<div class="jarvis-mini-orb"></div><span class="jarvis-name">JARVIX</span>';
+      jBtn.innerHTML = '<div class="jarvis-mini-orb"><span class="jarvix-voice-ear jarvix-voice-ear-left" aria-hidden="true"></span><span class="jarvix-voice-ear jarvix-voice-ear-right" aria-hidden="true"></span></div><span class="jarvis-name">JARVIX</span>';
       topH.append(jBtn);
     }
   }
