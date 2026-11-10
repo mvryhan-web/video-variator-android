@@ -71,7 +71,18 @@ main.jarvix-chat .j-chat-bottom .jarvix-compose textarea#jInput,
 .jarvix-compose button:disabled{opacity:.55;cursor:wait}.jarvix-compose button:focus-visible,.jarvix-chat button:focus-visible{outline:2px solid #18e9ff;outline-offset:3px}
 .j-plus-menu{position:absolute;bottom:calc(100% + 10px);left:0;z-index:70;display:flex;flex-direction:column;gap:4px;min-width:170px;padding:10px;background:#10172e;border:1px solid #7767ca;border-radius:18px;box-shadow:0 12px 35px #0009}.j-plus-menu[hidden]{display:none}
 .j-plus-menu button{text-align:left}.j-plus-menu button[aria-pressed=true]{border-color:#09dcf5;background:#173455}
-.j-attachments{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;padding:4px 10px;color:#a8c9e2}.j-attachments button{font-size:12px;min-height:28px;padding:4px 8px}
+.j-attachments{display:flex;gap:8px;align-items:center;flex-wrap:nowrap;overflow-x:auto;padding:6px 10px 4px;max-width:100%;box-sizing:border-box;-webkit-overflow-scrolling:touch}
+.j-attachments[hidden]{display:none!important}
+.j-attachment-card{position:relative;display:inline-flex;align-items:center;gap:8px;background:rgba(15,23,42,0.85);border:1px solid rgba(0,229,255,0.28);border-radius:12px;padding:4px 8px 4px 4px;box-shadow:0 4px 16px rgba(0,0,0,0.35);flex-shrink:0;max-width:220px;transition:border-color .15s ease}
+.j-attachment-card:hover{border-color:rgba(0,229,255,0.65)}
+.j-attachment-thumb-box{position:relative;width:44px;height:44px;border-radius:8px;overflow:hidden;background:#090d16;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.j-attachment-thumb{width:100%;height:100%;object-fit:cover;display:block}
+.j-attachment-icon{display:inline-flex;align-items:center;justify-content:center;color:#00e5ff}
+.j-attachment-meta{display:flex;flex-direction:column;justify-content:center;gap:2px;overflow:hidden;min-width:0;padding-right:18px}
+.j-attachment-name{font-size:12px;font-weight:550;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;line-height:1.2}
+.j-attachment-sub{font-size:10px;font-weight:700;letter-spacing:0.5px;color:#00e5ff;text-transform:uppercase}
+.j-attachment-close{position:absolute;top:3px;right:3px;width:18px;height:18px;min-height:18px!important;padding:0!important;border-radius:50%!important;background:rgba(0,0,0,0.65)!important;border:1px solid rgba(255,255,255,0.25)!important;color:#fff!important;font-size:13px!important;line-height:1!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;transition:all .15s ease!important;z-index:2}
+.j-attachment-close:hover{background:#ef4444!important;border-color:#ef4444!important;transform:scale(1.1)}
 body:has(#homeQuickForm[data-jarvix-chat]){padding-bottom:calc(var(--jarvix-compose-height,110px) + env(safe-area-inset-bottom,0px) + 20px)}
 #homeQuickBar:has([data-jarvix-chat]){position:fixed!important;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:calc(240px + (100vw - 240px)/2);transform:translateX(-50%);width:min(840px,calc(100vw - 272px));margin:0!important;z-index:55;max-width:none!important;padding:0!important;background:transparent!important}
 #homeQuickForm[data-jarvix-chat]{display:flex!important}.j-status{font-size:12px;color:#a8bad4;margin:4px 12px}.j-status:empty{display:none}
