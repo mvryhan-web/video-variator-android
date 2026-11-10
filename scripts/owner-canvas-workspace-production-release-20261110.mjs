@@ -166,13 +166,17 @@ async function stageResources(){
  const audit=mode=>JSON.parse(sh('python3',[python,mode,manifestFile,stage]));
  const initial=audit('scan');
  assert.equal(initial.count,data.manifestSize);
- const missing=initial.mismatches;let cursor=0,downloaded=0;
+ const missing=initial.mismatches;console.log('OWNER_CANVAS_LIVE_MANIFEST_SCAN',JSON.stringify({total:initial.count,needRestore:missing.length,first:missing.slice(0,12)}));let cursor=0,downloaded=0;
  async function restore(){
   while(cursor<missing.length){
    const rel=missing[cursor++];
    assert(manifestPaths.has(rel),'Attempted to fetch file outside live manifest');
    const response=await getLive(rel,data.liveUrl);
-   assert.equal(response.status,200,'Canonical live file unavailable '+rel);
+   if(response.status!==200){
+    const existed=fs.existsSync(path.join(stage,rel));
+    console.log('OWNER_CANVAS_CANONICAL_UNAVAILABLE',JSON.stringify({rel,status:response.status,gitFilePresent:existed,manifestDigest:manifest['/'+rel],deployment:data.liveId}));
+    throw Error('Exact canonical live file cannot be retrieved: '+rel+' HTTP '+response.status);
+   }
    assert(response.bytes.length>0&&response.bytes.length<90*1024*1024,'Invalid live file length '+rel);
    const dest=path.join(stage,rel);
    fs.mkdirSync(path.dirname(dest),{recursive:true});
