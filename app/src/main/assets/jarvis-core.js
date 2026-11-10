@@ -1180,6 +1180,7 @@ function resetSilenceTimer() {
 export function suspendJarvisForTour() {
   isJarvisActive=false;keepListening=false;
   try{sessionStorage.removeItem('jarvix_active');}catch{}
+  announceJarvisVoiceState();
   stopAllSpeech();pauseJarvisRecognition();
 }
 
@@ -1245,6 +1246,14 @@ export function triggerVoiceLimitReached() {
   });
 }
 
+// Single source of truth for the sphere and the chat microphone stop button.
+export function isJarvisVoiceActive() {
+  return isJarvisActive;
+}
+function announceJarvisVoiceState() {
+  if (typeof window !== 'undefined')
+    window.dispatchEvent(new CustomEvent('jarvix:voice-state', {detail:{active:isJarvisActive}}));
+}
 export function activateJarvisVoice() {
   unlockOwnerSpeech();
   isJarvisActive = true;
@@ -1255,6 +1264,7 @@ export function activateJarvisVoice() {
 
   const topBtn = getTopBtn();
   if (topBtn) topBtn.classList.add('is-active');
+  announceJarvisVoiceState();
   // Start listening independently of greeting download/playback. A missing MP3
   // must never leave an animated but deaf orb.
   resumeJarvisRecognition();
@@ -1294,6 +1304,7 @@ export function deactivateJarvisVoice() {
   }
 
   const topBtn = getTopBtn();
+  announceJarvisVoiceState();
   if (topBtn) {
     topBtn.classList.remove('is-active', 'is-speaking', 'is-listening');
     topBtn.removeAttribute('aria-busy');
@@ -1393,6 +1404,7 @@ export function initJarvis() {
     updateJarvisState('listening');
     const topBtn = getTopBtn();
     if (topBtn) topBtn.classList.add('is-active');
+    announceJarvisVoiceState();
 
     if (sayOnLoad) {
       setTimeout(() => {
