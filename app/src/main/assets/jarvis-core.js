@@ -234,7 +234,7 @@ export function speakJarvis(text, onComplete = null) {
       if (label) label.textContent = phase === 'playing' ? 'JARVIS' : waiting[langCode];
     },
     start: () => {
-      resetSilenceTimer(); clearTimeout(silenceTimer);
+      clearTimeout(silenceTimer);
       // Keep the recognizer open for instantaneous user interruption.
       isJarvisSpeaking = true;
       currentSpokenUtterance = audibleText; updateJarvisState('speaking');
@@ -433,6 +433,14 @@ export async function handleJarvisVoiceCommand(commandText) {
     currentSpokenUtterance = '';
     updateJarvisState('listening');
     resetSilenceTimer();
+    return;
+  }
+
+  // Direct, already-recorded reply for ordinary greetings. Do not route
+  // "Привет, как дела?" to an unrelated platform scenario with a missing MP3.
+  if (/^(?:привет|здравствуй(?:те)?|добрый (?:день|вечер|утро)|салют|хай|hello|hi)[!?. ]*$/iu.test(lower) ||
+      /(?:как\s+(?:твои\s+)?дела|как\s+ты|как\s+настроение|как\s+поживаешь|how are you)/iu.test(lower)) {
+    speakJarvis(OWNER_GREETING_TEXT[lang] || OWNER_GREETING_TEXT.ru);
     return;
   }
 
@@ -947,7 +955,7 @@ export function resumeJarvisRecognition() {
       if (recognitionTurn !== recognitionVersion || !isJarvisActive || !keepListening) return;
       recognitionStarting = false;
       isJarvisListening = true;
-      updateJarvisState('listening');
+      updateJarvisState(isJarvisSpeaking ? 'speaking' : 'listening');
       const button = getTopBtn();
       if (button) {
         delete button.dataset.recognitionError;
@@ -1087,6 +1095,8 @@ export function resumeJarvisRecognition() {
         network: 'network'
       };
       if (recognitionErrors[err.error]) showRecognitionError(recognitionErrors[err.error]);
+      // A visible voice error is more useful than a sphere that only animates.
+      if (!recognitionErrors[err.error] && err.error) showRecognitionError('service');
       recognitionStarting = false;
       // A denied/unavailable service must not trigger Android's mic start tone in a loop.
       if (recognitionErrors[err.error]) {
@@ -1235,6 +1245,10 @@ export function activateJarvisVoice() {
 
   const topBtn = getTopBtn();
   if (topBtn) topBtn.classList.add('is-active');
+  // Start listening independently of greeting download/playback. A missing MP3
+  // must never leave an animated but deaf orb.
+  resumeJarvisRecognition();
+  resetSilenceTimer();
 
   // Rotate two verified owner-recorded greetings, not a repeated synthetic sentence.
   const lang = getJarvixLanguage();
