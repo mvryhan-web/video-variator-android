@@ -35,7 +35,7 @@ function useTemplate(template,productName='',feedback=null){
   else $('status').textContent='Your browser could not prepare this template. Check your storage permissions and try again.';
   return;
  }
- location.assign('generate-studio.html?studio='+destination(template)+'&from=template');
+ location.assign('jarvix-chat.html?mode='+destination(template)+'&from=template');
 }
 function templatePreview(template){
  const details=document.createElement('details');

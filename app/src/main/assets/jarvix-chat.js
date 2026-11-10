@@ -35,7 +35,7 @@ import {bindComposer,trackViewport} from './jarvix-composer.js';
 import {getJarvixSessionId,getJarvixLanguage,speakJarvis} from './jarvis-core.js';
 import {findCatalogReply} from './jarvix-clip-library.js';
 import {hasVerifiedJarvixSubscription} from './jarvix-access.js';
-import {saveStudioHandoff} from './studio-handoff.js';
+import {saveStudioHandoff, takeStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id),status=text=>$('jStatus').textContent=text;
 const store=await conversationStore();let conversation=null,busy=false,epoch=0,controller=null,config=null,urls=[];
 const headers=()=>({'Content-Type':'application/json',...(localStorage.getItem('vv_token')?{Authorization:'Bearer '+localStorage.getItem('vv_token')}:{})});
@@ -238,6 +238,65 @@ if(composerInput){
     if(['image','video','audio'].includes(detected))setChatHeaderMode(detected);
   });
 }
+
+async function applyIncomingHandoffOrTemplate() {
+  let incomingPrompt = '';
+  let incomingMode = '';
+  let incomingFiles = [];
+
+  try {
+    const raw = sessionStorage.getItem('deepsyq_template_start');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed.promptTemplate) incomingPrompt = String(parsed.promptTemplate).trim();
+      if (parsed.generationType) incomingMode = parsed.generationType;
+      sessionStorage.removeItem('deepsyq_template_start');
+    }
+  } catch (_) {}
+
+  if (!incomingPrompt) {
+    try {
+      const handoff = await takeStudioHandoff();
+      if (handoff) {
+        if (handoff.prompt) incomingPrompt = String(handoff.prompt).trim();
+        if (handoff.kind) incomingMode = handoff.kind;
+        if (Array.isArray(handoff.files)) incomingFiles = handoff.files;
+      }
+    } catch (_) {}
+  }
+
+  if (!incomingPrompt) {
+    try {
+      const p = new URLSearchParams(location.search).get('prompt');
+      if (p) incomingPrompt = p.trim();
+    } catch (_) {}
+  }
+
+  if (incomingMode) {
+    const norm = incomingMode.toLowerCase() === 'music' ? 'audio' : incomingMode.toLowerCase();
+    if (['video', 'audio', 'image'].includes(norm)) {
+      try {
+        sessionStorage.setItem('jarvix_composer_mode', norm);
+        setChatHeaderMode(norm);
+        window.dispatchEvent(new CustomEvent('jarvix:mode', { detail: { mode: norm } }));
+      } catch (_) {}
+    }
+  }
+
+  if (incomingFiles.length && typeof composer?.add === 'function') {
+    for (const f of incomingFiles) composer.add(f);
+  }
+
+  if (incomingPrompt && composerInput) {
+    composerInput.value = incomingPrompt;
+    composerInput.dispatchEvent(new Event('input', { bubbles: true }));
+    composerInput.style.height = 'auto';
+    composerInput.style.height = Math.min(composerInput.scrollHeight, 180) + 'px';
+    composerInput.focus();
+    composerInput.setSelectionRange?.(incomingPrompt.length, incomingPrompt.length);
+  }
+}
+void applyIncomingHandoffOrTemplate();
 
 const wpPane=$('jWorkspacePane');
 if(wpPane){

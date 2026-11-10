@@ -19,7 +19,7 @@ function openTarget(item,mode,feedback){
  const settings=mode==='prompt'?{}:{...(item.defaultSettings||{}),ratio:item.aspectRatio};
  const payload={id:item.id,title:item.title,generationType:item.kind,promptTemplate:item.prompt||'',defaultModel:mode==='clone'?item.defaultModel||null:null,requiredInputTypes:Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[],defaultSettings:settings,source:'inspiration',action:mode};
  let key,destination;
- if(item.actionTarget==='studio'){key='deepsyq_template_start';destination='generate-studio.html?studio='+studioKind(item)+'&from=inspiration&action='+mode;}
+ if(item.actionTarget==='studio'){key='deepsyq_template_start';destination='jarvix-chat.html?mode='+studioKind(item)+'&from=inspiration&action='+mode;}
  else if(item.actionTarget==='agent'&&item.actionPath){key='deepsyq_agent_inspiration_start';destination=item.actionPath+'?from=inspiration&action='+encodeURIComponent(mode);}
  else{if(feedback){feedback.textContent='This inspiration action is not available yet.';feedback.hidden=false;}return;}
  try{sessionStorage.setItem(key,JSON.stringify(payload));}
