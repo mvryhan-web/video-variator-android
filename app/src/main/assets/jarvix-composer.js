@@ -23,7 +23,7 @@ export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
   openHomeStudioSettings({gear:form.querySelector('.j-settings-shortcut'),mode:selected});}});
  if(innerWidth<361)input.placeholder='Message…';
  let mode='auto',files=[];
- try{const requested=(new URLSearchParams(location.search).get('mode')||new URLSearchParams(location.search).get('studio')||'').toLowerCase();const requestedMode=requested==='music'?'audio':requested;const saved=sessionStorage.getItem('jarvix_composer_mode');if(['image','video','audio'].includes(requestedMode)){mode=requestedMode;sessionStorage.setItem('jarvix_composer_mode',mode);}else if(['image','video','audio'].includes(saved)){mode=saved;}else mode='auto';}catch{}
+ try{const requested=(new URLSearchParams(location.search).get('mode')||new URLSearchParams(location.search).get('studio')||'').toLowerCase();const requestedMode=requested==='music'?'audio':requested;if(['image','video','audio'].includes(requestedMode)){mode=requestedMode;sessionStorage.setItem('jarvix_composer_mode',mode);}else{mode='auto';sessionStorage.removeItem('jarvix_composer_mode');}}catch{}
  const reportMode=()=>{
   form.dataset.mode=mode;
   if(plus)plus.dataset.mode=mode;

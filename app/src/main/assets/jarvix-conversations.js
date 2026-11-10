@@ -29,7 +29,16 @@ export async function conversationStore(){
  };
 }
 export function validateAttachments(files){
- const list=Array.from(files||[]);if(list.length>4)throw Error('Up to 4 files per message.');
- for(const f of list)if(!(f instanceof Blob)||f.size>16*1024*1024||!['image/png','image/jpeg','video/mp4','audio/mpeg','audio/wav','text/plain'].includes(f.type))throw Error('Use PNG, JPG, MP4, MP3, WAV or TXT, up to 16 MB each.');
+ const list=Array.from(files||[]);
+ if(list.length>10){
+  let lang='ru';try{lang=(localStorage.getItem('deepsyq_home_language')||document.documentElement.lang||'ru').slice(0,2)}catch{}
+  throw Error(lang==='ru'?'Максимум 10 файлов за один раз.':'Up to 10 files per message.');
+ }
+ for(const f of list){
+  if(!(f instanceof Blob)||f.size>16*1024*1024||!['image/png','image/jpeg','video/mp4','audio/mpeg','audio/wav','text/plain'].includes(f.type)){
+   let lang='ru';try{lang=(localStorage.getItem('deepsyq_home_language')||document.documentElement.lang||'ru').slice(0,2)}catch{}
+   throw Error(lang==='ru'?'Поддерживаются файлы PNG, JPG, MP4, MP3, WAV или TXT до 16 МБ каждый.':'Use PNG, JPG, MP4, MP3, WAV or TXT, up to 16 MB each.');
+  }
+ }
  return list;
 }

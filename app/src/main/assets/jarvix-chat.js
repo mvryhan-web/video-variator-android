@@ -153,15 +153,16 @@ function resetToDefaultChat(startNew = true, preserveMode = false) {
     sessionStorage.setItem('jarvix_session_id', conversation.sessionId);
     sessionStorage.setItem('jarvix_active_conversation', conversation.id);
     composer.clear();
+    setChatHeaderMode('auto');
     status('');
     render();
     historyList().catch(() => {});
   }
 }
 window.resetToDefaultChat = resetToDefaultChat;
-window.addEventListener('jarvix:reset-chat', () => resetToDefaultChat(true));
+window.addEventListener('jarvix:reset-chat', () => resetToDefaultChat(true, false));
 
-$('jNew').onclick = () => resetToDefaultChat(true);
+$('jNew').onclick = () => resetToDefaultChat(true, false);
 $('jHistory').onchange=async()=>{if(busy)return;const next=await store.get($('jHistory').value);if(!next)return;conversation=next;sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);render();await restoreResults();};
 function freeze(){try{store.guard();}catch{++epoch;controller?.abort();composer.stop();for(const u of urls)URL.revokeObjectURL(u);$('jMessages').replaceChildren();$('jChatForm').hidden=true;status('Account changed. Reload to open the correct private conversations.');}}
 window.addEventListener('storage',freeze);window.addEventListener('focus',freeze);window.addEventListener('pageshow',freeze);
@@ -212,7 +213,6 @@ function setChatHeaderMode(m){
 }
 
 window.addEventListener('jarvix:mode',e=>{if(e.detail?.mode)setChatHeaderMode(e.detail.mode);});
-try{const st=sessionStorage.getItem('jarvix_composer_mode');setChatHeaderMode(st||'auto');}catch{setChatHeaderMode('auto');}
 window.addEventListener('deepsyq:lang',()=>setChatHeaderMode($('jActiveModeLabel')?.dataset.mode||'auto'));
 try {
   const _sp = new URLSearchParams(location.search);
@@ -226,6 +226,9 @@ try {
         window.dispatchEvent(new CustomEvent('jarvix:mode', { detail: { mode: _norm } }));
       }, 50);
     }
+  } else {
+    sessionStorage.removeItem('jarvix_composer_mode');
+    setChatHeaderMode('auto');
   }
 } catch (e) {}
 
@@ -442,7 +445,7 @@ function initChatMenuDrawer() {
   if (newBtn) {
     newBtn.onclick = () => {
       if (busy) return;
-      resetToDefaultChat(true, true);
+      resetToDefaultChat(true, false);
       closeDropdown();
       $('jInput')?.focus();
     };

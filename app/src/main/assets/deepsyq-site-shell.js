@@ -204,6 +204,7 @@
       el.onclick = (e) => {
         if (!e.metaKey && !e.ctrlKey) {
           e.preventDefault();
+          try { sessionStorage.removeItem('jarvix_composer_mode'); } catch {}
           location.assign('jarvix-chat.html');
         }
       };
