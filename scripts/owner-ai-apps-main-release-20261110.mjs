@@ -188,9 +188,16 @@ async function check(mode){
  assert(!script.bytes.toString('utf8').includes("className='app-meta'"),'Category badges still produced by script');
  const protectedHashes=JSON.parse(fs.readFileSync('/tmp/deepsyq-ui-protected.json','utf8'));
  for(const [name,expected] of Object.entries(protectedHashes)){
-  const r=await getAsset(name,base);
-  assert.equal(r.status,200,mode+' unrelated page missing '+name);
-  assert.equal(dig(r.bytes),expected,mode+' changed unrelated page '+name);
+  let verified=false,lastStatus=0,lastHash='';
+  for(let attempt=0;attempt<13;attempt++){
+   try{
+    const r=await getAsset(name,base);
+    lastStatus=r.status;lastHash=dig(r.bytes);
+    if(r.status===200&&lastHash===expected){verified=true;break}
+   }catch(err){lastStatus=0;lastHash=String(err).slice(0,80)}
+   if(attempt<12)await sleep(1600);
+  }
+  assert(verified,mode+' unrelated page missing or changed '+name+' HTTP '+lastStatus+' hash '+lastHash);
  }
  if(mode==='main'){
   const p=await project();
