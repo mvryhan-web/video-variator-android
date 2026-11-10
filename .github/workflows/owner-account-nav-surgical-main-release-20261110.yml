@@ -1,4 +1,5 @@
 name: OWNER MAIN Account first-click and Video Uniquifier navigation surgical release
+# Retry: Cloudflare preview branch alias truncates to owner-account-navsafe-202611
 on:
   push:
     branches: [owner-account-nav-surgical-main-release-20261110]
