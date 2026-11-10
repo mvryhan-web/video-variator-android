@@ -95,7 +95,7 @@ async function snapshot(){
   .split('\n').filter(x=>x.startsWith('app/src/main/assets/'))
   .map(x=>x.slice('app/src/main/assets/'.length))
   .filter(x=>/\.(html|css|mjs|js|json|svg|webmanifest|xml|txt)$/i.test(x));
- const original={},stageBefore={},skipped=[];
+ const original={},stageBefore={},skipped=[],originalEol={};
  let index=0,normalized=0;
  async function work(){
   while(index<paths.length){
@@ -117,7 +117,12 @@ async function snapshot(){
     ext==='svg'?r.type.includes('svg'):true;
    if(!valid||r.bytes.length>6*1024*1024)throw Error('Invalid LIVE '+name+' type '+r.type);
    original[name]=dig(r.bytes);
-   const saved=ext==='html'?strippedHtml(r.bytes):r.bytes;
+   let saved=ext==='html'?strippedHtml(r.bytes):r.bytes;
+   if(changes.includes(name)){
+     const text=saved.toString('utf8');
+     originalEol[name]=text.includes('\r\n')?'crlf':'lf';
+     saved=Buffer.from(text.replace(/\r\n/g,'\n'));
+   }
    if(saved.length!==r.bytes.length)normalized++;
    const output=path.join(stage,name);
    fs.mkdirSync(path.dirname(output),{recursive:true});
@@ -140,6 +145,14 @@ async function snapshot(){
  }catch(e){
   console.error('OWNER_PATCH_FAILED',String(e.stdout||e.stderr||e).slice(0,4000));
   throw new Error('No safe hunk match on live site; production not modified');
+ }
+ // Restore the original public line-ending style for each modified asset.
+ for(const [name,style] of Object.entries(originalEol)){
+   if(style==='crlf'){
+     const file=path.join(stage,name);
+     const text=fs.readFileSync(file,'utf8');
+     fs.writeFileSync(file,text.replace(/\r?\n/g,'\r\n'));
+   }
  }
  const changed=[];
  for(const [name,old] of Object.entries(stageBefore)){
