@@ -44,7 +44,12 @@ jobs:
           try{
             const r=await fetch('https://deepsyq.app/deepsyq.css?mobile_jarvix_20261110='+Date.now(),{headers:{'Cache-Control':'no-cache'},signal:AbortSignal.timeout(15000)});
             const body=await r.text();
-            console.log('JARVIX_CSS_PUBLIC_STATUS',JSON.stringify({http:r.status,containsLeftAlignment:body.includes('align-items:center;justify-content:flex-start!important;gap:10px;'),size:body.length}))
+            const needle='.home-spotlight-agent>.home-spotlight-jarvix-mark';
+            const pos=body.lastIndexOf(needle);
+            console.log('JARVIX_CSS_PUBLIC_STATUS',JSON.stringify({http:r.status,containsLeftAlignment:body.includes('align-items:center;justify-content:flex-start!important;gap:10px;'),size:body.length,selectorCount:body.split(needle).length-1,selectorExcerpt:pos>=0?body.slice(pos,pos+310):null}))
           }catch(e){console.log('JARVIX_CSS_PUBLIC_STATUS',JSON.stringify({error:String(e).slice(0,120)}))}
+          const log=await api(project+'/deployments/'+id+'/history/logs');
+          const entries=log.data?.data||[];
+          console.log('JARVIX_FAILED_DEPLOYMENT_LOG',JSON.stringify({http:log.http,lines:entries.length,errors:entries.filter(x=>/fail|error|worker|invalid|unknown|HTTP 4|HTTP 5|route|file/i.test(x.line||'')).slice(-12).map(x=>String(x.line||'').slice(0,260))}));
           console.log('READ_ONLY_NO_CHANGES',true);
           JS
