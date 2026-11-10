@@ -262,7 +262,27 @@ function render(){
   typingItem.append(typingBubble);
   area.append(typingItem);
  }
- area.scrollTop=area.scrollHeight;
+ const lastMsg=conversation.messages[conversation.messages.length-1];
+ if(lastMsg&&lastMsg.role==='assistant'){
+  const assistantItems=area.querySelectorAll('.j-message.assistant:not(.j-typing-message)');
+  const target=assistantItems[assistantItems.length-1];
+  if(target){
+   requestAnimationFrame(()=>{
+    try{
+     const delta=target.getBoundingClientRect().top-area.getBoundingClientRect().top+area.scrollTop-14;
+     if(Math.abs(area.scrollTop-delta)>6){
+      area.scrollTo({top:Math.max(0,delta),behavior:'smooth'});
+     }
+    }catch(_){
+     target.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+   });
+  }else{
+   area.scrollTop=area.scrollHeight;
+  }
+ }else{
+  area.scrollTop=area.scrollHeight;
+ }
 }
 async function run(work){if(busy)return;busy=true;const version=++epoch;controller=new AbortController();$('jSend').disabled=true;$('jStop').hidden=false;try{await work();}catch(e){if(e.name!=='AbortError')status(e.message);}finally{if(version===epoch){busy=false;controller=null;$('jSend').disabled=false;$('jStop').hidden=true;render();}}}
 async function poll(message){const version=epoch;for(let i=0;i<60;i++){const d=await api('/api/studio/jobs/'+encodeURIComponent(message.jobId));if(version!==epoch)return;if(d.status==='ready'&&d.mime&&!d.mime.startsWith(message.kind==='video'?'video/':message.kind==='audio'?'audio/':'image/'))throw Error('The task did not return a compatible media file.');message.status=d.status;message.mediaUrl=d.mediaUrl||d.previewUrl||null;message.demo=d.previewOnly===true;if(d.provider==='bundled-test-demo-not-ai')message.text='Bundled TEST demo video — not generated from your prompt.';message.kind=d.kind==='music'||d.kind==='voice'?'audio':d.kind||message.kind;message.text=d.status==='failed'?(d.error||'Generation failed.'):message.text;if(d.status==='ready'&&!message.resultFile&&message.mediaUrl){try{message.resultFile=await downloadResult(message.mediaUrl,{origin:location.origin,kind:message.kind,headers:headers(),signal:controller?.signal,guard:store.guard});}catch(_){}message.mediaExpired=false;}await save();render();if(['ready','failed','canceled'].includes(d.status))return;await new Promise(r=>setTimeout(r,1500));}status('Still processing. Use Check task later; your task has been saved.');}
