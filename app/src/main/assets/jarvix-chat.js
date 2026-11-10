@@ -125,12 +125,13 @@ async function processMessage(message){
 }
 const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();const m={id:makeId(),role:'user',text,mode,files,status:'pending',createdAt:Date.now()};if(!conversation.messages.length)conversation.title=text.slice(0,60);conversation.messages.push(m);await save();composer.clear();render();await run(()=>processMessage(m));}catch(e){status(e.message);}}});
 $('jStop').onclick=()=>{controller?.abort();$('jStop').hidden=true;status('Browser waiting stopped. Already submitted generation tasks are not cancelled.');};
-function resetToDefaultChat(startNew = true) {
+function resetToDefaultChat(startNew = true, preserveMode = false) {
   if (startNew && busy) return;
   try {
-    sessionStorage.removeItem('jarvix_composer_mode');
-    setChatHeaderMode('auto');
-    window.dispatchEvent(new CustomEvent('jarvix:mode', { detail: { mode: 'auto' } }));
+    const activeMode = preserveMode ? (sessionStorage.getItem('jarvix_composer_mode') || 'auto') : 'auto';
+    if (!preserveMode) sessionStorage.removeItem('jarvix_composer_mode');
+    setChatHeaderMode(activeMode);
+    window.dispatchEvent(new CustomEvent('jarvix:mode', { detail: { mode: activeMode } }));
   } catch(err){}
   if (typeof minimizeWorkspace === 'function') minimizeWorkspace();
   if (startNew) {
@@ -164,9 +165,7 @@ function sizeChatToVisibleViewport() {
   // Reserve a small bottom margin, including when the mobile keyboard is open.
   const height = Math.max(200, Math.floor(bottom - top - 10));
   root.style.setProperty('--j-chat-available-height', height + 'px');
-  // Drawer must be less than half the visible phone viewport AND leave chat/input room.
-  const drawerHeight = Math.max(48, Math.min(248, Math.floor((visible?.height || window.innerHeight) * 0.45), Math.floor((height - 170) * 0.68)));
-  root.style.setProperty('--j-history-drawer-height', drawerHeight + 'px');
+  // The mobile history uses ~62% of width, never a half-height chat takeover.
 }
 function watchChatViewport() {
   const update = () => requestAnimationFrame(sizeChatToVisibleViewport);
@@ -184,17 +183,22 @@ const pending=conversation.messages.find(m=>m.status==='pending');if(pending)awa
 window.addEventListener('jarvix:conversation-updated',async()=>{if(busy)return;const next=await store.get(sessionStorage.getItem('jarvix_active_conversation'));if(!next)return;conversation=next;render();const pending=conversation.messages.find(m=>m.status==='pending');if(pending)await run(()=>processMessage(pending));});
 
 const modeHeaderLabels={
-  ru:{text:'ЧАТ',auto:'ЧАТ',image:'ИЗОБРАЖЕНИЕ',video:'ВИДЕО',audio:'АУДИО',music:'АУДИО'},
-  en:{text:'CHAT',auto:'CHAT',image:'IMAGE',video:'VIDEO',audio:'AUDIO',music:'AUDIO'}
+  ru:{text:'Чат',auto:'Чат',image:'Изображения',video:'Видео',audio:'Аудио',music:'Аудио'},
+  en:{text:'Chat',auto:'Chat',image:'Image',video:'Video',audio:'Audio',music:'Audio'},
+  fr:{text:'Chat',auto:'Chat',image:'Image',video:'Vidéo',audio:'Audio',music:'Audio'},
+  es:{text:'Chat',auto:'Chat',image:'Imagen',video:'Vídeo',audio:'Audio',music:'Audio'}
 };
 function setChatHeaderMode(m){
-  const labelEl=$('jActiveModeLabel');if(!labelEl)return;
-  const lang=(localStorage.getItem('deepsyq_home_language')||document.documentElement.lang||'ru').startsWith('ru')?'ru':'en';
   const norm=m==='music'?'audio':(m||'auto');
+  let lang='ru';try{lang=(localStorage.getItem('deepsyq_home_language')||document.documentElement.lang||'ru').slice(0,2)}catch{}
   const dict=modeHeaderLabels[lang]||modeHeaderLabels.ru;
-  labelEl.textContent=dict[norm]||(norm==='auto'?dict.auto:norm.toUpperCase());
-  labelEl.dataset.mode=norm;
+  const display=dict[norm]||dict.auto;
+  const labelEl=$('jActiveModeLabel');
+  if(labelEl){labelEl.textContent=display;labelEl.dataset.mode=norm;}
+  const heading=$('jDrawerHeading');
+  if(heading)heading.textContent='JARVIX '+display;
 }
+
 window.addEventListener('jarvix:mode',e=>{if(e.detail?.mode)setChatHeaderMode(e.detail.mode);});
 try{const st=sessionStorage.getItem('jarvix_composer_mode');if(st)setChatHeaderMode(st);}catch{}
 try {
@@ -287,11 +291,54 @@ function initChatMenuDrawer() {
   const backdrop = $('jDropdownBackdrop');
   const newBtn = $('jMenuNewChat');
   const historyListEl = $('jMenuHistoryList');
+  const searchInput = $('jDrawerSearch');
+  const searchToggle = $('jDrawerSearchToggle');
+  const sortToggle = $('jDrawerSortToggle');
+  let newestFirst = true;
 
   if (!titleBtn || !dropdown) return;
+  searchToggle?.addEventListener('click', () => {
+    if (!searchInput) return;
+    searchInput.hidden = !searchInput.hidden;
+    if (!searchInput.hidden) searchInput.focus();
+    else { searchInput.value = ''; updateHistoryList().catch(() => {}); }
+  });
+  searchInput?.addEventListener('input', () => updateHistoryList().catch(() => {}));
+  sortToggle?.addEventListener('click', () => {
+    newestFirst = !newestFirst;
+    sortToggle.setAttribute('aria-pressed', String(!newestFirst));
+    sortToggle.title = newestFirst ? 'Сначала старые чаты' : 'Сначала новые чаты';
+    updateHistoryList().catch(() => {});
+  });
+  $('jDrawerRecent')?.addEventListener('click', () => {
+    historyListEl?.scrollTo({top:0,behavior:'smooth'});
+    if(searchInput && !searchInput.hidden)searchInput.focus();
+  });
+  document.querySelectorAll('[data-j-drawer-mode]').forEach(button => {
+    button.addEventListener('click', () => {
+      const mode = button.dataset.jDrawerMode;
+      closeDropdown();
+      const target = document.querySelector('#jPlusMenu [data-j-mode="'+mode+'"]');
+      if(target instanceof HTMLElement)target.click();
+    });
+  });
+  $('jDrawerSettings')?.addEventListener('click', () => {
+    closeDropdown();
+    const gear = document.querySelector('#jChatForm .j-settings-shortcut');
+    if(gear instanceof HTMLElement)gear.click();
+    else status('Настройки студии сейчас недоступны.');
+  });
 
   const openDropdown = async () => {
     await updateHistoryList();
+    const account = $('jDrawerAccountLink');
+    if(account){
+      const loggedIn=!!localStorage.getItem('vv_token');
+      account.href=loggedIn?'video-uniquifier.html#profile':'deepsyq.html?panel=login';
+      const name=account.querySelector('strong');
+      if(name)name.textContent=loggedIn?'Аккаунт DEEPSYQ':'Войти в аккаунт';
+    }
+    setChatHeaderMode($('jActiveModeLabel')?.dataset.mode||'auto');
     dropdown.hidden = false;
     titleBtn.setAttribute('aria-expanded', 'true');
     titleBtn.classList.add('open');
@@ -325,7 +372,7 @@ function initChatMenuDrawer() {
   if (newBtn) {
     newBtn.onclick = () => {
       if (busy) return;
-      resetToDefaultChat(true);
+      resetToDefaultChat(true, true);
       closeDropdown();
       $('jInput')?.focus();
     };
@@ -353,19 +400,33 @@ function initChatMenuDrawer() {
 
   async function updateHistoryList() {
     if (!historyListEl) return;
-    const rows = await store.list();
+    const allRows = await store.list();
+    const query=(searchInput?.value||'').trim().toLocaleLowerCase();
+    const rows=allRows.filter(r => Array.isArray(r.messages) && r.messages.length > 0)
+      .filter(r => !query || (r.title||'').toLocaleLowerCase().includes(query));
+    if(!newestFirst)rows.reverse();
     historyListEl.replaceChildren();
 
     const ru = (getJarvixLanguage() || 'ru').startsWith('ru');
 
     if (!rows.length) {
-      const emptyMsg = node('div', ru ? 'Нет сохранённых диалогов' : 'No saved conversations');
+      const emptyMsg = node('div', ru ? (query?'Ничего не найдено':'Пока нет переписок') : (query?'No matching conversations':'No saved conversations'));
       emptyMsg.style.cssText = 'color:#64748b;font-size:12px;padding:8px 6px;text-align:center;';
       historyListEl.append(emptyMsg);
       return;
     }
 
+    let lastGroup = '';
     for (const r of rows) {
+      const updated=new Date(r.updatedAt || r.createdAt || 0);
+      const today=new Date();const midnight=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+      const ageDays=Math.floor((midnight.getTime()-new Date(updated.getFullYear(),updated.getMonth(),updated.getDate()).getTime())/86400000);
+      const group=ageDays<=0?(ru?'Сегодня':'Today'):ageDays===1?(ru?'Вчера':'Yesterday'):ageDays<7?(ru?'На этой неделе':'This week'):(ru?'Ранее':'Earlier');
+      if(group!==lastGroup){
+        const heading=node('div',group);
+        heading.className='j-drawer-history-group';
+        historyListEl.append(heading);lastGroup=group;
+      }
       const item = node('button');
       item.type = 'button';
       item.className = 'j-dropdown-conv-item' + (r.id === conversation?.id ? ' active' : '');
