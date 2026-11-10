@@ -95,7 +95,7 @@ export async function speakOwnerSpeech(text, language, hooks) {
     }
     const cached = staticCached || greetingCached || tourGreetingCached || ackCached || nearestAudio || tourAudio;
     if (turn !== version) return;
-    if (!cached) { hooks.unavailable?.(); hooks.complete?.(); return; }
+    if (!cached) { hooks.unavailable?.(); hooks.error?.('RECORDING_NOT_FOUND'); hooks.complete?.(); return; }
     if (tourAudio && tourBackup) hooks.recordedText?.(tourBackup.text);
     else if (nearestAudio && nearestReply) hooks.recordedText?.(nearestReply.text);
     hooks.source?.(ackCached ? 'memory-ack' : greetingCached ? 'cached-greeting' :
@@ -114,9 +114,9 @@ export async function speakOwnerSpeech(text, language, hooks) {
       if (turn !== version) return;
       // Only one synthesis request at a time; prepare the next while this audio plays.
       next = index + 1 < chunks.length ? loadChunk(chunks[index + 1]) : null;
-      if (audioContext) {
-        await audioReady;
-        if (audioContext.state !== 'running') throw new Error('AUDIO_GESTURE_REQUIRED');
+      // Only use WebAudio after it has been unlocked by a real click. When
+      // suspended, still attempt the exact same recorded MP3 via HTMLAudio.
+      if (audioContext && audioContext.state === 'running') {
         const decoded = await audioContext.decodeAudioData(await blob.arrayBuffer());
         if (turn !== version) return;
         const node = audioContext.createBufferSource();
