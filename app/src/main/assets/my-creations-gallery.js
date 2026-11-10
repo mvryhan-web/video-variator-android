@@ -61,7 +61,7 @@ async function fetchMyCards(){
   const json=await response.json();
   state.userItems=(Array.isArray(json.sections?.recent)?json.sections.recent:[])
    .filter(x=>x&&typeof x.id==='string'&&['image','video','audio'].includes(x.type))
-   .map(x=>({...x,kind:'own',model:x.model||'DEEPSYQ Studio',prompt:x.prompt||null}));
+   .map(x=>({...x,kind:'own',model:x.model||'DEEPSYQ Studio',prompt:x.prompt||null,preview:state.mediaCache.get(x.id)||null}));
   render();
  }catch(err){say('Личные работы пока недоступны. Демонстрационная коллекция остаётся открытой.');console.warn('My Creations:',err)}
 }
@@ -85,7 +85,7 @@ async function tryOwnMedia(item){
   if(!/^(image\/|video\/|audio\/)/.test(blob.type))throw Error('UNSUPPORTED_MEDIA');
   const url=URL.createObjectURL(blob);state.mediaCache.set(item.id,url);
   return url;
- }catch{return null}
+ }catch{state.mediaCache.set(item.id,null);return null}
 }
 function compactBtn(title,svg,onClick,pressed=false){
  const b=document.createElement('button');b.type='button';b.className='mc-icon-btn';b.title=title;b.setAttribute('aria-label',title);
@@ -99,7 +99,11 @@ function buildCard(item){
  const media=document.createElement('button');media.type='button';media.className='mc-card-image';media.setAttribute('aria-label','View '+nameOf(item));
  const imageBox=thumb(item);while(imageBox.firstChild)media.append(imageBox.firstChild);
  media.addEventListener('click',()=>showOne(item));
- if(item.kind==='own'&&!item.preview)tryOwnMedia(item).then(url=>{if(url){item.preview=url;render()}});
+ if(item.kind==='own'&&!item.preview&&!state.mediaCache.has(item.id)){
+  tryOwnMedia(item).then(url=>{
+   if(url){const original=state.userItems.find(x=>x.id===item.id);if(original&&original.preview!==url){original.preview=url;render()}}
+  });
+ }
  const foot=document.createElement('div');foot.className='mc-card-foot';
  const title=document.createElement('span');title.className='mc-card-title';title.textContent=nameOf(item);
  const type=document.createElement('span');type.className='mc-type';type.innerHTML='<span class="mc-type-icon" aria-hidden="true">'+(icons[item.type]||'✦')+'</span>';type.append(document.createTextNode(item.type==='audio'?'Audio':item.type==='video'?'Video':'Image'));
@@ -192,4 +196,5 @@ $('mcShare').addEventListener('click',()=>share(selected()));
 $('mcReference').addEventListener('click',()=>useReference(selected()));
 $('mcRemove').addEventListener('click',()=>remove(selected()));
 document.addEventListener('keydown',event=>{if(event.key==='Escape')$('mcDetail').hidden=true});
+if(window.matchMedia('(max-width:820px)').matches)$('mcDetail').hidden=true;
 render();void loadSamples();void fetchMyCards();
