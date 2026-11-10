@@ -46,7 +46,7 @@ jobs:
             --project-name=deepsyq --branch=owner-account-navsafe-20261110 \
             --commit-hash="$TARGET_SHA" --commit-dirty=true \
             --commit-message="Owner-approved surgical Account + Video Uniquifier navigation preview"
-      - name: Browser-check PREVIEW: first-click Account, actual Profile, Video Uniquifier, unchanged pages and Worker
+      - name: Browser-check PREVIEW for direct Account and VU navigation, unchanged pages and Worker
         shell: bash
         run: |
           set -euo pipefail
