@@ -233,9 +233,12 @@ async function check(mode){
    }));
    try{
     const page=await ctx.newPage();
+    page.on('pageerror',e=>console.log('OWNER_AI_APPS_PAGEERROR',mode,form,e.message.slice(0,600)));
+    page.on('console',m=>{if(m.type()==='error')console.log('OWNER_AI_APPS_CONSOLE_ERROR',mode,form,m.text().slice(0,450))});
+    page.on('response',r=>{if(r.status()>=400&&/ai-apps|home-|template|\/api\//.test(r.url()))console.log('OWNER_AI_APPS_HTTP_ERROR',mode,form,r.status(),r.url())});
     const response=await page.goto(base+'/ai-apps.html',{waitUntil:'domcontentloaded',timeout:42000});
     assert.equal(response.status(),200,'AI Apps page unavailable');
-    await page.locator('.app-card').first().waitFor({state:'visible',timeout:20000});
+    await page.locator('.app-card').first().waitFor({state:'visible',timeout:8000}).catch(async e=>{console.log('OWNER_AI_APPS_NO_CARDS_DIAG',mode,form,JSON.stringify(await page.evaluate(()=>({status:document.getElementById('status')?.textContent,cards:document.querySelectorAll('.app-card').length,html:document.querySelector('#apps')?.innerHTML.slice(0,900)}))));throw e});
     assert.equal((await page.locator('#appsTitle').textContent()).trim(),'AI Apps','wrong catalog title');
     assert.equal(await page.locator('.hero').count(),0,'extra banner remains');
     assert.equal(await page.locator('.app-card').count(),8,'not all eight cards');
