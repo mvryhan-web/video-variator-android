@@ -78,14 +78,14 @@ function patchLatestCanvas(live,source){
  assert(wanted.content.includes('id="canvasWorkspace"'),'New Canvas workspace missing');
  assert(wanted.content.includes('id="cwGallery"')&&wanted.content.includes('id="cwStage"'),'Canvas editor controls missing');
  html=html.slice(0,current.start)+wanted.content+html.slice(current.end+7);
- const oldScript='<script type="module" src="canvas-editor.js"></script>';
- const newScript='<script type="module" src="canvas-workspace.js?v=20261110"></script>';
- assert(html.includes(oldScript)||html.includes(newScript),'Canvas JavaScript import absent');
+ const oldScript='<script type="module" src="canvas-workspace.js?v=20261110"></script>';
+ const newScript='<script type="module" src="canvas-workspace.js?v=20261110-ux2"></script>';
+ assert(html.includes(oldScript)||html.includes(newScript),'Current Canvas JS import absent');
  html=html.replace(oldScript,newScript);
- const css='<link rel="stylesheet" href="canvas-page.css">';
- const add='<link rel="stylesheet" href="canvas-workspace.css?v=20261110">';
- assert(html.includes(css)||html.includes(add),'Canvas CSS import absent');
- if(!html.includes(add))html=html.replace(css,css+add);
+ const oldCss='<link rel="stylesheet" href="canvas-workspace.css?v=20261110">';
+ const newCss='<link rel="stylesheet" href="canvas-workspace.css?v=20261110-ux2">';
+ assert(html.includes(oldCss)||html.includes(newCss),'Current Canvas CSS import absent');
+ html=html.replace(oldCss,newCss);
  assert(html.includes('deepsyq-site-shell.js')&&html.includes('jarvis-core.js'),'Global navigation/JARVIX lost');
  assert(html.includes('deepsyq-mobile-shell.js'),'Mobile shell lost');
  assert((html.match(/id="cwGallery"/g)||[]).length===1,'Duplicate Canvas gallery detected');
@@ -153,11 +153,21 @@ async function stageResources(){
  }}
  await Promise.all(Array.from({length:12},()=>copyOne()));
  for(const filename of protectedPages)assert(protectedHashes[filename], 'Cannot audit protected page '+filename);
- // Ensure every requested NEW asset is not replacing unrelated LIVE content.
+ // Surgical v2: only existing Canvas JavaScript and CSS may be replaced.
+ // The 26 previously approved photo assets must remain byte-for-byte identical.
+ const scopedCode=new Set(['canvas-workspace.js','canvas-workspace.css']);
  for(const rel of paths.slice(1)){
-   const file=path.join(stage,rel);assert(!fs.existsSync(file),'Canvas file already exists on LIVE; audit explicit replacement: '+rel);
-   const src=path.join(sourceRoot,rel);assert(fs.statSync(src).isFile(),'Missing owner photo/source '+rel);
-   fs.mkdirSync(path.dirname(file),{recursive:true});fs.copyFileSync(src,file);
+   const dest=path.join(stage,rel),source=path.join(sourceRoot,rel);
+   assert(fs.existsSync(dest)&&fs.existsSync(source),'Live Canvas file missing '+rel);
+   if(scopedCode.has(rel)){
+     fs.copyFileSync(source,dest);
+   }else{
+     const expected=hash(fs.readFileSync(source));
+     assert.equal(hash(fs.readFileSync(dest)),expected,'Demo media changed in baseline '+rel);
+     const actual=await getLive(rel);
+     assert.equal(actual.status,200,'Demo media missing on LIVE '+rel);
+     assert.equal(hash(actual.bytes),expected,'Demo media does not match approved image '+rel);
+   }
  }
  // The latest live header, site-wide sidebar, account & footer are untouched.
  const updated=patchLatestCanvas(liveCanvas,textOf(path.join(sourceRoot,'canvas.html')));
@@ -168,7 +178,7 @@ async function stageResources(){
    const now=hash(fs.readFileSync(path.join(stage,rel)));
    if(now!==oldHash)changed.push(rel);
  }
- assert.deepEqual(changed,['canvas.html'],'Unrequested existing LIVE text file changed');
+ assert.deepEqual(changed.sort(),['canvas.html','canvas-workspace.js','canvas-workspace.css'].sort(),'Unrequested existing LIVE text file changed');
  const stagedWorker=sh('git',['hash-object',path.join(stage,'_worker.js')]);
  assert.equal(stagedWorker,data.workerSha,'Worker source not identical to current LIVE commit');
  sh('node',['--check',path.join(stage,'canvas-workspace.js')]);
@@ -181,7 +191,7 @@ async function stageResources(){
    }
  }
  fs.writeFileSync(checks,JSON.stringify(protectedHashes));
- console.log('OWNER_CANVAS_EXACT_ALLOWED_CHANGE',JSON.stringify({changedOld:changed,newFiles:paths.length-1,protectedChecked:Object.keys(protectedHashes).length,staleGitTextExcluded:removed.length,workerPreserved:true}));
+ console.log('OWNER_CANVAS_EXACT_ALLOWED_CHANGE',JSON.stringify({changedOld:changed,newFiles:0,protectedChecked:Object.keys(protectedHashes).length,staleGitTextExcluded:removed.length,workerPreserved:true}));
 }
 async function guard(){const data=load(),p=await getProject();assert.equal(p.canonical_deployment?.id,data.liveId,'Concurrent MAIN update detected: do not deploy');assert.equal(p.production_script_name,data.workerName,'Production Worker changed while preparing');console.log('OWNER_CANVAS_CONCURRENCY_GUARD_PASS');}
 async function verify(kind){
