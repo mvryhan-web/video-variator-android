@@ -1,0 +1,53 @@
+name: Owner JARVIX history live CSS and worker preflight (READ ONLY)
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths: ['.github/workflows/owner-jarvix-history-live-inspection-20261110.yml']
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: deepsyq-platform
+          fetch-depth: 0
+      - name: Read-only production manifest and Worker source build graph
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import crypto from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          const account=process.env.CF_ACCOUNT,token=process.env.CF_TOKEN;
+          if(!account||!token)throw Error('Missing existing Cloudflare credentials');
+          const api='https://api.cloudflare.com/client/v4/accounts/'+account+'/pages/projects/deepsyq';
+          const headers={Authorization:'Bearer '+token};
+          async function read(url){
+            const r=await fetch(url,{headers,signal:AbortSignal.timeout(14000)});
+            const j=await r.json();
+            if(!r.ok||j.success!==true)throw Error('Cloudflare read refused HTTP '+r.status);
+            return j.result;
+          }
+          const proj=await read(api);
+          const id=proj.canonical_deployment?.id;
+          const live=await read(api+'/deployments/'+id);
+          const hash=(live.files||{})['/jarvix-chat.css'];
+          const source=live.deployment_trigger?.metadata?.commit_hash||proj.canonical_deployment?.deployment_trigger?.metadata?.commit_hash||'';
+          const settings=await read('https://api.cloudflare.com/client/v4/accounts/'+account+'/workers/scripts/'+encodeURIComponent(proj.production_script_name)+'/settings');
+          const worker=execFileSync('git',['show',source+':app/src/main/assets/_worker.js'],{encoding:'utf8'});
+          const imports=[...worker.matchAll(/(?:^|\n)\s*import\s+[^\n]+?from\s+['"]([^'"]+)['"]/g)].map(x=>x[1]);
+          const css=fs.readFileSync('app/src/main/assets/jarvix-chat.css');
+          const digest=crypto.createHash('sha256').update(css).digest('hex').slice(0,16);
+          console.log('JARVIX_HISTORY_DEPLOYMENT_READ_ONLY',JSON.stringify({
+            deployment:id,source:source.slice(0,16),workerEnabled:live.uses_functions,
+            manifestCssHash:hash,manifestEntries:Object.keys(live.files||{}).length,
+            currentCssSha256Prefix:digest,hasHistoryClip:css.includes('history scroll ends ABOVE its account footer'),
+            workerSourceImports:imports,workerSettingsAccessible:!!settings,workerName:proj.production_script_name,
+            prodBranch:proj.production_branch
+          }));
+          JS
