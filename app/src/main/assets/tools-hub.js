@@ -39,7 +39,7 @@
  }[lang]||['Video Uniquifier','Your original video editor · Gentle, Balance & Dynamic'];
  const legacyLink=document.createElement('a');
  legacyLink.className='hub-tile';legacyLink.dataset.legacyTool='video-uniquifier';
- legacyLink.href='index.html';
+ legacyLink.href='video-uniquifier.html';
  const legacyIcon=document.createElement('span');legacyIcon.className='hub-icon';
  legacyIcon.setAttribute('aria-hidden','true');legacyIcon.textContent='▤';
  const legacyTitle=document.createElement('strong');legacyTitle.textContent=legacyText[0];

@@ -164,23 +164,7 @@ body.j-action-workspace #homeQuickBar {
   color: #fef08a !important;
 }
 
-/* owner-home-outer-amber-frame: restore 2026-11-07 golden Studio outline only around the Home dock.
-   Keep the existing input, buttons, chat, links, positions and other pages intact. */
-body.home-neon #homeQuickBar:has(> #homeQuickForm[data-jarvix-chat]) {
-  box-sizing: border-box !important;
-  padding: 9px 12px 11px !important;
-  border: 2px solid transparent !important;
-  border-radius: 32px !important;
-  background: linear-gradient(130deg, #09122aeb, #080c29f5) padding-box,
-              linear-gradient(105deg, #df9333, #ffca6b 35%, #d67e28 76%, #e4a64b) border-box !important;
-  box-shadow: 0 0 14px #e29e4252, 0 0 18px #ffbf523a, inset 0 0 16px #84551e28 !important;
-}
-@media (max-width: 760px) {
-  body.home-neon #homeQuickBar:has(> #homeQuickForm[data-jarvix-chat]) {
-    padding: 9px 8px 10px !important;
-    border-radius: 25px !important;
-  }
-}
+
 </style>
 
 </head>
