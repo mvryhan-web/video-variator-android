@@ -109,11 +109,6 @@ function render(){
   const body=document.createElement('div');body.className='app-body';
   const h=document.createElement('h3');h.textContent=item.title||'Untitled workflow';
   const p=document.createElement('p');p.textContent=item.description||'Open this workflow with its saved prompt and settings.';
-  const meta=document.createElement('div');meta.className='app-meta';
-  for(const value of [item.category,String(item.generationType||'').replace('_',' '),...(Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[]).slice(0,3)]){
-   if(!value)continue;
-   const span=document.createElement('span');span.textContent=value;meta.append(span);
-  }
   const eligibility=templateSupport(item);
   let nameInput=null;
   if(eligibility.supported&&eligibility.requiresProductName){
@@ -133,7 +128,7 @@ function render(){
   });
   const hint=inputHint(item);
   if(hint){const note=document.createElement('p');note.className='input-hint';note.textContent=hint;body.append(note);}
-  body.append(meta,templatePreview(item),button,feedback);card.append(visual,body);root.append(card);
+  body.append(templatePreview(item),button,feedback);card.append(visual,body);root.append(card);
  }
 }
 async function load(){
