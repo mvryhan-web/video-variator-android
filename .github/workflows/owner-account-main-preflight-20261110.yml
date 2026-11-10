@@ -1,0 +1,58 @@
+name: Owner Account + Video Uniquifier MAIN provenance preflight
+on:
+  push:
+    branches: [owner-account-main-preflight-20261110]
+    paths: ['.github/workflows/owner-account-main-preflight-20261110.yml']
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Inspect verified Pages MAIN, asset consistency and Worker
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {execFileSync} from 'node:child_process';
+          import {createHash} from 'node:crypto';
+          import fs from 'node:fs';
+          const token=process.env.CF_TOKEN,account=process.env.CF_ACCOUNT;
+          assert(token&&/^[0-9a-f]{32}$/.test(account||''),'Missing Cloudflare credentials');
+          const api='https://api.cloudflare.com/client/v4/accounts/'+account;
+          const headers={Authorization:'Bearer '+token};
+          const pRes=await fetch(api+'/pages/projects/deepsyq',{headers,signal:AbortSignal.timeout(20000)});
+          assert.equal(pRes.status,200);
+          const p=(await pRes.json()).result,d=p.canonical_deployment;
+          assert(p.name==='deepsyq'&&p.production_branch==='deepsyq-platform'&&d?.uses_functions===true);
+          const sha=d.deployment_trigger?.metadata?.commit_hash;
+          console.log('PROD_STATE',JSON.stringify({id:d.id,sha,dirty:d.deployment_trigger?.metadata?.commit_dirty,worker:p.production_script_name,functions:d.uses_functions,trigger:d.deployment_trigger?.type}));
+          assert(/^[0-9a-f]{40}$/.test(sha||''),'No actual production source SHA');
+          execFileSync('git',['cat-file','-e',sha+'^{commit}']);
+          const paths=['deepsyq-site-shell.js','deepsyq-mobile-shell.js','deepsyq-unified-platform-header.js','deepsyq.js','video-uniquifier.html'];
+          const sha256=x=>createHash('sha256').update(x).digest('hex');
+          for(const name of paths){
+            const file='app/src/main/assets/'+name;
+            const source=execFileSync('git',['show',sha+':'+file]);
+            const res=await fetch('https://deepsyq.app/'+name+'?navSourceAudit='+Date.now(),{headers:{'cache-control':'no-cache'},signal:AbortSignal.timeout(20000)});
+            const live=Buffer.from(await res.arrayBuffer());
+            console.log('PROD_FILE',JSON.stringify({name,http:res.status,liveMatchesCommit:sha256(live)===sha256(source),gitSha:sha256(source),liveSha:sha256(live),bytes:live.length}));
+          }
+          const cfg=await fetch('https://deepsyq.app/api/config',{signal:AbortSignal.timeout(20000)});
+          console.log('PROD_API',cfg.status,cfg.headers.get('content-type'));
+          const productionConfig=p.deployment_configs?.production||{};
+          console.log('PROD_BINDING_NAMES',JSON.stringify({env:Object.keys(productionConfig.env_vars||{}),r2:Object.keys(productionConfig.r2_buckets||{})}));
+          const w=await fetch(api+'/workers/scripts/'+encodeURIComponent(p.production_script_name)+'/settings',{headers,signal:AbortSignal.timeout(20000)});
+          console.log('PROD_WORKER_SETTINGS_HTTP',w.status);
+          const currentWorker=execFileSync('git',['rev-parse',sha+':app/src/main/assets/_worker.js'],{encoding:'utf8'}).trim();
+          const dev=execFileSync('git',['rev-parse','origin/deepsyq-platform'],{encoding:'utf8'}).trim();
+          const devWorker=execFileSync('git',['rev-parse',dev+':app/src/main/assets/_worker.js'],{encoding:'utf8'}).trim();
+          console.log('WORKER_COMPARISON',JSON.stringify({prod:currentWorker,dev:devWorker,unchanged:currentWorker===devWorker,dev}));
+          JS
