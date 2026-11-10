@@ -11,7 +11,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   publish:
-    if: contains(github.event.head_commit.message, 'deploy(ai-apps): one-time surgical release')
+    if: >-
+      contains(github.event.head_commit.message, 'deploy(ai-apps): one-time surgical release')
     runs-on: ubuntu-latest
     timeout-minutes: 18
     env:
