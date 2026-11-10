@@ -1,0 +1,47 @@
+name: Canvas resize — scoped MAIN release preserving Worker
+on:
+  push:
+    branches: [owner-canvas-responsive-window-20261110]
+    paths: ['.github/workflows/owner-canvas-responsive-production-20261110.yml']
+permissions: {contents: read}
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Cloudflare content hash verifier
+        run: python3 -m pip install --quiet blake3 --break-system-packages
+      - name: Stage exact two-file Canvas responsiveness change against current LIVE
+        run: |
+          set -euo pipefail
+          node --check scripts/owner-canvas-responsive-release-20261110.mjs
+          node scripts/owner-canvas-responsive-release-20261110.mjs prepare
+      - name: Upload only Canvas HTML and responsive CSS
+        run: node scripts/owner-canvas-responsive-release-20261110.mjs upload
+      - name: Preserve the active production Worker
+        run: node scripts/owner-canvas-responsive-release-20261110.mjs bundle
+      - name: Validate reserve TEST first
+        run: |
+          node scripts/owner-canvas-responsive-release-20261110.mjs test
+          node scripts/owner-canvas-responsive-release-20261110.mjs test-verify
+      - name: Publish exactly the approved Canvas HTML and CSS to MAIN
+        run: |
+          echo "MAIN_PROMOTION_ATTEMPTED=true" >> "$GITHUB_ENV"
+          node scripts/owner-canvas-responsive-release-20261110.mjs main
+      - name: Verify production Canvas assets and API
+        run: |
+          node scripts/owner-canvas-responsive-release-20261110.mjs main-verify
+          echo "MAIN_VERIFIED=true" >> "$GITHUB_ENV"
+      - name: Roll back only this release if verification fails
+        if: always() && env.MAIN_PROMOTION_ATTEMPTED == 'true' && env.MAIN_VERIFIED != 'true'
+        run: node scripts/owner-canvas-responsive-release-20261110.mjs rollback
