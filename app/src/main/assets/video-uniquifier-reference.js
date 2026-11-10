@@ -39,17 +39,15 @@ function makeNav(shell){
  const logo=node('a','vu-logo');logo.href='deepsyq.html';logo.setAttribute('aria-label','Deepsyq Home');
  logo.innerHTML='<img class="vu-logo-image" src="deepsyq-logo.png" alt="" width="34" height="34" decoding="async"><strong>Deepsyq</strong>';
  const menu=node('button','vu-nav-toggle','☷');menu.type='button';menu.setAttribute('aria-label','Toggle navigation');
- const search=node('form','vu-search');
- search.innerHTML='<span aria-hidden="true">⌕</span><input type="search" aria-label="Search Deepsyq pages" placeholder="Search anything..." autocomplete="off"><kbd>⌘ K</kbd>';
  const tools=node('div','vu-top-tools');
- tools.innerHTML='<a href="index.html?view=faq">ⓘ &nbsp;Help</a><span>◎ &nbsp;English</span><span class="vu-promo-pill">♔ &nbsp;Promo Code</span><span>♧ &nbsp;Invite Friend</span><span>◉ &nbsp;Credits</span><a href="pricing.html">♛ &nbsp;Pricing</a>';
+ tools.innerHTML='<a href="index.html?view=faq">ⓘ &nbsp;Help</a><span>◎ &nbsp;English</span><span>♧ &nbsp;Invite Friend</span><span>◉ &nbsp;Credits</span><a href="pricing.html">♛ &nbsp;Pricing</a>';
  const user=node('div','vu-top-user');
  const sign=$('signInBtn');if(sign)user.append(sign);
  const jBtn=node('button','top-jarvis-btn');
  jBtn.id='topJarvisBtn';jBtn.type='button';jBtn.setAttribute('aria-label','Activate JARVIX AI');
  jBtn.title='JARVIX — AI Voice Commander & Compare';
  jBtn.innerHTML='<div class="jarvis-mini-orb"><span class="jarvis-core"></span><span class="jarvis-ring"></span><span class="jarvis-ring ring-violet"></span></div><span class="jarvis-name">JARVIX</span>';
- bar.append(logo,menu,search,jBtn,tools,user);shell.prepend(bar);
+ bar.append(logo,menu,jBtn,tools,user);shell.prepend(bar);
  const side=shell.querySelector('.sidebar');if(!side)return;
  const nav=node('div','vu-side-nav');
  const sections=[
@@ -84,9 +82,7 @@ function makeNav(shell){
  menu.addEventListener('click',()=>document.body.classList.toggle('vu-nav-open'));
  nav.addEventListener('click',event=>{if(event.target.closest('a'))document.body.classList.remove('vu-nav-open')});
  document.addEventListener('keydown',event=>{if(event.key==='Escape')document.body.classList.remove('vu-nav-open')});
- const known=[['image','generate-studio.html?studio=image'],['video','index.html'],['audio','audio-studio.html'],['canvas','canvas.html'],['tools','free-tools.html'],['history','index.html?view=history'],['pricing','pricing.html']];
- search.addEventListener('submit',event=>{event.preventDefault();const value=search.querySelector('input').value.trim().toLowerCase();const hit=known.find(([key])=>value.includes(key));if(hit)location.href=hit[1];else search.querySelector('input').setCustomValidity('Search Image, Video, Audio, Canvas, Tools, History or Pricing.');search.reportValidity();});
- search.querySelector('input').addEventListener('input',e=>e.target.setCustomValidity(''));
+ 
 }
 function build(){
  const dash=$('dashboardView'),shell=document.querySelector('.shell'),workspace=dash?.querySelector('.workspace'),hero=dash?.querySelector('.hero');
