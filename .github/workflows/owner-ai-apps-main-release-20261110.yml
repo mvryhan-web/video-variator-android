@@ -1,4 +1,5 @@
 name: OWNER AI Apps two-file release with existing Worker preserved
+# Final: intercept Studio landing in QA to test template click without unrelated boot load.
 # Owner: fixture thumbnail no longer filtered as a logo, next run deploy MAIN after checks.
 # Re-run after instrumenting eight-card browser loading diagnostics
 # Retry: await Cloudflare preview edge propagation before accepting protected page hashes
