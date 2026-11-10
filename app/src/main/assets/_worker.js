@@ -239,17 +239,11 @@ function mockJarvixReply(message, language) {
   const m = String(message || '').toLowerCase();
   if (language === 'ru') {
     if (m.includes('тариф') || m.includes('цен') || m.includes('кредит') || m.includes('стоим')) {
-      return { reply: 'На странице Тарифы доступны подписки Basic ($9), Pro ($24), Business ($99), Lifetime (€2,999) и 5 пакетов AI-кредитов от 1,000 до 10,000,000 кредитов.', action: { type: 'navigate', url: 'pricing.html' } };
+      return { reply: 'На странице «Тарифы» доступны подписки Basic ($9), Pro ($24), Business ($99), Lifetime (€2,999) и пакеты AI-кредитов.', action: { type: 'navigate', url: 'pricing.html' } };
     }
-    if (m.includes('видео') || m.includes('video')) {
-      return { reply: 'Я подготовил параметры для генерации видео в Video Studio (Veo 3.1 / Seedance 2.0). Вы можете открыть студию или уточнить детали сцены.', action: null };
-    }
-    if (m.includes('фото') || m.includes('картин') || m.includes('изображ') || m.includes('image')) {
-      return { reply: 'Отличная концепция для Image Studio (Nano Banana 2 / Seedream 4.5 / GPT Image). Добавьте детали освещения или ракурса, либо перейдите к генерации.', action: null };
-    }
-    return { reply: 'Я JARVIX — ваш интеллектуальный ассистент DeepSyQ. Опишите идею для фото, видео или музыки, и я помогу собрать профессиональный промпт или открыть нужный инструмент.', action: null };
+    return { reply: 'Секунду, запрос обрабатывается. Пожалуйста, повторите попытку.', action: null };
   }
-  return { reply: 'I am JARVIX, your DeepSyQ creative assistant. Describe your image, video, or audio idea and I will help refine your prompt or open the right studio.', action: null };
+  return { reply: 'Processing your request. Please try again in a moment.', action: null };
 }
 
 export default {
