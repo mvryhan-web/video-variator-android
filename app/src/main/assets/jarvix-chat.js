@@ -44,8 +44,123 @@ async function save(){conversation=await store.save(conversation);await historyL
 async function historyList(){const rows=await store.list();$('jHistory').replaceChildren();for(const r of rows){const o=document.createElement('option');o.value=r.id;o.textContent=r.title;o.selected=r.id===conversation?.id;$('jHistory').append(o);}}
 const node=(tag,text)=>{const n=document.createElement(tag);if(text)n.textContent=text;return n;};
 function showFile(parent,file){const box=node('div'),url=URL.createObjectURL(file);urls.push(url);const el=node(file.type.startsWith('image/')?'img':file.type.startsWith('video/')?'video':file.type.startsWith('audio/')?'audio':'a');el.src=url;if(el.tagName==='IMG')el.alt=file.name||'Attachment';else if(el.tagName==='A'){el.href=url;el.download=file.name;el.textContent=file.name;}else el.controls=true;box.append(el);parent.append(box);}
+
+function createMessageFooter(m, item){
+ if(!m.text||typeof m.text!=='string'||!m.text.trim())return null;
+ const footer=node('div');
+ footer.className='j-msg-footer';
+ const lang=typeof getJarvixLanguage==='function'?getJarvixLanguage():'ru';
+ const i18n={
+  ru:{copy:'Копировать',copied:'Скопировано',edit:'Редактировать',save:'Отправить',cancel:'Отмена'},
+  en:{copy:'Copy',copied:'Copied',edit:'Edit',save:'Send',cancel:'Cancel'},
+  fr:{copy:'Copier',copied:'Copié',edit:'Modifier',save:'Envoyer',cancel:'Annuler'},
+  es:{copy:'Copiar',copied:'Copiado',edit:'Editar',save:'Enviar',cancel:'Cancelar'}
+ }[lang]||{copy:'Копировать',copied:'Скопировано',edit:'Редактировать',save:'Отправить',cancel:'Отмена'};
+
+ if(m.role==='user'){
+  const editBtn=node('button');
+  editBtn.type='button';
+  editBtn.className='j-msg-action-btn j-edit-btn';
+  editBtn.title=i18n.edit;
+  editBtn.setAttribute('aria-label',i18n.edit);
+  editBtn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg> <span>'+i18n.edit+'</span>';
+  editBtn.onclick=(e)=>{
+   e.stopPropagation();
+   if(item.querySelector('.j-inline-edit'))return;
+   const contentDiv=item.querySelector('.j-message-content')||item.firstElementChild;
+   const origDisp=contentDiv?contentDiv.style.display:'';
+   if(contentDiv)contentDiv.style.display='none';
+   footer.style.display='none';
+
+   const bottomInp=$('jInput');
+   if(bottomInp){bottomInp.value=m.text;bottomInp.dispatchEvent(new Event('input',{bubbles:true}));}
+
+   const editWrap=node('div');
+   editWrap.className='j-inline-edit';
+   const ta=document.createElement('textarea');
+   ta.className='j-edit-textarea';
+   ta.value=m.text;
+   ta.rows=Math.min(8,Math.max(2,(m.text.split('\n').length||1)+1));
+
+   const actions=node('div');
+   actions.className='j-edit-actions';
+   const saveBtn=node('button');
+   saveBtn.type='button';
+   saveBtn.className='j-edit-save-btn';
+   saveBtn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>'+i18n.save+'</span>';
+   const cancelBtn=node('button');
+   cancelBtn.type='button';
+   cancelBtn.className='j-edit-cancel-btn';
+   cancelBtn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> <span>'+i18n.cancel+'</span>';
+
+   cancelBtn.onclick=(ce)=>{
+    ce.stopPropagation();
+    editWrap.remove();
+    if(contentDiv)contentDiv.style.display=origDisp;
+    footer.style.display='flex';
+   };
+
+   saveBtn.onclick=async(se)=>{
+    se.stopPropagation();
+    const newText=ta.value.trim();
+    if(!newText||busy)return;
+    m.text=newText;
+    m.status='pending';
+    const idx=conversation.messages.indexOf(m);
+    if(idx!==-1&&idx+1<conversation.messages.length&&conversation.messages[idx+1].role==='assistant'){
+     conversation.messages.splice(idx+1,1);
+    }
+    await save();
+    render();
+    await run(()=>processMessage(m));
+   };
+
+   actions.append(saveBtn,cancelBtn);
+   editWrap.append(ta,actions);
+   item.insertBefore(editWrap,footer);
+   ta.focus();
+   ta.setSelectionRange(ta.value.length,ta.value.length);
+  };
+  footer.append(editBtn);
+ }
+
+ const copyBtn=node('button');
+ copyBtn.type='button';
+ copyBtn.className='j-msg-action-btn j-copy-btn';
+ copyBtn.title=i18n.copy;
+ copyBtn.setAttribute('aria-label',i18n.copy);
+ const iconCopy='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+ const iconDone='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+ copyBtn.innerHTML=iconCopy+' <span>'+i18n.copy+'</span>';
+ copyBtn.onclick=async(e)=>{
+  e.stopPropagation();
+  try{
+   if(navigator.clipboard&&navigator.clipboard.writeText){
+    await navigator.clipboard.writeText(m.text);
+   }else{
+    const temp=document.createElement('textarea');
+    temp.value=m.text;
+    temp.style.position='fixed';
+    temp.style.opacity='0';
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand('copy');
+    document.body.removeChild(temp);
+   }
+   copyBtn.classList.add('copied');
+   copyBtn.innerHTML=iconDone+' <span style="color:#4ade80">'+i18n.copied+'</span>';
+   setTimeout(()=>{
+    copyBtn.classList.remove('copied');
+    copyBtn.innerHTML=iconCopy+' <span>'+i18n.copy+'</span>';
+   },2000);
+  }catch(_){}
+ };
+ footer.append(copyBtn);
+ return footer;
+}
+
 function render(){for(const url of urls)URL.revokeObjectURL(url);urls=[];const area=$('jMessages');area.replaceChildren();if(!conversation.messages.length){const empty=node('div');empty.className='j-empty';empty.append(node('h2','What would you like to create?'));area.append(empty);}
- for(const m of conversation.messages){const item=node('article');item.className='j-message '+m.role;item.append(node('div',m.text));if(m.role==='assistant'&&m.limitReached===true){const pricing=node('a','View Pricing');pricing.href='pricing.html';pricing.style.cssText='display:inline-block;margin-top:10px;padding:10px 14px;border:1px solid #fff;border-radius:8px;color:#fff;font-weight:700';item.append(pricing);}for(const f of m.files||[])showFile(item,f);
+ for(const m of conversation.messages){const item=node('article');item.className='j-message '+m.role;const content=node('div',m.text);content.className='j-message-content';item.append(content);const footer=createMessageFooter(m,item);if(footer)item.append(footer);if(m.role==='assistant'&&m.limitReached===true){const pricing=node('a','View Pricing');pricing.href='pricing.html';pricing.style.cssText='display:inline-block;margin-top:10px;padding:10px 14px;border:1px solid #fff;border-radius:8px;color:#fff;font-weight:700';item.append(pricing);}for(const f of m.files||[])showFile(item,f);
  if(m.role==='assistant'&&m.toolAction){
   const action=m.toolAction,valid=ACTION_ROUTES[action.target]===action.url;
   if(valid&&action.kind==='navigate'){
