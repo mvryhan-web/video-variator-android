@@ -1,4 +1,5 @@
 name: OWNER selective ten-asset UI production release, preserve Worker and all other files
+# Retry: root index.html is the canonical changed Home alias, not an unrelated frozen asset
 # Retry after preserving original CRLF line endings during ten-file patch
 on:
   push:
