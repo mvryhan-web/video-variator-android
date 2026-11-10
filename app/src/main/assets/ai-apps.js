@@ -1,5 +1,6 @@
 import {templateSupport,prepareTemplatePrompt} from './ai-template-product-name.js';
 import {renderHomeInspiration} from './home-inspiration.js';
+import {mergeOwnerVideoInspiration} from './owner-inspiration-20261110.js';
 const $=id=>document.getElementById(id);
 const PAGE_SIZE=12;
 let all=[],shownLimit=PAGE_SIZE;
@@ -170,7 +171,7 @@ async function loadInspirationPreview(){
   const r=await fetch('/api/inspiration?limit=60',{cache:'no-store'});
   const feed=await r.json().catch(()=>({}));
   if(r.ok&&Array.isArray(feed.items)&&feed.items.length){
-   renderHomeInspiration(feed.items);
+   renderHomeInspiration(mergeOwnerVideoInspiration(feed.items));
    return;
   }
   throw Error('FALLBACK');
@@ -178,8 +179,8 @@ async function loadInspirationPreview(){
   try{
    const r=await fetch('media/creative/creative50-20261021/manifest.json');
    const d=await r.json();
-   renderHomeInspiration((d.items||[]).map(item=>({...item,actionTarget:'studio',kind:item.kind||'image'})));
-  }catch(_){}
+   renderHomeInspiration(mergeOwnerVideoInspiration((d.items||[]).map(item=>({...item,actionTarget:'studio',kind:item.kind||'image'}))));
+  }catch(_){renderHomeInspiration(mergeOwnerVideoInspiration());}
  }
 }
 void loadInspirationPreview();

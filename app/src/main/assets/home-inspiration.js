@@ -247,7 +247,7 @@ function syncPreviewPlayback(){
  for(const v of previewVideos){
   if(v!==active){
    v.pause();
-   if(v.hasAttribute('src')){v.removeAttribute('src');v.load();}
+   if(v.dataset.ownerPreview!=='true'&&v.hasAttribute('src')){v.removeAttribute('src');v.load();}
   }else{
    if(v.getAttribute('src')!==v.dataset.src){v.src=v.dataset.src;v.load();}
    if(v.paused)void v.play().catch(()=>v.pause());
@@ -267,7 +267,9 @@ function attachPreviewPlayback(){
   previewObserver=new IntersectionObserver(entries=>{
    for(const e of entries){
     const v=e.target.querySelector('video[data-src]');
-    if(v){v.__previewRatio=e.intersectionRatio;v.__previewVisible=e.isIntersecting&&e.intersectionRatio>=.6;}
+    if(v){v.__previewRatio=e.intersectionRatio;v.__previewVisible=e.isIntersecting&&e.intersectionRatio>=.6;
+     if(v.dataset.ownerPreview==='true'&&e.isIntersecting&&!v.hasAttribute('src')){v.src=v.dataset.src+'#t=0.12';v.load();}
+    }
    }
    syncPreviewPlayback();
   },{threshold:[0,.6,.75,1]});
@@ -306,6 +308,7 @@ function draw(){
   if(item.kind==='video'){
    const video=detailEl('video');video.dataset.src=item.previewUrl;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';
    if(item.previewPosterUrl)video.poster=item.previewPosterUrl;
+   if(item.source==='owner-uploaded-2026-11-10'){video.dataset.ownerPreview='true';video.preload='metadata';}
    visual.append(video);
   }else{
    const image=detailEl('img');image.src=item.previewUrl;image.alt=item.title;image.loading='lazy';image.decoding='async';image.referrerPolicy='no-referrer';
