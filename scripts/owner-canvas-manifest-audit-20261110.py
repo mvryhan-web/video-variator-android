@@ -38,9 +38,16 @@ elif mode=='verify':
     assert not mismatches, f'LIVE manifest differs on {len(mismatches)} paths: {mismatches[:20]}'
     print(json.dumps({'verified':len(safe),'mismatches':0}))
 elif mode=='diff':
-    approved={'canvas.html','canvas-workspace.js','canvas-workspace.css'}
-    assert set(mismatches)==approved, f'Unexpected modified assets: {mismatches}'
+    core={'canvas.html','canvas-workspace.js','canvas-workspace.css'}
+    media={f'media/canvas-demos/20261110/canvas-demo-{i:02d}{ending}' for i in range(1,14) for ending in ('.webp','-thumb.webp')}
+    approved=core|media
+    assert set(mismatches)==(core&set(safe)), f'Unexpected changed baseline assets: {mismatches}'
+    staged={str(f.relative_to(base)).replace('\\','/') for f in base.rglob('*') if f.is_file()}
+    reserved={'_worker.js','_headers','_redirects','_routes.json','functions-filepath-routing-config.json'}
+    extras=staged-set(safe)-reserved
+    expected_added=approved-set(safe)
+    assert extras==expected_added, f'Unexpected added files: {sorted(extras ^ expected_added)[:20]}'
     assert all((base/p).is_file() for p in approved)
-    print(json.dumps({'verifiedManifestPaths':len(safe),'onlyChanged':sorted(mismatches)}))
+    print(json.dumps({'verifiedManifestPaths':len(safe),'onlyChanged':sorted(mismatches),'onlyAdded':sorted(extras)}))
 else:
     raise ValueError('mode must be scan, verify or diff')
