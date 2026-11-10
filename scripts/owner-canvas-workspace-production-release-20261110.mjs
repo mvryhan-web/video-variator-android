@@ -23,6 +23,16 @@ const projectUrl='https://api.cloudflare.com/client/v4/accounts/'+account+'/page
 const protectedPages=['index.html','free-tools.html','jarvix-chat.html','pricing.html','video-uniquifier.html','generate-studio.html','my-creations.html','ai-apps.html'];
 const sh=(cmd,args)=>execFileSync(cmd,args,{encoding:'utf8',maxBuffer:30000000}).trim();
 const hash=b=>createHash('sha256').update(b).digest('hex');
+// Cloudflare changes its own CF_PAGES_* deployment metadata on every release.
+// Preserve and compare all other Worker settings and bindings exactly.
+function stableSettings(settings){
+ const deploymentMetadata=new Set(['CF_PAGES','CF_PAGES_BRANCH','CF_PAGES_COMMIT_SHA','CF_PAGES_URL']);
+ const list=(settings.bindings||[]).map(binding=>deploymentMetadata.has(binding.name)
+   ? {name:binding.name,type:binding.type} : binding).sort((a,b)=>a.name.localeCompare(b.name));
+ return {...settings,bindings:list};
+}
+const settingsDigest=settings=>hash(Buffer.from(JSON.stringify(stableSettings(settings))));
+
 const textOf=p=>fs.readFileSync(p,'utf8');
 const load=()=>JSON.parse(textOf(metadata));
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -105,7 +115,7 @@ async function prepare(){
  assert(workerSettings&&typeof workerSettings==='object','Worker settings not readable');
  const cfg=await getLive('api/config');assert.equal(cfg.status,200,'Production API unhealthy');
  const state={liveId:live.id,previous,workerSha:liveWorker,workerName:p.production_script_name,
-  target:sh('git',['rev-parse','HEAD']),settingsHash:hash(Buffer.from(JSON.stringify(workerSettings))),
+  target:sh('git',['rev-parse','HEAD']),settingsHash:settingsDigest(workerSettings),
   startedAt:new Date().toISOString()};
  fs.writeFileSync(metadata,JSON.stringify(state));
  console.log('OWNER_CANVAS_SAFE_LIVE_BASELINE',JSON.stringify({liveId:live.id,previous,target:state.target,workerUnchanged:true}));
@@ -203,7 +213,7 @@ async function verify(kind){
   assert.equal(p.canonical_deployment?.uses_functions,true,'Production Worker was dropped');
   assert.equal(p.production_script_name,data.workerName,'Worker identity changed');
   const settings=await api('https://api.cloudflare.com/client/v4/accounts/'+account+'/workers/scripts/'+encodeURIComponent(p.production_script_name)+'/settings');
-  assert.equal(hash(Buffer.from(JSON.stringify(settings))),data.settingsHash,'Worker bindings/settings changed');
+  assert.equal(settingsDigest(settings),data.settingsHash,'Critical Worker bindings/settings changed (excluding CF_PAGES deployment metadata)');
   const billing=await getLive('api/ai-billing/config');assert.equal(billing.status,200,'Billing configuration API unavailable');
   fs.writeFileSync('/tmp/deepsyq-canvas-workspace-verified','yes');
  }
