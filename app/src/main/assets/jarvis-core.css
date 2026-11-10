@@ -211,3 +211,89 @@ dialog.jarvis-hud-dialog,
 .top-jarvis-btn .jarvis-ring {
   pointer-events: none;
 }
+
+
+/* Voice-state visualizer for the existing header orb (no changes to its approved artwork). */
+#topJarvisBtn .jarvis-side-waves {
+  position: absolute;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 15px;
+  height: 26px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition: opacity 180ms ease, visibility 180ms ease;
+}
+#topJarvisBtn .waves-left { left: -15px; }
+#topJarvisBtn .waves-right { left: 39px; }
+#topJarvisBtn .jarvis-side-waves > span {
+  width: 3px;
+  height: 22px;
+  flex: 0 0 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #34d399, #10b981);
+  box-shadow: 0 0 6px rgba(16, 185, 129, .72);
+  transform: scaleY(.18);
+  transform-origin: 50% 50%;
+}
+#topJarvisBtn.is-listening .jarvis-side-waves {
+  opacity: 1;
+  visibility: visible;
+}
+#topJarvisBtn.is-listening .jarvis-side-waves > span {
+  animation: jarvixListeningBars 920ms ease-in-out infinite;
+}
+#topJarvisBtn.is-listening .jarvis-side-waves > span:nth-child(2) { animation-delay: -280ms; }
+#topJarvisBtn.is-listening .jarvis-side-waves > span:nth-child(3) { animation-delay: -540ms; }
+#topJarvisBtn.is-listening .waves-right > span:nth-child(1) { animation-delay: -420ms; }
+#topJarvisBtn.is-listening .waves-right > span:nth-child(2) { animation-delay: -680ms; }
+#topJarvisBtn.is-listening .waves-right > span:nth-child(3) { animation-delay: -140ms; }
+/* Keep the desktop JARVIX label clear of the right-hand wave group. */
+#topJarvisBtn.is-listening > .jarvis-name { transform: translateX(16px); }
+#topJarvisBtn.is-listening > .jarvis-mini-orb {
+  animation: jarvixListeningOrbPulse 1.4s ease-in-out infinite;
+  filter: grayscale(1) sepia(1) saturate(6) hue-rotate(86deg)
+          drop-shadow(0 0 8px rgba(16, 185, 129, .86)) !important;
+}
+#topJarvisBtn.jv-approved-orb-button.is-listening {
+  border-color: #34d399 !important;
+  box-shadow: 0 0 16px rgba(16, 185, 129, .5) !important;
+}
+#topJarvisBtn.is-speaking > .jarvis-mini-orb {
+  animation: jarvixSpeakingOrbPulse 1.08s ease-in-out infinite;
+  filter: drop-shadow(0 0 7px rgba(56, 189, 248, .76))
+          drop-shadow(0 0 9px rgba(139, 92, 246, .56)) !important;
+}
+#topJarvisBtn.jv-approved-orb-button.is-speaking {
+  border-color: rgba(139, 92, 246, .6) !important;
+  box-shadow: 0 0 19px rgba(139, 92, 246, .38),
+              0 0 12px rgba(56, 189, 248, .34) !important;
+}
+@keyframes jarvixListeningBars {
+  0%, 100% { transform: scaleY(.18); opacity: .58; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+@keyframes jarvixListeningOrbPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+@keyframes jarvixSpeakingOrbPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.075); }
+}
+@media (max-width: 760px) {
+  #topJarvisBtn .waves-right { left: 37px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #topJarvisBtn.is-listening > .jarvis-mini-orb,
+  #topJarvisBtn.is-speaking > .jarvis-mini-orb,
+  #topJarvisBtn.is-listening .jarvis-side-waves > span {
+    animation: none !important;
+  }
+  #topJarvisBtn.is-listening .jarvis-side-waves > span { transform: scaleY(.45); }
+}
