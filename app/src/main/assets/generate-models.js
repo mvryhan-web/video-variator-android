@@ -37,7 +37,7 @@ function withCapabilities(model){return Object.freeze({...model,capabilities:cap
 export const MODELS={
  image:{id:'wanx2.1-t2i-turbo',label:'Wanx 2.1 (Alibaba)',labelRu:'Wanx 2.1 (Alibaba)',ratios:['1:1','9:16','16:9'],references:1},
  video:{id:'wan2.1-t2v-turbo',label:'Wan 2.1 (Alibaba)',labelRu:'Wan 2.1 (Alibaba)',ratios:['16:9','9:16'],references:1},
- music:{id:'lyria-3-clip-preview',label:'Lyria · 30 seconds',labelRu:'Lyria · 30 секунд',ratios:[],references:0}
+ music:{id:'suno-v3-5',label:'Suno / Lyria 3.5',labelRu:'Suno / Lyria 3.5',ratios:[],references:0}
 };
 const RAW_MODEL_CATALOG=[
  {...MODELS.video,kind:'video',provider:'Alibaba Cloud',adapter:true,description:'Cinematic video generation with Wan 2.1.',descriptionRu:'Кинематографичные видеоролики Wan 2.1 от Alibaba.',quality:'720p',duration:'5 seconds',resolutions:['720p','1080p'],durations:[4,5,8]},

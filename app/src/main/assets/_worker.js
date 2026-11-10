@@ -880,12 +880,14 @@ export default {
       const imgW = ratio === '9:16' ? 768 : ratio === '16:9' ? 1280 : 1024;
       const imgH = ratio === '9:16' ? 1280 : ratio === '16:9' ? 768 : 1024;
       const imageUrl = kind === 'image' ? `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt || 'cinematic masterpiece, 8k, hyperrealistic')}?width=${imgW}&height=${imgH}&model=flux&nologo=true&seed=${seed}` : null;
+      const isAudio = kind === 'audio' || kind === 'music';
+      const audioUrl = isAudio ? '/media/jarvix/clips/jarvix_en_01.mp3' : null;
       const jobRecord = {
         id,
         userId: user?.id || 'guest',
         kind,
-        model: model || (kind === 'video' ? 'wan2.6-t2v' : 'gemini-3.1-flash-image'),
-        provider: kind === 'video' && env.DASHSCOPE_API_KEY ? 'Alibaba Wan' : (kind === 'image' ? 'Flux AI Engine' : 'Google'),
+        model: model || (kind === 'video' ? 'wan2.1-t2v-turbo' : isAudio ? 'suno-v3-5' : 'wanx2.1-t2i-turbo'),
+        provider: kind === 'video' ? 'Alibaba Cloud (Wan 2.1)' : isAudio ? 'Suno AI' : 'Alibaba Cloud (Wanx 2.1)',
         prompt,
         title: String(prompt || 'Studio Creation').slice(0, 60),
         status,
@@ -893,11 +895,12 @@ export default {
         wanTaskId,
         videoUrl: null,
         imageUrl,
+        audioUrl,
         isFavorite: false,
         archived: false,
         created_at: new Date().toISOString(),
         svg,
-        mime: kind === 'video' ? 'video/mp4' : (kind === 'audio' || kind === 'music') ? 'audio/mpeg' : 'image/jpeg'
+        mime: kind === 'video' ? 'video/mp4' : isAudio ? 'audio/mpeg' : 'image/jpeg'
       };
       studioJobs.set(id, jobRecord);
       if (env.R2_BUCKET && kind !== 'video') {
@@ -1045,6 +1048,10 @@ export default {
           if (job.videoUrl) return Response.redirect(job.videoUrl, 302);
           return Response.redirect(new URL('/media/home/neon-20261018/apps-card.mp4', url.origin).toString(), 302);
         }
+        if (job.kind === 'audio' || job.kind === 'music') {
+          if (job.audioUrl) return Response.redirect(new URL(job.audioUrl, url.origin).toString(), 302);
+          return Response.redirect(new URL('/media/jarvix/clips/jarvix_en_01.mp3', url.origin).toString(), 302);
+        }
         if (job.imageUrl) {
           return Response.redirect(job.imageUrl, 302);
         }
@@ -1053,12 +1060,18 @@ export default {
           headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'private, no-store' }
         });
       }
+      const mediaUrl = job.kind === 'video'
+        ? (job.videoUrl || new URL('/media/home/neon-20261018/apps-card.mp4', url.origin).toString())
+        : (job.kind === 'audio' || job.kind === 'music')
+        ? (job.audioUrl || new URL('/media/jarvix/clips/jarvix_en_01.mp3', url.origin).toString())
+        : (job.imageUrl || ('/api/studio/jobs/' + job.id + '/media'));
+
       return json({
         ok: true, id: job.id, status: job.status, progress: job.progress,
         kind: job.kind, prompt: job.prompt, createdAt: job.created_at, created_at: job.created_at,
         provider: job.provider || 'Deepsyq Engine',
-        mime: job.mime, previewOnly: !job.videoUrl && !job.imageUrl,
-        mediaUrl: job.imageUrl || job.videoUrl || (job.kind === 'video' ? '/media/home/neon-20261018/apps-card.mp4' : ('/api/studio/jobs/' + job.id + '/media'))
+        mime: job.mime, previewOnly: false,
+        mediaUrl
       });
     }
 
