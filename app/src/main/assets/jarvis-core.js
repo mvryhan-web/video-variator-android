@@ -253,7 +253,10 @@ export function speakJarvis(text, onComplete = null) {
       speechFailed = true;
       if (label) label.textContent = {ru:'Нет звука',en:'No audio',fr:'Sans son',es:'Sin audio'}[langCode];
       if (button) button.dataset.voiceError = code;
-      const messages = {ru:'Голосовой сервер недоступен. Попробуйте ещё раз.',en:'Voice server unavailable. Please try again.',fr:'Serveur vocal indisponible. Réessayez.',es:'Servidor de voz no disponible. Inténtalo de nuevo.'};
+      const missing = code === 'RECORDING_NOT_FOUND';
+      const messages = missing
+        ? {ru:'Готовая запись JARVIX не найдена или не загрузилась.',en:'The JARVIX recording is unavailable.',fr:'Enregistrement JARVIX indisponible.',es:'La grabación de JARVIX no está disponible.'}
+        : {ru:'Не удалось воспроизвести запись JARVIX. Проверьте звук браузера.',en:'Cannot play JARVIX audio. Check browser sound.',fr:'Lecture du son JARVIX impossible.',es:'No se puede reproducir el audio JARVIX.'};
       if (button) button.title = messages[langCode] || messages.en;
       window.dispatchEvent(new CustomEvent('jarvix:voice-unavailable', {detail:{language:langCode,source:'self-hosted'}}));
     }
@@ -985,6 +988,13 @@ export function resumeJarvisRecognition() {
 
       const current = (accumulatedText + ' ' + interim).trim();
       if (!current) return;
+      // Show that speech actually reached the recognizer; this never saves audio.
+      const orb = getTopBtn();
+      if (orb && !isJarvisSpeaking) {
+        orb.dataset.voicePhase = 'heard';
+        const orbLabel = orb.querySelector('.jarvis-name');
+        if (orbLabel) orbLabel.textContent = {ru:'Слышу',en:'Heard',fr:'Reçu',es:'Oigo'}[getJarvixLanguage()];
+      }
 
       // Immediate ChatGPT-style interruption cutoff (0ms delay)
       if (isJarvisSpeaking) {
