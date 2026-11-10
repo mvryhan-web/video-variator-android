@@ -1,5 +1,5 @@
 import {createSpeechDraft} from './jarvix-speech-draft.js';
-import {pauseJarvisRecognition, resumeJarvisRecognition} from './jarvis-core.js';
+import {pauseJarvisRecognition, resumeJarvisRecognition, deactivateJarvisVoice, isJarvisVoiceActive} from './jarvis-core.js';
 
 // Isolated browser dictation controller for the existing JARVIX text composer.
 // Stop keeps the draft; Send awaits final speech results before the caller submits.
@@ -12,6 +12,9 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
  mic.before(wave);
  const initialRequired=input.required;
  let active=null;
+ // JARVIX sphere and the chat square share ONE voice session.
+ let liveActive=isJarvisVoiceActive();
+ const liveStopLabels={ru:'Остановить разговор с JARVIX',en:'Stop JARVIX voice conversation',fr:'Arrêter la conversation vocale JARVIX',es:'Detener la conversación de voz JARVIX'};
  const labels={
   ru:{start:'Включить микрофон',stop:'Остановить запись, оставить текст'},
   en:{start:'Start voice dictation',stop:'Stop recording and keep text'},
@@ -25,12 +28,15 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
   return labels[nav]?nav:'ru';
  };
  function display(listening){
+  const live=liveActive&&!listening;
   wave.hidden=!listening;
   form.classList.toggle('j-voice-recording',listening);
   mic.dataset.voiceRecording=String(listening);
-  mic.setAttribute('aria-pressed',String(listening));
-  mic.setAttribute('aria-label',labels[language()][listening?'stop':'start']);
-  mic.title=labels[language()][listening?'stop':'start'];
+  mic.dataset.jarvixLive=String(live);
+  mic.setAttribute('aria-pressed',String(listening||live));
+  const label=live?liveStopLabels[language()]:labels[language()][listening?'stop':'start'];
+  mic.setAttribute('aria-label',label);
+  mic.title=label;
   // Allow Send to stop and collect final text even before a first interim result.
   input.required=listening?false:initialRequired;
  }
@@ -57,7 +63,19 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
   }
   return current.ended;
  }
+ // Core sends activation/deactivation, idle timeout and restored cross-page state.
+ window.addEventListener('jarvix:voice-state', event=>{
+  liveActive=event.detail?.active===true;
+  if(liveActive&&active)void stop();
+  display(Boolean(active));
+ });
  mic.onclick=()=>{
+  if(liveActive){
+   // Existing stop: cancels speech, recognition and the persisted session.
+   if(active)void stop({abort:true});
+   deactivateJarvisVoice();
+   return;
+  }
   if(active){void stop();return;}
   const Recognition=getRecognizer();
   if(!Recognition){onError('Voice input is unavailable in this browser.');return;}
