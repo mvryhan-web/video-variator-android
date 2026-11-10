@@ -63,7 +63,7 @@ export async function speakOwnerSpeech(text, language, hooks) {
     // For phrases not present verbatim, choose the closest *known* recording,
     // never synthesize new audio or play unknown/unverified filenames.
     let nearestReply = null, nearestAudio = null;
-    if (!staticCached && !greetingCached && !ackCached) {
+    if (!staticCached && !greetingCached && !ackCached && !actionWords.has(text.trim())) {
       nearestReply = await findCatalogReply(text, language);
       if (turn !== version) return;
       if (nearestReply?.text) nearestAudio = await getStaticClip(nearestReply.text, language, controller.signal);
