@@ -30,11 +30,11 @@ const LIVE_SUBSCRIPTION_LINKS = {
 };
 
 const LIVE_CREDIT_PACKS = [
-  { sku: 'credits_1000', credits: 1000, amount: 1000, currency: 'usd', priceId: 'price_1UZTCqLR9hQMNEjM5LiVHcNi' },
-  { sku: 'credits_10000', credits: 10000, amount: 10000, currency: 'usd', priceId: 'price_1UZTDoLR9hQMNEjMrZ5nkhXS' },
-  { sku: 'credits_100000', credits: 100000, amount: 100000, currency: 'usd', priceId: 'price_1UZTEhLR9hQMNEjMomMuGN4s' },
-  { sku: 'credits_1000000', credits: 1000000, amount: 1000000, currency: 'usd', priceId: 'price_1UZTFnLR9hQMNEjMo91Ep5Ps' },
-  { sku: 'credits_10000000', credits: 10000000, amount: 10000000, currency: 'usd', priceId: 'price_1UZTGrLR9hQMNEjMOq5eAA8r' }
+  { sku: 'credits_1000', baseCredits: 1000, bonusCredits: 200, credits: 1200, amount: 1000, currency: 'usd', priceId: 'price_1UZTCqLR9hQMNEjM5LiVHcNi' },
+  { sku: 'credits_10000', baseCredits: 10000, bonusCredits: 3333, credits: 13333, amount: 10000, currency: 'usd', priceId: 'price_1UZTDoLR9hQMNEjMrZ5nkhXS' },
+  { sku: 'credits_100000', baseCredits: 100000, bonusCredits: 20000, credits: 120000, amount: 100000, currency: 'usd', priceId: 'price_1UZTEhLR9hQMNEjMomMuGN4s' },
+  { sku: 'credits_1000000', baseCredits: 1000000, bonusCredits: 200000, credits: 1200000, amount: 1000000, currency: 'usd', priceId: 'price_1UZTFnLR9hQMNEjMo91Ep5Ps' },
+  { sku: 'credits_10000000', baseCredits: 10000000, bonusCredits: 2000000, credits: 12000000, amount: 10000000, currency: 'usd', priceId: 'price_1UZTGrLR9hQMNEjMOq5eAA8r' }
 ];
 
 function json(data, status = 200, extraHeaders = {}) {
@@ -424,10 +424,14 @@ export default {
         form.set('metadata[aiWallet]', 'v1');
         form.set('metadata[sku]', pack.sku);
         form.set('metadata[credits]', String(pack.credits));
+        form.set('metadata[baseCredits]', String(pack.baseCredits));
+        form.set('metadata[bonusCredits]', String(pack.bonusCredits));
         form.set('metadata[userId]', user.id);
         form.set('payment_intent_data[metadata][aiWallet]', 'v1');
         form.set('payment_intent_data[metadata][sku]', pack.sku);
         form.set('payment_intent_data[metadata][credits]', String(pack.credits));
+        form.set('payment_intent_data[metadata][baseCredits]', String(pack.baseCredits));
+        form.set('payment_intent_data[metadata][bonusCredits]', String(pack.bonusCredits));
         form.set('payment_intent_data[metadata][userId]', user.id);
         form.set('success_url', url.origin + '/generate-studio.html?ai_checkout=returned');
         form.set('cancel_url', url.origin + '/generate-studio.html?ai_checkout=cancelled');
@@ -496,16 +500,20 @@ export default {
         });
         if (edgeRevenueLedger.length > 100) edgeRevenueLedger.pop();
 
-        if (userId && s.metadata?.aiWallet === 'v1') {
-          const credits = Number(s.metadata?.credits || 0);
-          if (Number.isSafeInteger(credits) && credits > 0) {
+        if (userId && (s.metadata?.aiWallet === 'v1' || s.metadata?.sku)) {
+          const pack = LIVE_CREDIT_PACKS.find(p => p.sku === s.metadata?.sku);
+          const totalCredits = pack ? pack.credits : Number(s.metadata?.credits || 0);
+          if (Number.isSafeInteger(totalCredits) && totalCredits > 0) {
             const w = getWallet(userId);
-            w.available += credits;
+            w.available += totalCredits;
             const list = edgeWalletLedger.get(userId) || [];
             list.unshift({
               id: event.id,
               kind: 'purchase',
-              availableDelta: credits,
+              sku: pack?.sku || s.metadata?.sku,
+              baseCredits: pack?.baseCredits || (Number(s.metadata?.baseCredits) || totalCredits),
+              bonusCredits: pack?.bonusCredits || (Number(s.metadata?.bonusCredits) || 0),
+              availableDelta: totalCredits,
               reservedDelta: 0,
               debtDelta: 0,
               createdAt: new Date().toISOString()
