@@ -353,19 +353,40 @@ async function processMessage(message){
     const b64=await blobToBase64(img);
     if(b64?.data)images.push(b64);
    }
-   // If current message has no image, retain recent image from earlier messages in this conversation
-   if(!images.length){
-    const prevMsgWithImg=[...conversation.messages].reverse().find(m=>(m.files||[]).some(f=>f.type?.startsWith('image/')||/\.(png|jpe?g|webp|gif|heic|heif)$/i.test(f.name||'')));
+   if(images.length){
+    message.images=images;
+    try{sessionStorage.setItem('jarvix_recent_image',JSON.stringify(images[0]));}catch(_){}
+   }else{
+    // If current message has no image, retain recent image from earlier messages in this conversation
+    const prevMsgWithImg=[...conversation.messages].reverse().find(m=>(m.images&&m.images.length)||(m.files||[]).some(f=>f.type?.startsWith('image/')||/\.(png|jpe?g|webp|gif|heic|heif)$/i.test(f.name||'')));
     if(prevMsgWithImg){
-     const prevFile=prevMsgWithImg.files.find(f=>f.type?.startsWith('image/')||/\.(png|jpe?g|webp|gif|heic|heif)$/i.test(f.name||''));
-     if(prevFile instanceof Blob){
-      const b64=await blobToBase64(prevFile);
-      if(b64?.data)images.push(b64);
+     if(prevMsgWithImg.images?.length){
+      images.push(...prevMsgWithImg.images);
+     }else{
+      const prevFile=prevMsgWithImg.files.find(f=>f.type?.startsWith('image/')||/\.(png|jpe?g|webp|gif|heic|heif)$/i.test(f.name||''));
+      if(prevFile instanceof Blob){
+       const b64=await blobToBase64(prevFile);
+       if(b64?.data){
+        images.push(b64);
+        prevMsgWithImg.images=[b64];
+       }
+      }
      }
+    }
+    if(!images.length){
+     try{
+      const cached=sessionStorage.getItem('jarvix_recent_image');
+      if(cached){
+       const parsed=JSON.parse(cached);
+       if(parsed?.data)images.push(parsed);
+      }
+     }catch(_){}
     }
    }
    if(images.length){
     setChatHeaderMode('image');
+    window.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode:'image'}}));
+    try{sessionStorage.setItem('jarvix_composer_mode','image');}catch(_){}
    }
 
    // Google Gemini is the default conversational model across all chat modes
@@ -396,7 +417,10 @@ async function processMessage(message){
    status(e.message);if(message.voiceAction)speakJarvis(/credit|balance/i.test(e.message)?'Недостаточно кредитов':'Уточните промпт');const link=node('button','Open request in Studio');link.type='button';link.onclick=async()=>{const mode=resolveMode(message.text,message.mode),kind=mode==='audio'?'music':mode==='text'?'image':mode;const files=(message.files||[]).filter(f=>['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024);try{await saveStudioHandoff({kind,prompt:message.text,files,source:'jarvix-chat'});location.assign('jarvix-chat.html?mode='+(kind==='music'?'audio':kind)+'&prompt='+encodeURIComponent(message.text||''));}catch(e){status(e.message);}};$('jStatus').append(link);
   }if(e.name==='AbortError')throw e;}
 }
-const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();if(composer.editingMessage){
+const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onMode:(m)=>{
+ setChatHeaderMode(m);
+ window.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode:m}}));
+},onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();if(composer.editingMessage){
    const target=composer.editingMessage;
    composer.editingMessage=null;
    target.text=text;

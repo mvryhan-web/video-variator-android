@@ -165,6 +165,42 @@ export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
  }
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu){menu.hidden=true;if(plus)plus.setAttribute('aria-expanded','false');}});
  document.addEventListener('pointerdown',e=>{if(menu&&!form.contains(e.target)){menu.hidden=true;if(plus)plus.setAttribute('aria-expanded','false');}});
+ form.addEventListener('paste',e=>{
+  const items=e.clipboardData?.items;if(!items)return;
+  const pasted=[];
+  for(let i=0;i<items.length;i++){if(items[i].kind==='file'){const f=items[i].getAsFile();if(f)pasted.push(f);}}
+  if(pasted.length){
+   try{
+    files=validateAttachments([...files,...pasted]);
+    const autoM=detectModeFromFiles(files);
+    if(autoM&&autoM!==mode){
+     mode=autoM;
+     try{sessionStorage.setItem('jarvix_composer_mode',mode);}catch{}
+     reportMode();
+     onMode(mode);
+    }
+    render();
+   }catch(err){onError(err.message);}
+  }
+ });
+ form.addEventListener('dragover',e=>{e.preventDefault();});
+ form.addEventListener('drop',e=>{
+  e.preventDefault();
+  const dt=e.dataTransfer?.files;
+  if(dt?.length){
+   try{
+    files=validateAttachments([...files,...dt]);
+    const autoM=detectModeFromFiles(files);
+    if(autoM&&autoM!==mode){
+     mode=autoM;
+     try{sessionStorage.setItem('jarvix_composer_mode',mode);}catch{}
+     reportMode();
+     onMode(mode);
+    }
+    render();
+   }catch(err){onError(err.message);}
+  }
+ });
  const voice=bindVoiceInput({mic,input,form,onError,onStatus:onError});
  form.addEventListener('submit',async e=>{e.preventDefault();await voice.stop();if(!input.value.trim()&&!files.length)return;await onSend({text:input.value.trim(),mode,files:[...files]});});
  input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();form.requestSubmit();}});

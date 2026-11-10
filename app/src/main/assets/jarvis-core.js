@@ -503,8 +503,13 @@ export async function handleJarvisVoiceCommand(commandText) {
   }
 
   // 1. CAPABILITIES & GUIDED TOUR
-  if (/(?:экскурси|покажи сайт|презентаци|тур по сайту|обзор сайта|видеопрезентац|проведи тур|tour|guided tour|showcase|show me the site)/i.test(lower)) {
-    speakJarvis({ru:'Нажмите кнопку «Экскурсия», чтобы начать обзор.',en:'Press Take a Tour to start the walkthrough.',fr:'Appuyez sur Visite guidée pour commencer.',es:'Pulsa Visita guiada para comenzar.'}[getJarvixLanguage()]);
+  if (/(?:экскурси|покажи сайт|презентаци|тур по сайту|обзор сайта|видеопрезентац|проведи тур|начни экскурсию|включи экскурсию|запусти экскурсию|tour|guided tour|showcase|show me the site)/i.test(lower)) {
+    try {
+      const guide = await import('./jarvix-guided-tour.js');
+      guide.startJarvixGuidedTour();
+    } catch {
+      speakJarvis({ru:'Нажмите кнопку «Экскурсия», чтобы начать обзор.',en:'Press Take a Tour to start the walkthrough.',fr:'Appuyez sur Visite guidée pour commencer.',es:'Pulsa Visita guiada para comenzar.'}[getJarvixLanguage()]);
+    }
     return;
   }
   if (/(?:что\s+(?:ты\s+)?(?:умеешь|можешь)(?:\s+делать)?|твои\s+возможности|какие\s+(?:у\s+тебя\s+)?функции|кто\s+ты|расскажи\s+о\s+себе|справка|помощь|help|what can you do|que peux-tu faire|qué puedes hacer|que puedes hacer)/i.test(lower)) {

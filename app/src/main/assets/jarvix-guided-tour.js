@@ -283,13 +283,17 @@ async function speakV3(text,current,complete,beat=null){
   }
  }catch{blocked(current,'Owner voice recording unavailable');}
 }
+function isSamePage(p1,p2){
+ const norm=p=>(p||'/').replace(/^\/(?:deepsyq|index)\.html$/,'/');
+ return norm(p1)===norm(p2);
+}
 function playV3(step,target,current){
  if(!state||state.phase!=='playing')return;
  // Image is the original entry page. Video and Audio are demonstrated by
  // the EXISTING Universal Hub '+' and selected in-place, never by a reload
  // that could cut the final syllable of a recorded owner voice.
  if(enterStudioFromPlus(step,target,current))return;
- if(target.pathname!==location.pathname||target.search!==location.search){
+ if(!isSamePage(target.pathname,location.pathname)||target.search!==location.search){
   // Navigate FIRST: title MP3 must not announce a section on the previous page.
   closeV3Dialogs();
   const link=showNavigation(step.url);
