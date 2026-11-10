@@ -35,7 +35,7 @@ jobs:
           const origin='http://127.0.0.1:4321';
           const makeContext=async (width)=>{
             const ctx=await b.newContext({viewport:{width,height:900},isMobile:width<=700,hasTouch:width<=700});
-            await ctx.addInitScript(()=>{localStorage.setItem('vv_token','qa-fake-no-spend')});
+            await ctx.addInitScript(()=>{if(!localStorage.getItem('owner_mock_seeded')){localStorage.setItem('vv_token','qa-fake-no-spend');localStorage.setItem('owner_mock_seeded','1')}});
             await ctx.route('**/api/**',async r=>{
               const url=r.request().url();
               const data=url.includes('/api/me')?{user:{name:'QA',email:'qa@example.test',isAdmin:false}}:
