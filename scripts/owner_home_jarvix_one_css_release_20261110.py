@@ -139,8 +139,8 @@ def publish():
     if new_hash in missing:
         asset=[{"key":new_hash,"value":base64.b64encode(css).decode("ascii"),
                 "base64":True,"metadata":{"contentType":"text/css"}}]
-        cf.result(requests.post(API+"/pages/assets/upload",headers=hdr,json=asset,
-                                timeout=DEFAULT_TIMEOUT),"asset-upload")
+        uploaded=requests.post(API+"/pages/assets/upload",headers=hdr,json=asset,timeout=DEFAULT_TIMEOUT)
+        guard(uploaded.ok and uploaded.json().get("success") is True, "Pages asset upload refused")
     print(json.dumps({"status":"PREPARED_ONLY_ONE_CSS_ASSET","previousDeployment":old_id,
                       "unchangedAssets":len(files)-1,"workerSourceCommit":orig[:12]}),flush=True)
 
