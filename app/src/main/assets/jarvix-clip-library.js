@@ -113,7 +113,7 @@ export function createClipLibrary(fetchImpl = fetch) {
     },
 
     // Intelligent Topic-Aware Scenario Matching
-    async findReply(query, language = 'ru') {
+    async findReply(query, language = 'ru', {allowFallback = true} = {}) {
       const q = normalize(query);
       if (!q || q.length < 2) return null;
 
@@ -201,7 +201,7 @@ export function createClipLibrary(fetchImpl = fetch) {
 
       // A broad unrelated question must not be answered with a fabricated fact.
       // Use an existing neutral recording for queries without a reliable match.
-      if (!bestScenario) bestScenario = playableScenarios.find(sc => sc.id === 'F-CHAT-08') || null;
+      if (!bestScenario && allowFallback) bestScenario = playableScenarios.find(sc => sc.id === 'F-CHAT-08') || null;
       if (bestScenario) {
         setTopicContext({
           section: bestScenario.section,
