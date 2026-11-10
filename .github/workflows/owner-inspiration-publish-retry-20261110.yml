@@ -11,7 +11,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   production:
-    if: contains(github.event.head_commit.message, 'release(inspiration): guarded production retry')
+    if: >-
+      contains(github.event.head_commit.message, 'release(inspiration): guarded production retry')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
