@@ -93,6 +93,7 @@ main.ws-page{width:100%;max-width:none;margin:0;padding:16px clamp(16px,2.5vw,40
 <script defer src="deepsyq-site-shell.js"></script>
 <link rel="stylesheet" href="deepsyq-mobile-shell.css">
 <script type="module" blocking="render" src="deepsyq-mobile-shell.js"></script>
+<link rel="stylesheet" href="my-creations-gallery.css">
 </head>
 <body>
 <header class="ws-site-header" aria-label="Deepsyq site header">
@@ -107,202 +108,44 @@ main.ws-page{width:100%;max-width:none;margin:0;padding:16px clamp(16px,2.5vw,40
     <a id="topLogin" class="ws-header-account" href="deepsyq.html?panel=login">Log in</a>
   </nav>
 </header>
-<main class="ws-page">
-  <section class="ws-hero" aria-labelledby="wsTitle">
-    <div class="ws-hero-content">
-      <h1 id="wsTitle">My Creations</h1>
-      <p>Your saved image, video, and audio work in one place.</p>
-      <div class="ws-hero-actions">
-        <a class="ws-primary" href="generate-studio.html">✦ Open Studio →</a>
-        <a class="ws-secondary" href="deepsyq.html#inspirationPreview">Explore Inspiration ↗</a>
+<main class="mc-page" id="mcPage">
+  <div class="mc-shell">
+    <section class="mc-left" aria-label="My Creations gallery">
+      <div class="mc-heading"><h1 id="wsTitle">My Creations</h1><span class="mc-collection-tag" id="mcCollectionTag">Sample collection</span></div>
+      <div class="mc-filters" role="group" aria-label="Filter creations">
+        <button type="button" class="mc-filter" data-filter="all" aria-pressed="true"><span class="mc-filter-icon" aria-hidden="true">▦</span>All</button>
+        <button type="button" class="mc-filter" data-filter="image" aria-pressed="false"><span class="mc-filter-icon" aria-hidden="true">▧</span>Images</button>
+        <button type="button" class="mc-filter" data-filter="video" aria-pressed="false"><span class="mc-filter-icon" aria-hidden="true">▷</span>Videos</button>
+        <button type="button" class="mc-filter" data-filter="audio" aria-pressed="false"><span class="mc-filter-icon" aria-hidden="true">♫</span>Audio</button>
+        <button type="button" class="mc-filter" data-filter="processing" aria-pressed="false"><span class="mc-filter-icon" aria-hidden="true">◌</span>Processing</button>
       </div>
-    </div>
-  </section>
-
-  <section class="ws-panel" aria-labelledby="wsResultsTitle">
-    <div class="ws-section-head">
-      <div><h2 id="wsResultsTitle">Saved Creations</h2></div>
-    </div>
-    <div class="toolbar">
-      <input id="searchInput" type="search" maxlength="100" aria-label="Search creations by title or ID" placeholder="⌕  Search by title or ID…">
-      <select id="typeSelect" aria-label="Filter by type">
-        <option value="">All types</option><option value="image">Image</option><option value="video">Video</option><option value="audio">Audio</option>
-      </select>
-      <select id="statusSelect" aria-label="Filter by status">
-        <option value="">All statuses</option><option value="completed">Completed</option><option value="processing">In progress</option><option value="failed">Failed</option>
-      </select>
-      <button id="refreshBtn" type="button">Refresh ↻</button>
-    </div>
-    <div class="section-tabs" role="group" aria-label="Creations sections">
-      <button type="button" data-sec="recent" aria-pressed="true">Recent (<span id="cnt-recent">0</span>)</button>
-      <button type="button" data-sec="favorites" aria-pressed="false">Favorites (<span id="cnt-favorites">0</span>)</button>
-      <button type="button" data-sec="completed" aria-pressed="false">Completed (<span id="cnt-completed">0</span>)</button>
-      <button type="button" data-sec="drafts" aria-pressed="false">In progress (<span id="cnt-drafts">0</span>)</button>
-    </div>
-    <p id="wsStatus" role="status" aria-live="polite">Loading your workspace…</p>
-    <div id="cardsGrid" class="cards-grid"></div>
-  </section>
-
-  <section class="ws-discover" aria-labelledby="wsExploreTitle">
-    <div class="ws-discover-head"><h2 id="wsExploreTitle">Explore what you can create</h2></div>
-    <div class="ws-discover-grid">
-      <a class="ws-discover-card" href="jarvix-chat.html?mode=image"><img src="media/home/owner-20261018/01-close-up-woman.jpg" alt="Image Studio example" loading="lazy"><span><strong>Image Studio</strong><small>Create and edit images.</small><em>Open Studio ↗</em></span></a>
-      <a class="ws-discover-card" href="jarvix-chat.html?mode=video"><img src="media/home/owner-20261018/02-futuristic-portal.jpg" alt="Video Studio example" loading="lazy"><span><strong>Video Studio</strong><small>Create videos with AI.</small><em>Open Studio ↗</em></span></a>
-      <a class="ws-discover-card" href="jarvix-chat.html?mode=audio"><img src="media/home/neon-20261018/audio.webp" alt="Audio Studio example" loading="lazy"><span><strong>Audio Studio</strong><small>Create music and audio.</small><em>Open Studio ↗</em></span></a>
-    </div>
-  </section>
+      <p id="mcStatus" role="status" aria-live="polite" class="mc-library-note"></p>
+      <div id="mcGrid" class="mc-grid" aria-label="Creations"></div>
+      <p id="mcLibraryNote" class="mc-library-note">Example artwork is shown below. Sign in to see your saved creations.</p>
+      <p class="mc-library-note">Your personal creations are loaded through the existing workspace account API. Example images are marked as samples; other users' private work is not published here.</p>
+    </section>
+    <aside id="mcDetail" class="mc-detail" aria-label="Selected creation details">
+      <div id="mcDetailTop" class="mc-detail-top">
+        <button type="button" id="mcDetailClose" class="mc-detail-close" aria-label="Close details">×</button>
+      </div>
+      <h2 id="mcDetailTitle" class="mc-detail-title">Crystal Bloom</h2>
+      <div id="mcDetailType" class="mc-detail-type">▧ Image</div>
+      <div class="mc-detail-box">
+        <div class="mc-detail-box-head"><span>Prompt</span><button type="button" id="mcCopyPrompt" class="mc-copy-btn" aria-label="Copy prompt" title="Copy prompt">▣</button></div>
+        <div id="mcDetailPrompt" class="mc-detail-prompt"></div>
+      </div>
+      <p class="mc-detail-label">Model</p>
+      <div class="mc-model"><span class="mc-model-mark" aria-hidden="true">✺</span><span id="mcDetailModel">Creative showcase</span></div>
+      <div class="mc-detail-actions">
+        <button type="button" id="mcDownload" class="mc-main-btn mc-download"><span aria-hidden="true">⇩</span> Download</button>
+        <button type="button" id="mcShare" class="mc-main-btn"><span aria-hidden="true">⇧</span> Share</button>
+        <button type="button" id="mcReference" class="mc-main-btn"><span aria-hidden="true">▧</span> Use as reference</button>
+        <button type="button" id="mcRemove" class="mc-main-btn mc-danger"><span aria-hidden="true">▤</span> Archive</button>
+      </div>
+      <p id="mcNotice" class="mc-notice" role="status" aria-live="polite"></p>
+    </aside>
+  </div>
 </main>
-<script type="module">
-  const $ = id => document.getElementById(id);
-  let activeSection = 'recent';
-  let lastData = null;
-  let favSet = new Set();
-
-  function authHeaders() {
-    const token = localStorage.getItem('vv_token');
-    return token ? { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
-  }
-
-  async function loadCards() {
-    if (!localStorage.getItem('vv_token')) {
-      $('wsStatus').textContent = '';
-      const empty = document.createElement('div');
-      empty.className = 'ws-empty';
-      empty.innerHTML = '<span class="ws-empty-icon" aria-hidden="true">▦</span><h3>Sign in to view your creations</h3><p>Your personal results appear here after signing in.</p><a class="ws-primary" href="deepsyq.html?panel=login">Sign in to continue →</a>';
-      $('cardsGrid').replaceChildren(empty);
-      return;
-    }
-    $('wsStatus').textContent = 'Loading your creations…';
-    const params = new URLSearchParams();
-    const q = $('searchInput').value.trim();
-    const type = $('typeSelect').value;
-    const status = $('statusSelect').value;
-    if (q) params.set('q', q);
-    if (type) params.set('type', type);
-    if (status) params.set('status', status);
-
-    try {
-      const res = await fetch('/api/studio/workspace/cards?' + params.toString(), { headers: authHeaders() });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'WORKSPACE_UNAVAILABLE');
-      lastData = data;
-      favSet = new Set((data.sections?.favorites || []).map(c => c.id));
-      for (const k of ['recent', 'favorites', 'completed', 'drafts']) {
-        const el = $('cnt-' + k);
-        if (el) el.textContent = String(data.counts?.[k] ?? 0);
-      }
-      renderSection();
-    } catch (e) {
-      $('wsStatus').textContent = 'Unable to load your creations (' + (e.message || 'error') + ').';
-    }
-  }
-
-  async function patchCard(id, payload) {
-    try {
-      const res = await fetch('/api/studio/workspace/cards/' + encodeURIComponent(id), {
-        method: 'PATCH',
-        headers: authHeaders(),
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'PATCH_FAILED');
-      await loadCards();
-    } catch (e) {
-      $('wsStatus').textContent = 'Action unavailable: ' + (e.message || 'ошибка');
-    }
-  }
-
-  function renderSection() {
-    const grid = $('cardsGrid');
-    grid.replaceChildren();
-    const list = lastData?.sections?.[activeSection] || [];
-    if (!list.length) {
-      $('wsStatus').textContent = '';
-      const empty = document.createElement('div');
-      empty.className = 'ws-empty';
-      empty.innerHTML = '<span class="ws-empty-icon" aria-hidden="true">▦</span><h3>No creations here yet</h3><p>Your saved studio work will appear here.</p><a class="ws-secondary" href="generate-studio.html">Open Studio →</a>';
-      grid.append(empty);
-      return;
-    }
-    $('wsStatus').textContent = '';
-    for (const card of list) {
-      const el = document.createElement('article');
-      el.className = 'ws-card';
-      const isFav = favSet.has(card.id);
-
-      const prev = document.createElement('div');
-      prev.className = 'ws-preview';
-      prev.textContent = (isFav ? '★ ' : '') + (card.previewPlaceholder?.label || card.type);
-
-      const head = document.createElement('div');
-      head.className = 'ws-head';
-      const title = document.createElement('span');
-      title.className = 'ws-title';
-      title.textContent = card.title;
-      const badge = document.createElement('span');
-      badge.className = 'ws-badge';
-      badge.dataset.status = card.status;
-      badge.textContent = card.status;
-      head.append(title, badge);
-
-      const meta = document.createElement('div');
-      meta.className = 'ws-meta';
-      meta.textContent = `${card.type.toUpperCase()} · ${new Date(card.createdAt).toLocaleString()}`;
-
-      const actions = document.createElement('div');
-      actions.className = 'ws-actions';
-
-      const openLink = document.createElement('a');
-      openLink.href = 'generate-studio.html?jobId=' + encodeURIComponent(card.id);
-      openLink.textContent = 'Open in Studio ↗';
-
-      const favBtn = document.createElement('button');
-      favBtn.type = 'button';
-      favBtn.textContent = isFav ? '★ Remove favorite' : '☆ Favorite';
-      favBtn.onclick = () => patchCard(card.id, { action: 'favorite', isFavorite: !isFav });
-
-      const renBtn = document.createElement('button');
-      renBtn.type = 'button';
-      renBtn.textContent = 'Rename';
-      renBtn.onclick = () => {
-        const nextTitle = prompt('New title:', card.title);
-        if (nextTitle && nextTitle.trim()) patchCard(card.id, { action: 'rename', title: nextTitle.trim() });
-      };
-
-      const archBtn = document.createElement('button');
-      archBtn.type = 'button';
-      archBtn.textContent = 'Archive';
-      archBtn.onclick = () => patchCard(card.id, { action: 'archive' });
-
-      if (card.status === 'archived') {
-        const resBtn = document.createElement('button');
-        resBtn.type = 'button';
-        resBtn.textContent = 'Restore';
-        resBtn.onclick = () => patchCard(card.id, { action: 'restore' });
-        actions.append(openLink, favBtn, renBtn, resBtn);
-      } else {
-        actions.append(openLink, favBtn, renBtn, archBtn);
-      }
-      el.append(prev, head, meta, actions);
-      grid.append(el);
-    }
-  }
-
-  document.querySelectorAll('[data-sec]').forEach(btn => {
-    btn.onclick = () => {
-      activeSection = btn.dataset.sec;
-      document.querySelectorAll('[data-sec]').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
-      renderSection();
-    };
-  });
-  $('refreshBtn').onclick = () => loadCards();
-  $('searchInput').oninput = () => loadCards();
-  $('typeSelect').onchange = () => loadCards();
-  $('statusSelect').onchange = () => loadCards();
-  // Optional archived filter is absent from this page's markup.
-  $('includeArchived')?.addEventListener('change', () => loadCards());
-
-  loadCards();
-</script>
+<script defer src="my-creations-gallery.js"></script>
 </body>
 </html>
