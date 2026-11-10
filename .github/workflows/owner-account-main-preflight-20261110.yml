@@ -81,3 +81,29 @@ jobs:
             console.log('ASSET_PARITY',JSON.stringify({name,remoteStatus:liveResp.status,gitMatchesLive:hash(latest)===hash(live),gitHash:hash(latest),liveHash:hash(live),sourceBytes:latest.length,liveBytes:Buffer.byteLength(live),matches}));
           }
           JS
+      - name: Find verified Git provenance of current dirty live JS without writes
+        shell: bash
+        run: |
+          git fetch --no-tags origin 'refs/heads/*:refs/remotes/origin/*'
+          node --input-type=module <<'JS'
+          import {execFileSync} from 'node:child_process';
+          import {createHash} from 'node:crypto';
+          const sha256=b=>createHash('sha256').update(b).digest('hex');
+          const names=['deepsyq-site-shell.js','deepsyq-mobile-shell.js','deepsyq-unified-platform-header.js','deepsyq.js','video-uniquifier.html'];
+          for(const name of names){
+            const path='app/src/main/assets/'+name;
+            const r=await fetch('https://deepsyq.app/'+name+'?srcMatch='+Date.now(),{headers:{'cache-control':'no-cache'},signal:AbortSignal.timeout(20000)});
+            if(!r.ok){console.log('HISTORIC_BLOB_MATCH',JSON.stringify({name,http:r.status}));continue;}
+            const hash=sha256(Buffer.from(await r.arrayBuffer()));
+            const commits=execFileSync('git',['log','--all','--format=%H','--',path],{encoding:'utf8',maxBuffer:1024*1024*6}).trim().split(/\n/).filter(Boolean);
+            const seen=new Set(),found=[];
+            for(const c of commits.slice(0,500)){
+              let blob;try{blob=execFileSync('git',['rev-parse',c+':'+path],{encoding:'utf8'}).trim()}catch{continue}
+              if(seen.has(blob))continue;seen.add(blob);
+              let bytes;try{bytes=execFileSync('git',['cat-file','blob',blob],{maxBuffer:1024*1024*10})}catch{continue}
+              if(sha256(bytes)===hash)found.push({blob,commit:c});
+              if(found.length>=3)break;
+            }
+            console.log('HISTORIC_BLOB_MATCH',JSON.stringify({name,liveSha:hash,searched:seen.size,matched:found}));
+          }
+          JS
