@@ -1,0 +1,91 @@
+name: Owner My Creations eight original images - surgical release only
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths: ['.github/workflows/owner-my-creations-original-eight-release-20261110.yml']
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  publish-images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install existing publisher dependencies
+        run: python -m pip install --disable-pip-version-check requests==2.32.3 blake3==1.0.8
+      - name: Validate exactly eight owner-approved image bytes
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+          root=Path('app/src/main/assets/media/my-creations/showcase')
+          expected={
+            'crystal-bloom.webp':'3b5ccc6d24e19f4aeca58c8a6271df7b6b843fef6f2e16fd0217a9891c6ee223',
+            'eclipse-portal.webp':'0e022345832dd617e106524425d4c3d95aafba39aff321cfbf39d7f966f10ffa',
+            'velvet-rain.webp':'b47568ca40a2ce91d14224285cd5618cc4282bb3df47df5e1c70faee0cee6576',
+            'bioluminescent-tide.webp':'c17728af71e85d06cad1d67e7f2474c03ccc4e9f2cc1cc374864cbac74054ee2',
+            'skyward-citadel.webp':'417e43f68bcf4f97d2dedb1ab3ad5ca2fa5b13fe49a06adbb2d12126140c2abc',
+            'porcelain-grace.webp':'c1c0d06e50be96c351cb694ab4d494f8247ad6f1ba07b3a4c83f7e019c61ba5c',
+            'neon-rider.webp':'7a41c80a0fe7c10f6a6fc164c57d03d9179fa61e797d98d94072ea7051e0beeb',
+            'sculpted-sound.webp':'8b52a4652e6df8ba160423166b5ac50f56e058d20f3e77e12bf075e1c74f51e2'
+          }
+          actual={p.name for p in root.glob('*.webp')}
+          assert actual==set(expected),f'Unexpected gallery assets: {actual ^ set(expected)}'
+          for name,sha in expected.items():
+            assert hashlib.sha256((root/name).read_bytes()).hexdigest()==sha,'Original changed: '+name
+          print('EIGHT_APPROVED_ORIGINALS_VERIFIED',len(expected))
+          PY
+      - name: Prepare temporary publisher limited to eight NEW WebPs, keep original Worker
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          source=Path('scripts/deepsyq_surgical_publish.py').read_text()
+          names=['crystal-bloom','eclipse-portal','velvet-rain','bioluminescent-tide','skyward-citadel','porcelain-grace','neon-rider','sculpted-sound']
+          owner="OWNER_IMAGE_PATHS = {"+",".join(repr('media/my-creations/showcase/'+n+'.webp') for n in names)+"}"
+          changes=[
+           ("MAX_FILE_BYTES = 25 * 1024 * 1024","MAX_FILE_BYTES = 25 * 1024 * 1024\n"+owner),
+           ('insist(key in live, "Cannot invent new route in an ordinary surgical patch: " + key)',
+            'if key not in live:\n            insist(path in OWNER_IMAGE_PATHS, "Unapproved new asset route: " + key)\n            insist(re.fullmatch(r"[0-9a-f]{32}", new_hash), "Invalid new image hash")\n            changed[key] = (None,new_hash)\n            updated[key] = new_hash\n            continue'),
+           ('expected_paths = {key.lstrip("/"): key for key in live}',
+            'expected_paths = {key.lstrip("/"): key for key in live}\n    added_assets = {rel for rel in paths if rel not in expected_paths}\n    insist(added_assets == OWNER_IMAGE_PATHS, "Expected exactly eight new image assets; refuse partial or unrelated additions")'),
+           ('insist(dest.is_file(), "Target is not part of the current LIVE site: " + rel)',
+            'insist(dest.is_file() or rel in added_assets, "Unapproved new asset: " + rel)\n        dest.parent.mkdir(parents=True,exist_ok=True)'),
+           ('insist(rel in expected_paths, "Unexpected file would be published: " + rel)',
+            'insist(rel in expected_paths or rel in added_assets, "Unexpected file would be published: " + rel)'),
+           ('insist(found == set(expected_paths), "Pages candidate lost LIVE public assets")',
+            'insist(found == set(expected_paths) | added_assets, "Pages candidate lost or unexpectedly added assets")'),
+           ('paths = allowed_paths(args.files)',
+            'paths = allowed_paths(args.files)\n    insist(len(paths)==8 and set(paths)==OWNER_IMAGE_PATHS, "Only the eight exact owner gallery image files may be published")'),
+           ('else:\n                insist(len(content) > 0, "Published page not accessible: " + rel)',
+            'elif rel.endswith(".webp"):\n                insist(content == raw, "PUBLISHED_IMAGE_BYTES_DIFFER: " + rel)\n            else:\n                insist(len(content) > 0, "Published page not accessible: " + rel)')
+          ]
+          for old,new in changes:
+            count=source.count(old)
+            assert count==1,f'Unexpected publisher source; {old[:60]} count={count}'
+            source=source.replace(old,new)
+          p=Path('scripts/.owner_original_eight_runtime.py')
+          p.write_text(source)
+          compile(source,str(p),'exec')
+          print('TEMPORARY_STRICT_NEW_IMAGE_PUBLISHER_READY',len(names))
+          PY
+      - name: Exact eight-image release with immutable LIVE manifest and unchanged Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/.owner_original_eight_runtime.py --mode publish --files "media/my-creations/showcase/crystal-bloom.webp,media/my-creations/showcase/eclipse-portal.webp,media/my-creations/showcase/velvet-rain.webp,media/my-creations/showcase/bioluminescent-tide.webp,media/my-creations/showcase/skyward-citadel.webp,media/my-creations/showcase/porcelain-grace.webp,media/my-creations/showcase/neon-rider.webp,media/my-creations/showcase/sculpted-sound.webp" --commit "$GITHUB_SHA"
