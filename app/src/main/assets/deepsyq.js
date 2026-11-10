@@ -251,7 +251,7 @@ $('inviteShare')?.addEventListener('click',async()=>{
 // Header sign-in must not depend on dispatching a click to the inert,
 // off-canvas mobile sidebar account button.
 $('topLogin')?.addEventListener('click',()=>{
- if(localStorage.getItem('vv_token'))location.assign('video-uniquifier.html#profile');
+ if(localStorage.getItem('vv_token'))location.assign('video-uniquifier.html?view=profile');
  else openAuth();
 });
 function markHomeLogin(){const b=$('topLogin');if(b){const t=b.querySelector('.ds-pod-text');const txt=localStorage.getItem('vv_token')?homeLangText().account:homeLangText().login;if(t)t.textContent=txt;else b.textContent=txt;}}
@@ -598,7 +598,7 @@ if(requestedIdentityToken)try{
   dashboardAccountOwnerToken=requestedIdentityToken;
   $('accountLabel').textContent=user.name||'Your workspace';
   $('accountButton').textContent='Account settings';
-  $('accountButton').onclick=()=>location.assign('video-uniquifier.html#profile');
+  $('accountButton').onclick=()=>location.assign('video-uniquifier.html?view=profile');
   $('logout').hidden=false;
   if(user.isAdmin&&!document.getElementById('adminAiControl')){
    const a=document.createElement('a');a.id='adminAiControl';a.href='deepsyq-admin.html';a.textContent='Owner AI Control';document.querySelector('.sidebar-bottom').prepend(a);

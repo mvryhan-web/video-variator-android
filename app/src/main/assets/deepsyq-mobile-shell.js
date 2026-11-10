@@ -12,7 +12,7 @@ export function drawerSwipe(start, end, open, width) {
 
 export function headerAccount(token, lang='en') {
  const labels=token?{en:'Account',ru:'Аккаунт',fr:'Compte',es:'Cuenta'}:{en:'Log in',ru:'Войти',fr:'Connexion',es:'Acceder'};
- return {label:labels[lang]||labels.en,href:token?'index.html?view=profile':'deepsyq.html?panel=login'};
+ return {label:labels[lang]||labels.en,href:token?'video-uniquifier.html?view=profile':'deepsyq.html?panel=login'};
 }
 function setupMobileShell() {
   if(/\/(?:deepsyq|jarvix-chat|generate-studio)\.html$/.test(location.pathname)||location.pathname==='/'){
