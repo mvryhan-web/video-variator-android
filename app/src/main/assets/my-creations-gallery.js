@@ -4,14 +4,14 @@ const $ = (id) => document.getElementById(id);
 const sourceArt = 'media/approved-design-20261023/08_My_Creations.png';
 const assetFolder = 'media/my-creations/showcase/';
 const showcase = [
- {id:'crystal-bloom',title:'Crystal Bloom',type:'image',crop:[13,143,273,233],prompt:'Ethereal woman with crystalline flowers surrounding her, illuminated by soft blue light, water droplets, cinematic glow, ultra detailed, dreamlike atmosphere.'},
- {id:'eclipse-portal',title:'Eclipse Portal',type:'image',crop:[300,143,271,233],prompt:'A solitary traveler faces an enormous glowing eclipse portal on a mirror-like shore, floating rocks, golden clouds, dramatic cinematic fantasy landscape.'},
- {id:'velvet-rain',title:'Velvet Rain',type:'image',crop:[585,143,273,233],prompt:'A luxurious deep magenta perfume bottle resting among pink flowers, glittering rain, warm golden light and city bokeh, premium nighttime product photography.'},
- {id:'bioluminescent-tide',title:'Bioluminescent Tide',type:'image',crop:[14,456,434,173],wide:true,prompt:'A diver explores a vivid underwater reef among glowing blue and violet jellyfish, luminous coral, sparkling sunbeams and cinematic ocean life.'},
- {id:'skyward-citadel',title:'Skyward Citadel',type:'image',crop:[463,456,395,173],wide:true,prompt:'A majestic castle city floating among pastel clouds and islands, cascading waterfalls, gardens, luminous sunset and breathtaking high-fantasy architecture.'},
- {id:'porcelain-grace',title:'Porcelain Grace',type:'image',crop:[14,700,272,222],prompt:'Elegant portrait of a woman in ivory couture surrounded by luminous white blossoms, pearl and gold details, warm spring light, refined editorial atmosphere.'},
- {id:'neon-rider',title:'Neon Rider',type:'video',crop:[300,700,272,222],prompt:'A futuristic motorcycle rider races through a vibrant neon metropolis at night, magenta and cyan reflections on wet roads, cinematic cyberpunk action.'},
- {id:'sculpted-sound',title:'Sculpted Sound',type:'audio',crop:[586,700,272,222],prompt:'An elegant music cover with luxurious silver and gold headphones surrounded by delicate blossom flowers, dark premium studio background.'}
+ {id:'crystal-bloom',fallback:'media/creative/creative50-20261021/01-crystal-orchard.webp',title:'Crystal Bloom',type:'image',crop:[13,143,273,233],prompt:'Ethereal woman with crystalline flowers surrounding her, illuminated by soft blue light, water droplets, cinematic glow, ultra detailed, dreamlike atmosphere.'},
+ {id:'eclipse-portal',fallback:'media/inspiration/owner-next-20261031/04-glass-hourglass-two-worlds.webp',title:'Eclipse Portal',type:'image',crop:[300,143,271,233],prompt:'A solitary traveler faces an enormous glowing eclipse portal on a mirror-like shore, floating rocks, golden clouds, dramatic cinematic fantasy landscape.'},
+ {id:'velvet-rain',fallback:'media/creative/creative50-20261021/10-bottle-of-weather.webp',title:'Velvet Rain',type:'image',crop:[585,143,273,233],prompt:'A luxurious deep magenta perfume bottle resting among pink flowers, glittering rain, warm golden light and city bokeh, premium nighttime product photography.'},
+ {id:'bioluminescent-tide',fallback:'media/inspiration/openai-20261021/vertical-20-jellyfish-lanterns.webp',title:'Bioluminescent Tide',type:'image',crop:[14,456,434,173],wide:true,prompt:'A diver explores a vivid underwater reef among glowing blue and violet jellyfish, luminous coral, sparkling sunbeams and cinematic ocean life.'},
+ {id:'skyward-citadel',fallback:'media/inspiration/owner-next-20261031/07-storybook-miniature-kingdom.webp',title:'Skyward Citadel',type:'image',crop:[463,456,395,173],wide:true,prompt:'A majestic castle city floating among pastel clouds and islands, cascading waterfalls, gardens, luminous sunset and breathtaking high-fantasy architecture.'},
+ {id:'porcelain-grace',fallback:'media/creative/creative50-20261021/13-liquid-porcelain.webp',title:'Porcelain Grace',type:'image',crop:[14,700,272,222],prompt:'Elegant portrait of a woman in ivory couture surrounded by luminous white blossoms, pearl and gold details, warm spring light, refined editorial atmosphere.'},
+ {id:'neon-rider',fallback:'media/inspiration/openai-20261021/image-20-city-pop.webp',title:'Neon Rider',type:'video',crop:[300,700,272,222],prompt:'A futuristic motorcycle rider races through a vibrant neon metropolis at night, magenta and cyan reflections on wet roads, cinematic cyberpunk action.'},
+ {id:'sculpted-sound',fallback:'media/creative/creative50-20261021/15-botanical-audio.webp',title:'Sculpted Sound',type:'audio',crop:[586,700,272,222],prompt:'An elegant music cover with luxurious silver and gold headphones surrounded by delicate blossom flowers, dark premium studio background.'}
 ].map(s => ({...s,kind:'sample',status:'completed',model:'Creative showcase',preview:null}));
 const icons={
  image:'▧',video:'▷',audio:'♫',processing:'◌',
@@ -46,12 +46,24 @@ function cropImage(img,x,y,w,h){
  context.drawImage(img,Math.round(x*sx),Math.round(y*sy),Math.round(w*sx),Math.round(h*sy),0,0,canvas.width,canvas.height);
  return new Promise(resolve=>canvas.toBlob(blob=>resolve(blob?URL.createObjectURL(blob):canvas.toDataURL('image/png')),'image/webp',.93));
 }
+async function imageAvailable(src){
+ return new Promise(resolve=>{
+  const img=new Image();
+  img.onload=()=>resolve(true);
+  img.onerror=()=>resolve(false);
+  img.src=src;
+ });
+}
 async function loadSamples(){
- const art=new Image();art.decoding='async';art.src=sourceArt;
- try{await art.decode();await Promise.all(showcase.map(async item=>{item.preview=await cropImage(art,...item.crop)}));}
- catch(error){console.warn('Showcase preview not available',error);}
+ await Promise.all(showcase.map(async item=>{
+  const generated=assetFolder+item.id+'.webp';
+  // Automatically use the final full-resolution artwork when this file is deployed.
+  // Until then show an existing standalone gallery image, not a crop of another website UI.
+  item.preview=await imageAvailable(generated)?generated:item.fallback;
+ }));
  render();
 }
+
 async function fetchMyCards(){
  const token=localStorage.getItem('vv_token');
  if(!token){state.userItems=[];render();return}
