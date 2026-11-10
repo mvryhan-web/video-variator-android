@@ -1,4 +1,5 @@
 name: OWNER MAIN Account first-click and Video Uniquifier navigation surgical release
+# Retry: Account hash route activates actual Profile and Settings, not hidden query view
 # Retry: strip automatically injected route scripts from restored public HTML before Pages deploy
 # Retry: Cloudflare preview branch alias truncates to owner-account-navsafe-202611
 on:
