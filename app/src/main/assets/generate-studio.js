@@ -4,6 +4,7 @@ import {MODEL_CATALOG,MODELS} from './generate-models.js';
 import {takeStudioHandoff} from './studio-handoff.js';
 import {studioCreditWalletState} from './studio-credit-wallet.js';
 import {progressView} from './studio-job-progress.js';
+import {mergeSpeechPieces} from './jarvix-speech-draft.js';
 const $=id=>document.getElementById(id);
 let voiceActionPending=false,studioActionVersion=0;
 const briefVoice=async text=>{const {speakJarvis}=await import('./jarvis-core.js');speakJarvis(text);};
@@ -1285,12 +1286,15 @@ function initStudioVoiceInput() {
       };
 
       recognition.onresult = (e) => {
-        let currentTranscript = '';
+        const pieces = [];
         for (let i = 0; i < e.results.length; ++i) {
-          currentTranscript += e.results[i][0].transcript;
+          const str = String(e.results[i]?.[0]?.transcript || '').trim();
+          if (str) pieces.push(str);
         }
+        const speechText = mergeSpeechPieces(pieces);
         if (promptEl) {
-          promptEl.value = (baseText + currentTranscript).trim();
+          const combined = baseText ? mergeSpeechPieces([baseText, speechText]) : speechText;
+          promptEl.value = combined;
           promptEl.dispatchEvent(new Event('input', { bubbles: true }));
         }
       };

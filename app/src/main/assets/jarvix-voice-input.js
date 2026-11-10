@@ -69,7 +69,11 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
   if(liveActive&&active)void stop();
   display(Boolean(active));
  });
+ let lastToggleTime=0;
  mic.onclick=()=>{
+  const now=Date.now();
+  if(now-lastToggleTime<350)return;
+  lastToggleTime=now;
   if(liveActive){
    // Existing stop: cancels speech, recognition and the persisted session.
    if(active)void stop({abort:true});
