@@ -43,12 +43,11 @@
  const gallery=make('div','et-gallery');gallery.id='etGallery';
  for(const card of cards){
   const a=make('a','et-card');a.href=card.href||('?tool='+card.mode);a.dataset.category=card.category;
-  const icon=make('span','et-icon',card.icon);icon.setAttribute('aria-hidden','true');
   const copy=make('span','et-card-copy');
-  copy.append(make('strong','et-card-title',card.title),make('span','et-card-desc',card.desc));
+  copy.append(make('strong','et-card-title',card.title));
   const cta=make('span','et-card-button','Open '+card.title+'  →');
   cta.setAttribute('aria-hidden','true');copy.append(cta);
-  a.append(crop(card.rect,'et-card-art'),icon,copy);
+  a.append(crop(card.rect,'et-card-art'),copy);
   if(card.mode){a.addEventListener('click',e=>{
     const target=main.querySelector('.quick-tool-list .hub-tile[data-hub-tool="'+card.mode+'"]');
     if(target){e.preventDefault();target.click();}

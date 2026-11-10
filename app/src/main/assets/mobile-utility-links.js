@@ -53,11 +53,8 @@ if(grid){
   const a=document.createElement('a');a.className='hub-tile mobile-utility-tile';
   a.href='mobile-utility.html?tool='+encodeURIComponent(tool.id);
   a.dataset.utility=tool.id;
-  const badge=document.createElement('span');badge.className='utility-tile-icon';
-  badge.setAttribute('aria-hidden','true');badge.textContent=tool.id==='photo-compress'?'◫':tool.title.slice(0,1);
   const strong=document.createElement('strong');strong.textContent=tool.title;
-  const small=document.createElement('small');small.textContent=tool.note;
-  a.append(badge,strong,small);grid.append(a);
+  a.append(strong);grid.append(a);
  }
  // BASE #28: local, owner-entered Teleprompter; no recording, uploads or provider calls.
  const prompterText={
@@ -68,11 +65,8 @@ if(grid){
  }[lang]||['Teleprompter','Read and scroll your own script'];
  const prompter=document.createElement('a');prompter.className='hub-tile mobile-utility-tile';
  prompter.href='teleprompter.html';prompter.dataset.utility='teleprompter';
- const prompterBadge=document.createElement('span');prompterBadge.className='utility-tile-icon';
- prompterBadge.setAttribute('aria-hidden','true');prompterBadge.textContent='▤';
  const prompterTitle=document.createElement('strong');prompterTitle.textContent=prompterText[0];
- const prompterNote=document.createElement('small');prompterNote.textContent=prompterText[1];
- prompter.append(prompterBadge,prompterTitle,prompterNote);grid.append(prompter);
+ prompter.append(prompterTitle);grid.append(prompter);
  // BASE #28: a separate, implemented in-browser photo collage (not an unimplemented mobile-utility mode).
  const collageText={
   en:['Photo Collage','Arrange 2–9 photos into one PNG'],
@@ -82,9 +76,7 @@ if(grid){
  }[lang]||['Photo Collage','Arrange 2–9 photos into one PNG'];
  const a=document.createElement('a');a.className='hub-tile mobile-utility-tile';
  a.href='photo-collage.html';a.dataset.utility='photo-collage';
- const badge=document.createElement('span');badge.className='utility-tile-icon';badge.setAttribute('aria-hidden','true');badge.textContent='▦';
  const title=document.createElement('strong');title.textContent=collageText[0];
- const note=document.createElement('small');note.textContent=collageText[1];
- a.append(badge,title,note);grid.append(a);
+ a.append(title);grid.append(a);
 }
 })();

@@ -47,34 +47,29 @@ body[data-approved-page="free-tools"] .et-photo-card::before{
  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
  background:linear-gradient(90deg,#061127 0%,#08122e 27%,#07142bb8 46%,transparent 81%);
 }
-body[data-approved-page="free-tools"] .et-photo-card .utility-tile-icon.et-photo-icon{
- position:absolute!important;z-index:2;left:10px;top:10px;
- display:grid!important;place-items:center!important;width:34px;height:34px;
- min-width:34px!important;min-height:34px!important;
- color:#77eaff!important;font-size:19px!important;font-weight:800!important;
- border:1px solid #2c60de!important;border-radius:9px!important;
- background:linear-gradient(125deg,#07447f,#171761)!important;
- box-shadow:0 0 7px #4a64ff46!important;
+body[data-approved-page="free-tools"] .utility-tile-icon,
+body[data-approved-page="free-tools"] .et-photo-icon,
+body[data-approved-page="free-tools"] .hub-icon,
+body[data-approved-page="free-tools"] .quick-tool-icon,
+body[data-approved-page="free-tools"] .et-icon{
+ display:none!important;
 }
-body[data-approved-page="free-tools"] .et-photo-card:nth-child(4n+2) .et-photo-icon{
- border-color:#7945e9!important;color:#f2c2ff!important;background:linear-gradient(135deg,#3b1468,#071b6a)!important;
+body[data-approved-page="free-tools"] .et-photo-card>small,
+body[data-approved-page="free-tools"] .et-owner-voice-card small,
+body[data-approved-page="free-tools"] .et-card-desc,
+body[data-approved-page="free-tools"] .hub-tile small,
+body[data-approved-page="free-tools"] .mobile-utility-tile small{
+ display:none!important;
 }
 body[data-approved-page="free-tools"] .et-photo-card>strong{
- position:absolute!important;z-index:2;left:53px;top:12px;right:auto;
- width:calc(52% - 42px);max-width:none!important;margin:0!important;
- display:block;color:#fff!important;font-size:clamp(11px,.88vw,14px)!important;
- line-height:1.17!important;font-weight:780!important;text-align:left!important;
+ position:absolute!important;z-index:2;left:14px;top:14px;right:auto;
+ width:calc(52% - 10px);max-width:none!important;margin:0!important;
+ display:block;color:#fff!important;font-size:clamp(12px,.95vw,15px)!important;
+ line-height:1.22!important;font-weight:780!important;text-align:left!important;
  overflow-wrap:break-word;
 }
-body[data-approved-page="free-tools"] .et-photo-card>small{
- position:absolute!important;z-index:2;left:53px;top:43px;right:auto;
- display:block;width:calc(52% - 43px);max-width:none!important;
- color:#d9e1fb!important;font-size:clamp(9px,.72vw,11px)!important;
- line-height:1.26!important;font-weight:420!important;
- max-height:37px!important;overflow:hidden!important;text-align:left!important;
-}
 body[data-approved-page="free-tools"] .et-photo-card .et-photo-cta{
- position:absolute;z-index:3;left:53px;bottom:7px;
+ position:absolute;z-index:3;left:14px;bottom:10px;
  display:inline-flex;align-items:center;justify-content:center;
  min-height:25px;padding:4px 13px;border-radius:22px;
  border:1px solid rgba(245, 158, 11, 0.4);color:#fed7aa;line-height:1.1;
@@ -159,16 +154,12 @@ body[data-approved-page="free-tools"] .et-owner-voice-card>.utility-tile-icon{
  border:1px solid #3368da!important;font-size:19px!important;
 }
 body[data-approved-page="free-tools"] .et-owner-voice-card strong{
- position:absolute!important;z-index:2;left:55px;top:13px;
+ position:absolute!important;z-index:2;left:16px;top:16px;
  color:#fff!important;font-size:16px!important;font-weight:760!important;
- margin:0!important;max-width:49%!important;
-}
-body[data-approved-page="free-tools"] .et-owner-voice-card small{
- position:absolute!important;z-index:2;left:55px;top:38px;
- color:#d9e2f8!important;font-size:11px!important;max-width:49%!important;
+ margin:0!important;max-width:52%!important;
 }
 body[data-approved-page="free-tools"] .et-owner-voice-card .et-photo-cta{
- position:absolute;z-index:3;left:55px;bottom:8px;
+ position:absolute;z-index:3;left:16px;bottom:14px;
  display:inline-flex;align-items:center;justify-content:center;
  padding:4px 13px;min-height:25px;color:#fed7aa;font-size:10px;font-weight:660;
  border:1px solid rgba(245, 158, 11, 0.4);border-radius:25px;background:#0d0b14;

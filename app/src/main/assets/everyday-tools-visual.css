@@ -38,15 +38,13 @@ body[data-approved-page="free-tools"] .et-showcase [hidden]{display:none!importa
 .et-card:hover{border-color:#b15aff;box-shadow:0 3px 20px #6f2aff45;transform:translateY(-1px);}
 .et-card .et-card-art{left:auto;right:0;width:53%;height:100%;mask-image:linear-gradient(90deg,transparent,black 27%);}
 .et-card:after{content:'';position:absolute;z-index:0;inset:0;pointer-events:none;background:linear-gradient(90deg,#07112a77 0%,#09132b30 52%,transparent 88%)}
-.et-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;margin-right:10px;border:1px solid #225dc6;border-radius:10px;color:#67f1ff;font-size:26px;background:linear-gradient(125deg,#043968,#061d83);z-index:1;}
-.et-card:nth-child(3n+2) .et-icon{color:#a5b3ff;border-color:#554ee0;background:#171979;}
-.et-card:nth-child(3n) .et-icon{color:#69f4ed;border-color:#137e9f;background:#054d69;}
-.et-card-copy{display:flex;position:relative;z-index:1;flex-direction:column;align-items:flex-start;gap:4px;min-width:0;max-width:calc(100% - 52px);height:100%;}
+.et-icon{display:none!important;}
+.et-card-desc{display:none!important;}
+.et-card-copy{display:flex;position:relative;z-index:1;flex-direction:column;align-items:flex-start;gap:8px;min-width:0;max-width:55%!important;height:100%;}
 .et-card-title{font-size:clamp(14px,1.3vw,17px);font-weight:780;color:#fff;letter-spacing:-.02em;line-height:1.3}
-.et-card-desc{font-size:clamp(10px,1vw,12px);font-weight:420;line-height:1.3;color:#e1e6fc;max-width:145px;}
 .et-card-button{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;padding:7px 14px;min-height:33px;border:1px solid rgba(245, 158, 11, 0.4);background:#0d0b14;color:#fed7aa;border-radius:24px;box-shadow:0 2px 6px rgba(0,0,0,0.6);font-size:clamp(10px,0.9vw,12px);font-weight:660;text-align:center;text-decoration:none;transition:all 0.22s ease;}
 .et-card:hover .et-card-button,.et-card-button:hover{transform:translateY(-1px);box-shadow:0 0 16px rgba(245, 158, 11, 0.85);background:linear-gradient(135deg, #f59e0b, #d97706);color:#0b1020;border-color:#f59e0b;font-weight:700;}
-.et-card .et-card-button{position:absolute;bottom:0;left:calc(-52px);max-width:240px;padding:7px 13px;}
+.et-card .et-card-button{position:absolute;bottom:0;left:0!important;max-width:240px;padding:7px 13px;}
 .et-uniquifier{height:165px;overflow:hidden;position:relative;isolation:isolate;display:block;margin-top:15px;text-decoration:none;color:#fff;background:linear-gradient(110deg,#070d2a,#17115b 70%,#060e3d);border:1px solid #2848ba;border-radius:12px;}
 .et-uniquifier .et-play-art{width:18%;height:100%;left:0;right:auto}
 .et-uniquifier .et-video-art{height:100%;width:60%;left:auto;right:0}

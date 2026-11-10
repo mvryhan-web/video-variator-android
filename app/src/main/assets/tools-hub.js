@@ -26,7 +26,7 @@
  const icon=i=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${icons[i]}"/></svg>`;
  grid.replaceChildren();modes.forEach((mode,i)=>{
   const a=document.createElement('a');a.className='hub-tile';a.dataset.hubTool=mode;a.href=['tts','stt'].includes(mode)?`audio-studio.html?tool=${mode}`:`?tool=${mode}`;
-  a.innerHTML=`<span class="hub-icon">${icon(i)}</span><strong></strong><small></small>`;a.querySelector('strong').textContent=c.names[i];a.querySelector('small').textContent=c.notes[i];grid.append(a);
+  a.innerHTML=`<strong></strong>`;a.querySelector('strong').textContent=c.names[i];grid.append(a);
   if(!['tts','stt'].includes(mode))a.onclick=e=>{e.preventDefault();navigate(mode);};
  });
  // The original Video Uniquifier is an existing independent app, not a renamed
@@ -44,7 +44,7 @@
  legacyIcon.setAttribute('aria-hidden','true');legacyIcon.textContent='▤';
  const legacyTitle=document.createElement('strong');legacyTitle.textContent=legacyText[0];
  const legacyNote=document.createElement('small');legacyNote.textContent=legacyText[1];
- legacyLink.append(legacyIcon,legacyTitle,legacyNote);grid.append(legacyLink);
+ legacyLink.append(legacyTitle);grid.append(legacyLink);
  // Extra everyday utilities: direct access, same styling as existing tool tiles.
  const extra=lang==='ru'?
   [['smart-reminders.html','Умные напоминания','Даты, повторы и уведомления'],['smart-reminders.html#quick-notes','Быстрые заметки','Синхронизация с аккаунтом']]:
@@ -57,7 +57,7 @@
   const iconEl=document.createElement('span');iconEl.className='hub-icon';iconEl.textContent=i?'✎':'◷';iconEl.setAttribute('aria-hidden','true');
   const heading=document.createElement('strong');heading.textContent=title;
   const small=document.createElement('small');small.textContent=note;
-  link.append(iconEl,heading,small);grid.append(link);
+  link.append(heading);grid.append(link);
  });
  const screen=document.createElement('div');screen.className='hub-screen-header';screen.hidden=true;screen.innerHTML='<button type="button" id="hubBack"></button><h1 tabindex="-1" id="hubTitle"></h1><p role="status" id="hubNotice"></p>';screen.querySelector('button').textContent='← '+c.back;hero.after(screen);
  // The original Everyday Tools banner is redundant on every detail screen.

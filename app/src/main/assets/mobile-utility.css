@@ -17,7 +17,8 @@
 .utility-result img{max-height:270px;object-fit:contain}
 .utility-result button{justify-self:start}
 .utility-result textarea{width:100%;min-height:140px}
-.utility-tile-icon{display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--line);border-radius:10px;font-weight:700}
+.utility-tile-icon{display:none!important}
+.mobile-utility-tile small{display:none!important}
 .tools-hub .mobile-utility-tile{min-height:126px;padding:16px 13px}
 .tools-hub .utility-tools-preview{padding-top:20px}
 .tools-hub .utility-tools-preview .quick-tool-list{margin-top:12px}
