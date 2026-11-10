@@ -319,9 +319,8 @@ async function processMessage(message){
    message.status='sent';conversation.messages.push(response);await save();render();store.guard();openWorkspace(command.url,command.target);return;
   }
   if(command?.intent==='GENERATE_MEDIA'&&command.raw_prompt){
-   const label=({ru:'Подготовил запрос для Studio. Откройте студию и проверьте модель и стоимость перед созданием. Генерация и списание кредитов не запускаются автоматически.',en:'Your Studio prompt is ready. Open Studio to review the model and cost. No generation or credit charge has started.',fr:'Votre demande est prête dans Studio. Vérifiez le modèle et le coût avant de lancer. Aucun débit automatique.',es:'Tu solicitud está lista para Studio. Revisa el modelo y el coste antes de empezar. No hay cobro automático.'})[getJarvixLanguage()]||'Your Studio prompt is ready.';
-   const response={id:makeId(),role:'assistant',text:label,toolAction:{kind:'prepare-studio',target:command.target,url:command.url,prompt:command.raw_prompt,ratio:command.aspect_ratio},createdAt:Date.now()};
-   message.status='sent';conversation.messages.push(response);await save();render();return;
+   mode=command.target||'image';
+   if(!message.mode||message.mode==='auto')message.mode=mode;
   }
   let mode=resolveMode(message.text,message.mode);
   if(message.mode==='auto'&&mode==='text'&&/измен|сделай.*(ярче|темнее)|ещё|change|brighter|darker|modifier|cambiar/i.test(message.text)){const previous=[...conversation.messages].reverse().find(m=>m.role==='assistant'&&m.jobId);if(previous)mode=previous.kind;}
@@ -335,7 +334,7 @@ async function processMessage(message){
   );
   const isExplicitGen = /^(сгенерируй|нарисуй|создай|сделай|запусти|generate|create|draw|make|render)\b/i.test(cleanedText);
   const shouldGenerateMedia = !isAdviceOrQuestion && (
-   (['image','video','audio'].includes(mode) && isExplicitGen) ||
+   (['image','video','audio'].includes(mode) && (isExplicitGen || ['image','video','audio'].includes(message.mode))) ||
    (message.action?.intent === 'GENERATE_MEDIA') ||
    (['image','video','audio'].includes(mode) && /измен|сделай.*(ярче|темнее)|ещё/i.test(rawText))
   );

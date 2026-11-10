@@ -6,6 +6,15 @@ const CREATIVE_TEMPLATES = [{"id":"creative50-bottle-of-weather","title":"Weathe
 const INSTRUCTIONS = 'Ты JARVIS — исполнительный лаконичный ассистент платформы DEEPSYQ. DEEPSYQ — творческая AI-платформа с Image Studio (изображения), Video Studio (видео), Audio Studio (аудио), Canvas, AI Apps, Everyday Tools, Video Uniquifier и Inspiration. Отвечай кратко, ёмко, дружелюбно, максимум 1–2 предложения на языке пользователя.';
 
 const studioJobs = new Map();
+const dailyUserUsage = new Map();
+function getDailyUsage(clientKey) {
+  const today = new Date().toISOString().slice(0, 10);
+  const key = clientKey + ':' + today;
+  if (!dailyUserUsage.has(key)) {
+    dailyUserUsage.set(key, { photo: 0, video: 0, music: 0 });
+  }
+  return dailyUserUsage.get(key);
+}
 const jarvixSessions = new Map();
 const edgeUsers = new Map();
 const edgeWallets = new Map();
@@ -734,6 +743,9 @@ export default {
           reason: null
         });
       }
+      const clientIp = request.headers.get('cf-connecting-ip') || 'anon';
+      const clientKey = user?.id || clientIp;
+      const usage = getDailyUsage(clientKey);
       return json({
         ok: true,
         allowed: true,
@@ -744,8 +756,18 @@ export default {
         maxPerHour: 30,
         activeJobs: 0,
         jobsThisHour: 0,
-        dailyRemaining: 20,
-        dailyLimit: 20,
+        dailyRemaining: Math.max(0, 5 - usage.photo),
+        dailyLimit: 5,
+        limits: {
+          photo: 5,
+          video: 2,
+          music: 3
+        },
+        usage: {
+          photo: usage.photo,
+          video: usage.video,
+          music: usage.music
+        },
         freeTier: true,
         message: 'Free Developer & Test Mode active'
       });
@@ -771,6 +793,53 @@ export default {
       const user = await getAuthenticatedUser(request, env);
       const body = await request.json().catch(() => ({}));
       const { kind = 'image', model, prompt = 'Cosmic nebula', ratio = '1:1', duration = 5 } = body;
+      const clientIp = request.headers.get('cf-connecting-ip') || 'anon';
+      const clientKey = user?.id || clientIp;
+      const usage = getDailyUsage(clientKey);
+      const isPaid = user && (user.plan === 'basic' || user.plan === 'pro' || user.plan === 'business' || isOwnerEmail(user.email, env));
+
+      if (!isPaid) {
+        if (kind === 'video' && usage.video >= 2) {
+          return json({
+            ok: false,
+            error: 'LIMIT_REACHED',
+            limitReached: true,
+            kind: 'video',
+            limit: 2,
+            message: 'Вы исчерпали бесплатный лимит на видео (2 ролика в сутки). Оформите пробный период или подписку Basic ($9) / Pro ($24), чтобы продолжить.',
+            upgradeUrl: 'pricing.html',
+            trialUrl: 'pricing.html#trial'
+          }, 403);
+        }
+        if (kind === 'image' && usage.photo >= 5) {
+          return json({
+            ok: false,
+            error: 'LIMIT_REACHED',
+            limitReached: true,
+            kind: 'image',
+            limit: 5,
+            message: 'Вы исчерпали бесплатный лимит на фото (5 изображений в сутки). Оформите пробный период или подписку Basic ($9) / Pro ($24), чтобы продолжить.',
+            upgradeUrl: 'pricing.html',
+            trialUrl: 'pricing.html#trial'
+          }, 403);
+        }
+        if ((kind === 'audio' || kind === 'music') && usage.music >= 3) {
+          return json({
+            ok: false,
+            error: 'LIMIT_REACHED',
+            limitReached: true,
+            kind: 'audio',
+            limit: 3,
+            message: 'Вы исчерпали бесплатный лимит на музыку (3 трека в сутки). Оформите пробный период или подписку Basic ($9) / Pro ($24), чтобы продолжить.',
+            upgradeUrl: 'pricing.html',
+            trialUrl: 'pricing.html#trial'
+          }, 403);
+        }
+        if (kind === 'video') usage.video++;
+        else if (kind === 'image') usage.photo++;
+        else if (kind === 'audio' || kind === 'music') usage.music++;
+      }
+
       const id = 'job_' + crypto.randomUUID().replace(/-/g, '').slice(0, 16);
 
       let wanTaskId = null;
@@ -808,9 +877,9 @@ export default {
 
       const svg = createSvgImage(prompt, ratio);
       const seed = Math.floor(Math.random() * 1000000);
-      const imgW = ratio === '9:16' ? 720 : ratio === '16:9' ? 1280 : 1024;
-      const imgH = ratio === '9:16' ? 1280 : ratio === '16:9' ? 720 : 1024;
-      const imageUrl = kind === 'image' ? `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt || 'cinematic masterpiece')}?width=${imgW}&height=${imgH}&nologo=true&seed=${seed}` : null;
+      const imgW = ratio === '9:16' ? 768 : ratio === '16:9' ? 1280 : 1024;
+      const imgH = ratio === '9:16' ? 1280 : ratio === '16:9' ? 768 : 1024;
+      const imageUrl = kind === 'image' ? `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt || 'cinematic masterpiece, 8k, hyperrealistic')}?width=${imgW}&height=${imgH}&model=flux&nologo=true&seed=${seed}` : null;
       const jobRecord = {
         id,
         userId: user?.id || 'guest',

@@ -35,15 +35,15 @@ function capability(model){
 }
 function withCapabilities(model){return Object.freeze({...model,capabilities:capability(model)});}
 export const MODELS={
- image:{id:'gemini-3.1-flash-image',label:'Nano Banana 2',ratios:['1:1','2:3','3:2','9:16','16:9'],references:3},
- video:{id:'veo-3.1-lite-generate-preview',label:'Veo 3.1 Lite',ratios:['16:9','9:16'],references:1},
+ image:{id:'wanx2.1-t2i-turbo',label:'Wanx 2.1 (Alibaba)',labelRu:'Wanx 2.1 (Alibaba)',ratios:['1:1','9:16','16:9'],references:1},
+ video:{id:'wan2.1-t2v-turbo',label:'Wan 2.1 (Alibaba)',labelRu:'Wan 2.1 (Alibaba)',ratios:['16:9','9:16'],references:1},
  music:{id:'lyria-3-clip-preview',label:'Lyria · 30 seconds',labelRu:'Lyria · 30 секунд',ratios:[],references:0}
 };
 const RAW_MODEL_CATALOG=[
- {...MODELS.video,kind:'video',provider:'Google',adapter:true,description:'Text or a photo into a short video.',descriptionRu:'Короткое видео из текста или фотографии.',quality:'720p',duration:'8 seconds',resolutions:['720p','1080p'],durations:[4,6,8]},
+ {...MODELS.video,kind:'video',provider:'Alibaba Cloud',adapter:true,description:'Cinematic video generation with Wan 2.1.',descriptionRu:'Кинематографичные видеоролики Wan 2.1 от Alibaba.',quality:'720p',duration:'5 seconds',resolutions:['720p','1080p'],durations:[4,5,8]},
  {id:'veo-3.1-fast-generate-preview',label:'Veo 3.1 Fast',kind:'video',provider:'Google',adapter:true,ratios:['16:9','9:16'],references:1,description:'An alternative video model for comparing results.',descriptionRu:'Альтернативная модель видео для сравнения результатов.',quality:'720p',duration:'8 seconds',resolutions:['720p','1080p'],durations:[4,6,8]},
  {id:'byteplus-seedance-2',label:'Seedance 2.0',kind:'video',provider:'BytePlus',adapter:true,ratios:['16:9','9:16','1:1'],references:3,videoInputModes:['text','first_frame','first_last','reference_image'],description:'Text or up to three image references into a short video.',descriptionRu:'Видео из текста, первого/последнего кадра или референсных фотографий.',quality:'720p',duration:'5 seconds',resolutions:['720p','1080p'],durations:[4,5,8,10,15]},
- {...MODELS.image,kind:'image',provider:'Google',adapter:true,description:'Create or edit an image with reference photos.',descriptionRu:'Создание изображений с фотографиями для примера.',quality:'1K',resolutions:['1K','2K','4K']},
+ {...MODELS.image,kind:'image',provider:'Alibaba Cloud',adapter:true,description:'Photorealistic image generation with Wanx 2.1.',descriptionRu:'Флагманская фотореалистичная генерация Wanx 2.1 от Alibaba.',quality:'1K',resolutions:['1K','2K','4K']},
  {id:'byteplus-seedream-4-5',label:'Seedream 4.5',kind:'image',provider:'BytePlus',adapter:true,ratios:['1:1','2:3','3:2','9:16','16:9'],references:3,description:'Create an image with optional reference photos.',descriptionRu:'Создание изображения с фотографиями для примера.',quality:'2K',resolutions:['2K','4K']},
  {id:'byteplus-seedream-5-lite',label:'Seedream 5.0 Lite',kind:'image',provider:'BytePlus',adapter:true,ratios:['1:1','2:3','3:2','9:16','16:9'],references:3,description:'Another image model prepared for connection.',descriptionRu:'Ещё одна модель изображений для будущего подключения.',quality:'2K',resolutions:['2K','3K','4K'],outputFormats:['png','jpeg']},
  {...MODELS.music,kind:'music',provider:'Google',adapter:true,description:'A 30-second song with vocals or an instrumental.',descriptionRu:'30 секунд песни с вокалом или инструментальной музыки.',duration:'30 seconds'},
