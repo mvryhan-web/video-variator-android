@@ -68,10 +68,13 @@ try {
           });
         });
         await page.reload({waitUntil:'domcontentloaded'});
+        // The JARVIX module awaits IndexedDB before wiring its existing title button.
+        await page.waitForFunction(() => typeof document.querySelector('#jChatTitleBtn')?.onclick === 'function', {timeout:15000});
         const toggle=page.locator('#jDrawerHistoryToggle');
         const dropdown=page.locator('#jChatDropdown');
         const rows=page.locator('#jMenuHistoryList');
         await page.locator('#jChatTitleBtn').click();
+        await dropdown.waitFor({state:'visible',timeout:10000});
         assert.equal(await dropdown.isVisible(),true,'original menu opens');
         assert.equal(await toggle.getAttribute('aria-expanded'),'false','starts collapsed');
         assert.equal(await rows.isVisible(),false,'history hidden until expanded');
