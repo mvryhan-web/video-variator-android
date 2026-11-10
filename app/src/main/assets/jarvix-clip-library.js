@@ -311,7 +311,7 @@ export async function findTourFallback(query, language = 'ru') {
   }
   // A neutral existing recorded invitation is safer than inventing an answer.
   if (!best) best = available.find(clip =>
-    /^(?:Посмотрим несколько инструментов|Let.s look at some tools|Voyons quelques outils|Veamos algunas herramientas)/iu.test(clip.text)
+    /^(?:Посмотрим несколько инструментов|Let.s look at a few tools|Voyons quelques outils|Veamos algunas herramientas)/iu.test(clip.text)
   ) || available[0];
   return {text:best.text, audioUrl:best.url, section:'TOUR', action:null};
 }
