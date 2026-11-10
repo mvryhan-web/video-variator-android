@@ -31,7 +31,7 @@ jobs:
         run: node scripts/owner-canvas-direct-worker-release-20261110.mjs upload
       - name: Bundle original production Worker from latest production commit
         run: node scripts/owner-canvas-direct-worker-release-20261110.mjs bundle
-      - name: Publish isolated TEST with complete exact manifest plus original Worker
+      - name: Wait for isolated TEST to compile its complete original Worker
         run: node scripts/owner-canvas-direct-worker-release-20261110.mjs test
       - name: Verify TEST Worker, original assets, Canvas UI and API
         run: node scripts/owner-canvas-direct-worker-release-20261110.mjs test-verify
