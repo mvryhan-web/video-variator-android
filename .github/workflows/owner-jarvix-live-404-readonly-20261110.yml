@@ -1,0 +1,50 @@
+name: Owner JARVIX exact live 404 asset read-only check
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths: ['.github/workflows/owner-jarvix-live-404-readonly-20261110.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: deepsyq-platform
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check blake3==1.0.8 requests==2.32.3
+      - name: Check 404 source and live bytes without modifying site
+        run: |
+          python - <<'PY'
+          import requests,os,subprocess,json
+          from blake3 import blake3
+          account=os.environ['CF_ACCOUNT'];token=os.environ['CF_TOKEN']
+          headers={'Authorization':'Bearer '+token}
+          base='https://api.cloudflare.com/client/v4/accounts/'+account+'/pages/projects/deepsyq'
+          p=requests.get(base,headers=headers,timeout=20).json()['result']
+          current=p['canonical_deployment']
+          d=requests.get(base+'/deployments/'+current['id'],headers=headers,timeout=20).json()['result']
+          expected=d['files'].get('/404.html') or d['files'].get('404.html')
+          sha=(d.get('deployment_trigger') or current.get('deployment_trigger') or {}).get('metadata',{}).get('commit_hash')
+          print('LIVE_404_MANIFEST',json.dumps({'hashPresent':bool(expected),'commit':sha[:12] if sha else None}))
+          if sha:
+            r=subprocess.run(['git','show',sha+':app/src/main/assets/404.html'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            print('GIT_404_ASSET',json.dumps({'present':r.returncode==0,'hashMatches':blake3(r.stdout+b'html').hexdigest()[:32]==expected if r.returncode==0 else False,'size':len(r.stdout) if r.returncode==0 else None}))
+          for host in ['https://deepsyq.app','https://deepsyq.pages.dev',str(d.get('url') or '').rstrip('/')]:
+            if not host.startswith('https://'):continue
+            for suffix in ['/404.html']:
+              try:
+                r=requests.get(host+suffix,timeout=20,headers={'Cache-Control':'no-cache'})
+                raw=r.content
+                print('LIVE_404_CANDIDATE',json.dumps({'host':host.split('/')[2],'status':r.status_code,'size':len(raw),'hashMatches':blake3(raw+b'html').hexdigest()[:32]==expected,'contentType':r.headers.get('content-type','').split(';')[0]}))
+              except Exception as e:print('LIVE_404_CANDIDATE',json.dumps({'host':host.split('/')[2],'error':str(e)[:100]}))
+          print('NO_CHANGES_MADE',True)
+          PY
