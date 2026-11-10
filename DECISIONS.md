@@ -1,3 +1,17 @@
+## OWNER D34 — 2026-11-10 — TWO DISTINCT PROTECTIONS: ALWAYS-ON RELEASE SCOPE AND OWNER-ONLY FINAL LOCK
+
+**Owner clarification; applies immediately to every executor. Supersedes any reading of D33 suggesting that every completed edit becomes permanently locked. Does NOT weaken D31.**
+
+1. **ALWAYS ON — release scope protection:** each task may modify and deploy only the exact owner-requested files/elements plus strictly necessary agreed dependencies; no other page, asset, shared component, API, database, Worker, Stripe, credits, or deployed file may be changed, reverted, or replaced incidentally. If a deployment candidate contains extra changes, it MUST be rejected. Baseline is the current LIVE production revision, not a stale repository checkout.
+2. **Owner-requested edits remain editable:** after any safe release, the owner may request another change to the SAME section or file, any number of times. This is expressly allowed by the release scope protection; the guard is NOT a permanent lock.
+3. **OWNER-ONLY FINAL LOCK:** a file or design is marked formally FINAL / LOCKED only when the owner explicitly declares that specific item finished and protected. Never invent a final lock from task completion, successful CI, publication, or silence. Any existing explicit owner locks remain in force; notably D31 Pricing and AI Credits may be changed only with explicit, unambiguous written owner authorization.
+4. **Safe Cloudflare deployment remains mandatory:** do not issue a static-only Pages deploy that would remove current live Worker/Functions or bindings. If the exact existing runtime, unchanged assets, and allowed diff cannot be preserved and proven, return `BLOCKED_MAIN — NOT PUBLISHED` rather than resetting or replacing the whole platform.
+5. **Acceptance:** after a surgical release, verify the requested part is updated and neighboring routes, critical backend endpoints and deployed assets remain unchanged. No unrelated improvements, no broad refactors, no full-site republishing from stale source.
+
+**This document records enforceable instructions. An automated enforcement pipeline must additionally be implemented and validated; a written rule alone is not evidence that the pipeline is installed.**
+
+---
+
 ## OWNER D33 — 2026-11-10 — ОБЯЗАТЕЛЬНАЯ ТОЧЕЧНАЯ ПУБЛИКАЦИЯ (SURGICAL RELEASE)
 
 **Прямое решение владельца, действует для P, Администратора, Antigravity и всех будущих исполнителей. Уточняет D28 и D32; не отменяет безопасность D31.**
