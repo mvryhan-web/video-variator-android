@@ -89,9 +89,10 @@ body[data-approved-page="free-tools"] .et-owner-voice-card:hover .et-photo-cta{
 body[data-approved-page="free-tools"] .et-photo-card .et-owner-art-error{opacity:.7}
 /* Asset 20: intentionally wide, never join the 19-card 4-column grid. */
 body[data-approved-page="free-tools"] .utility-tools-preview>a.et-owner-bg-banner{
- display:flex!important;align-items:center;position:relative;isolation:isolate;
- width:100%!important;max-width:100%!important;height:84px!important;min-height:84px!important;
- margin:8px 0 0!important;padding:11px 14px!important;
+ display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;
+ position:relative;isolation:isolate;width:100%!important;max-width:100%!important;
+ height:auto!important;min-height:96px!important;
+ margin:8px 0 0!important;padding:14px 20px!important;
  overflow:hidden;border-radius:11px!important;border:1px solid #8250ea!important;
  text-decoration:none!important;color:#fff!important;background:#080f29!important;
  box-shadow:inset 0 1px 0 #7951d848!important;
@@ -105,7 +106,7 @@ body[data-approved-page="free-tools"] .utility-tools-preview>a.et-owner-bg-banne
  background:linear-gradient(90deg,#06122b 0%,#071429ed 34%,#081024b3 57%,transparent 90%);
 }
 body[data-approved-page="free-tools"] .et-owner-bg-banner>div{
- position:relative;z-index:2;display:block!important;max-width:65%;
+ position:relative;z-index:2;display:block!important;max-width:65%;padding:0;
 }
 body[data-approved-page="free-tools"] .et-owner-bg-banner>div .tool-kicker{display:none!important;}
 body[data-approved-page="free-tools"] .et-owner-bg-banner>div strong{
@@ -113,16 +114,15 @@ body[data-approved-page="free-tools"] .et-owner-bg-banner>div strong{
  font-weight:790!important;line-height:1.25!important;color:#fff;
 }
 body[data-approved-page="free-tools"] .et-owner-bg-banner>div small{
- display:block;font-size:11px!important;color:#c5dafa!important;line-height:1.26;
+ display:none!important;
 }
 body[data-approved-page="free-tools"] .et-owner-bg-banner>span[aria-hidden="true"]:not(.et-photo-cta){display:none!important;}
 body[data-approved-page="free-tools"] .et-owner-bg-banner>.et-photo-cta{
- position:absolute;z-index:3;right:14px;bottom:20px;display:inline-flex;
- align-items:center;justify-content:center;min-height:28px;padding:5px 15px;
- border-radius:22px;border:1px solid rgba(245, 158, 11, 0.4);color:#fed7aa;font-size:11px;font-weight:660;
- background:#0d0b14;pointer-events:none;
- box-shadow:0 2px 6px rgba(0,0,0,0.6);
- transition:all 0.22s ease;
+ position:relative!important;z-index:3;left:auto!important;right:auto!important;bottom:auto!important;
+ margin-top:10px!important;display:inline-flex!important;align-items:center;justify-content:center;
+ min-height:28px;padding:5px 15px;border-radius:22px;border:1px solid rgba(245, 158, 11, 0.4);
+ color:#fed7aa;font-size:11px;font-weight:660;background:#0d0b14;pointer-events:none;
+ box-shadow:0 2px 6px rgba(0,0,0,0.6);transition:all 0.22s ease;
 }
 /* Assets 21,22: two separate wide lower cards, preserving the native Audio Studio links. */
 body[data-approved-page="free-tools"] .utility-tools-preview>.et-owner-voices{
@@ -138,25 +138,24 @@ body[data-approved-page="free-tools"] .et-owner-voices>a.et-owner-voice-card{
  box-shadow:none!important;
 }
 .et-owner-voice-card .et-owner-voice-art{
- position:absolute;z-index:0;inset:0;display:block;width:100%;height:100%;
- object-fit:cover;object-position:100% 50%;pointer-events:none;
+ position:absolute;z-index:0;top:0;right:0;width:55%;height:100%;
+ display:block;object-fit:cover;object-position:100% 50%;pointer-events:none;
 }
 .et-owner-voice-card::before{
  content:"";position:absolute;z-index:1;inset:0;pointer-events:none;
- background:linear-gradient(90deg,#05142a 0%,#071633 20%,#0b1338b0 45%,transparent 88%);
+ background:linear-gradient(90deg,#061229 0%,#061229 48%,#061229cc 62%,transparent 92%);
 }
 body[data-approved-page="free-tools"] .et-owner-voice-card>.hub-icon,
 body[data-approved-page="free-tools"] .et-owner-voice-card>.utility-tile-icon{
- position:absolute!important;z-index:2;left:12px;top:11px;
- display:grid!important;place-items:center!important;
- width:34px;height:34px;min-width:34px!important;
- border-radius:8px!important;background:#0a4d9e!important;color:#8af3ff!important;
- border:1px solid #3368da!important;font-size:19px!important;
+ display:none!important;
 }
 body[data-approved-page="free-tools"] .et-owner-voice-card strong{
  position:absolute!important;z-index:2;left:16px;top:16px;
  color:#fff!important;font-size:16px!important;font-weight:760!important;
  margin:0!important;max-width:52%!important;
+}
+body[data-approved-page="free-tools"] .et-owner-voice-card small{
+ display:none!important;
 }
 body[data-approved-page="free-tools"] .et-owner-voice-card .et-photo-cta{
  position:absolute;z-index:3;left:16px;bottom:14px;

@@ -73,16 +73,16 @@
   utilities.append(links);
  }
  const banner=make('a','et-uniquifier');banner.href='video-uniquifier.html';
- const iconArt=crop([205,867,198,161],'et-play-art');const videoArt=crop([807,867,590,161],'et-video-art');
+ const videoArt=crop([807,867,590,161],'et-video-art');
  const bannerCopy=make('div','et-uniquifier-copy');
  const legacyText={
-  ru:['Уникализация видео','Создайте новый уникальный вариант своего видео.','Исходные режимы Gentle, Balance и Dynamic.','Открыть уникализацию видео →'],
-  fr:['Video Uniquifier','Donnez un nouveau style à vos vidéos.','Modes Gentle, Balance et Dynamic.','Ouvrir Video Uniquifier →'],
-  uk:['Унікалізація відео','Створіть новий унікальний варіант свого відео.','Початкові режими Gentle, Balance і Dynamic.','Відкрити унікалізацію відео →'],
-  en:['Video Uniquifier','Transform your videos into something new and original.','Make your content stand out with a fresh, unique look.','Open Video Uniquifier →']
- }[lang]||['Video Uniquifier','Transform your videos into something new and original.','Make your content stand out with a fresh, unique look.','Open Video Uniquifier →'];
- bannerCopy.append(make('h2','',legacyText[0]),make('p','',legacyText[1]),make('small','',legacyText[2]),make('span','et-card-button',legacyText[3]));
- banner.append(iconArt,videoArt,bannerCopy);showcase.append(banner);
+  ru:['Уникализация видео','Открыть уникализацию видео →'],
+  fr:['Video Uniquifier','Ouvrir Video Uniquifier →'],
+  uk:['Унікалізація відео','Відкрити унікалізацію відео →'],
+  en:['Video Uniquifier','Open Video Uniquifier →']
+ }[lang]||['Video Uniquifier','Open Video Uniquifier →'];
+ bannerCopy.append(make('h2','',legacyText[0]),make('span','et-card-button',legacyText[1]));
+ banner.append(videoArt,bannerCopy);showcase.append(banner);
  main.prepend(showcase);
  // Modify only this page's local sidebar caption; Home and other pages remain untouched.
  const cap=[...document.querySelectorAll('#dsSiteSidebar .ds-site-caption')].find(e=>e.textContent.trim()==='Tools');
