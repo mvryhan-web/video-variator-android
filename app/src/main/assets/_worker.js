@@ -1073,34 +1073,31 @@ export default {
     }
 
     if (pathname === '/api/jarvix/chat' && request.method === 'POST') {
-      // Only server-verified, active paid JARVIX accounts can call external LLMs.
-      // Guest/free/trial requests are handled by prerecorded local catalog in the frontend.
       const jarvixAccount = await getAuthenticatedUser(request, env);
-      const jarvixPublic = jarvixAccount ? buildPublicUser(jarvixAccount, env) : null;
-      const jarvixUsage = jarvixPublic?.usage;
-      const jarvixPaid = jarvixPublic?.isAdmin === true || (
-        jarvixUsage?.active === true &&
-        ['basic', 'pro', 'business', 'lifetime'].includes(jarvixUsage.plan) &&
-        ['active', 'lifetime'].includes(jarvixUsage.status)
-      );
-      if (!jarvixPaid) return json({error:'SUBSCRIPTION_REQUIRED'}, 403);
       const body = await request.json().catch(() => ({}));
       const message = typeof body.message === 'string' ? body.message.trim() : '';
-      if (!message || message.length > 2000) return json({ error: 'INVALID_MESSAGE' }, 400);
+      if (!message || message.length > 3000) return json({ error: 'INVALID_MESSAGE' }, 400);
       const language = ['ru', 'en', 'es', 'fr'].includes(body.language) ? body.language : 'ru';
       const sid = body.sessionId || body.conversationId || ('cf-' + crypto.randomUUID());
       const history = jarvixSessions.get(sid) || [];
 
       let replyText = '';
-      let providerUsed = 'jarvix-local-brain';
+      let providerUsed = 'Google Gemini';
 
-      // Try Gemini API first if configured
+      const geminiRules = `Ты Google Gemini — официальный разговорный AI-ассистент платформы DeepSyQ (работаешь в стиле ChatGPT / Gemini).
+Ты дружелюбный, умный, внимательный собеседник и эксперт по креативности.
+Твои задачи:
+- Свободно, подробно и естественно общаться с пользователем на любые темы на языке ${language}.
+- Помогать пользователю формулировать и развивать идеи, составлять промпты для генерации фото (Image Studio, Flux), видео (Video Studio, Wan 2.6) и музыки (Audio Studio).
+- Отвечать на любые вопросы о платформе DeepSyQ, технологиях, искусстве, коде, науке или повседневных делах.
+Отвечай качественно, дружелюбно, со структурированным форматированием и списками, когда это уместно.`;
+
+      // Google Gemini API is the default conversational model for all chat modes
       if (env.GEMINI_API_KEY) {
         try {
-          const context = history.slice(-16).map(x => (x.role === 'user' ? 'User: ' : 'JARVIS: ') + x.content).join('\n');
-          const prompt = (context ? context + '\n' : '') + 'User: ' + message + '\nJARVIS:';
-          const rules = INSTRUCTIONS + ' Отвечай на языке ' + language + '. Текст максимум 2 предложения.';
-          const candidateModels = ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-2.5-flash', 'gemini-3.8-flash'];
+          const context = history.slice(-16).map(x => (x.role === 'user' ? 'User: ' : 'Gemini: ') + x.content).join('\n');
+          const prompt = (context ? context + '\n' : '') + 'User: ' + message + '\nGemini:';
+          const candidateModels = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash'];
           for (const mId of candidateModels) {
             if (replyText) break;
             try {
@@ -1108,17 +1105,17 @@ export default {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
                 body: JSON.stringify({
-                  systemInstruction: { parts: [{ text: rules }] },
+                  systemInstruction: { parts: [{ text: geminiRules }] },
                   contents: [{ role: 'user', parts: [{ text: prompt }] }],
-                  generationConfig: { temperature: 0.4, maxOutputTokens: 200 }
+                  generationConfig: { temperature: 0.7, maxOutputTokens: 1500 }
                 }),
-                signal: AbortSignal.timeout(10000)
+                signal: AbortSignal.timeout(12000)
               });
               if (gemRes.ok) {
                 const gemData = await gemRes.json();
                 replyText = (gemData.candidates?.[0]?.content?.parts || []).map(x => x.text || '').join('').trim();
                 if (replyText) {
-                  providerUsed = 'gemini-free (' + mId + ')';
+                  providerUsed = 'Google Gemini (' + mId + ')';
                   break;
                 }
               }
@@ -1136,11 +1133,11 @@ export default {
             body: JSON.stringify({
               model: 'gpt-4o-mini',
               messages: [
-                { role: 'system', content: INSTRUCTIONS + ' Language: ' + language },
+                { role: 'system', content: geminiRules },
                 ...history.slice(-16),
                 { role: 'user', content: message }
               ],
-              max_tokens: 200
+              max_tokens: 1200
             }),
             signal: AbortSignal.timeout(10000)
           });

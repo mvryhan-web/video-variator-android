@@ -45,7 +45,7 @@ async function historyList(){const rows=await store.list();$('jHistory').replace
 const node=(tag,text)=>{const n=document.createElement(tag);if(text)n.textContent=text;return n;};
 function showFile(parent,file){const box=node('div'),url=URL.createObjectURL(file);urls.push(url);const el=node(file.type.startsWith('image/')?'img':file.type.startsWith('video/')?'video':file.type.startsWith('audio/')?'audio':'a');el.src=url;if(el.tagName==='IMG')el.alt=file.name||'Attachment';else if(el.tagName==='A'){el.href=url;el.download=file.name;el.textContent=file.name;}else el.controls=true;box.append(el);parent.append(box);}
 function render(){for(const url of urls)URL.revokeObjectURL(url);urls=[];const area=$('jMessages');area.replaceChildren();if(!conversation.messages.length){const empty=node('div');empty.className='j-empty';empty.append(node('h2','What would you like to create?'));area.append(empty);}
- for(const m of conversation.messages){const item=node('article');item.className='j-message '+m.role;item.append(node('strong',m.role==='user'?'YOU':'JARVIS'),node('div',m.text));if(m.role==='assistant'&&m.limitReached===true){const pricing=node('a','View Pricing');pricing.href='pricing.html';pricing.style.cssText='display:inline-block;margin-top:10px;padding:10px 14px;border:1px solid #fff;border-radius:8px;color:#fff;font-weight:700';item.append(pricing);}for(const f of m.files||[])showFile(item,f);
+ for(const m of conversation.messages){const item=node('article');item.className='j-message '+m.role;item.append(node('strong',m.role==='user'?'YOU':'GEMINI'),node('div',m.text));if(m.role==='assistant'&&m.limitReached===true){const pricing=node('a','View Pricing');pricing.href='pricing.html';pricing.style.cssText='display:inline-block;margin-top:10px;padding:10px 14px;border:1px solid #fff;border-radius:8px;color:#fff;font-weight:700';item.append(pricing);}for(const f of m.files||[])showFile(item,f);
  if(m.role==='assistant'&&m.toolAction){
   const action=m.toolAction,valid=ACTION_ROUTES[action.target]===action.url;
   if(valid&&action.kind==='navigate'){
@@ -99,23 +99,18 @@ async function processMessage(message){
   if(['image','video','audio'].includes(mode))setChatHeaderMode(mode);
   if(message.mode==='auto'&&mode==='text'&&/измен|сделай.*(ярче|темнее)|ещё|change|brighter|darker|modifier|cambiar/i.test(message.text)){const previous=[...conversation.messages].reverse().find(m=>m.role==='assistant'&&m.jobId);if(previous)mode=previous.kind;}
   let answer;
-  if(mode==='text'){
-   // Same brain endpoint and session as the voice sphere; never a second assistant.
+  const rawText = String(message.text || '').trim();
+  const isQuestion = rawText.includes('?') || /^(привет|здравствуй|хай|ку|салют|hello|hi|hey|как|что|почему|зачем|расскажи|посоветуй|помоги|объясни|who|what|how|why|can you|tell me|help)/i.test(rawText);
+  const isExplicitGen = /^(сгенерируй|нарисуй|создай|сделай|generate|create|draw|make|render)\b/i.test(rawText);
+  const shouldGenerateMedia = ['image','video','audio'].includes(mode) && (!isQuestion || isExplicitGen);
+
+  if(!shouldGenerateMedia){
+   // Google Gemini is the default conversational model across all chat modes
    const textFiles=await Promise.all((message.files||[]).filter(f=>f.type==='text/plain').map(f=>f.text()));store.guard();
-   const text=(message.text+(textFiles.length?'\n'+textFiles.join('\n'):'')).slice(0,2000);
-   // Free/guest: local recorded-script catalog only, without Gemini/OpenAI network calls.
-   // Paid: use the same AI endpoint only after verifying subscription via /api/me.
-   const paid = await hasVerifiedJarvixSubscription(); store.guard();
-   let replyText='', limitReached=false;
-   if (paid) {
-     const d=await api('/api/jarvix/chat',{sessionId:conversation.sessionId,message:text,language:getJarvixLanguage()});
-     replyText=d.reply||'';limitReached=d.limitReached===true;
-   } else {
-     const recorded=await findCatalogReply(text,getJarvixLanguage());
-     replyText=recorded?.text||({ru:'Пожалуйста, уточните вопрос.',en:'Please clarify your question.',fr:'Veuillez préciser votre question.',es:'Por favor, aclara tu pregunta.'}[getJarvixLanguage()]);
-   }
-   answer={id:makeId(),role:'assistant',text:replyText||'No answer received.',limitReached,createdAt:Date.now()};
-   if((message.files||[]).some(f=>f.type!=='text/plain'))answer.text+='\nMedia attachments are saved in this conversation. This text handler does not inspect their contents.';
+   const text=(message.text+(textFiles.length?'\n'+textFiles.join('\n'):'')).slice(0,3000);
+   const d=await api('/api/jarvix/chat',{sessionId:conversation.sessionId,message:text,language:getJarvixLanguage()});
+   answer={id:makeId(),role:'assistant',text:d.reply||'No answer received.',limitReached:false,createdAt:Date.now()};
+   if((message.files||[]).some(f=>f.type!=='text/plain'))answer.text+='\nMedia attachments are saved in this conversation.';
   }else{
    config=config||await api('/api/studio/config');
    // Fail closed outside the isolated zero-spend preview. Production launch remains in Studio's existing consent/payment flow.
