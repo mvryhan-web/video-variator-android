@@ -2,7 +2,7 @@ plugins {
     id 'com.android.application'
 }
 
-def defaultProductionUrl = 'https://video-variator-android.onrender.com'
+def defaultProductionUrl = 'https://deepsyq.app'
 def webAppUrl = (System.getenv('VV_WEB_APP_URL') ?: defaultProductionUrl).replace('\\','\\\\').replace('"','\\"')
 def apiBaseUrl = (System.getenv('VV_API_BASE_URL') ?: defaultProductionUrl).replace('\\','\\\\').replace('"','\\"')
 def updateApiUrl = (System.getenv('VV_UPDATE_API_URL') ?: defaultProductionUrl + '/api/version').replace('\\','\\\\').replace('"','\\"')
