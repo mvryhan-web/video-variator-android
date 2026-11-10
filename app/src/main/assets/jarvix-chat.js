@@ -43,6 +43,20 @@ async function api(path,body){store.guard();const r=await fetch(path,{method:bod
 async function save(){conversation=await store.save(conversation);await historyList();}
 async function historyList(){const rows=await store.list();$('jHistory').replaceChildren();for(const r of rows){const o=document.createElement('option');o.value=r.id;o.textContent=r.title;o.selected=r.id===conversation?.id;$('jHistory').append(o);}}
 const node=(tag,text)=>{const n=document.createElement(tag);if(text)n.textContent=text;return n;};
+async function blobToBase64(blob){
+ return new Promise(resolve=>{
+  const reader=new FileReader();
+  reader.onloadend=()=>{
+   const res=reader.result;
+   if(typeof res==='string'){
+    const parts=res.split(',');
+    resolve({mimeType:blob.type||'image/jpeg',data:parts[1]||''});
+   }else resolve(null);
+  };
+  reader.onerror=()=>resolve(null);
+  reader.readAsDataURL(blob);
+ });
+}
 function showFile(parent,file){const box=node('div'),url=URL.createObjectURL(file);urls.push(url);const el=node(file.type.startsWith('image/')?'img':file.type.startsWith('video/')?'video':file.type.startsWith('audio/')?'audio':'a');el.src=url;if(el.tagName==='IMG')el.alt=file.name||'Attachment';else if(el.tagName==='A'){el.href=url;el.download=file.name;el.textContent=file.name;}else el.controls=true;box.append(el);parent.append(box);}
 
 function createMessageActions(m, bubble, item){
@@ -332,12 +346,33 @@ async function processMessage(message){
    window.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode:'auto'}}));
    try{sessionStorage.removeItem('jarvix_composer_mode');}catch(_){}
 
+   // Multi-modal Vision for Google Gemini
+   const imageFiles=(message.files||[]).filter(f=>f.type?.startsWith('image/')||/\.(png|jpe?g|webp|gif|heic|heif)$/i.test(f.name||''));
+   const images=[];
+   for(const img of imageFiles.slice(0,3)){
+    const b64=await blobToBase64(img);
+    if(b64?.data)images.push(b64);
+   }
+   // If current message has no image, retain recent image from earlier messages in this conversation
+   if(!images.length){
+    const prevMsgWithImg=[...conversation.messages].reverse().find(m=>(m.files||[]).some(f=>f.type?.startsWith('image/')||/\.(png|jpe?g|webp|gif|heic|heif)$/i.test(f.name||'')));
+    if(prevMsgWithImg){
+     const prevFile=prevMsgWithImg.files.find(f=>f.type?.startsWith('image/')||/\.(png|jpe?g|webp|gif|heic|heif)$/i.test(f.name||''));
+     if(prevFile instanceof Blob){
+      const b64=await blobToBase64(prevFile);
+      if(b64?.data)images.push(b64);
+     }
+    }
+   }
+   if(images.length){
+    setChatHeaderMode('image');
+   }
+
    // Google Gemini is the default conversational model across all chat modes
    const textFiles=await Promise.all((message.files||[]).filter(f=>f.type==='text/plain').map(f=>f.text()));store.guard();
    const text=(message.text+(textFiles.length?'\n'+textFiles.join('\n'):'')).slice(0,3000);
-   const d=await api('/api/jarvix/chat',{sessionId:conversation.sessionId,message:text,language:getJarvixLanguage()});
+   const d=await api('/api/jarvix/chat',{sessionId:conversation.sessionId,message:text,images,language:getJarvixLanguage()});
    answer={id:makeId(),role:'assistant',text:d.reply||'No answer received.',limitReached:false,createdAt:Date.now()};
-   if((message.files||[]).some(f=>f.type!=='text/plain'))answer.text+='\nMedia attachments are saved in this conversation.';
   }else{
    // Real media generation requested: activate Video/Photo/Audio header mode
    setChatHeaderMode(mode);

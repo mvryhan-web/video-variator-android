@@ -1100,51 +1100,75 @@ export default {
       if (!message || message.length > 3000) return json({ error: 'INVALID_MESSAGE' }, 400);
       const language = ['ru', 'en', 'es', 'fr'].includes(body.language) ? body.language : 'ru';
       const sid = body.sessionId || body.conversationId || ('cf-' + crypto.randomUUID());
-      const history = jarvixSessions.get(sid) || [];
+      let sessionData = jarvixSessions.get(sid);
+      if (!sessionData || Array.isArray(sessionData)) {
+        sessionData = { history: Array.isArray(sessionData) ? sessionData : [], image: null };
+      }
+      const history = sessionData.history;
+
+      if (Array.isArray(body.images) && body.images.length && body.images[0]?.data) {
+        sessionData.image = {
+          mimeType: body.images[0].mimeType || 'image/jpeg',
+          data: body.images[0].data
+        };
+      }
+      const activeImage = sessionData.image;
 
       let replyText = '';
       let providerUsed = 'Google Gemini';
 
-      const geminiRules = `Ты — умный, эрудированный, живой ассистент и собеседник платформы DeepSyQ. Общайся на языке ${language}.
+      const geminiRules = `Ты — умный, эрудированный, живой мультимодальный ассистент и собеседник платформы DeepSyQ. Общайся на языке ${language}.
 СТРОГИЕ ПРАВИЛА:
 1. НИКОГДА не представляйся, не здоровайся шаблонно (никаких "Привет! 👋", "Hello, welcome to...", "Я Gemini", "Я искусственный интеллект"). Сразу давай прямой ответ на суть вопроса.
 2. Не называй себя по имени. Отвечай прямо, информативно и по-человечески.
-3. У тебя есть доступ к поиску Google и актуальным данным в реальном времени. Если пользователь спрашивает погоду, факты, новости или события — отвечай конкретно и точно, используя актуальные данные. Никогда не говори "у меня нет доступа к данным в реальном времени" или "я языковая модель".
-4. НИКОГДА не навязывай генерацию картинок, видео или студии DeepSyQ, если пользователь прямо сам об этом не попросил. Если спросили про погоду в Париже — расскажи про погоду в Париже, без рекламных вставок и призывов "покреативить".`;
+3. У тебя есть встроенное компьютерное зрение. Если к запросу прикреплено изображение или в контексте диалога есть фотография — внимательно анализируй её, описывай детали, отвечай на любые вопросы пользователя о том, что изображено на фото, распознавай объекты, текст, цвета, людей, композицию.
+4. У тебя есть доступ к поиску Google и актуальным данным в реальном времени. Если пользователь спрашивает погоду, факты, новости или события — отвечай конкретно и точно, используя актуальные данные. Никогда не говори "у меня нет доступа к данным в реальном времени" или "я языковая модель".
+5. НИКОГДА не навязывай генерацию картинок, видео или студии DeepSyQ, если пользователь прямо сам об этом не попросил. Если спросили про погоду в Париже — расскажи про погоду в Париже, без рекламных вставок и призывов "покреативить".`;
 
       // Google Gemini API is the default conversational model for all chat modes
       if (env.GEMINI_API_KEY) {
         try {
           const context = history.slice(-16).map(x => (x.role === 'user' ? 'User: ' : 'Assistant: ') + x.content).join('\n');
           const prompt = (context ? context + '\n' : '') + 'User: ' + message + '\nAssistant:';
-          const candidateModels = ['gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.5-flash', 'gemini-flash-latest'];
+          const userParts = [{ text: prompt }];
+          if (activeImage?.data) {
+            userParts.push({
+              inlineData: {
+                mimeType: activeImage.mimeType || 'image/jpeg',
+                data: activeImage.data
+              }
+            });
+          }
+          const candidateModels = activeImage?.data
+            ? ['gemini-2.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-flash-latest']
+            : ['gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.5-flash', 'gemini-flash-latest'];
           for (const mId of candidateModels) {
             if (replyText) break;
             try {
-              // Try with Google Search grounding first for real-time web knowledge (weather, news, facts)
+              let requestBody = {
+                systemInstruction: { parts: [{ text: geminiRules }] },
+                contents: [{ role: 'user', parts: userParts }],
+                generationConfig: { temperature: 0.7, maxOutputTokens: 1500 }
+              };
+              if (!activeImage?.data) {
+                requestBody.tools = [{ googleSearch: {} }];
+              }
+
               let gemRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + mId + ':generateContent?key=' + encodeURIComponent(env.GEMINI_API_KEY), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
-                body: JSON.stringify({
-                  systemInstruction: { parts: [{ text: geminiRules }] },
-                  contents: [{ role: 'user', parts: [{ text: prompt }] }],
-                  tools: [{ googleSearch: {} }],
-                  generationConfig: { temperature: 0.7, maxOutputTokens: 1500 }
-                }),
-                signal: AbortSignal.timeout(12000)
+                body: JSON.stringify(requestBody),
+                signal: AbortSignal.timeout(15000)
               });
 
               // Fallback without tools if googleSearch is not enabled for the model/key
-              if (!gemRes.ok) {
+              if (!gemRes.ok && requestBody.tools) {
+                delete requestBody.tools;
                 gemRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + mId + ':generateContent?key=' + encodeURIComponent(env.GEMINI_API_KEY), {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
-                  body: JSON.stringify({
-                    systemInstruction: { parts: [{ text: geminiRules }] },
-                    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-                    generationConfig: { temperature: 0.7, maxOutputTokens: 1500 }
-                  }),
-                  signal: AbortSignal.timeout(12000)
+                  body: JSON.stringify(requestBody),
+                  signal: AbortSignal.timeout(15000)
                 });
               }
 
@@ -1164,6 +1188,13 @@ export default {
       // Try OpenAI if Gemini didn't return a reply and OPENAI_API_KEY is available
       if (!replyText && env.OPENAI_API_KEY && env.JARVIX_AI_DISABLE !== 'true') {
         try {
+          const userContent = activeImage?.data
+            ? [
+                { type: 'text', text: message },
+                { type: 'image_url', image_url: { url: 'data:' + (activeImage.mimeType || 'image/jpeg') + ';base64,' + activeImage.data } }
+              ]
+            : message;
+
           const oaRes = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + env.OPENAI_API_KEY },
@@ -1172,11 +1203,11 @@ export default {
               messages: [
                 { role: 'system', content: geminiRules },
                 ...history.slice(-16),
-                { role: 'user', content: message }
+                { role: 'user', content: userContent }
               ],
               max_tokens: 1200
             }),
-            signal: AbortSignal.timeout(10000)
+            signal: AbortSignal.timeout(15000)
           });
           if (oaRes.ok) {
             const oaData = await oaRes.json();
@@ -1195,7 +1226,8 @@ export default {
 
       history.push({ role: 'user', content: message }, { role: 'assistant', content: replyText });
       if (history.length > 48) history.splice(0, history.length - 48);
-      jarvixSessions.set(sid, history);
+      sessionData.history = history;
+      jarvixSessions.set(sid, sessionData);
 
       return json({
         ok: true,
