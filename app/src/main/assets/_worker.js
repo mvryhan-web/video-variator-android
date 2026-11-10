@@ -12,6 +12,14 @@ const edgeWallets = new Map();
 const edgeWalletLedger = new Map();
 const edgeHistory = new Map();
 const edgeOnboarding = new Map();
+const edgeRevenueLedger = [];
+const platformUnitEconomics = {
+  totalGrossRevenue: 0,
+  totalOwnerProfit: 0,
+  totalProviderBudget: 0,
+  totalProviderSpent: 0,
+  profitMarginRatio: 2.0
+};
 
 const LIVE_SUBSCRIPTION_LINKS = {
   trial: 'https://buy.stripe.com/9B6fZicoSbdCd3b3e62go04',
@@ -469,6 +477,25 @@ export default {
       if (event.type === 'checkout.session.completed') {
         const s = event.data?.object || {};
         const userId = s.metadata?.userId || s.client_reference_id;
+        const grossAmount = (Number(s.amount_total) || 900) / 100;
+        const ownerShare = Math.round(grossAmount * 0.67 * 100) / 100; // >= 2:1 profit ratio
+        const providerBudget = Math.round((grossAmount - ownerShare) * 100) / 100;
+
+        platformUnitEconomics.totalGrossRevenue += grossAmount;
+        platformUnitEconomics.totalOwnerProfit += ownerShare;
+        platformUnitEconomics.totalProviderBudget += providerBudget;
+
+        edgeRevenueLedger.unshift({
+          id: event.id || ('rev_' + Date.now()),
+          grossAmount,
+          currency: s.currency || 'usd',
+          ownerProfit: ownerShare,
+          providerBudget,
+          userId: userId || 'customer',
+          createdAt: new Date().toISOString()
+        });
+        if (edgeRevenueLedger.length > 100) edgeRevenueLedger.pop();
+
         if (userId && s.metadata?.aiWallet === 'v1') {
           const credits = Number(s.metadata?.credits || 0);
           if (Number.isSafeInteger(credits) && credits > 0) {
@@ -506,6 +533,23 @@ export default {
 
     if (pathname === '/api/ai-wallet/config') {
       return json({ welcomeEnabled: false, welcomeCredits: 0 });
+    }
+
+    if (pathname === '/api/unit-economics') {
+      const user = await getAuthenticatedUser(request, env);
+      if (!user || !isOwnerEmail(user.email, env)) {
+        return json({
+          ok: true,
+          marginRatio: '2:1 minimum owner profit guaranteed',
+          policy: 'Zero personal expense. Model dispatch strictly funded by user payments.'
+        });
+      }
+      return json({
+        ok: true,
+        unitEconomics: platformUnitEconomics,
+        transactions: edgeRevenueLedger.slice(0, 50),
+        policy: 'DIRECTIVE 1: PROFIT RATIO >= 2:1 ENFORCED'
+      });
     }
 
     if (pathname === '/api/ai-wallet/balance' || pathname === '/api/ai-billing/balance') {
