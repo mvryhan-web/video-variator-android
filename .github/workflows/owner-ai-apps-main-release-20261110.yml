@@ -1,0 +1,78 @@
+name: OWNER AI Apps two-file release with existing Worker preserved
+on:
+  push:
+    branches: [owner-ai-apps-main-guarded-release-20261110]
+    paths: ['.github/workflows/owner-ai-apps-main-release-20261110.yml']
+permissions: {contents: read}
+concurrency:
+  group: owner-deepsyq-aiapps-main-20261110
+  cancel-in-progress: false
+jobs:
+  scoped:
+    if: github.repository == 'mvryhan-web/video-variator-android'
+    runs-on: ubuntu-latest
+    timeout-minutes: 29
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Verify exact two-file owner patch, Worker and production bindings
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/deepsyq-platform:refs/remotes/origin/deepsyq-platform
+          node --check scripts/owner-ai-apps-main-release-20261110.mjs
+          node scripts/owner-ai-apps-main-release-20261110.mjs prepare
+          echo "TARGET_SHA=$(node -p "require('/tmp/deepsyq-ai-apps-status.json').dev")" >> "$GITHUB_ENV"
+      - name: Snapshot current public production and apply only two exact changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/owner-ai-apps-main-release-20261110.mjs snapshot
+      - name: Install no-spend Chromium browser for independent desktop and mobile checks
+        shell: bash
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Publish unchanged production snapshot plus AI Apps only changes to isolated preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy /tmp/deepsyq-owner-ai-apps/app/src/main/assets \
+            --project-name=deepsyq --branch=owner-aiapps-1110 \
+            --commit-hash="$TARGET_SHA" --commit-dirty=true \
+            --commit-message="Owner-approved AI Apps catalog heading and tiny tag cleanup, preview"
+      - name: Test preview eight template cards, Preview, Use template and protected other pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/owner-ai-apps-main-release-20261110.mjs preview
+      - name: Block MAIN deployment when any concurrent publisher has released
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/owner-ai-apps-main-release-20261110.mjs guard
+      - name: Publish original Worker and production snapshot with only two AI Apps asset changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "MAIN_PROMOTION_ATTEMPTED=true" >> "$GITHUB_ENV"
+          npx --yes wrangler@4 pages deploy /tmp/deepsyq-owner-ai-apps/app/src/main/assets \
+            --project-name=deepsyq --branch=deepsyq-platform \
+            --commit-hash="$TARGET_SHA" --commit-dirty=true \
+            --commit-message="Owner-approved AI Apps only, unchanged Worker and all other files"
+      - name: Verify actual MAIN AI Apps desktop mobile, original pages and production Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/owner-ai-apps-main-release-20261110.mjs main
+          echo "MAIN_VERIFIED=true" >> "$GITHUB_ENV"
+      - name: Safe rollback our own release only if MAIN check fails
+        if: always() && env.MAIN_PROMOTION_ATTEMPTED == 'true' && env.MAIN_VERIFIED != 'true'
+        shell: bash
+        run: |
+          node scripts/owner-ai-apps-main-release-20261110.mjs rollback
