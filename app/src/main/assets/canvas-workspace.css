@@ -154,3 +154,87 @@ body.canvas-detail-page .canvas-page-footer{padding-block:10px 26px}
 }
 @media(max-width:390px){.cw-title h2{font-size:26px}.cw-top-actions{gap:2px}.cw-top-actions select{min-width:60px}.cw-prompt-small{display:none}.cw-gallery button{flex-basis:79px;width:79px;height:70px}.cw-primary{min-width:90px}}
 @media(prefers-reduced-motion:reduce){.cw-gallery button{transition:none}}
+
+/* OWNER Canvas usability v2: only Canvas workspace, never the site shell. */
+body.canvas-detail-page #canvasPageMain #canvasWorkspace{display:block!important;max-width:100%!important;width:100%!important;min-width:0}
+body.canvas-detail-page #canvasWorkspace .cw-workspace-grid{display:grid!important;grid-template-columns:64px minmax(194px,235px) minmax(0,1fr) minmax(214px,245px)!important;gap:10px;width:100%!important;min-width:0;align-items:stretch}
+body.canvas-detail-page #canvasWorkspace .cw-workspace-grid>.cw-rail{grid-column:1;grid-row:1}
+body.canvas-detail-page #canvasWorkspace .cw-workspace-grid>.cw-library{grid-column:2;grid-row:1}
+body.canvas-detail-page #canvasWorkspace .cw-workspace-grid>.cw-editor{grid-column:3;grid-row:1;width:100%;min-width:0;max-width:none;justify-self:stretch}
+body.canvas-detail-page #canvasWorkspace .cw-workspace-grid>.cw-inspector{grid-column:4;grid-row:1}
+.cw-shortcuts{display:none}
+.cw-top-actions>button:not(.cw-export){display:flex;flex-direction:column;justify-content:center;align-items:center;font-size:18px;min-width:46px;min-height:44px;line-height:1;padding:3px}
+.cw-top-actions>button small{font-size:10px;font-weight:600;margin-top:2px}
+.cw-top-actions>.cw-export{display:inline-flex;justify-content:center;align-items:center;gap:8px;min-height:44px;font-size:13px}
+.cw-zoom-control{display:flex;align-items:center;gap:4px;flex:0 1 216px;border:1px solid #394969;border-radius:12px;padding:3px 5px;background:#111b32;min-height:42px}
+.cw-zoom-control button{border:0;border-radius:8px;background:#263959;color:#fff;min-width:27px;height:33px;font-size:19px}
+.cw-zoom-control input{flex:1;min-width:34px;width:70px;height:20px;accent-color:#c46aff;cursor:pointer}
+.cw-zoom-control output{color:#ecf3ff;min-width:34px;text-align:right;font-weight:700;font-size:12px;font-variant-numeric:tabular-nums}
+.cw-gallery .cw-upload-tile{border:2px dashed #f3b654;background:linear-gradient(145deg,#392246,#1b1c39);box-shadow:inset 0 0 12px #e59f4a30}
+.cw-gallery .cw-upload-tile span{color:#ffd27b}.cw-gallery .cw-upload-tile small{font-size:11px;font-weight:700}
+.cw-library-heading{gap:8px}.cw-library-heading strong{font-size:12px}
+.cw-library-upload,.cw-upload-main{background:linear-gradient(135deg,#f8bb52,#dd821b);border:1px solid #ffe7a1;border-radius:10px;color:#1b1124!important;font-size:11px;font-weight:800;white-space:nowrap;padding:8px 9px;box-shadow:0 0 10px #ff9f3b4d}
+.cw-tool-help{font-size:12px;line-height:1.45;color:#c8d5f3;margin:7px 0 4px}
+.cw-rotate-actions,.cw-fit-actions{display:flex;gap:6px;margin:7px 0 4px}
+.cw-rotate-actions button,.cw-fit-actions button{flex:1;padding:9px 5px;min-height:40px;font-size:11px;text-align:center;background:#162641;border:1px solid #526284;border-radius:9px;color:#fff}
+.cw-fit-actions button.cw-option-active{background:#392157;border-color:#cd77ff}
+.cw-mobile-tool-dock{display:none}
+.cw-tool-pane input[type=text]{width:100%;background:#111b37;color:#fff;min-height:44px;font-size:14px}
+/* A narrow content area must not collapse the editor into a thin left column. */
+@media(max-width:1280px) and (min-width:761px){
+ body.canvas-detail-page #canvasWorkspace .cw-workspace-grid{grid-template-columns:57px minmax(175px,215px) minmax(0,1fr) minmax(180px,218px)!important;gap:7px}
+}
+@media(max-width:1060px) and (min-width:761px){
+ body.canvas-detail-page #canvasWorkspace .cw-workspace-grid{grid-template-columns:55px 205px minmax(0,1fr)!important;grid-template-rows:auto auto}
+ body.canvas-detail-page #canvasWorkspace .cw-workspace-grid>.cw-inspector{grid-column:2/4;grid-row:2}
+}
+@media(max-width:760px){
+ body.canvas-detail-page #canvasWorkspace .cw-workspace-grid{display:flex!important;flex-direction:column;gap:8px;min-width:0}
+ body.canvas-detail-page #canvasWorkspace .cw-workspace-grid>.cw-rail{order:0;width:100%}
+ body.canvas-detail-page #canvasWorkspace .cw-workspace-grid>.cw-mobile-tool-dock{order:1;display:block;width:100%;min-width:0}
+ body.canvas-detail-page #canvasWorkspace .cw-workspace-grid>.cw-editor{order:2;width:100%}
+ body.canvas-detail-page #canvasWorkspace .cw-workspace-grid>.cw-library{order:3;width:100%}
+ body.canvas-detail-page #canvasWorkspace .cw-workspace-grid>.cw-inspector{order:4;width:100%}
+ .cw-workspace-header{grid-template-columns:minmax(0,1fr) auto;row-gap:9px}
+ .cw-title{grid-column:1;grid-row:1;align-self:center}
+ .cw-mode{grid-column:1/3;grid-row:2;width:min(100%,360px);justify-self:stretch}
+ .cw-top-actions{grid-column:2;grid-row:1;display:flex;gap:5px;justify-self:end;flex-wrap:nowrap;max-width:100%;min-width:0}
+ .cw-top-actions>button:not(.cw-export){min-width:33px;min-height:37px;font-size:17px;padding:2px}
+ .cw-top-actions>button small{font-size:9px}
+ .cw-top-actions>.cw-export{min-width:104px;min-height:40px;height:40px;padding:6px 10px;font-size:12px;gap:3px}
+ .cw-top-actions>.cw-export span{display:inline!important}
+ .cw-zoom-control{grid-column:1/3;flex:1;min-width:0;flex-basis:auto;max-width:none;display:flex}
+ .cw-top-actions .cw-zoom-control{position:absolute;left:0;right:0;top:100%;max-width:100%}
+ .cw-workspace-header{padding-bottom:61px;position:relative}
+ .cw-top-actions>.cw-zoom-control{width:100%;min-height:42px;max-width:none}
+ .cw-shortcuts{display:flex;gap:8px;align-items:stretch;margin:0 0 9px;flex-wrap:wrap}
+ .cw-quick-ratio{flex:1 1 170px;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:43px;border:1px solid #455c88;background:#17243e;border-radius:12px;padding:5px 9px;font-weight:700;font-size:12px}
+ .cw-quick-ratio select{min-width:0;max-width:156px;flex:1;padding:6px 4px;border:0;border-radius:8px;background:#243659;color:white;font-size:12px}
+ .cw-upload-main{flex:1 1 153px;min-height:43px;font-size:12px}
+ .cw-mobile-tool-dock:not(:has(.cw-tool-pane:not([hidden]))){display:none!important}
+ .cw-mobile-tool-dock .cw-tool-pane{max-height:260px;padding:12px;border:1px solid #a262e9;background:#111a34;box-shadow:0 0 16px #8d42e044}
+ .cw-mobile-tool-dock .cw-tool-pane .cw-tool-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .cw-gallery .cw-upload-tile{border:2px dashed #ffd07a;flex:0 0 106px;width:106px}
+ .cw-library-heading{flex-wrap:wrap}.cw-library-upload{min-height:39px;font-size:12px}
+ .cw-stage-viewport{overflow:auto}
+ .cw-rotate-actions button{min-height:43px}
+}
+@media(max-width:390px){
+ .cw-workspace-header{padding-bottom:60px}
+ .cw-top-actions{gap:2px}
+ .cw-title h2{font-size:26px}
+ .cw-top-actions>button:not(.cw-export){min-width:29px;font-size:15px}
+ .cw-top-actions>.cw-export{min-width:94px;font-size:10px;padding:5px}
+ .cw-quick-ratio{flex-basis:150px}
+}
+/* Keep editor controls from overlapping when the inspector is shorter than its content. */
+.cw-inspector{overflow-y:auto;overflow-x:hidden}
+.cw-inspector .cw-tab-content{flex:0 0 auto;overflow:visible;max-height:none}
+.cw-inspector .cw-tab-content>*{flex-shrink:0}
+.cw-rotate-actions,.cw-fit-actions{flex-shrink:0!important;min-height:42px;align-items:stretch}
+/* Mobile zoom stays inside reserved header space, above the format / upload row. */
+@media(max-width:760px){
+ .cw-top-actions .cw-zoom-control{top:auto;bottom:8px;left:0;right:0;position:absolute;width:100%;z-index:1}
+ .cw-workspace-header{padding-bottom:59px}
+ .cw-shortcuts{position:relative;z-index:0}
+}
