@@ -5,6 +5,7 @@ const normalize = text => String(text || '').normalize('NFC').toLowerCase().repl
 
 let masterPromise = null;
 let manifestPromise = null;
+let tourPromise = null;
 const blobs = new Map();
 let totalBytes = 0;
 const MAX_BYTES = 32 * 1024 * 1024;
@@ -89,10 +90,26 @@ export function createClipLibrary(fetchImpl = fetch) {
       return Array.isArray(data.clips) ? data.clips : [];
     }).catch(() => []);
 
+  // Reuse the owner's separately recorded V3 tour MP3s as read-only catalog aliases.
+  // No copying, voice generation, server synthesis, or duplicate audio bytes.
+  const loadTour = () => tourPromise ||= fetchImpl('/media/jarvix/tour-v3/manifest.json', { signal: AbortSignal.timeout(5000) })
+    .then(async response => {
+      if (!response.ok) return [];
+      const data = await response.json();
+      if (data.format !== 'mp3' || data.engine !== 'VoxCPM2' ||
+          (data.previewApproved !== true && data.reviewed !== true)) return [];
+      return (data.clips || []).filter(clip =>
+        ['ru','en','fr','es'].includes(clip.language) &&
+        /^t3_(ru|en|fr|es)_[a-f0-9]{12}\.mp3$/.test(clip.filename) &&
+        (data.previewApproved === true || clip.reviewed === true) &&
+        typeof clip.text === 'string' && clip.text.trim()
+      ).map(clip => ({...clip, url:'/media/jarvix/tour-v3/' + clip.filename}));
+    }).catch(() => []);
+
   return {
     prepare: async () => {
-      const [scenarios, clips] = await Promise.all([loadMaster(), loadManifest()]);
-      return { scenarios, clips };
+      const [scenarios, clips, tourClips] = await Promise.all([loadMaster(), loadManifest(), loadTour()]);
+      return { scenarios, clips, tourClips };
     },
 
     // Intelligent Topic-Aware Scenario Matching
@@ -100,10 +117,17 @@ export function createClipLibrary(fetchImpl = fetch) {
       const q = normalize(query);
       if (!q || q.length < 2) return null;
 
-      const { scenarios } = await this.prepare();
+      const { scenarios, clips, tourClips } = await this.prepare();
       if (!scenarios || !scenarios.length) return null;
 
       const lang = ['ru', 'en', 'es', 'fr'].includes(language) ? language : 'ru';
+      // Match a V3 narration only on an exact phrase, not on one vague keyword.
+      const tourExact = tourClips.find(clip => clip.language === lang && normalize(clip.text) === q);
+      if (tourExact) return {id:'tour-v3-'+tourExact.filename, text:tourExact.text,
+        audioUrl:tourExact.url, action:null, section:'TOUR', chainStep:0};
+      const available = new Set(clips.filter(c => c.language === lang).map(c => c.filename));
+      const playableScenarios = scenarios.filter(sc => available.has(sc.audio?.[lang]));
+      if (!playableScenarios.length) return null;
       const ctx = getTopicContext();
 
       // 1. Detect section from query keywords
@@ -136,7 +160,7 @@ export function createClipLibrary(fetchImpl = fetch) {
       // 3. Find matching scenario in this section
       let bestScenario = null;
       if (section) {
-        const sectionScenarios = scenarios.filter(s => s.section === section);
+        const sectionScenarios = playableScenarios.filter(s => s.section === section);
         if (sectionScenarios.length) {
           bestScenario = sectionScenarios.find(s => s.chainStep === detectedStep) || sectionScenarios[0];
         }
@@ -147,7 +171,7 @@ export function createClipLibrary(fetchImpl = fetch) {
         const queryWords = q.split(/\s+/).filter(w => w.length > 2);
         let highestScore = 0;
 
-        for (const sc of scenarios) {
+        for (const sc of playableScenarios) {
           let score = 0;
           const triggers = (sc.triggers && sc.triggers[lang]) || [];
           const qa = (sc.qa && sc.qa[lang]) || {};
@@ -175,6 +199,9 @@ export function createClipLibrary(fetchImpl = fetch) {
         if (highestScore < 30) bestScenario = null;
       }
 
+      // A broad unrelated question must not be answered with a fabricated fact.
+      // Use an existing neutral recording for queries without a reliable match.
+      if (!bestScenario) bestScenario = playableScenarios.find(sc => sc.id === 'F-CHAT-08') || null;
       if (bestScenario) {
         setTopicContext({
           section: bestScenario.section,
@@ -207,11 +234,12 @@ export function createClipLibrary(fetchImpl = fetch) {
       const tNorm = normalize(text);
       if (!tNorm) return null;
 
-      const { clips, scenarios } = await this.prepare();
+      const { clips, scenarios, tourClips } = await this.prepare();
       if (signal?.aborted) return null;
 
       // Find clip in manifest
-      let clip = clips.find(c => c.language === language && normalize(c.text) === tNorm);
+      let clip = tourClips.find(c => c.language === language && normalize(c.text) === tNorm) ||
+        clips.find(c => c.language === language && normalize(c.text) === tNorm);
       if (!clip) {
         const sc = scenarios.find(s => {
           const a = (s.qa && s.qa[language] && s.qa[language].answer) || (s.phrases && s.phrases[language]);
