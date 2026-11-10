@@ -224,6 +224,7 @@ dialog.jarvis-hud-dialog,
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
+  z-index: 2;
 }
 #topJarvisBtn .jarvix-voice-ear-left {
   left: -13px;
