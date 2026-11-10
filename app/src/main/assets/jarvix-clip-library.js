@@ -287,3 +287,32 @@ const defaultLib = createClipLibrary();
 export const prepareStaticClips = defaultLib.prepare.bind(defaultLib);
 export const getStaticClip = defaultLib.get.bind(defaultLib);
 export const findCatalogReply = defaultLib.findReply.bind(defaultLib);
+/**
+ * Verified multilingual backup for a catalog whose referenced s### MP3 is
+ * unavailable. All responses here are existing V3 recordings with known text.
+ * Never map an undocumented legacy MP3 to an invented transcript.
+ */
+export async function findTourFallback(query, language = 'ru') {
+  const lang = ['ru','en','fr','es'].includes(language) ? language : 'ru';
+  const {tourClips} = await defaultLib.prepare();
+  const available = tourClips.filter(c => c.language === lang);
+  if (!available.length) return null;
+  const q = normalize(query);
+  const words = q.split(' ').filter(w => w.length >= 4);
+  const stop = new Set(['просто','хотите','можете','помогу','опишите','предложу','следующий',
+    'please','would','could','with','your','this','what','from','pour','vous','avec','para','como','quiero']);
+  let best = null, score = 0;
+  for (const clip of available) {
+    const phrase = normalize(clip.text);
+    const cwords = phrase.split(' ').filter(w => w.length >= 4 && !stop.has(w));
+    const matched = cwords.filter(w => words.some(qw => qw === w || (qw.length > 5 && w.includes(qw)))).length;
+    const value = matched / Math.max(2, cwords.length);
+    if (matched > 0 && value > score) { best = clip; score = value; }
+  }
+  // A neutral existing recorded invitation is safer than inventing an answer.
+  if (!best) best = available.find(clip =>
+    /^(?:Посмотрим несколько инструментов|Let.s look at some tools|Voyons quelques outils|Veamos algunas herramientas)/iu.test(clip.text)
+  ) || available[0];
+  return {text:best.text, audioUrl:best.url, section:'TOUR', action:null};
+}
+
