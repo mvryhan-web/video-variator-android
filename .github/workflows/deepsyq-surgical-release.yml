@@ -1,0 +1,73 @@
+name: DEEPSYQ surgical-only Cloudflare release
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Plan (read only) or publish only exact requested assets"
+        required: true
+        type: choice
+        options:
+          - plan
+          - publish
+        default: plan
+      files:
+        description: "EXACT relative asset filenames separated by commas; no wildcards"
+        required: true
+        type: string
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'scripts/deepsyq_surgical_publish.py'
+      - 'tests/deepsyq-surgical-publish.test.py'
+      - '.github/workflows/deepsyq-surgical-release.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Syntax and strict allowlist regression tests (no Cloudflare access)
+        run: |
+          python -m py_compile scripts/deepsyq_surgical_publish.py
+          python -m unittest discover -s tests -p 'deepsyq-surgical-publish.test.py' -v
+
+  surgical:
+    # Commit pushes only run tests. Never deploy until explicitly dispatched.
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/deepsyq-platform'
+    needs: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      SCOPE_FILES: ${{ inputs.files }}
+      RELEASE_MODE: ${{ inputs.mode }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install only the uploader dependencies
+        run: python -m pip install --disable-pip-version-check "requests==2.32.3" "blake3==1.0.8"
+      - name: Enforce exact requested files and preserve current LIVE Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/deepsyq_surgical_publish.py \
+            --mode "$RELEASE_MODE" \
+            --files "$SCOPE_FILES" \
+            --commit "$GITHUB_SHA"
