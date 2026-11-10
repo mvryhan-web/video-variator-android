@@ -52,5 +52,24 @@ jobs:
             let origin=null;try{origin=raw?new URL(raw).origin:null}catch{}
             return [n,{configured:!!raw,origin}];
           }))));
+          const listing=await get(api+'/deployments?per_page=40',{Authorization:'Bearer '+token});
+          if(listing.status===200&&Array.isArray(listing.body?.result)){
+            const deployments=listing.body.result;
+            const choices=[...deployments.filter(d=>String(d.created_on||'').slice(0,10)==='2026-11-09').slice(0,3),
+              ...deployments.filter(d=>String(d.created_on||'').slice(0,10)==='2026-11-10').slice(0,5)];
+            const seen=new Set();
+            for(const dep of choices){
+              if(!dep.url||seen.has(dep.id))continue;
+              seen.add(dep.id);
+              const site=await get(dep.url.replace(/\/$/,'')+'/api/config');
+              const key=site.body?.googleClientId;
+              console.log('OAUTH_HISTORIC_DEPLOYMENT',JSON.stringify({
+                id:dep.id,date:dep.created_on,environment:dep.environment,host:new URL(dep.url).hostname,http:site.status,
+                oauthFingerprint:fingerprint(key),oauthConfigured:typeof key==='string'&&key.length>0
+              }));
+            }
+          }else{
+            console.log('OAUTH_HISTORIC_DEPLOYMENT_LOOKUP',JSON.stringify({status:listing.status}));
+          }
           console.log('READ_ONLY_NO_AUTH_CHANGES',true);
           JS
