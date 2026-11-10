@@ -82,7 +82,7 @@ export function installUnifiedPlatformHeader() {
 
   // Ensure login exists
   if (!login) {
-    login = link(dictionary().login, (localStorage.getItem('vv_token') ? 'video-uniquifier.html#profile' : 'deepsyq.html?panel=login'), 'top-login');
+    login = link(dictionary().login, (localStorage.getItem('vv_token') ? 'video-uniquifier.html?view=profile' : 'deepsyq.html?panel=login'), 'top-login');
     login.id = 'topLogin';
   }
 
@@ -187,6 +187,9 @@ export function installUnifiedPlatformHeader() {
   try { token = localStorage.getItem('vv_token') || ''; } catch {}
   const authText = token ? (locale() === 'ru' ? 'Аккаунт' : 'Account') : dictionary().login;
   login.innerHTML = '<span class="ds-pod-icon" aria-hidden="true" style="margin-right:7px;display:inline-flex;align-items:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></span><span class="ds-pod-text">' + authText + '</span>';
+  // The mobile shell may have supplied an older Account href. Normalize it
+  // here too, including desktop headers whose Account control is reused.
+  if (login.tagName === 'A') login.href = token ? 'video-uniquifier.html?view=profile' : 'deepsyq.html?panel=login';
   right.append(login);
 
   group.append(left, orb, right);
@@ -221,7 +224,7 @@ export function installUnifiedPlatformHeader() {
     try { tkn = localStorage.getItem('vv_token') || ''; } catch {}
     const l = login.querySelector('.ds-pod-text');
     if (l) l.textContent = tkn ? (locale() === 'ru' ? 'Аккаунт' : 'Account') : dictionary().login;
-    if (tkn) login.onclick = (e) => { e.preventDefault(); location.assign('video-uniquifier.html#profile'); };
+    if (login.tagName === 'A') login.href = tkn ? 'video-uniquifier.html?view=profile' : 'deepsyq.html?panel=login';
   });
 
   window.dispatchEvent(new Event('resize'));
