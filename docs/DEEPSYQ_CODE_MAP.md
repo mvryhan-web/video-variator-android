@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `021664ca31e2725c73f1bfff45c689e0760df9ee`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 118 | Named symbols: 385 | Checked relations: 74
+Source commit: `fc56834db402282d5e39941ada66d9f9604755bc`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 119 | Named symbols: 388 | Checked relations: 74
 
 ## Topic finder (matching filenames)
 
@@ -167,6 +167,10 @@ TOUR_V3_VERSION (L5) · TOUR_V3_DATA (L6)
 ### `app/src/main/assets/mobile-utility.js`
 
 mode (L7) · fileTypes (L21) · timeModes (L30) · redactRects (L31) · redactPreviewUrls (L33)
+
+### `app/src/main/assets/my-creations-gallery.js`
+
+showcase (L6) · icons (L16) · state (L23)
 
 ### `app/src/main/assets/onboarding-options.js`
 
