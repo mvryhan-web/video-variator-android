@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `5af9093fff722913e02800b805a3a28aa658a428`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `c4df05bc6a05f5dff302e45764f7cb22e11d8852`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 120 | Named symbols: 390 | Checked relations: 74
 
 ## Topic finder (matching filenames)
@@ -38,7 +38,7 @@ _worker.js (L1) · INSPIRATION_ITEMS (L3) · CREATIVE_TEMPLATES (L4) · studioJo
 
 ### `app/src/main/assets/ai-apps.js`
 
-all (L5) · accountLogout (L154)
+all (L6) · accountLogout (L155)
 
 ### `app/src/main/assets/ai-pricing.js`
 
@@ -78,7 +78,7 @@ labels (L6)
 
 ### `app/src/main/assets/deepsyq.js`
 
-deepsyq.js (L1) · mobileMenu (L9) · homeLang (L185) · homeI18n (L186) · promo (L227) · inviteDialog (L229) · requestedIdentityToken (L594)
+deepsyq.js (L1) · mobileMenu (L10) · homeLang (L186) · homeI18n (L187) · promo (L228) · inviteDialog (L230) · requestedIdentityToken (L595)
 
 ### `app/src/main/assets/ffmpeg-worker.js`
 
