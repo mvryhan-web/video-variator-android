@@ -1,4 +1,5 @@
 import {prepareStaticClips, getStaticClip, findCatalogReply, findTourFallback} from './jarvix-clip-library.js';
+import {getTourV3Recording} from './jarvix-tour-v3-audio.js';
 // Owner-hosted speech; no private URL or key is sent to the browser.
 let version = 0, pending = null, playing = null, objectUrl = null;
 // Only generic action acknowledgements are retained, never user prompts.
@@ -31,7 +32,7 @@ export const OWNER_GREETING_TEXT = Object.freeze({"ru":"Я Джарвис. Сл�
 export const TOUR_GREETING_TEXT = Object.freeze({"ru":"Привет! Я JARVIX. Смотрите, что я умею.","en":"Hi! I'm JARVIX. Let me show you what I can do.","fr":"Salut ! Je suis JARVIX. Regardez ce que je sais faire.","es":"¡Hola! Soy JARVIX. Mira lo que puedo hacer."});
 let greetingsPromise = null;
 export function prepareOwnerGreetings() {
-  prepareStaticClips();
+  // Do not wait for the large 500-scenario catalog before the first voice greeting.
   if (!greetingsPromise) greetingsPromise = fetch('/media/jarvix/owner-greetings.json', {signal:AbortSignal.timeout(8000)})
     .then(reply => reply.ok ? reply.json() : null).catch(() => null);
   return greetingsPromise;
@@ -55,15 +56,29 @@ export async function speakOwnerSpeech(text, language, hooks) {
   pending = controller;
   const timer = setTimeout(() => controller.abort(), 120000);
   try {
-    const staticCached = await getStaticClip(text, language, controller.signal);
-    const greetingData = !staticCached && OWNER_GREETING_TEXT[language] === text.trim() ? await prepareOwnerGreetings() : null;
+    // Prioritize the two owner-recorded introductions. The old sequence fetched
+    // hundreds of scenario entries BEFORE starting the mic or first greeting.
+    const greetingData = OWNER_GREETING_TEXT[language] === text.trim()
+      ? await prepareOwnerGreetings() : null;
     if (turn !== version) return;
     const greetingCached = greetingBlob(greetingData, text, language);
+    let tourGreetingCached = null;
+    if (!greetingCached && TOUR_GREETING_TEXT[language] === text.trim()) {
+      const verifiedTourUrl = await getTourV3Recording(text, language);
+      if (verifiedTourUrl && turn === version) {
+        const response = await fetch(verifiedTourUrl, {signal:controller.signal}).catch(() => null);
+        if (response?.ok && (response.headers.get('content-type')||'').startsWith('audio/'))
+          tourGreetingCached = await response.blob();
+      }
+    }
+    const staticCached = (!greetingCached && !tourGreetingCached)
+      ? await getStaticClip(text, language, controller.signal) : null;
+    if (turn !== version) return;
     const ackKey=language+':'+text.trim(),ackCached=actionAudio.get(ackKey);
     // For phrases not present verbatim, choose the closest *known* recording,
     // never synthesize new audio or play unknown/unverified filenames.
     let nearestReply = null, nearestAudio = null;
-    if (!staticCached && !greetingCached && !ackCached && !actionWords.has(text.trim())) {
+    if (!staticCached && !greetingCached && !tourGreetingCached && !ackCached && !actionWords.has(text.trim())) {
       nearestReply = await findCatalogReply(text, language);
       if (turn !== version) return;
       if (nearestReply?.text && nearestReply.text.trim() !== text.trim())
@@ -72,23 +87,24 @@ export async function speakOwnerSpeech(text, language, hooks) {
     // The master manifest can list MP3 files absent from the deployed assets.
     // Fall back to a real, pre-existing tour narration in the SAME language.
     let tourBackup = null, tourAudio = null;
-    if (!staticCached && !greetingCached && !ackCached && !nearestAudio &&
+    if (!staticCached && !greetingCached && !tourGreetingCached && !ackCached && !nearestAudio &&
         !actionWords.has(text.trim())) {
       tourBackup = await findTourFallback(text, language);
       if (turn !== version) return;
       if (tourBackup?.text) tourAudio = await getStaticClip(tourBackup.text, language, controller.signal);
     }
-    const cached = staticCached || greetingCached || ackCached || nearestAudio || tourAudio;
+    const cached = staticCached || greetingCached || tourGreetingCached || ackCached || nearestAudio || tourAudio;
     if (turn !== version) return;
     if (!cached) { hooks.unavailable?.(); hooks.complete?.(); return; }
     if (tourAudio && tourBackup) hooks.recordedText?.(tourBackup.text);
     else if (nearestAudio && nearestReply) hooks.recordedText?.(nearestReply.text);
     hooks.source?.(ackCached ? 'memory-ack' : greetingCached ? 'cached-greeting' :
+                   tourGreetingCached ? 'tour-v3-greeting' :
                    staticCached ? 'static-clip' : nearestAudio ? 'nearest-recording' : 'tour-v3-recording');
     hooks.start();
     hooks.phase?.('generating');
     // A cached recording is complete: play it exactly once, regardless of text length.
-    const chunks = [text.trim()];
+    const chunks = [text.trim()]; // One owner-recorded MP3 per answer
     const loadChunk = async () => ({blob: cached});
     let next = loadChunk(chunks[0]);
     for (let index = 0; index < chunks.length && turn === version; index++) {
