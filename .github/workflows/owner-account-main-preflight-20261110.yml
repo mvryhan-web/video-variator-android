@@ -56,3 +56,28 @@ jobs:
           const devWorker=execFileSync('git',['rev-parse',dev+':app/src/main/assets/_worker.js'],{encoding:'utf8'}).trim();
           console.log('WORKER_COMPARISON',JSON.stringify({prod:currentWorker,dev:devWorker,unchanged:currentWorker===devWorker,dev}));
           JS
+      - name: Check exact live Account route and Video Uniquifier sidebar against DEV
+        shell: bash
+        run: |
+          git fetch --no-tags origin deepsyq-platform
+          node --input-type=module <<'JS'
+          import {execFileSync} from 'node:child_process';
+          import {createHash} from 'node:crypto';
+          const hash=s=>createHash('sha256').update(s).digest('hex');
+          const files=['deepsyq-site-shell.js','deepsyq-mobile-shell.js','deepsyq-unified-platform-header.js','deepsyq.js'];
+          for(const name of files){
+            const gitPath='app/src/main/assets/'+name;
+            const latest=execFileSync('git',['show','FETCH_HEAD:'+gitPath]);
+            const liveResp=await fetch('https://deepsyq.app/'+name+'?accountCheck='+Date.now(),{headers:{'cache-control':'no-cache'}});
+            const live=await liveResp.text();
+            const matches=live.split(/\r?\n/).filter(s=>
+              s.includes('index.html?view=profile') ||
+              s.includes('video-uniquifier.html?view=profile') ||
+              s.includes("url:'index.html'") ||
+              s.includes("url:'video-uniquifier.html'") ||
+              (s.includes('topLogin')&&s.includes('addEventListener')) ||
+              (s.includes('topLogin')&&s.includes('onclick'))
+            ).slice(0,10);
+            console.log('ASSET_PARITY',JSON.stringify({name,remoteStatus:liveResp.status,gitMatchesLive:hash(latest)===hash(live),gitHash:hash(latest),liveHash:hash(live),sourceBytes:latest.length,liveBytes:Buffer.byteLength(live),matches}));
+          }
+          JS
