@@ -62,6 +62,14 @@ try {
                 messages:[{id:'msg-1',role:'user',text:'An earlier message',createdAt:Date.now()}],
                 createdAt:Date.now(),updatedAt:Date.now()
               });
+              for(let i=0;i<32;i++){
+                tx.objectStore('conversations').put({
+                  id:'history-scroll-'+i,sessionId:'history-scroll-session-'+i,owner,
+                  title:'Older conversation '+String(i+1).padStart(2,'0'),
+                  messages:[{id:'scroll-msg-'+i,role:'user',text:'Long history entry '+i,createdAt:Date.now()-i*3600000}],
+                  createdAt:Date.now()-i*3600000,updatedAt:Date.now()-i*3600000
+                });
+              }
               tx.oncomplete=()=>{db.close();resolve()};
               tx.onerror=()=>reject(tx.error);
             };
@@ -83,6 +91,24 @@ try {
         assert.equal(await toggle.getAttribute('aria-expanded'),'true');
         await page.getByRole('button',{name:/Saved conversation for drawer/}).waitFor({state:'visible'});
         assert.equal(await rows.isVisible(),true);
+        // The history may be long, but must scroll ABOVE settings, support and account.
+        const geometry=await page.evaluate(()=>{
+          const panel=document.querySelector('#jChatDropdown .j-drawer-panel');
+          const list=document.querySelector('#jMenuHistoryList');
+          const footer=document.querySelector('#jChatDropdown .j-drawer-footer');
+          const a=list.getBoundingClientRect(),b=footer.getBoundingClientRect(),c=panel.getBoundingClientRect();
+          const before=list.scrollTop;
+          list.scrollTop=list.scrollHeight;
+          const last=list.lastElementChild?.getBoundingClientRect();
+          return {listTop:a.top,listBottom:a.bottom,footerTop:b.top,footerBottom:b.bottom,
+            panelBottom:c.bottom,clientHeight:list.clientHeight,scrollHeight:list.scrollHeight,
+            scrolled:list.scrollTop>before,lastBottom:last?.bottom};
+        });
+        assert.ok(geometry.clientHeight>0, 'History must retain visible height '+JSON.stringify(geometry));
+        assert.ok(geometry.scrollHeight>geometry.clientHeight+40, 'Long history should scroll independently '+JSON.stringify(geometry));
+        assert.ok(geometry.listBottom<=geometry.footerTop+2, 'History must end above footer '+JSON.stringify(geometry));
+        assert.ok(geometry.footerBottom<=geometry.panelBottom+2, 'Footer stays inside drawer '+JSON.stringify(geometry));
+        assert.ok(geometry.scrolled && geometry.lastBottom<=geometry.footerTop+2, 'Oldest chat should be reachable above footer '+JSON.stringify(geometry));
 
         await toggle.click();
         assert.equal(await toggle.getAttribute('aria-expanded'),'false');
@@ -122,6 +148,26 @@ try {
         assert.equal(await page.locator('#jChatForm').count(),1,'only one existing composer');
         assert.equal(errors.length,0,'No unexpected browser errors: '+errors.join(' | '));
       } finally {await ctx.close()}
+    });
+    await test('existing JARVIX account block shows verified email and name initial - '+profile.name, async()=>{
+      const ctx=await browser.newContext({viewport:{width:profile.width,height:profile.height},isMobile:profile.mobile,hasTouch:profile.mobile});
+      const page=await ctx.newPage();
+      try{
+        await page.addInitScript(()=>localStorage.setItem('vv_token','owner-test-account'));
+        await page.route('**/api/me',async route=>{
+          await route.fulfill({
+            status:200,contentType:'application/json',
+            body:JSON.stringify({user:{id:'test-user',name:'Мария',email:'verified.person@example.test'}})
+          });
+        });
+        await page.goto(base+'/jarvix-chat.html',{waitUntil:'domcontentloaded'});
+        await page.waitForFunction(()=>typeof document.querySelector('#jChatTitleBtn')?.onclick==='function',{timeout:15000});
+        await page.locator('#jChatTitleBtn').click();
+        await page.waitForFunction(()=>document.querySelector('#jDrawerAccountLink small')?.textContent==='verified.person@example.test',{timeout:10000});
+        assert.equal(await page.locator('#jDrawerAccountLink .j-drawer-avatar').innerText(),'М');
+        assert.equal(await page.locator('#jDrawerAccountLink').getAttribute('href'),'video-uniquifier.html#profile');
+        assert.equal(await page.locator('#jDrawerAccountLink small').getAttribute('title'),'verified.person@example.test');
+      }finally{await ctx.close();}
     });
   }
 } finally {
