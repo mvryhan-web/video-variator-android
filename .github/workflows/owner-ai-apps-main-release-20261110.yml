@@ -1,4 +1,5 @@
 name: OWNER AI Apps two-file release with existing Worker preserved
+# Retry: await Cloudflare preview edge propagation before accepting protected page hashes
 on:
   push:
     branches: [owner-ai-apps-main-guarded-release-20261110]
