@@ -110,6 +110,39 @@ try {
         assert.ok(geometry.footerBottom<=geometry.panelBottom+2, 'Footer stays inside drawer '+JSON.stringify(geometry));
         assert.ok(geometry.scrolled && geometry.lastBottom<=geometry.footerTop+2, 'Oldest chat should be reachable above footer '+JSON.stringify(geometry));
 
+        if(profile.mobile){
+          // Real phones can have a much shorter JARVIX workspace beneath the site header.
+          // The history must remain visible ABOVE the account even then.
+          await page.setViewportSize({width:390,height:610});
+          const compact=await page.evaluate(()=>{
+            const panel=document.querySelector('#jChatDropdown .j-drawer-panel');
+            const list=document.querySelector('#jMenuHistoryList');
+            const footer=document.querySelector('#jChatDropdown .j-drawer-footer');
+            const nav=document.querySelector('#jChatDropdown [data-j-drawer-mode="image"]');
+            list.scrollTop=0;
+            const atTop=list.scrollTop;
+            list.scrollTop=list.scrollHeight;
+            return {
+              panelHeight:panel.clientHeight,
+              listHeight:list.clientHeight,
+              listScrollHeight:list.scrollHeight,
+              scrollTop:list.scrollTop,
+              atTop,
+              listBottom:list.getBoundingClientRect().bottom,
+              footerTop:footer.getBoundingClientRect().top,
+              footerBottom:footer.getBoundingClientRect().bottom,
+              panelBottom:panel.getBoundingClientRect().bottom,
+              modeShortcutHidden:getComputedStyle(nav).display==='none'
+            };
+          });
+          assert.ok(compact.listHeight>=25,'Expanded history should have usable space on a short phone '+JSON.stringify(compact));
+          assert.ok(compact.scrollTop>compact.atTop,'Expanded short-phone history should scroll '+JSON.stringify(compact));
+          assert.ok(compact.listBottom<=compact.footerTop+2,'Short-phone chat history must not hide behind account '+JSON.stringify(compact));
+          assert.ok(compact.footerBottom<=compact.panelBottom+2,'Account footer should fit inside panel '+JSON.stringify(compact));
+          assert.ok(compact.modeShortcutHidden,'Only mode shortcuts temporarily collapse while scrolling chat history on phone');
+          await page.setViewportSize({width:390,height:844});
+        }
+
         await toggle.click();
         assert.equal(await toggle.getAttribute('aria-expanded'),'false');
         assert.equal(await rows.isVisible(),false,'second click collapses');
