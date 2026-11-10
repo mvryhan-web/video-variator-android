@@ -1,8 +1,9 @@
 import {createSpeechDraft} from './jarvix-speech-draft.js';
+import {pauseJarvisRecognition, resumeJarvisRecognition} from './jarvis-core.js';
 
 // Isolated browser dictation controller for the existing JARVIX text composer.
 // Stop keeps the draft; Send awaits final speech results before the caller submits.
-export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.SpeechRecognition||window.webkitSpeechRecognition,getLanguage=()=>document.documentElement.lang.slice(0,2)}){
+export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.SpeechRecognition||window.webkitSpeechRecognition,getLanguage=()=>document.documentElement.lang.slice(0,2),onStatus=()=>{}}){
  const wave=document.createElement('span');
  wave.className='j-voice-waves';
  wave.hidden=true;
@@ -39,6 +40,8 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
   active=null;
   display(false);
   current.resolve();
+  // Restore the sphere microphone only after the chat recognizer fully stops.
+  setTimeout(() => resumeJarvisRecognition(), 180);
  }
  function stop({abort=false}={}){
   const current=active;
@@ -61,25 +64,55 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
   let recognition;
   try{recognition=new Recognition();}
   catch{onError('Microphone could not be started.');return;}
-  const current={recognition,stopping:false,timeout:null,resolve:null,ended:null};
+  const current={recognition,stopping:false,timeout:null,resolve:null,ended:null,seen:false,failed:false};
   current.ended=new Promise(resolve=>{current.resolve=resolve;});
   active=current;
   const base=input.value, draft=createSpeechDraft(base);
   recognition.lang=({ru:'ru-RU',en:'en-US',fr:'fr-FR',es:'es-ES'})[language()]||'ru-RU';
   recognition.interimResults=true;
   recognition.continuous=true;
+  recognition.maxAlternatives=1;
+  recognition.onstart=()=>{
+   if(active!==current)return;
+   onStatus(({ru:'Микрофон включён. Говорите — слова появятся в поле.',en:'Microphone on. Speak and words will appear in the field.',fr:'Micro activé. Parlez pour dicter le texte.',es:'Micrófono activado. Hable para dictar el texto.'})[language()]);
+  };
   recognition.onresult=e=>{
    if(active!==current)return;
-   input.value=draft(e);
-   input.dispatchEvent(new Event('input',{bubbles:true}));
+   const transcript=draft(e);
+   if(transcript.trim()){
+    current.seen=true;
+    input.value=transcript;
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    onStatus('');
+   }
   };
-  recognition.onend=()=>finished(current);
-  recognition.onerror=e=>{
+  recognition.onend=()=>{
    if(active!==current)return;
-   onError('Microphone: '+(e?.error||'unavailable'));
+   if(!current.stopping&&!current.seen&&!current.failed){
+    onError(({ru:'Речь не распознана. Проверьте разрешение микрофона и службу распознавания Chrome.',en:'No speech recognized. Check Chrome microphone permission and speech recognition service.',fr:'Aucune parole reconnue. Vérifiez le micro et le service vocal.',es:'No se reconoció voz. Compruebe el permiso del micrófono y el reconocimiento de voz.'})[language()]);
+   }
    finished(current);
   };
-  try{recognition.start();display(true);}
+  recognition.onerror=e=>{
+   if(active!==current)return;
+   current.failed=true;
+   const kind=e?.error||'unavailable';
+   const messages={
+    'not-allowed':'Chrome заблокировал микрофон: разрешите доступ для deepsyq.app.',
+    'service-not-allowed':'Служба распознавания речи Chrome заблокирована.',
+    'audio-capture':'Микрофон не обнаружен или занят другим приложением.',
+    'network':'Нет связи со службой распознавания речи браузера.',
+    'no-speech':'Не удалось услышать речь. Проверьте выбранный микрофон и говорите громче.',
+    'language-not-supported':'Выбранный язык не поддерживается системой распознавания.'
+   };
+   onError(messages[kind]||('Распознавание речи: '+kind));
+   finished(current);
+  };
+  try{
+   pauseJarvisRecognition();
+   recognition.start();display(true);
+   onStatus(({ru:'Подключаю микрофон…',en:'Starting microphone…',fr:'Activation du micro…',es:'Iniciando micrófono…'})[language()]);
+  }
   catch{finished(current);onError('Microphone could not be started.');}
  };
  display(false);
