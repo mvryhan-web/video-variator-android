@@ -17,7 +17,12 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
   fr:{start:'Démarrer la dictée',stop:'Arrêter et garder le texte'},
   es:{start:'Iniciar dictado',stop:'Detener y conservar texto'}
  };
- const language=()=>{const code=String(getLanguage()||'en').slice(0,2);return labels[code]?code:'en';};
+ const language=()=>{
+  const code=String(getLanguage()||'').slice(0,2);
+  if(labels[code])return code;
+  const nav=((navigator.languages&&navigator.languages[0])||navigator.language||'').slice(0,2);
+  return labels[nav]?nav:'ru';
+ };
  function display(listening){
   wave.hidden=!listening;
   form.classList.toggle('j-voice-recording',listening);
@@ -60,7 +65,7 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
   current.ended=new Promise(resolve=>{current.resolve=resolve;});
   active=current;
   const base=input.value, draft=createSpeechDraft(base);
-  recognition.lang=({ru:'ru-RU',en:'en-US',fr:'fr-FR',es:'es-ES'})[language()]||'en-US';
+  recognition.lang=({ru:'ru-RU',en:'en-US',fr:'fr-FR',es:'es-ES'})[language()]||'ru-RU';
   recognition.interimResults=true;
   recognition.continuous=true;
   recognition.onresult=e=>{

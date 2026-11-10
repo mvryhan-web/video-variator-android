@@ -98,10 +98,19 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
 const FEMALE_VOICE_REGEX = /(?:irina|ирина|tatiana|татьяна|elena|елена|victoria|виктория|milena|милена|svetl|светл|anna|анна|daria|дарья|female|женск|zira|samantha|karen|moira|fiona|hazel|susan|linda|helena|monica|laura|marta|lucia|carmen|hortense|julie|celine|amelie|virginie)/i;
 
 export function getJarvixLanguage() {
-  let selected = document.documentElement.lang;
-  try { selected = localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang') || selected; } catch (_) {}
-  const code = String(selected || navigator.language || 'ru').toLowerCase().split('-')[0];
-  return ['ru', 'en', 'es', 'fr'].includes(code) ? code : 'en';
+  let selected = '';
+  try {
+    selected = localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang') || '';
+  } catch (_) {}
+  if (!selected) {
+    const nav = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+    if (nav.toLowerCase().startsWith('ru')) selected = 'ru';
+    else if (nav.toLowerCase().startsWith('fr')) selected = 'fr';
+    else if (nav.toLowerCase().startsWith('es')) selected = 'es';
+    else selected = (document.documentElement.lang || '').slice(0, 2) || 'ru';
+  }
+  const code = String(selected).toLowerCase().split('-')[0];
+  return ['ru', 'en', 'es', 'fr'].includes(code) ? code : 'ru';
 }
 
 export function getJarvixVoice(langParam = 'ru') {
@@ -475,7 +484,7 @@ function clearCurrentInputs() {
 }
 
 // 8. Main Voice Command Handler (Hands, Ears, Instant Navigation & Conversational Brain)
-export function handleJarvisVoiceCommand(commandText) {
+export async function handleJarvisVoiceCommand(commandText) {
   if (!commandText) return;
   actionFirstReply=true;
   cancelJarvixTurn();
@@ -487,6 +496,35 @@ export function handleJarvisVoiceCommand(commandText) {
   const isRu = lang === 'ru';
   const isFr = lang === 'fr';
   const isEs = lang === 'es';
+
+  // 1. INSTANT SILENCE / BARGE-IN ("Стоп", "Замолчи", "Тихо", "Хватит")
+  if (/^(?:стоп|стой|замолчи|тихо|хватит|stop|quiet|silence)$/i.test(lower)) {
+    stopAllSpeech();
+    isJarvisSpeaking = false;
+    currentSpokenUtterance = '';
+    updateJarvisState('listening');
+    return;
+  }
+
+  // 2. PRIORITY: Authentic 500-Scenario Human Voice & Topic Engine
+  // Searches the 500 scenarios (1,900 clips) for exact or topic-aware match
+  try {
+    const catalogReply = await findCatalogReply(t, lang);
+    if (turnVersion !== jarvixTurnVersion) return;
+    if (catalogReply && catalogReply.text) {
+      speakJarvis(catalogReply.text, () => {
+        if (catalogReply.action && catalogReply.action.startsWith('navigate:')) {
+          const targetUrl = catalogReply.action.replace('navigate:', '');
+          if (location.pathname !== targetUrl && !location.pathname.endsWith(targetUrl)) {
+            location.assign(targetUrl);
+          }
+        }
+      });
+      return;
+    }
+  } catch (err) {
+    console.warn('[JARVIX Catalog Match Error]', err);
+  }
 
   // Action-first commands share the existing conversation and zero-spend handlers.
   const action=extractAction(t);
@@ -961,10 +999,8 @@ export function resumeJarvisRecognition() {
     jarvisRecognition = new SpeechRec();
     jarvisRecognition.continuous = true;
     jarvisRecognition.interimResults = true;
-    const lang = (localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang') || document.documentElement.lang || 'ru').toLowerCase();
-    jarvisRecognition.lang = (lang === 'ru' || lang.startsWith('ru')) ? 'ru-RU' :
-      (lang === 'fr' || lang.startsWith('fr')) ? 'fr-FR' :
-      (lang === 'es' || lang.startsWith('es')) ? 'es-ES' : 'en-US';
+    const langCode = getJarvixLanguage();
+    jarvisRecognition.lang = ({ru: 'ru-RU', fr: 'fr-FR', es: 'es-ES', en: 'en-US'})[langCode] || 'ru-RU';
 
     jarvisRecognition.onstart = () => {
       if (recognitionTurn !== recognitionVersion || !isJarvisActive || !keepListening) return;

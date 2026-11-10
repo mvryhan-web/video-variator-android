@@ -1,78 +1,258 @@
-// Only an uploaded, validated manifest can make a catalog phrase playable.
-// Match information requests only; selecting a recording must never execute an action.
-const answerRules = [
-  [51, /коммерчес|commerc|comercial/u],
-  [52, /промпт|prompt/u, /помо|состав|напис|help|write|aide|écri|ayud|escrib/u],
-  [53, /фото|photo|image|imagen/u, /ожив|анимир|animate|animat|animer|animar/u],
-  [54, /stripe/u, /безопас|оплат|платеж|pay|secur|paiement|pago|segur/u],
-  [55, /кредит|credit|crédit|crédito/u, /куп|пополн|buy|purchase|top up|achet|recharg|compr|recarg/u],
-  [56, /баланс|balance|solde|saldo/u],
-  [57, /(?:^|\W)4\s?[kк](?=$|\W)/u, /разрешен|доступ|поддерж|можно|есть|resol|support|avail|dispon|possible|puedo/u],
-  [58, /сколько.*(?:ждать|времени)|как долго|how long|render time|combien de temps|temps de (?:rendu|traitement)|cuánto (?:tarda|tiempo)/u],
-  [59, /формат|format/u, /скач|download|télécharg|descarg/u],
-  [61, /reels|youtube|ютуб/u, /формат|format|ratio|пропорц|horizontal|vertical/u],
-  [64, /уникализатор|uniquifier|uniquificateur|unificador/u, /что|как работает|what|how.*work|qu.est|comment.*fonctionne|qué|cómo.*funciona/u],
-  [67, /вдохновени|inspiration|inspiración/u, /что|зачем|what|qu.est|qué/u]
-];
-export function selectCatalogReply(entries, query, language) {
-  const text = String(query).normalize('NFC').toLowerCase().replace(/ё/g, 'е').trim();
-  if (!text || text.length > 500) return null;
-  // A request to do something, a negation, or several topics needs normal routing.
-  if (/(?:^|\s)(?:открой|открывай|не|нет|нельзя|open|launch|don't|not|no|ouvre|ouvrez|pas|abre|abrir)(?:\s|$)/u.test(text)) return null;
-  const matches = answerRules.filter(([, ...tests]) => tests.every(test => test.test(text)));
-  if (matches.length !== 1) return null;
-  const id = 'jarvix_' + language + '_' + String(matches[0][0]).padStart(2, '0');
-  return entries.find(item => item.language === language && item.id === id) || null;
+// JARVIX 500-Scenario Dynamic Dialog Intelligence & Audio Clip Library
+// Indexes all 500 scenarios (1,900 clips) across RU, EN, ES, FR with topic tracking.
+
+const normalize = text => String(text || '').normalize('NFC').toLowerCase().replace(/ё/g, 'е').replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+
+let masterPromise = null;
+let manifestPromise = null;
+const blobs = new Map();
+let totalBytes = 0;
+const MAX_BYTES = 32 * 1024 * 1024;
+
+// Section Keywords mapping for conversational topic detection
+const SECTION_KEYWORDS = {
+  HOME: ['главная', 'home', 'домой', 'начало'],
+  UNIQ: ['уникализатор', 'уникализац', 'уникальн', 'uniquifier', 'вариатор'],
+  PRICE: ['цена', 'цены', 'стоимост', 'тариф', 'тарифы', 'подписк', 'купить', 'pricing', 'план', 'сколько стоит'],
+  CANVAS: ['холст', 'канвас', 'canvas', 'доск'],
+  APPS: ['приложени', 'apps', 'шаблон', 'воркфлоу'],
+  IMAGE: ['картинк', 'изображен', 'фото', 'image', 'рисунок', 'арт'],
+  VIDEO: ['видео', 'ролик', 'video', 'клип', 'фильм'],
+  AUDIO: ['аудио', 'музык', 'звук', 'трек', 'audio', 'песн'],
+  CREDITS: ['кредит', 'баланс', 'пополн', 'токен'],
+  TRIAL: ['триал', 'пробн', 'бесплатн', 'попроб'],
+  MIC: ['микрофон', 'голос', 'диктовк', 'запис'],
+  SETTINGS: ['настройк', 'тема', 'оформлен', 'темн', 'светл', 'неон'],
+  ACCOUNT: ['аккаунт', 'профиль', 'кабинет', 'войти', 'логин'],
+  AVATAR: ['аватар', 'диктор', 'avatar'],
+  TOOLS: ['инструмент', 'утилит', 'everyday tools', 'tools'],
+  CHAT: ['джарвис', 'jarvis', 'чат', 'помощник', 'ассистент', 'привет', 'здравствуй', 'дела', 'как ты', 'кто ты']
+};
+
+const INTENT_KEYWORDS = {
+  0: ['что такое', 'расскажи о', 'что это', 'обзор', 'что значит', 'кто ты'],
+  1: ['где найти', 'где находится', 'куда нажать', 'как открыть', 'где'],
+  2: ['как начать', 'с чего начать', 'как работать', 'первые шаги', 'как запустить'],
+  3: ['когда нужен', 'зачем', 'для чего', 'в каких случаях'],
+  4: ['ограничения', 'лимиты', 'правила', 'минусы'],
+  5: ['лучший результат', 'как улучшить', 'качество', 'максимальный'],
+  6: ['разница', 'отличие', 'сравнение', 'чем отличается'],
+  7: ['что делать после', 'что дальше', 'следующий шаг', 'открыл']
+};
+
+// Conversational Topic Context (persists across dialog turns)
+export const topicContext = {
+  section: null,
+  chainStep: 0,
+  lastScenarioId: null,
+  updatedAt: 0
+};
+
+export function getTopicContext() {
+  if (Date.now() - topicContext.updatedAt > 60000) {
+    topicContext.section = null;
+    topicContext.chainStep = 0;
+    topicContext.lastScenarioId = null;
+  }
+  return topicContext;
 }
+
+export function setTopicContext({ section, chainStep, lastScenarioId }) {
+  topicContext.section = section || null;
+  topicContext.chainStep = typeof chainStep === 'number' ? chainStep : 0;
+  topicContext.lastScenarioId = lastScenarioId || null;
+  topicContext.updatedAt = Date.now();
+  try {
+    sessionStorage.setItem('jarvix_topic_section', topicContext.section || '');
+  } catch (_) {}
+}
+
 export function createClipLibrary(fetchImpl = fetch) {
-  let manifestPromise;
-  const blobs = new Map();
-  let bytes = 0;
-  const maxBytes = 24 * 1024 * 1024;
-  const normalize = text => String(text).normalize('NFC').trim().replace(/\s+/g, ' ');
-  const prepare = () => manifestPromise ||= fetchImpl('/media/jarvix/clips/manifest.json', {signal:AbortSignal.timeout(2500)})
-    .then(async response => {
-      if (!response.ok) return [];
-      const data = await response.json();
-      if (!Array.isArray(data.clips)) return [];
-      return data.clips.filter(item =>
-        ['ru','en','fr','es'].includes(item.language) &&
-        new RegExp('^jarvix_' + item.language + '_[0-9]{2}$').test(item.id) &&
-        typeof item.text === 'string' &&
-        new RegExp('^/media/jarvix/clips/' + item.id + '\\.(wav|mp3)(\\?v=[a-f0-9]{12})?$').test(item.url));
+  // Load 500 Scenarios Master
+  const loadMaster = () => masterPromise ||= fetchImpl('/media/jarvix/jarvix-unified-500-master.json', { signal: AbortSignal.timeout(6000) })
+    .then(async r => {
+      if (!r.ok) return [];
+      const data = await r.json();
+      return Array.isArray(data.scenarios) ? data.scenarios : (Array.isArray(data) ? data : []);
     }).catch(() => []);
+
+  // Load 1900 Audio Clips Manifest
+  const loadManifest = () => manifestPromise ||= fetchImpl('/media/jarvix/clips/manifest-500.json', { signal: AbortSignal.timeout(6000) })
+    .then(async r => {
+      if (!r.ok) {
+        const fallback = await fetchImpl('/media/jarvix/clips/manifest.json', { signal: AbortSignal.timeout(4000) }).catch(() => null);
+        if (!fallback || !fallback.ok) return [];
+        const fd = await fallback.json().catch(() => ({}));
+        return Array.isArray(fd.clips) ? fd.clips : [];
+      }
+      const data = await r.json().catch(() => ({}));
+      return Array.isArray(data.clips) ? data.clips : [];
+    }).catch(() => []);
+
   return {
-    prepare,
-    async findReply(query, language) {
-      return selectCatalogReply(await prepare(), query, language);
+    prepare: async () => {
+      const [scenarios, clips] = await Promise.all([loadMaster(), loadManifest()]);
+      return { scenarios, clips };
     },
+
+    // Intelligent Topic-Aware Scenario Matching
+    async findReply(query, language = 'ru') {
+      const q = normalize(query);
+      if (!q || q.length < 2) return null;
+
+      const { scenarios } = await this.prepare();
+      if (!scenarios || !scenarios.length) return null;
+
+      const lang = ['ru', 'en', 'es', 'fr'].includes(language) ? language : 'ru';
+      const ctx = getTopicContext();
+
+      // 1. Detect section from query keywords
+      let detectedSection = null;
+      for (const [sec, kws] of Object.entries(SECTION_KEYWORDS)) {
+        if (kws.some(kw => q.includes(kw))) {
+          detectedSection = sec;
+          break;
+        }
+      }
+
+      const section = detectedSection || ctx.section;
+
+      // 2. Detect intent step
+      let detectedStep = null;
+      for (const [step, kws] of Object.entries(INTENT_KEYWORDS)) {
+        if (kws.some(kw => q.includes(kw))) {
+          detectedStep = Number(step);
+          break;
+        }
+      }
+
+      // If staying on the same topic and asking a follow-up, step forward in conversation chain
+      if (detectedStep === null && section && section === ctx.section) {
+        detectedStep = Math.min(7, ctx.chainStep + 1);
+      } else if (detectedStep === null) {
+        detectedStep = 0; // Default to topic intro
+      }
+
+      // 3. Find matching scenario in this section
+      let bestScenario = null;
+      if (section) {
+        const sectionScenarios = scenarios.filter(s => s.section === section);
+        if (sectionScenarios.length) {
+          bestScenario = sectionScenarios.find(s => s.chainStep === detectedStep) || sectionScenarios[0];
+        }
+      }
+
+      // 4. Fallback: Search by triggers and question text across all scenarios
+      if (!bestScenario) {
+        const queryWords = q.split(/\s+/).filter(w => w.length > 2);
+        let highestScore = 0;
+
+        for (const sc of scenarios) {
+          let score = 0;
+          const triggers = (sc.triggers && sc.triggers[lang]) || [];
+          const qa = (sc.qa && sc.qa[lang]) || {};
+          const qText = normalize(qa.question);
+
+          for (const trig of triggers) {
+            const tNorm = normalize(trig);
+            if (q === tNorm) score = Math.max(score, 100);
+            else if (q.includes(tNorm) && tNorm.length > 3) score = Math.max(score, 75);
+          }
+
+          if (qText) {
+            if (q === qText) score = Math.max(score, 110);
+            else {
+              const matched = queryWords.filter(w => qText.includes(w)).length;
+              if (matched > 0) score = Math.max(score, (matched / queryWords.length) * 50);
+            }
+          }
+
+          if (score > highestScore) {
+            highestScore = score;
+            bestScenario = sc;
+          }
+        }
+        if (highestScore < 30) bestScenario = null;
+      }
+
+      if (bestScenario) {
+        setTopicContext({
+          section: bestScenario.section,
+          chainStep: bestScenario.chainStep,
+          lastScenarioId: bestScenario.id
+        });
+
+        const answer = (bestScenario.qa && bestScenario.qa[lang] && bestScenario.qa[lang].answer) ||
+                       (bestScenario.phrases && bestScenario.phrases[lang]) || '';
+        const audioFile = (bestScenario.audio && bestScenario.audio[lang]) || '';
+        const audioUrl = audioFile ? `/media/jarvix/clips/${audioFile}` : null;
+
+        return {
+          id: bestScenario.id,
+          safeId: bestScenario.safeId,
+          text: answer,
+          audioUrl,
+          action: bestScenario.action || null,
+          section: bestScenario.section,
+          chainStep: bestScenario.chainStep
+        };
+      }
+
+      return null;
+    },
+
+    // Fetch and cache audio Blob by exact phrase or clip ID
     async get(text, language, signal) {
-      const entries = await prepare();
       if (signal?.aborted) return null;
-      const item = entries.find(item => item.language === language && normalize(item.text) === normalize(text));
-      if (!item) return null;
-      if (blobs.has(item.url)) {
-        const blob = blobs.get(item.url);
-        blobs.delete(item.url); blobs.set(item.url, blob);
+      const tNorm = normalize(text);
+      if (!tNorm) return null;
+
+      const { clips, scenarios } = await this.prepare();
+      if (signal?.aborted) return null;
+
+      // Find clip in manifest
+      let clip = clips.find(c => c.language === language && normalize(c.text) === tNorm);
+      if (!clip) {
+        const sc = scenarios.find(s => {
+          const a = (s.qa && s.qa[language] && s.qa[language].answer) || (s.phrases && s.phrases[language]);
+          return normalize(a) === tNorm;
+        });
+        if (sc && sc.audio && sc.audio[language]) {
+          clip = { url: `/media/jarvix/clips/${sc.audio[language]}` };
+        }
+      }
+
+      if (!clip || !clip.url) return null;
+
+      if (blobs.has(clip.url)) {
+        const blob = blobs.get(clip.url);
+        blobs.delete(clip.url);
+        blobs.set(clip.url, blob);
         return blob;
       }
+
       try {
-        const response = await fetchImpl(item.url, {signal});
+        const response = await fetchImpl(clip.url, { signal });
         if (!response.ok || !response.headers.get('content-type')?.startsWith('audio/')) return null;
         const blob = await response.blob();
         if (!blob.size || blob.size > 12 * 1024 * 1024 || signal?.aborted) return null;
-        while (bytes + blob.size > maxBytes && blobs.size) {
+
+        while (totalBytes + blob.size > MAX_BYTES && blobs.size) {
           const key = blobs.keys().next().value;
-          bytes -= blobs.get(key).size; blobs.delete(key);
+          totalBytes -= blobs.get(key).size;
+          blobs.delete(key);
         }
-        if (!blobs.has(item.url)) { blobs.set(item.url, blob); bytes += blob.size; }
+        blobs.set(clip.url, blob);
+        totalBytes += blob.size;
         return blob;
-      } catch { return null; }
+      } catch (_) {
+        return null;
+      }
     }
   };
 }
-const library = createClipLibrary();
-export const prepareStaticClips = library.prepare;
-export const getStaticClip = library.get;
-export const findCatalogReply = library.findReply;
 
+const defaultLib = createClipLibrary();
+export const prepareStaticClips = defaultLib.prepare.bind(defaultLib);
+export const getStaticClip = defaultLib.get.bind(defaultLib);
+export const findCatalogReply = defaultLib.findReply.bind(defaultLib);
