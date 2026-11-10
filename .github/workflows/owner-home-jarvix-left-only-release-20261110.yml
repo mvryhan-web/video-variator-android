@@ -47,8 +47,54 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check 'requests==2.32.3' 'blake3==1.0.8'
           python -m unittest discover -s tests -p 'test_deepsyq_surgical_publish.py' -v
-      - name: Publish only deepsyq.css preserving live Worker and all other assets
+      - name: Identify current LIVE release source (read only)
+        id: live
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/deepsyq_surgical_publish.py --mode publish --files "deepsyq.css" --commit "$GITHUB_SHA"
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import os, re, requests
+          account=os.environ["CLOUDFLARE_ACCOUNT_ID"]
+          token=os.environ["CLOUDFLARE_API_TOKEN"]
+          s=requests.Session();s.headers['Authorization']='Bearer '+token
+          api='https://api.cloudflare.com/client/v4/accounts/'+account+'/pages/projects/deepsyq'
+          def check(url):
+            r=s.get(url,timeout=30);r.raise_for_status()
+            obj=r.json()
+            assert obj.get('success') is True,'Cloudflare API failed'
+            return obj['result']
+          project=check(api)
+          assert project.get('production_branch')=='deepsyq-platform'
+          ident=project.get('canonical_deployment',{}).get('id')
+          assert ident,'Missing live deployment'
+          dep=check(api+'/deployments/'+ident)
+          assert dep.get('uses_functions') is True,'Production Worker not active'
+          source=(dep.get('deployment_trigger') or {}).get('metadata',{}).get('commit_hash') or (project.get('canonical_deployment',{}).get('deployment_trigger') or {}).get('metadata',{}).get('commit_hash')
+          assert re.fullmatch('[a-f0-9]{40}',source or ''),'Live source commit unavailable'
+          print('sha='+source)
+          print('deployment='+ident)
+          PY
+      - name: Reconstruct current LIVE Worker unchanged and overlay ONLY approved CSS
+        shell: bash
+        env:
+          LIVE_SHA: ${{ steps.live.outputs.sha }}
+        run: |
+          set -euo pipefail
+          git cat-file -e "$LIVE_SHA^{commit}"
+          BASE="$RUNNER_TEMP/deepsyq-owner-home-live-baseline"
+          git worktree add --detach "$BASE" "$LIVE_SHA"
+          mkdir -p "$BASE/scripts"
+          cp scripts/deepsyq_surgical_publish.py "$BASE/scripts/deepsyq_surgical_publish.py"
+          cp app/src/main/assets/deepsyq.css "$BASE/app/src/main/assets/deepsyq.css"
+          test "$(git -C "$BASE" rev-parse HEAD)" = "$LIVE_SHA"
+          test "$(git -C "$BASE" rev-parse HEAD:app/src/main/assets/_worker.js)" = "$(git rev-parse "$LIVE_SHA:app/src/main/assets/_worker.js")"
+          echo "LIVE_WORKER_SOURCE_PINNED_AND_ONLY_CSS_OVERLAID"
+      - name: Publish only approved CSS from LIVE baseline, preserving the exact Worker
+        shell: bash
+        env:
+          LIVE_SHA: ${{ steps.live.outputs.sha }}
+        run: |
+          set -euo pipefail
+          BASE="$RUNNER_TEMP/deepsyq-owner-home-live-baseline"
+          cd "$BASE"
+          python scripts/deepsyq_surgical_publish.py --mode publish --files "deepsyq.css" --commit "$LIVE_SHA"
