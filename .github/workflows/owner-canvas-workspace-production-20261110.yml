@@ -38,7 +38,7 @@ jobs:
           node --check app/src/main/assets/canvas-workspace.js
           node --check scripts/owner-canvas-workspace-production-release-20261110.mjs
           node scripts/owner-canvas-workspace-production-release-20261110.mjs prepare
-      - name: Rebuild complete LIVE manifest and patch precisely three Canvas files
+      - name: Rebuild exact latest LIVE manifest and patch only three Canvas files
         run: |
           set -euo pipefail
           node scripts/owner-canvas-workspace-production-release-20261110.mjs stage
