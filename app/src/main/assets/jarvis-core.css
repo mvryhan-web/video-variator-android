@@ -192,7 +192,7 @@ dialog.jarvis-hud-dialog,
   pointer-events: none;
 }
 
-/* Listening uses the standard orb appearance: no color switch, glow or extra pulse. */
+/* Listening keeps normal colors and shadows off; only the sphere itself gently pulses. */
 .top-jarvis-btn.is-listening,
 .top-jarvis-btn.is-active.is-listening {
   animation: none;
@@ -201,4 +201,62 @@ dialog.jarvis-hud-dialog,
 .top-jarvis-btn.is-listening::before {
   opacity: 0;
   animation: none;
+}
+
+/* Keep the approved sphere colors while showing that the mic is listening. */
+#topJarvisBtn.is-listening > .jarvis-mini-orb {
+  animation: jarvixListeningOrbPulse 1.4s ease-in-out infinite;
+}
+@keyframes jarvixListeningOrbPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+/* Two side-facing speech arcs — not equalizer bars, and never green. */
+#topJarvisBtn .jarvix-voice-ear {
+  position: absolute;
+  top: 50%;
+  width: 13px;
+  height: 24px;
+  box-sizing: border-box;
+  border: 2px solid rgba(56, 189, 248, .82);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+#topJarvisBtn .jarvix-voice-ear-left {
+  left: -13px;
+  border-right: 0;
+  transform: translate(5px, -50%) scaleX(.6);
+}
+#topJarvisBtn .jarvix-voice-ear-right {
+  right: -13px;
+  border-left: 0;
+  border-color: rgba(167, 139, 250, .86);
+  transform: translate(-5px, -50%) scaleX(.6);
+}
+#topJarvisBtn.is-speaking .jarvix-voice-ear {
+  visibility: visible;
+}
+#topJarvisBtn.is-speaking .jarvix-voice-ear-left {
+  animation: jarvixSpeechEarLeft 1.06s ease-in-out infinite;
+}
+#topJarvisBtn.is-speaking .jarvix-voice-ear-right {
+  animation: jarvixSpeechEarRight 1.06s ease-in-out infinite;
+}
+@keyframes jarvixSpeechEarLeft {
+  0%, 100% { transform: translate(5px, -50%) scaleX(.65); opacity: .20; }
+  50% { transform: translate(-8px, -50%) scaleX(1.1); opacity: .92; }
+}
+@keyframes jarvixSpeechEarRight {
+  0%, 100% { transform: translate(-5px, -50%) scaleX(.65); opacity: .20; }
+  50% { transform: translate(8px, -50%) scaleX(1.1); opacity: .92; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #topJarvisBtn.is-listening > .jarvis-mini-orb,
+  #topJarvisBtn.is-speaking .jarvix-voice-ear {
+    animation: none !important;
+  }
+  #topJarvisBtn.is-speaking .jarvix-voice-ear { opacity: .65; }
 }
