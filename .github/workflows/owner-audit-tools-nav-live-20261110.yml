@@ -1,0 +1,48 @@
+name: Owner read-only live Everyday Tools extra header and Profile logout audit
+on:
+  push:
+    branches: [owner-audit-tools-nav-live-20261110]
+    paths: ['.github/workflows/owner-audit-tools-nav-live-20261110.yml']
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 11
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Inspect visible MAIN headers, links, language, logout and Pricing controls (no writes)
+        run: |
+          node --input-type=module <<'JS'
+          import {chromium} from 'playwright';
+          const b=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try{
+            for(const [kind,width] of [['desktop',1360],['mobile',390]]){
+              for(const name of ['free-tools.html','video-uniquifier.html','pricing.html','deepsyq.html']){
+                const ctx=await b.newContext({viewport:{width,height:900},isMobile:width<700,hasTouch:width<700});
+                await ctx.addInitScript(()=>{localStorage.setItem('vv_token','qa-not-valid-no-spend')});
+                await ctx.route('**/api/**',async r=>{const path=r.request().url();const data=path.includes('/api/me')?{user:{name:'QA',email:'qa@example.test',isAdmin:false}}:path.includes('/api/config')?{googleClientId:'',billingConfigured:false,plans:{}}:{available:0,items:[]};await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)})});
+                const page=await ctx.newPage();
+                try{
+                  const res=await page.goto('https://deepsyq.app/'+name,{waitUntil:'domcontentloaded',timeout:32000});
+                  await page.waitForTimeout(1350);
+                  const data=await page.evaluate(()=>{
+                    const visible=el=>!!el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden';
+                    const rect=e=>{const r=e.getBoundingClientRect();return {y:Math.round(r.y),x:Math.round(r.x),w:Math.round(r.width),h:Math.round(r.height)}};
+                    const headers=[...document.querySelectorAll('header')].filter(visible).slice(0,12).map(e=>({class:e.className,rect:rect(e),text:e.innerText?.replace(/\s+/g,' ').slice(0,200),id:e.id,search:e.querySelector('input[type=search]')?.placeholder}));
+                    const selectors=['.vu-appbar','.vu-top-tools','.vu-search','.ds-header-cockpit','.ds-site-sidebar','#sidebar','#dsSiteSidebar','#topLogin','#signInBtn','#profileView','#logout','.home-global-search','#homeLanguage','#dsUnifiedLanguage','#pricePlanPrev','#pricePlanNext'];
+                    const parts=Object.fromEntries(selectors.map(s=>[s,[...document.querySelectorAll(s)].slice(0,3).map(e=>({tag:e.tagName,id:e.id,visible:visible(e),rect:rect(e),txt:e.textContent?.replace(/\s+/g,' ').trim().slice(0,140),href:e.getAttribute('href')}))]));
+                    const vuLinks=[...document.querySelectorAll('a')].filter(e=>/video.uniq|уникализ/i.test(e.textContent||'')).slice(0,15).map(e=>({txt:e.textContent?.trim().slice(0,60),href:e.getAttribute('href')}));
+                    return {headers,parts,vuLinks};
+                  });
+                  console.log('OWNER_LIVE_DOM_AUDIT',kind,name,'http='+res.status(),JSON.stringify(data));
+                }catch(e){console.log('OWNER_LIVE_DOM_ERROR',kind,name,String(e).slice(0,400))}
+                finally{await ctx.close()}
+              }
+            }
+          }finally{await b.close()}
+          JS
