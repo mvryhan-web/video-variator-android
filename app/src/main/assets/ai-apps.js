@@ -108,7 +108,6 @@ function render(){
   }else visual.textContent=templateKind(item)==='image'?'✧':templateKind(item)==='audio'?'♫':'▷';
   const body=document.createElement('div');body.className='app-body';
   const h=document.createElement('h3');h.textContent=item.title||'Untitled workflow';
-  const p=document.createElement('p');p.textContent=item.description||'Open this workflow with its saved prompt and settings.';
   const eligibility=templateSupport(item);
   let nameInput=null;
   if(eligibility.supported&&eligibility.requiresProductName){
@@ -116,8 +115,8 @@ function render(){
    const caption=document.createElement('span');caption.textContent='Product name';
    nameInput=document.createElement('input');nameInput.type='text';nameInput.maxLength=80;
    nameInput.autocomplete='off';nameInput.placeholder='Name of your product';
-   label.append(caption,nameInput);body.append(h,p,label);
-  }else body.append(h,p);
+   label.append(caption,nameInput);body.append(h,label);
+  }else body.append(h);
   const button=document.createElement('button');button.type='button';
   button.textContent=eligibility.supported?'Use template':'Workflow pending';button.disabled=!eligibility.supported;
   const feedback=document.createElement('p');feedback.className='template-error';feedback.setAttribute('role','status');
