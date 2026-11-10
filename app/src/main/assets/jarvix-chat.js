@@ -359,27 +359,49 @@ function initChatMenuDrawer() {
   const backdrop = $('jDropdownBackdrop');
   const newBtn = $('jMenuNewChat');
   const historyListEl = $('jMenuHistoryList');
+  const historyToggle = $('jDrawerHistoryToggle');
   const searchInput = $('jDrawerSearch');
   const searchToggle = $('jDrawerSearchToggle');
   const sortToggle = $('jDrawerSortToggle');
   let newestFirst = true;
 
   if (!titleBtn || !dropdown) return;
+  const setHistoryExpanded = (expanded) => {
+    if (!historyListEl) return;
+    const open = Boolean(expanded);
+    historyListEl.hidden = !open;
+    historyToggle?.setAttribute('aria-expanded', String(open));
+    historyToggle?.setAttribute('aria-label', open ? 'Свернуть список чатов' : 'Развернуть список чатов');
+    if (!open && searchInput && !searchInput.hidden) {
+      searchInput.hidden = true;
+      searchInput.value = '';
+      updateHistoryList().catch(() => {});
+    }
+  };
+  historyToggle?.addEventListener('click', () => {
+    const expand = Boolean(historyListEl?.hidden);
+    setHistoryExpanded(expand);
+    if (expand) updateHistoryList().catch(() => {});
+  });
   searchToggle?.addEventListener('click', () => {
     if (!searchInput) return;
     searchInput.hidden = !searchInput.hidden;
-    if (!searchInput.hidden) searchInput.focus();
-    else { searchInput.value = ''; updateHistoryList().catch(() => {}); }
+    if (!searchInput.hidden) {
+      setHistoryExpanded(true);
+      searchInput.focus();
+    } else { searchInput.value = ''; updateHistoryList().catch(() => {}); }
   });
   searchInput?.addEventListener('input', () => updateHistoryList().catch(() => {}));
   sortToggle?.addEventListener('click', () => {
+    setHistoryExpanded(true);
     newestFirst = !newestFirst;
     sortToggle.setAttribute('aria-pressed', String(!newestFirst));
     sortToggle.title = newestFirst ? 'Сначала старые чаты' : 'Сначала новые чаты';
     updateHistoryList().catch(() => {});
   });
   $('jDrawerRecent')?.addEventListener('click', () => {
-    historyListEl?.scrollTo({top:0,behavior:'smooth'});
+    setHistoryExpanded(true);
+    updateHistoryList().then(() => historyListEl?.scrollTo({top:0,behavior:'smooth'})).catch(() => {});
     if(searchInput && !searchInput.hidden)searchInput.focus();
   });
   document.querySelectorAll('[data-j-drawer-mode]').forEach(button => {
@@ -414,6 +436,8 @@ function initChatMenuDrawer() {
 
   const closeDropdown = () => {
     dropdown.hidden = true;
+    dropdown.classList.remove('j-swipe-closing');
+    setHistoryExpanded(false);
     titleBtn.setAttribute('aria-expanded', 'false');
     titleBtn.classList.remove('open');
   };
@@ -427,6 +451,41 @@ function initChatMenuDrawer() {
   if (backdrop) backdrop.onclick = () => closeDropdown();
   const closeBtn = $('jDrawerClose');
   if (closeBtn) closeBtn.onclick = () => closeDropdown();
+
+  // Horizontal swipe closes the SAME menu. Vertical scrolling of chat history
+  // remains native; swiping never navigates or creates another conversation.
+  const drawerPanel = dropdown.querySelector('.j-drawer-panel');
+  let touchOrigin = null;
+  drawerPanel?.addEventListener('touchstart', event => {
+    if (dropdown.hidden || !window.matchMedia('(max-width:760px)').matches ||
+        event.touches.length !== 1 ||
+        (event.target instanceof Element && event.target.closest('input, textarea, [contenteditable="true"]'))) {
+      touchOrigin = null;
+      return;
+    }
+    const touch = event.touches[0];
+    touchOrigin = {x: touch.clientX, y: touch.clientY};
+  }, {passive:true});
+  drawerPanel?.addEventListener('touchend', event => {
+    if (!touchOrigin || event.changedTouches.length !== 1 || dropdown.hidden) {
+      touchOrigin = null;
+      return;
+    }
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - touchOrigin.x;
+    const dy = touch.clientY - touchOrigin.y;
+    touchOrigin = null;
+    if (dx < -65 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      event.preventDefault();
+      if (!dropdown.classList.contains('j-swipe-closing') &&
+          !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        dropdown.classList.add('j-swipe-closing');
+        window.setTimeout(closeDropdown, 170);
+      } else closeDropdown();
+    }
+  }, {passive:false});
+  drawerPanel?.addEventListener('touchcancel', () => { touchOrigin = null; }, {passive:true});
+
   $('jInput')?.addEventListener('focus', () => {
     if (window.matchMedia('(max-width:760px)').matches && !dropdown.hidden) closeDropdown();
   });
@@ -520,9 +579,9 @@ function initChatMenuDrawer() {
         sessionStorage.setItem('jarvix_session_id', conversation.sessionId);
         sessionStorage.setItem('jarvix_active_conversation', conversation.id);
         render();
+        closeDropdown();
         await historyList();
         await restoreResults();
-        closeDropdown();
       };
 
       historyListEl.append(item);
