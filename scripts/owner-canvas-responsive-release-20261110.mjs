@@ -102,6 +102,8 @@ async function prepare(){
  const manifest={...d.files};
  const upload=[];
  for(const rel of all){
+   // Preserve the exact active JavaScript asset, including other owners' recent changes.
+   if(rel==='canvas-workspace.js'){assert(manifest['/'+rel],'Active Canvas JavaScript is missing');continue;}
    const data=read(rel==='canvas.html'?src+'/canvas.html':cors.includes(rel)?src+'/'+rel:root+'/'+rel);
    const hash=hashPages(rel,data),name='/'+rel,prevHash=manifest[name];
    if(cors.includes(rel)){
@@ -183,7 +185,7 @@ async function check(branch){
    try{
     const b=await file(url+'/'+rel+'?canvasRelease='+Date.now());
     const actual=rel.endsWith('.html')?Buffer.from(stripInjected(b)):b;
-    if(sha(actual)===sha(read(src+'/'+rel))){matched=true;break}
+    if(rel==='canvas-workspace.js'?hashPages(rel,actual)===s.manifest['/'+rel]:sha(actual)===sha(read(src+'/'+rel))){matched=true;break}
     last='content digest different';
    }catch(e){last=String(e.message)}
    await sleep(2000);
