@@ -19,7 +19,7 @@ on:
     branches: [deepsyq-platform]
     paths:
       - 'scripts/deepsyq_surgical_publish.py'
-      - 'tests/deepsyq-surgical-publish.test.py'
+      - 'tests/test_deepsyq_surgical_publish.py'
       - '.github/workflows/deepsyq-surgical-release.yml'
 
 permissions:
@@ -41,7 +41,7 @@ jobs:
       - name: Syntax and strict allowlist regression tests (no Cloudflare access)
         run: |
           python -m py_compile scripts/deepsyq_surgical_publish.py
-          python -m unittest discover -s tests -p 'deepsyq-surgical-publish.test.py' -v
+          python -m unittest discover -s tests -p 'test_deepsyq_surgical_publish.py' -v
 
   surgical:
     # Commit pushes only run tests. Never deploy until explicitly dispatched.
