@@ -1799,3 +1799,42 @@ main.jarvix-chat #jChatDropdown .j-drawer-footer {
     transition:none!important;
   }
 }
+
+
+/* Owner JARVIX drawer: independently scrollable history ABOVE fixed footer. */
+main.jarvix-chat #jChatDropdown .j-drawer-panel {
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:auto auto auto auto auto minmax(0,1fr) auto!important;
+  grid-template-areas:"heading" "action" "navigation" "conversations" "search" "history" "footer"!important;
+  align-content:stretch!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-header {grid-area:heading!important}
+main.jarvix-chat #jChatDropdown .j-drawer-action-row {grid-area:action!important}
+main.jarvix-chat #jChatDropdown .j-drawer-quick-nav {grid-area:navigation!important}
+main.jarvix-chat #jChatDropdown .j-drawer-conversations-head {grid-area:conversations!important}
+main.jarvix-chat #jChatDropdown .j-drawer-search {grid-area:search!important}
+main.jarvix-chat #jChatDropdown #jMenuHistoryList {
+  grid-area:history!important;
+  min-height:0!important;
+  max-height:100%!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior-y:contain!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-footer {
+  grid-area:footer!important;
+  position:relative!important;
+  z-index:2!important;
+  min-height:0!important;
+  margin-top:0!important;
+  align-self:end!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-account-copy small {
+  display:block!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+  white-space:nowrap!important;
+  text-overflow:ellipsis!important;
+}
