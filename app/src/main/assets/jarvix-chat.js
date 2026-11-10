@@ -261,27 +261,24 @@ function render(){
   typingBubble.innerHTML='<span class="j-typing-dot"></span><span class="j-typing-dot"></span><span class="j-typing-dot"></span>';
   typingItem.append(typingBubble);
   area.append(typingItem);
- }
- const lastMsg=conversation.messages[conversation.messages.length-1];
- if(lastMsg&&lastMsg.role==='assistant'){
-  const assistantItems=area.querySelectorAll('.j-message.assistant:not(.j-typing-message)');
-  const target=assistantItems[assistantItems.length-1];
-  if(target){
-   requestAnimationFrame(()=>{
-    try{
-     const delta=target.getBoundingClientRect().top-area.getBoundingClientRect().top+area.scrollTop-14;
-     if(Math.abs(area.scrollTop-delta)>6){
-      area.scrollTo({top:Math.max(0,delta),behavior:'smooth'});
-     }
-    }catch(_){
-     target.scrollIntoView({behavior:'smooth',block:'start'});
-    }
-   });
+  // Position 3 dots comfortably in the middle (40% from top of chat area)
+  const itemTop = typingItem.getBoundingClientRect().top - area.getBoundingClientRect().top + area.scrollTop;
+  area.scrollTop = Math.max(0, itemTop - Math.round(area.clientHeight * 0.40));
+ }else{
+  const lastMsg=conversation.messages[conversation.messages.length-1];
+  if(lastMsg&&lastMsg.role==='assistant'){
+   const assistantItems=area.querySelectorAll('.j-message.assistant:not(.j-typing-message)');
+   const target=assistantItems[assistantItems.length-1];
+   if(target){
+    // Assistant text begins in the exact middle position where the 3 dots were — zero jump up or down
+    const itemTop = target.getBoundingClientRect().top - area.getBoundingClientRect().top + area.scrollTop;
+    area.scrollTop = Math.max(0, itemTop - Math.round(area.clientHeight * 0.40));
+   }else{
+    area.scrollTop=area.scrollHeight;
+   }
   }else{
    area.scrollTop=area.scrollHeight;
   }
- }else{
-  area.scrollTop=area.scrollHeight;
  }
 }
 async function run(work){if(busy)return;busy=true;const version=++epoch;controller=new AbortController();$('jSend').disabled=true;$('jStop').hidden=false;try{await work();}catch(e){if(e.name!=='AbortError')status(e.message);}finally{if(version===epoch){busy=false;controller=null;$('jSend').disabled=false;$('jStop').hidden=true;render();}}}
