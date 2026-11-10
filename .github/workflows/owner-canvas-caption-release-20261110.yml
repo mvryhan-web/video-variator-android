@@ -1,0 +1,61 @@
+name: OWNER Canvas single-paragraph surgical release
+
+on:
+  push:
+    branches: [owner-canvas-remove-description-20261110]
+    paths:
+      - '.github/workflows/owner-canvas-caption-release-20261110.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+
+jobs:
+  canvas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify the ONLY user-visible change is the requested paragraph removal
+        env:
+          OWNER_BASELINE: 8a758f647847f7a2592648311af5ef7891025311
+        run: |
+          python - <<'PY'
+          import os,subprocess
+          from pathlib import Path
+          base=os.environ['OWNER_BASELINE']
+          file='app/src/main/assets/canvas.html'
+          old=subprocess.check_output(['git','show',base+':'+file])
+          new=Path(file).read_bytes()
+          remove=b'<p>Start with a prompt, bring your own photos and continue in the real Image or Video Studio.</p>'
+          assert old.count(remove)==1,'Original paragraph missing or duplicated'
+          assert new==old.replace(remove,b''),'Any changes beyond requested paragraph are forbidden'
+          changed=subprocess.check_output(['git','diff','--name-only',base,'HEAD','--','app/src/main/assets'],text=True).splitlines()
+          assert changed==[file],f'Unrequested site assets changed: {changed}'
+          print('CANVAS_EXACT_SINGLE_PARAGRAPH_PASS',file)
+          PY
+      - name: Install exact uploader dependencies
+        run: python -m pip install --disable-pip-version-check "requests==2.32.3" "blake3==1.0.8"
+      - name: Read-only plan of LIVE-based one-file release (NO publishing)
+        run: |
+          python scripts/deepsyq_surgical_publish.py \
+            --mode plan \
+            --files canvas.html \
+            --commit "$GITHUB_SHA"
