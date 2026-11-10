@@ -82,23 +82,31 @@
 
 <div class="j-chat-bottom">
   <div id="jAttachments" class="j-attachments"></div>
-  <form id="jChatForm" class="jarvix-compose">
-      <button type="button" id="jPlus" aria-label="Add files or choose mode" aria-expanded="false" aria-controls="jPlusMenu">+</button>
-      <div id="jPlusMenu" class="j-plus-menu j-hub-menu" aria-label="DEEPSYQ quick access" hidden>
-        <button class="j-hub-tile" type="button" data-j-mode="image" aria-pressed="false"><span class="j-hub-glyph" data-j-icon="image" aria-hidden="true"></span><strong>Image</strong></button>
-        <button class="j-hub-tile" type="button" data-j-mode="video" aria-pressed="false"><span class="j-hub-glyph" data-j-icon="video" aria-hidden="true"></span><strong>Video</strong></button>
-        <button class="j-hub-tile" type="button" data-j-mode="audio" aria-pressed="false"><span class="j-hub-glyph" data-j-icon="audio" aria-hidden="true"></span><strong>Audio</strong></button>
-        <a class="j-hub-tile" href="free-tools.html"><span class="j-hub-glyph" data-j-icon="tools" aria-hidden="true"></span><strong>Tools</strong></a>
-        <a class="j-hub-tile" href="ai-apps.html"><span class="j-hub-glyph" data-j-icon="apps" aria-hidden="true"></span><strong>AI Apps</strong></a>
-        <a class="j-hub-tile" href="deepsyq.html#inspirationPreview"><span class="j-hub-glyph" data-j-icon="inspiration" aria-hidden="true"></span><strong>Inspiration</strong></a>
-        <button class="j-hub-tile" type="button" id="jAttach"><span class="j-hub-glyph j-hub-upload" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M4 15v5h16v-5"/></svg></span><strong>Upload</strong></button>
-        <a class="j-hub-tile" href="my-creations.html"><span class="j-hub-glyph" data-j-icon="history" aria-hidden="true"></span><strong>Assets</strong></a>
+      <form id="jChatForm" class="jarvix-compose">
+      <div class="j-composer-input-row">
+        <label for="jInput" class="sr-only">Сообщение для JARVIX</label>
+        <textarea id="jInput" rows="1" maxlength="2000" required placeholder="Опишите, что хотите создать…"></textarea>
       </div>
-      <input id="jFiles" type="file" multiple accept="image/png,image/jpeg,video/mp4,audio/mpeg,audio/wav,text/plain" hidden>
-      <label for="jInput" class="sr-only">Сообщение для JARVIX</label>
-      <textarea id="jInput" rows="1" maxlength="2000" required placeholder="Опишите, что хотите создать…"></textarea>
-      <button id="jMic" type="button" aria-label="Голосовой ввод"><svg width="20" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v4M8 23h8"/></svg></button>
-      <button class="j-send" id="jSend" type="submit" aria-label="Отправить сообщение"><svg class="j-send-plane" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button>
+      <div class="j-composer-actions-row">
+        <div class="j-composer-actions-left">
+          <button type="button" id="jPlus" aria-label="Add files or choose mode" aria-expanded="false" aria-controls="jPlusMenu">+</button>
+          <div id="jPlusMenu" class="j-plus-menu j-hub-menu" aria-label="DEEPSYQ quick access" hidden>
+            <button class="j-hub-tile" type="button" data-j-mode="image" aria-pressed="false"><span class="j-hub-glyph" data-j-icon="image" aria-hidden="true"></span><strong>Image</strong></button>
+            <button class="j-hub-tile" type="button" data-j-mode="video" aria-pressed="false"><span class="j-hub-glyph" data-j-icon="video" aria-hidden="true"></span><strong>Video</strong></button>
+            <button class="j-hub-tile" type="button" data-j-mode="audio" aria-pressed="false"><span class="j-hub-glyph" data-j-icon="audio" aria-hidden="true"></span><strong>Audio</strong></button>
+            <a class="j-hub-tile" href="free-tools.html"><span class="j-hub-glyph" data-j-icon="tools" aria-hidden="true"></span><strong>Tools</strong></a>
+            <a class="j-hub-tile" href="ai-apps.html"><span class="j-hub-glyph" data-j-icon="apps" aria-hidden="true"></span><strong>AI Apps</strong></a>
+            <a class="j-hub-tile" href="deepsyq.html#inspirationPreview"><span class="j-hub-glyph" data-j-icon="inspiration" aria-hidden="true"></span><strong>Inspiration</strong></a>
+            <button class="j-hub-tile" type="button" id="jAttach"><span class="j-hub-glyph j-hub-upload" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M4 15v5h16v-5"/></svg></span><strong>Upload</strong></button>
+            <a class="j-hub-tile" href="my-creations.html"><span class="j-hub-glyph" data-j-icon="history" aria-hidden="true"></span><strong>Assets</strong></a>
+          </div>
+          <input id="jFiles" type="file" multiple accept="image/png,image/jpeg,video/mp4,audio/mpeg,audio/wav,text/plain" hidden>
+        </div>
+        <div class="j-composer-actions-right">
+          <button id="jMic" type="button" aria-label="Голосовой ввод"><svg width="20" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v4M8 23h8"/></svg></button>
+          <button class="j-send" id="jSend" type="submit" aria-label="Отправить сообщение"><svg class="j-send-plane" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button>
+        </div>
+      </div>
     </form>
   <p id="jStatus" role="status" class="j-status"></p>
 </div>

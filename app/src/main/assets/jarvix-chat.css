@@ -2,11 +2,9 @@
 .jarvix-compose,
 main.jarvix-chat .j-chat-bottom .jarvix-compose,
 #homeQuickForm[data-jarvix-chat]{
- display:grid!important;
- grid-template-columns:auto 1fr auto auto auto auto auto!important;
- grid-template-rows:auto auto!important;
- align-items:center!important;
- gap:8px 8px!important;
+ display:flex!important;
+ flex-direction:column!important;
+ gap:8px!important;
  padding:12px 14px 10px!important;
  border:1px solid #7470ec;
  border-radius:24px!important;
@@ -14,14 +12,23 @@ main.jarvix-chat .j-chat-bottom .jarvix-compose,
  box-shadow:0 0 22px #117aae26;
  position:relative!important;
  min-width:0!important;
+ width:100%!important;
  color:#e6efff!important;
+ box-sizing:border-box!important;
+}
+.j-composer-input-row{
+ display:block!important;
+ width:100%!important;
+ flex:1 1 auto!important;
+ margin:0!important;
+ padding:0!important;
  box-sizing:border-box!important;
 }
 .jarvix-compose textarea,
 main.jarvix-chat .j-chat-bottom .jarvix-compose textarea#jInput,
-#homeQuickForm textarea#homeQuickPrompt{
- grid-column:1 / -1!important;
- grid-row:1!important;
+#homeQuickForm textarea#homeQuickPrompt,
+.j-composer-input-row textarea{
+ display:block!important;
  width:100%!important;
  min-height:56px!important;
  max-height:180px!important;
@@ -36,48 +43,28 @@ main.jarvix-chat .j-chat-bottom .jarvix-compose textarea#jInput,
  resize:none!important;
  outline:none!important;
 }
-.jarvix-compose :is(#jPlus,.j-plus-btn,.j-glow-plus){
- grid-column:1!important;
- grid-row:2!important;
- justify-self:start!important;
- flex-shrink:0!important;
+.j-composer-actions-row{
+ display:flex!important;
+ align-items:center!important;
+ justify-content:space-between!important;
+ width:100%!important;
+ flex:0 0 auto!important;
+ margin:0!important;
+ padding:0!important;
+ box-sizing:border-box!important;
 }
-.jarvix-compose .j-voice-waves{
- grid-column:2!important;
- grid-row:2!important;
- justify-self:start!important;
- margin-left:6px!important;
- flex-shrink:0!important;
+.j-composer-actions-left{
+ display:flex!important;
+ align-items:center!important;
+ gap:8px!important;
+ margin-right:auto!important;
+ position:relative!important;
 }
-.jarvix-compose :is(.j-image-shortcut,.j-attach-shortcut){
- grid-column:3!important;
- grid-row:2!important;
- justify-self:end!important;
- flex-shrink:0!important;
-}
-.jarvix-compose :is(#jMic,#studioVoiceBtn){
- grid-column:4!important;
- grid-row:2!important;
- justify-self:end!important;
- flex-shrink:0!important;
-}
-.jarvix-compose :is(.j-settings-shortcut,#studioSettingsBtn){
- grid-column:5!important;
- grid-row:2!important;
- justify-self:end!important;
- flex-shrink:0!important;
-}
-.jarvix-compose :is(.j-send,#jSend,#homeQuickSubmit){
- grid-column:6!important;
- grid-row:2!important;
- justify-self:end!important;
- flex-shrink:0!important;
-}
-.jarvix-compose .j-composer-orb-btn{
- grid-column:7!important;
- grid-row:2!important;
- justify-self:end!important;
- flex-shrink:0!important;
+.j-composer-actions-right{
+ display:flex!important;
+ align-items:center!important;
+ gap:8px!important;
+ margin-left:auto!important;
 }
 .jarvix-compose button,.jarvix-chat button,.jarvix-chat select{font:inherit;color:inherit;border:1px solid #5962a8;background:#111c35;border-radius:14px;padding:8px 10px;cursor:pointer;min-height:40px}
 .jarvix-compose .j-send{background:linear-gradient(120deg,#8640ef,#1fc9ed);color:white;border-color:#a080ff}
