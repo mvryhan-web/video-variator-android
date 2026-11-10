@@ -1,0 +1,28 @@
+# Dedicated isolated Cloudflare Worker. NOT the Pages _worker.js.
+# First deployment remains disabled pending owner + independent review.
+name = "deepsyq-product-watcher-test"
+main = "./worker.js"
+compatibility_date = "2026-11-08"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+[triggers]
+crons = ["*/15 * * * *"]
+
+[vars]
+PRODUCT_WATCHER_ENABLED = "false"
+PRODUCT_WATCHER_SCHEDULER_ENABLED = "false"
+PRODUCT_WATCHER_DEPLOY_ENV = "test"
+PRODUCT_WATCHER_SCHEDULER_MODE = "cloudflare-cron-15m"
+PRODUCT_WATCHER_TEST_DB_ISOLATED = "false"
+PRODUCT_WATCHER_BASE_URL = "https://deepsyq.pages.dev/"
+PRODUCT_WATCHER_TELEGRAM_ALERTS_ENABLED = "false"
+PRODUCT_WATCHER_LITE_DELIVERY_ENABLED = "false"
+PRODUCT_WATCHER_OFFICIAL_SOURCES_ENABLED = "false"
+PRODUCT_WATCHER_CONTENT_TASKS_ENABLED = "false"
+PRODUCT_WATCHER_BRIEFS_ENABLED = "false"
+
+# DATABASE_URL must be a separate TEST Neon direct connection, configured
+# as a Cloudflare secret, never committed to GitHub. A Neon pooler is disallowed
+# because F5 relies on session-level PostgreSQL advisory locks.
+# Telegram notification requires explicit separate TEST delivery authorization.
