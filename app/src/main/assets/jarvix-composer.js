@@ -41,7 +41,11 @@ export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
  const voice=bindVoiceInput({mic,input,form,onError,onStatus:onError});
  form.addEventListener('submit',async e=>{e.preventDefault();await voice.stop();if(!input.value.trim())return;await onSend({text:input.value.trim(),mode,files:[...files]});});
  input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();form.requestSubmit();}});
- return {clear(){input.value='';files=[];render();},add(file){files=validateAttachments([...files,file]);render();input.focus();},stop(){void voice.abort();}};
+ input.addEventListener('input',()=>{
+  if(!input.value.trim())input.style.height='';
+  else{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,180)+'px';}
+ });
+ return {clear(){input.value='';input.style.height='';files=[];render();},add(file){files=validateAttachments([...files,file]);render();},stop(){void voice.abort();}};
 }
 export function trackViewport(root){
  const update=()=>{const v=window.visualViewport;document.documentElement.style.setProperty('--j-viewport',(v?.height||innerHeight)+'px');if(root)document.documentElement.style.setProperty('--jarvix-compose-height',root.getBoundingClientRect().height+'px');};

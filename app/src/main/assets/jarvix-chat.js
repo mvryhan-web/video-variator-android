@@ -292,8 +292,6 @@ async function applyIncomingHandoffOrTemplate() {
     composerInput.dispatchEvent(new Event('input', { bubbles: true }));
     composerInput.style.height = 'auto';
     composerInput.style.height = Math.min(composerInput.scrollHeight, 180) + 'px';
-    composerInput.focus();
-    composerInput.setSelectionRange?.(incomingPrompt.length, incomingPrompt.length);
   }
 }
 void applyIncomingHandoffOrTemplate();
