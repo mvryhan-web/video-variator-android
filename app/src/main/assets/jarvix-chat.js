@@ -200,7 +200,8 @@ function setChatHeaderMode(m){
 }
 
 window.addEventListener('jarvix:mode',e=>{if(e.detail?.mode)setChatHeaderMode(e.detail.mode);});
-try{const st=sessionStorage.getItem('jarvix_composer_mode');if(st)setChatHeaderMode(st);}catch{}
+try{const st=sessionStorage.getItem('jarvix_composer_mode');setChatHeaderMode(st||'auto');}catch{setChatHeaderMode('auto');}
+window.addEventListener('deepsyq:lang',()=>setChatHeaderMode($('jActiveModeLabel')?.dataset.mode||'auto'));
 try {
   const _sp = new URLSearchParams(location.search);
   const _initMode = _sp.get('mode') || _sp.get('studio');
