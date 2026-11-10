@@ -13,6 +13,8 @@ jobs:
     env:
       CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
       CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      ANDROID_WEB_APP_URL: ${{ vars.VV_WEB_APP_URL }}
+      ANDROID_API_BASE_URL: ${{ vars.VV_API_BASE_URL }}
     steps:
       - name: Check live Google OAuth origin/client consistency; never log credential values
         shell: bash
@@ -44,5 +46,11 @@ jobs:
             return {present:!!v,type:typeof v==='object'?v.type:typeof v,clientLooksGoogle:typeof raw==='string'&&raw.endsWith('.apps.googleusercontent.com'),fingerprint:fingerprint(raw)}
           };
           console.log('OAUTH_CF_PROJECT',JSON.stringify({http:p.status,project:x.name,prodBranch:x.production_branch,prodEnv:tidy(c.production?.env_vars),previewEnv:tidy(c.preview?.env_vars),prodDeployment:dep.id,createdAt:dep.created_on,usesFunctions:dep.uses_functions,gitSha:dep.deployment_trigger?.metadata?.commit_hash}));
+          const androidVars=['ANDROID_WEB_APP_URL','ANDROID_API_BASE_URL'];
+          console.log('OAUTH_ANDROID_BUILD_ORIGINS',JSON.stringify(Object.fromEntries(androidVars.map(n=>{
+            const raw=process.env[n]||'';
+            let origin=null;try{origin=raw?new URL(raw).origin:null}catch{}
+            return [n,{configured:!!raw,origin}];
+          }))));
           console.log('READ_ONLY_NO_AUTH_CHANGES',true);
           JS
