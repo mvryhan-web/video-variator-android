@@ -335,7 +335,7 @@ function initChatMenuDrawer() {
     const account = $('jDrawerAccountLink');
     if(account){
       const loggedIn=!!localStorage.getItem('vv_token');
-      account.href=loggedIn?'video-uniquifier.html#profile':'deepsyq.html?panel=login';
+      account.href=loggedIn?'video-uniquifier.html#profile':'video-uniquifier.html#signin';
       const name=account.querySelector('strong');
       if(name)name.textContent=loggedIn?'Аккаунт DEEPSYQ':'Войти в аккаунт';
     }
