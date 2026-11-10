@@ -27,7 +27,7 @@ jobs:
           node --check app/src/main/assets/canvas-workspace.js
           node --check scripts/owner-canvas-ux-production-20261110.mjs
           node scripts/owner-canvas-ux-production-20261110.mjs prepare
-      - name: Upload only changed Canvas HTML CSS JS assets
+      - name: Upload only real Canvas content changes, preserving unchanged files
         run: node scripts/owner-canvas-ux-production-20261110.mjs upload
       - name: Preserve and bundle current LIVE Worker
         run: node scripts/owner-canvas-ux-production-20261110.mjs bundle
