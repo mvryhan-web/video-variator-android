@@ -792,23 +792,28 @@ export default {
       }
 
       const svg = createSvgImage(prompt, ratio);
+      const seed = Math.floor(Math.random() * 1000000);
+      const imgW = ratio === '9:16' ? 720 : ratio === '16:9' ? 1280 : 1024;
+      const imgH = ratio === '9:16' ? 1280 : ratio === '16:9' ? 720 : 1024;
+      const imageUrl = kind === 'image' ? `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt || 'cinematic masterpiece')}?width=${imgW}&height=${imgH}&nologo=true&seed=${seed}` : null;
       const jobRecord = {
         id,
         userId: user?.id || 'guest',
         kind,
         model: model || (kind === 'video' ? 'wan2.6-t2v' : 'gemini-3.1-flash-image'),
-        provider: kind === 'video' && env.DASHSCOPE_API_KEY ? 'Alibaba Wan' : 'Google',
+        provider: kind === 'video' && env.DASHSCOPE_API_KEY ? 'Alibaba Wan' : (kind === 'image' ? 'Flux AI Engine' : 'Google'),
         prompt,
         title: String(prompt || 'Studio Creation').slice(0, 60),
         status,
         progress,
         wanTaskId,
         videoUrl: null,
+        imageUrl,
         isFavorite: false,
         archived: false,
         created_at: new Date().toISOString(),
         svg,
-        mime: kind === 'video' ? 'video/mp4' : (kind === 'audio' || kind === 'music') ? 'audio/mpeg' : 'image/svg+xml'
+        mime: kind === 'video' ? 'video/mp4' : (kind === 'audio' || kind === 'music') ? 'audio/mpeg' : 'image/jpeg'
       };
       studioJobs.set(id, jobRecord);
       if (env.R2_BUCKET && kind !== 'video') {
@@ -956,6 +961,9 @@ export default {
           if (job.videoUrl) return Response.redirect(job.videoUrl, 302);
           return Response.redirect(new URL('/media/home/neon-20261018/apps-card.mp4', url.origin).toString(), 302);
         }
+        if (job.imageUrl) {
+          return Response.redirect(job.imageUrl, 302);
+        }
         return new Response(job.svg, {
           status: 200,
           headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'private, no-store' }
@@ -965,8 +973,8 @@ export default {
         ok: true, id: job.id, status: job.status, progress: job.progress,
         kind: job.kind, prompt: job.prompt, createdAt: job.created_at, created_at: job.created_at,
         provider: job.provider || 'Deepsyq Engine',
-        mime: job.mime, previewOnly: !job.videoUrl,
-        mediaUrl: job.videoUrl || (job.kind === 'video' ? '/media/home/neon-20261018/apps-card.mp4' : ('/api/studio/jobs/' + job.id + '/media'))
+        mime: job.mime, previewOnly: !job.videoUrl && !job.imageUrl,
+        mediaUrl: job.imageUrl || job.videoUrl || (job.kind === 'video' ? '/media/home/neon-20261018/apps-card.mp4' : ('/api/studio/jobs/' + job.id + '/media'))
       });
     }
 
