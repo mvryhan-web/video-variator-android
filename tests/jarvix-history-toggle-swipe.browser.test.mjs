@@ -92,6 +92,7 @@ try {
         assert.equal(await rows.isVisible(),true,'recent chats shortcut expands the same list');
         const before=new URL(page.url()).pathname;
         await page.getByRole('button',{name:/Saved conversation for drawer/}).click();
+        await dropdown.waitFor({state:'hidden',timeout:7000});
         assert.equal(await dropdown.isVisible(),false,'selecting a chat closes menu');
         assert.equal(new URL(page.url()).pathname,before,'selection stays in same chat page');
         assert.match(await page.locator('#jMessages').innerText(),/An earlier message/);
