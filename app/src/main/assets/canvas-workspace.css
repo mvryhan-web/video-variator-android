@@ -238,3 +238,80 @@ body.canvas-detail-page #canvasWorkspace .cw-workspace-grid>.cw-inspector{grid-c
  .cw-workspace-header{padding-bottom:59px}
  .cw-shortcuts{position:relative;z-index:0}
 }
+
+
+/* OWNER Canvas UX3 — scope all fixes to the Canvas workspace. */
+/* Global deepsyq.css has aside{position:fixed;width:224px}; the gallery and
+   inspector are internal panels, NOT global sidebar menus. */
+body.canvas-detail-page #canvasWorkspace :is(.cw-library,.cw-inspector){
+ position:relative!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+ inset:auto!important;width:auto!important;height:auto!important;max-height:none!important;
+ transform:none!important;z-index:auto!important;box-sizing:border-box!important;
+}
+body.canvas-detail-page #canvasWorkspace .cw-library{overflow:hidden!important;display:flex!important}
+body.canvas-detail-page #canvasWorkspace .cw-inspector{overflow-y:auto!important;overflow-x:hidden!important;display:flex!important}
+body.canvas-detail-page #canvasWorkspace .cw-workspace-grid{max-width:100%;box-sizing:border-box}
+body.canvas-detail-page #canvasWorkspace .cw-artboard{
+ transform-origin:center center;transition:transform .1s ease-out;flex-shrink:0;will-change:transform;
+}
+.cw-selection-tools{max-width:100%;flex-wrap:wrap;justify-content:center}
+.cw-selection-tools button{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:36px!important;min-width:51px!important;font-size:17px!important;padding:3px 6px!important}
+.cw-selection-tools button small{font-size:9px;line-height:1.1;font-weight:600;color:#cdd9f6}
+.cw-text-options[hidden],.cw-inline-text[hidden],.cw-settings-panel[hidden],.cw-mode-info[hidden]{display:none!important}
+.cw-text-options{
+ display:flex;align-items:end;justify-content:center;gap:7px;flex-wrap:wrap;
+ border:1px solid #8a59cb;border-radius:11px;padding:8px 10px;
+ max-width:100%;background:#151d34;color:#f8f1ff;
+}
+.cw-text-options label{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:700;color:#e6d7fb}
+.cw-text-options input{color:#fff;border:1px solid #536487;border-radius:8px;background:#0c1730;min-height:38px;padding:6px 8px}
+.cw-text-options input[type=text]{width:min(240px,47vw)}
+.cw-text-options input[type=number]{width:71px}
+.cw-text-options input[type=color]{width:46px;min-height:38px;padding:4px}
+.cw-text-options .cw-text-remove{min-height:38px;background:#542342;border:1px solid #da648b;border-radius:9px;padding:8px 11px;font-weight:700;color:#fff}
+.cw-inline-text{
+ position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:6;
+ width:min(88%,470px);max-width:92%;min-height:38px;border:2px dashed #d78cff;
+ border-radius:8px;padding:4px 8px;background:#131123ce;color:#fff;
+ text-align:center;font-weight:600;line-height:1.2;outline:0;box-shadow:0 0 0 3px #10101c88;
+}
+.cw-inline-text:not(:focus){opacity:0;pointer-events:none}
+.cw-inline-text:focus{opacity:1;pointer-events:auto;outline:2px solid #bd7dff}
+.cw-prompt{position:relative}
+.cw-settings-panel{
+ position:absolute;bottom:calc(100% + 9px);right:10px;z-index:40;
+ display:flex;flex-direction:column;gap:11px;
+ width:min(330px,calc(100vw - 32px));max-width:100%;
+ border:1px solid #a36ce9;border-radius:14px;
+ padding:16px;background:#101a33;color:#eaf0ff;box-shadow:0 10px 35px #000c;
+}
+.cw-settings-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.cw-settings-head strong{font-size:15px}
+.cw-settings-head button{width:32px;min-height:32px;border:1px solid #596789;border-radius:8px;background:#263350;color:#fff;font-size:22px}
+.cw-settings-panel label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700}
+.cw-settings-panel select{background:#192942;border:1px solid #5e73a6;border-radius:8px;color:#fff;padding:10px;min-height:43px}
+.cw-settings-panel #cwSettingsAdjust{min-height:42px;background:#382454;border:1px solid #ad6fe2;border-radius:9px;color:#fff}
+.cw-mode-info{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid #47577e;background:#111e3a;border-radius:11px;padding:10px 13px;margin-bottom:10px;font-size:12px}
+.cw-mode-info strong{color:#e8c3ff}.cw-mode-info span{flex:1;min-width:180px;color:#bdcdec}
+.cw-mode-info button{background:#41305b;border:1px solid #bb81e9;border-radius:8px;padding:9px 12px;color:#fff;font-weight:650}
+.cw-rotate-actions{flex-wrap:wrap}
+.cw-rotate-actions button{flex:1 1 100px}
+@media(max-width:760px){
+ body.canvas-detail-page #canvasWorkspace .cw-library{order:3!important;width:100%!important}
+ body.canvas-detail-page #canvasWorkspace .cw-inspector{order:4!important;width:100%!important}
+ .cw-text-options{gap:5px;padding:6px}
+ .cw-text-options input[type=text]{width:min(170px,45vw)}
+ .cw-inline-text{width:86%;min-height:31px;padding:3px 5px}
+ .cw-selection-tools button{min-width:45px!important;min-height:34px!important;padding:2px 4px!important}
+ .cw-settings-panel{right:0}
+ .cw-top-actions>.cw-export{min-width:86px}
+ .cw-top-actions>button:not(.cw-export){min-width:30px!important}
+}
+
+/* Owner phone controls remain visible on 320–390px devices. */
+@media(max-width:390px){
+ body.canvas-detail-page #canvasWorkspace .cw-prompt-small{display:flex!important;align-items:center;justify-content:center;min-width:30px!important;flex:0 0 30px!important;height:34px!important;padding:0}
+ body.canvas-detail-page #canvasWorkspace .cw-primary{min-width:92px!important;padding:6px!important;font-size:10px!important}
+ body.canvas-detail-page #canvasWorkspace .cw-prompt{gap:3px}
+ body.canvas-detail-page #canvasWorkspace .cw-prompt-star{display:none}
+}

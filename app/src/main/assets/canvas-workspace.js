@@ -21,7 +21,7 @@ const imgCache=new Map(),transparentCache=new Map(),objectUrls=new Set();
 const originalAccount=localStorage.getItem('vv_token')||'guest';
 const sameAccount=()=>originalAccount===(localStorage.getItem('vv_token')||'guest');
 const note=message=>{$('cwStatus').textContent=message;};
-const clean={mode:'image',id:'demo-1',ratio:'16:9',fit:'cover',offsetX:0,offsetY:0,size:100,rotation:0,opacity:100,brightness:100,contrast:100,saturation:100,effect:'original',background:'#ffffff',removeWhite:false,layers:[],selected:-1,locked:false};
+const clean={mode:'image',id:'demo-1',ratio:'16:9',fit:'cover',offsetX:0,offsetY:0,size:100,rotation:0,flipX:false,flipY:false,opacity:100,brightness:100,contrast:100,saturation:100,effect:'original',background:'#ffffff',removeWhite:false,layers:[],selected:-1,locked:false};
 let state=JSON.parse(JSON.stringify(clean)),history=[],future=[],loadingSeq=0,played=null;
 let sequence=['demo-1','demo-4','demo-5','demo-9','demo-11'];
 const ratios={'16:9':[1280,720],'1:1':[1080,1080],'4:5':[1000,1250],'9:16':[720,1280]};
@@ -76,7 +76,7 @@ function drawLayer(layer,selected){
  }
  ctx.restore();
 }
-async function render(){
+async function render({forExport=false}={}){
  setupDimensions();const serial=++loadingSeq;
  const w=canvas.width,h=canvas.height;
  ctx.save();ctx.clearRect(0,0,w,h);ctx.fillStyle=state.background;ctx.fillRect(0,0,w,h);ctx.restore();
@@ -89,12 +89,12 @@ async function render(){
    const iw=source.width||source.naturalWidth,ih=source.height||source.naturalHeight;
    const f=(state.fit==='contain'?Math.min(w/iw,h/ih):Math.max(w/iw,h/ih))*(state.size/100);
    ctx.save();ctx.translate(w/2+state.offsetX*w/1280,h/2+state.offsetY*h/720);
-   ctx.rotate(state.rotation*Math.PI/180);ctx.globalAlpha=state.opacity/100;
+   ctx.rotate(state.rotation*Math.PI/180);ctx.scale(state.flipX?-1:1,state.flipY?-1:1);ctx.globalAlpha=state.opacity/100;
    ctx.filter=effectFilter();ctx.drawImage(source,-iw*f/2,-ih*f/2,iw*f,ih*f);ctx.restore();
   }catch(_){if(serial!==loadingSeq)return;note('This example could not load. Choose another photo or upload your own.');}
  }
- state.layers.forEach((layer,i)=>drawLayer(layer,i===state.selected));
- $('cwEmptyState').hidden=!!photo;
+ state.layers.forEach((layer,i)=>{if(!forExport&&layer.type==='text'&&i===state.selected&&document.activeElement===$('cwInlineText'))return;drawLayer(layer,i===state.selected);});
+ syncTextControls();$('cwEmptyState').hidden=!!photo;
 }
 function updateControls(){
  $('cwImageMode').classList.toggle('cw-mode-active',state.mode==='image');$('cwVideoMode').classList.toggle('cw-mode-active',state.mode==='video');
@@ -102,16 +102,18 @@ function updateControls(){
  for(const [key,value,suffix] of [['cwSize',state.size,'%'],['cwRotation',state.rotation,'°'],['cwOpacity',state.opacity,'%'],['cwBrightness',state.brightness,'%'],['cwContrast',state.contrast,'%'],['cwSaturation',state.saturation,'%']]){
   $(key).value=String(value);const label=$(key+'Label');if(label)label.textContent=String(value)+suffix;
  }
- $('cwRatio').value=state.ratio;$('cwRatioQuick').value=state.ratio;
+ $('cwRatio').value=state.ratio;$('cwRatioQuick').value=state.ratio;$('cwSettingsRatio').value=state.ratio;$('cwSettingsMode').value=state.mode;
+ $('cwModeInfo').hidden=state.mode!=='video';$('cwGenerate').textContent=state.mode==='video'?'✧ Generate Video ↗':'✧ Generate Image ↗';
+ $('cwPrompt').placeholder=state.mode==='video'?'Describe the motion you want in your video…':'Describe what you want to create…';
  $('cwFitCover').classList.toggle('cw-option-active',state.fit!=='contain');$('cwFitContain').classList.toggle('cw-option-active',state.fit==='contain');
  $('cwLock').setAttribute('aria-pressed',String(state.locked));
  document.querySelectorAll('[data-cw-effect]').forEach(b=>b.classList.toggle('cw-preset-active',b.dataset.cwEffect===state.effect));
  document.querySelectorAll('#cwGallery [data-cw-photo]').forEach(b=>{const active=b.dataset.cwPhoto===state.id;b.classList.toggle('cw-selected',active);b.setAttribute('aria-pressed',String(active));});
- updateUndo();renderFrames();
+ updateUndo();renderFrames();syncTextControls();
 }
 function switchPhoto(id,{addToFrames=false}={}){
  if(!accountGuard()||!srcMap.has(id))return;
- mark();state.id=id;state.offsetX=0;state.offsetY=0;state.size=100;state.rotation=0;state.removeWhite=false;state.layers=[];state.selected=-1;state.locked=false;
+ mark();state.id=id;state.offsetX=0;state.offsetY=0;state.size=100;state.rotation=0;state.flipX=false;state.flipY=false;state.removeWhite=false;state.layers=[];state.selected=-1;state.locked=false;
  state.brightness=state.contrast=state.saturation=state.opacity=100;state.effect='original';
  if(addToFrames&&!sequence.includes(id))sequence.push(id);
  updateControls();void render();note(srcMap.get(id).name+' opened on the Canvas. You can edit or export it.');
@@ -149,7 +151,53 @@ function addLayer(type){if(!accountGuard())return;mark();const base={x:canvas.wi
  if(type==='text')state.layers.push({...base,type,text:'Your text',size:60,color:'#ffffff'});
  else state.layers.push({...base,type,w:190,h:150,color:type==='star'?'#ffc45c':'#bd60f8'});
  state.selected=state.layers.length-1;updateControls();void render();note('Added '+type+'. Drag it on the canvas to position.');
+ if(type==='text')requestAnimationFrame(()=>{$('cwInlineText').focus({preventScroll:true});$('cwInlineText').select();});
 }
+// The selected text is editable directly on the artboard and in the contextual toolbar.
+// Only the photo board scales; the toolbar and side panels stay at normal size.
+let editingTextSnapshot=false;
+function syncTextControls(){
+ const layer=state.layers[state.selected],isText=!!layer&&layer.type==='text';
+ const bar=$('cwTextOptions'),inline=$('cwInlineText');
+ bar.hidden=!isText;inline.hidden=!isText;
+ if(!isText)return;
+ const text=layer.text??'',top=$('cwTextContent'),font=$('cwTextFontSize'),color=$('cwTextColor');
+ if(document.activeElement!==top)top.value=text;
+ if(document.activeElement!==inline)inline.value=text;
+ if(document.activeElement!==font)font.value=String(layer.size||60);
+ if(document.activeElement!==color)color.value=layer.color||'#ffffff';
+ inline.style.left=(100*layer.x/canvas.width)+'%';
+ inline.style.top=(100*layer.y/canvas.height)+'%';
+ inline.style.fontSize=Math.max(12,Math.round((layer.size||60)*canvas.clientWidth/canvas.width))+'px';
+ inline.style.color=layer.color||'#ffffff';
+ inline.disabled=!!layer.locked;
+ top.disabled=!!layer.locked;
+ font.disabled=!!layer.locked;
+ color.disabled=!!layer.locked;
+}
+function textInput(value){
+ if(!accountGuard())return;
+ const layer=state.layers[state.selected];if(!layer||layer.type!=='text'||layer.locked)return;
+ if(!editingTextSnapshot){mark();editingTextSnapshot=true;}
+ layer.text=value;
+ syncTextControls();void render();
+}
+for(const id of ['cwInlineText','cwTextContent']){
+ const input=$(id);
+ input.addEventListener('focus',()=>{editingTextSnapshot=false;void render();});
+ input.addEventListener('input',()=>textInput(input.value));
+ input.addEventListener('blur',()=>{editingTextSnapshot=false;void render();});
+}
+$('cwTextFontSize').addEventListener('change',e=>{
+ const layer=state.layers[state.selected];if(!layer||layer.type!=='text'||layer.locked)return;
+ const next=Number(e.target.value);if(!Number.isFinite(next))return;
+ mark();layer.size=Math.max(12,Math.min(180,next));syncTextControls();void render();
+});
+$('cwTextColor').addEventListener('input',e=>{
+ const layer=state.layers[state.selected];if(!layer||layer.type!=='text'||layer.locked)return;
+ mark();layer.color=e.target.value;syncTextControls();void render();
+});
+$('cwTextRemove').onclick=()=>$('cwDelete').click();
 function showToolPane(tool){
  const pane=$('cwToolPane');pane.replaceChildren();pane.hidden=false;
  const heading=document.createElement('strong');heading.textContent={design:'Choose a layout',elements:'Add a shape',text:'Write on your photo',upload:'Your photos',photos:'Choose a photo',templates:'Ready layouts',background:'Background color',apps:'AI Studio'}[tool]||'Tools';pane.append(heading);
@@ -159,14 +207,13 @@ function showToolPane(tool){
   case 'photos':pane.hidden=true;scrollToGallery();break;
   case 'elements':option('▢ Rectangle',()=>addLayer('rect'));option('◯ Circle',()=>addLayer('ellipse'));option('★ Star',()=>addLayer('star'));break;
   case 'text':{
-    let selected=state.layers[state.selected];
-    if(!selected||selected.type!=='text'){addLayer('text');selected=state.layers[state.selected];}
+    const selected=state.layers[state.selected];
+    if(!selected||selected.type!=='text')addLayer('text');
     grid.hidden=true;
-    const l=document.createElement('label');l.textContent='Type your text';l.htmlFor='cwTextInput';pane.append(l);
-    const input=document.createElement('input');input.id='cwTextInput';input.type='text';input.maxLength=120;input.placeholder='Write something on the image';input.value=selected.text||'';pane.append(input);
-    const help=document.createElement('p');help.className='cw-tool-help';help.textContent='Your text appears directly on the photo. Drag it to move.';pane.append(help);
-    input.addEventListener('input',()=>{if(!accountGuard())return;if(!input.dataset.dirty){mark();input.dataset.dirty='yes';}selected.text=input.value;void render();});
-    input.focus({preventScroll:true});input.select();break;
+    const help=document.createElement('p');help.className='cw-tool-help';help.textContent='Type directly on the photo, or use the Text field above it. Drag to move; Delete text to remove.';pane.append(help);
+    syncTextControls();
+    requestAnimationFrame(()=>{$('cwInlineText').focus({preventScroll:true});$('cwInlineText').select();});
+    break;
   }
   case 'upload':option('＋ Choose photo',openUpload);break;
   case 'design':case 'templates':{
@@ -199,6 +246,7 @@ for(const [id,field] of [['cwSize','size'],['cwRotation','rotation'],['cwOpacity
 }
 $('cwCrop').onclick=()=>{document.querySelector('[data-cw-tab="edit"]')?.click();$('cwRatio').focus();note('To crop: choose a frame format, use Fill frame, then drag the photo to position it.');};
 for(const [id,delta] of [['cwRotateLeft',-90],['cwRotateRight',90]])$(id).onclick=()=>{mark();state.rotation=((state.rotation+delta+540)%360)-180;updateControls();void render();note('Photo rotated '+(delta<0?'left':'right')+' by 90°.');};
+for(const [id,axis] of [['cwFlipTop','flipX'],['cwMirrorX','flipX'],['cwMirrorY','flipY']])$(id).onclick=()=>{mark();state[axis]=!state[axis];void render();note(axis==='flipX'?'Photo mirrored left-to-right.':'Photo flipped top-to-bottom.');};
 for(const [id,fit] of [['cwFitCover','cover'],['cwFitContain','contain']])$(id).onclick=()=>{if(state.fit===fit)return;mark();state.fit=fit;updateControls();void render();note(fit==='contain'?'Whole image fits inside frame. Background color is now visible.':'Photo fills the frame; drag to reposition if needed.');};
 $('cwReplace').onclick=openUpload;
 $('cwRemoveBg').onclick=()=>{
@@ -218,6 +266,7 @@ for(const button of document.querySelectorAll('[data-cw-tab]'))button.onclick=()
 };
 for(const button of document.querySelectorAll('[data-cw-tool]'))button.onclick=()=>{
  document.querySelectorAll('[data-cw-tool]').forEach(x=>{x.classList.toggle('cw-rail-active',x===button);x.setAttribute('aria-pressed',String(x===button))});
+ if(button.dataset.cwTool==='apps'){void handoff();return;}
  if(button.dataset.cwTool==='upload'){openUpload();showToolPane('upload');}else showToolPane(button.dataset.cwTool);
 };
 $('cwGallerySearch').addEventListener('input',renderGallery);
@@ -230,18 +279,18 @@ for(const button of document.querySelectorAll('[data-cw-prompt]'))button.onclick
  if(button.dataset.cwPrompt==='social')switchMode('video');$('cwPrompt').focus();
 };
 $('cwDuplicate').onclick=()=>{if(state.selected<0){note('Select a text or shape to duplicate.');return;}mark();const current=JSON.parse(JSON.stringify(state.layers[state.selected]));current.x+=35;current.y+=35;state.layers.push(current);state.selected=state.layers.length-1;void render();};
-$('cwDelete').onclick=()=>{if(state.selected>=0){mark();state.layers.splice(state.selected,1);state.selected=-1;void render();note('Layer removed.')}else note('Select a text or shape to delete.');};
+$('cwDelete').onclick=()=>{if(state.selected>=0){if(state.layers[state.selected]?.locked){note('Unlock this layer before deleting.');return;}mark();state.layers.splice(state.selected,1);state.selected=-1;syncTextControls();void render();note('Selected text or shape deleted.')}else note('Select a text or shape to delete.');};
 $('cwBringForward').onclick=()=>{if(state.selected<0||state.selected===state.layers.length-1)return;mark();const [layer]=state.layers.splice(state.selected,1);state.layers.push(layer);state.selected=state.layers.length-1;void render();};
 $('cwLock').onclick=()=>{if(state.selected<0){note('Select a text or shape to lock.');return;}mark();const l=state.layers[state.selected];l.locked=!l.locked;state.locked=l.locked;$('cwLock').setAttribute('aria-pressed',String(l.locked));note(l.locked?'Layer locked.':'Layer unlocked.');};
 $('cwUndo').onclick=()=>{if(!history.length)return;future.push(clone());const x=history.pop();state=x.state;sequence=x.sequence;updateControls();void render();};
 $('cwRedo').onclick=()=>{if(!future.length)return;history.push(clone());const x=future.pop();state=x.state;sequence=x.sequence;updateControls();void render();};
-function setZoom(value){const z=Math.max(50,Math.min(200,Math.round(value/10)*10));$('cwZoom').value=z;$('cwZoomValue').textContent=z+'%';$('cwStageInner').style.zoom=z/100;note('Canvas view: '+z+'%. Export size remains unchanged.');}
+function setZoom(value){const z=Math.max(50,Math.min(200,Math.round(value/10)*10));$('cwZoom').value=z;$('cwZoomValue').textContent=z+'%';$('cwArtboard').style.transform='scale('+(z/100)+')';note('Photo view: '+z+'%. The toolbar stays unchanged. PNG export size remains unchanged.');}
 $('cwZoom').addEventListener('input',e=>setZoom(+e.target.value));
 $('cwZoomOut').onclick=()=>setZoom(+$('cwZoom').value-10);$('cwZoomIn').onclick=()=>setZoom(+$('cwZoom').value+10);
 let drag=null;
 canvas.addEventListener('pointerdown',e=>{
  if(!accountGuard())return;const rect=canvas.getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width*canvas.width,y=(e.clientY-rect.top)/rect.height*canvas.height;
- let selected=-1;for(let i=state.layers.length-1;i>=0;i--){const layer=state.layers[i];if(Math.abs(layer.x-x)<Math.max(layer.w||130,120)/2+15&&Math.abs(layer.y-y)<Math.max(layer.h||90,90)/2+15){selected=i;break;}}
+ let selected=-1;for(let i=state.layers.length-1;i>=0;i--){const layer=state.layers[i];const halfW=layer.type==='text'?Math.min(canvas.width*.45,Math.max(65,(layer.text||'Your text').length*(layer.size||60)*.32)):Math.max(layer.w||130,120)/2;const halfH=layer.type==='text'?Math.max(40,(layer.size||60)*.75):Math.max(layer.h||90,90)/2;if(Math.abs(layer.x-x)<halfW+15&&Math.abs(layer.y-y)<halfH+15){selected=i;break;}}
  state.selected=selected;state.locked=selected>=0?!!state.layers[selected].locked:false;drag={x:e.clientX,y:e.clientY,oldX:state.offsetX,oldY:state.offsetY,layerX:selected>=0?state.layers[selected].x:null,layerY:selected>=0?state.layers[selected].y:null,moved:false,selected};canvas.setPointerCapture(e.pointerId);void render();
 });
 canvas.addEventListener('pointermove',e=>{if(!drag||state.locked)return;const r=canvas.getBoundingClientRect(),dx=(e.clientX-drag.x)/r.width*canvas.width,dy=(e.clientY-drag.y)/r.height*canvas.height;
@@ -249,9 +298,9 @@ canvas.addEventListener('pointermove',e=>{if(!drag||state.locked)return;const r=
  if(drag.selected>=0){state.layers[drag.selected].x=drag.layerX+dx;state.layers[drag.selected].y=drag.layerY+dy;}
  else{state.offsetX=drag.oldX+dx*1280/canvas.width;state.offsetY=drag.oldY+dy*720/canvas.height;}
  void render();});
-canvas.addEventListener('pointerup',()=>{if(drag?.moved)note('Position updated. Use Undo to restore.');drag=null;});canvas.addEventListener('pointercancel',()=>{drag=null;});
+canvas.addEventListener('pointerup',()=>{const just=drag;if(just?.moved)note('Position updated. Use Undo to restore.');drag=null;if(just?.selected>=0&&!just.moved&&state.layers[just.selected]?.type==='text'){syncTextControls();requestAnimationFrame(()=>{$('cwInlineText').focus({preventScroll:true});$('cwInlineText').select();});}});canvas.addEventListener('pointercancel',()=>{drag=null;});
 async function exportPng(){
- if(!accountGuard())return;await render();
+ if(!accountGuard())return;await render({forExport:true});
  canvas.toBlob(blob=>{if(!blob){note('Export failed. Try a different photo.');return;}
  const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='DEEPSYQ-Canvas-'+state.ratio.replace(':','x')+'.png';
  document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);note('PNG exported to your device.');},'image/png');
@@ -263,7 +312,7 @@ async function handoff(){
  if(prompt.length>2000){note('Keep the prompt under 2,000 characters.');return;}
  $('cwGenerate').disabled=true;note('Preparing a private Studio draft. No AI credits are spent here.');
  try{
-  await render();const files=[];const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.82));
+  await render({forExport:true});const files=[];const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.82));
   if(blob&&blob.size<=1024*1024){files.push(new File([blob],'canvas-reference.jpg',{type:'image/jpeg'}));}
   await saveStudioHandoff({kind:state.mode,prompt,settings:{ratio:state.ratio},files,source:'canvas-workspace'});
   location.assign('generate-studio.html?studio='+state.mode+'&from=canvas');
@@ -272,7 +321,17 @@ async function handoff(){
 $('cwGenerate').onclick=()=>void handoff();
 $('cwPromptUpload').onclick=openUpload;
 $('cwUploadMain').onclick=openUpload;$('cwGalleryUpload').onclick=openUpload;
-$('cwSettings').onclick=()=>{$('cwTabAdjust').hidden=false;$('cwTabEdit').hidden=true;$('cwTabEffects').hidden=true;document.querySelector('[data-cw-tab="adjust"]')?.click();$('cwTabAdjust').scrollIntoView({behavior:'smooth',block:'nearest'});};
+function toggleSettings(open){
+ const panel=$('cwSettingsPanel');panel.hidden=!open;
+ $('cwSettings').setAttribute('aria-expanded',String(open));
+ if(open){$('cwSettingsMode').value=state.mode;$('cwSettingsRatio').value=state.ratio;}
+}
+$('cwSettings').onclick=()=>toggleSettings($('cwSettingsPanel').hidden);
+$('cwSettingsClose').onclick=()=>toggleSettings(false);
+$('cwSettingsMode').addEventListener('change',e=>switchMode(e.target.value));
+$('cwSettingsRatio').addEventListener('change',e=>setRatio(e.target.value));
+$('cwSettingsAdjust').onclick=()=>{toggleSettings(false);document.querySelector('[data-cw-tab="adjust"]')?.click();$('cwTabAdjust').scrollIntoView({behavior:'smooth',block:'center'});};
+$('cwOpenVideoStudio').onclick=()=>void handoff();
 $('cwPlay').onclick=()=>{
  if(played){clearInterval(played);played=null;$('cwPlay').textContent='▷';$('cwSequenceTime').textContent='Preview';return;}
  if(!sequence.length){note('Add a photo to preview the sequence.');return;}
