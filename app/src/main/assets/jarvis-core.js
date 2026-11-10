@@ -470,7 +470,19 @@ export async function handleJarvisVoiceCommand(commandText) {
   // Action-first commands share the existing conversation and zero-spend handlers.
   const action=extractAction(t);
   if(action){
-    if(action.intent==='NAVIGATE'){if(location.pathname.endsWith('/generate-studio.html')&&action.media_type){const kind=action.media_type==='audio'?'music':action.media_type;document.querySelector('[data-kind="'+kind+'"]')?.click();speakJarvis({ru:'Открыл',en:'Opened',fr:'Ouvert',es:'Abierto'}[lang]||'Opened');}else instantOpen(action.url);return;}
+    if(action.intent==='NAVIGATE'){
+      const ack=({ru:'Открыл',en:'Opened',fr:'Ouvert',es:'Abierto'}[lang]||'Opened');
+      if(location.pathname.endsWith('/generate-studio.html')&&action.media_type){
+        const kind=action.media_type==='audio'?'music':action.media_type;
+        document.querySelector('[data-kind="'+kind+'"]')?.click();
+        speakJarvis(ack);
+      } else {
+        speakJarvis(ack, () => {
+          location.assign(action.url);
+        });
+      }
+      return;
+    }
     if(!action.raw_prompt){speakJarvis({ru:'Уточните промпт',en:'Clarify prompt',fr:'Précisez',es:'Aclara petición'}[lang]||'Clarify prompt');return;}
     if(document.body.dataset.jarvixStudioAction==='ready'){window.dispatchEvent(new CustomEvent('jarvix:studio-action',{detail:action}));return;}
     (async()=>{
@@ -1272,13 +1284,10 @@ export function activateJarvisVoice() {
   resumeJarvisRecognition();
   resetSilenceTimer();
 
-  // Rotate two verified owner-recorded greetings, not a repeated synthetic sentence.
+  // Verified owner-recorded greeting upon click (never the tour introduction)
   const lang = getJarvixLanguage();
-  let greetingCount = 0;
-  try { greetingCount = Number(sessionStorage.getItem(JARVIX_GREETING_COUNTER_KEY)) || 0;
-    sessionStorage.setItem(JARVIX_GREETING_COUNTER_KEY, String(greetingCount + 1)); } catch (_) {}
-  const listening = (greetingCount % 2 === 0 ? OWNER_GREETING_TEXT : TOUR_GREETING_TEXT)[lang];
-  speakJarvis(listening || OWNER_GREETING_TEXT.ru, () => {
+  const listening = OWNER_GREETING_TEXT[lang] || OWNER_GREETING_TEXT.ru;
+  speakJarvis(listening, () => {
     if(isJarvisActive && keepListening && !isTourActive()){
       resumeJarvisRecognition();resetSilenceTimer();updateJarvisState('listening');
     }

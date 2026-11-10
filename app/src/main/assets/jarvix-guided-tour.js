@@ -382,11 +382,14 @@ async function play(){
  try{await clip.play();}catch{blocked(current,'Press Continue');}
 }
 export function startJarvixGuidedTour(){
- if(state||read()){state=state||read();render();return;}
- unlockOwnerSpeech();suspendJarvisForTour();
+ unlockOwnerSpeech();
+ suspendJarvisForTour();
  // Tour never restores a previously active microphone over its own narration.
  try{sessionStorage.removeItem('jarvix_active');sessionStorage.setItem('jarvix_tour_seen','1');}catch{}
- state={index:0,phase:'playing',position:0,language:getJarvixLanguage()};save();void play();
+ state={index:0,phase:'playing',position:0,beat:0,navAnnounced:-1,language:getJarvixLanguage()};
+ save();
+ render();
+ void play();
 }
 export function pauseJarvixGuidedTour(){if(!state)return;state={...tourAction(state,'pause'),position:audio?.currentTime||state.position||0};clearAudio();save();updateJarvisState('idle');render();}
 export function continueJarvixGuidedTour(){if(!state)return;unlockOwnerSpeech();state={...tourAction(state,'continue'),error:null};save();void play();}
