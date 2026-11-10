@@ -1,0 +1,56 @@
+name: Owner AI Apps production surgical release 2026-11-10
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/owner-ai-apps-production-20261110.yml'
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: contains(github.event.head_commit.message, 'deploy(ai-apps): one-time surgical release')
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify exact approved asset changes are unchanged
+        run: |
+          git diff --exit-code c95c62f02fd32ecd1f198c6012058bf9a4c58602 HEAD -- app/src/main/assets/ai-apps.js app/src/main/assets/ai-apps.css
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install exact existing release dependencies
+        run: python -m pip install --disable-pip-version-check 'requests==2.32.3' 'blake3==1.0.8'
+      - name: Verify live Worker source is readable before any production write
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os, requests, sys
+          account=os.getenv('CLOUDFLARE_ACCOUNT_ID','')
+          token=os.getenv('CLOUDFLARE_API_TOKEN','')
+          if not account or not token:
+              sys.exit('BLOCKED_MAIN: Cloudflare deployment credentials missing')
+          base=f'https://api.cloudflare.com/client/v4/accounts/{account}'
+          session=requests.Session()
+          session.headers['Authorization']='Bearer '+token
+          project=session.get(base+'/pages/projects/deepsyq',timeout=20)
+          if not project.ok or not project.json().get('success'):
+              sys.exit('BLOCKED_MAIN: Cannot inspect Cloudflare project')
+          script=project.json()['result'].get('production_script_name','')
+          if not script.startswith('pages-worker--'):
+              sys.exit('BLOCKED_MAIN: Unknown production Worker script')
+          content=session.get(base+'/workers/scripts/'+script+'/content/v2',timeout=20)
+          print('Production Worker source access HTTP',content.status_code)
+          if content.status_code!=200:
+              sys.exit('BLOCKED_MAIN: Original Worker source cannot be verified; no production write')
+          PY
+      - name: Publish only two AI Apps assets with existing fail-closed publisher
+        run: python scripts/deepsyq_surgical_publish.py --mode publish --files 'ai-apps.js,ai-apps.css' --commit "$GITHUB_SHA"
