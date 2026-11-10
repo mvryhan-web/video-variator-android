@@ -1,3 +1,15 @@
+## OWNER D34 — 2026-11-10 — Доступ всех будущих агентов к существующему Cloudflare через GitHub Actions
+
+**Обязательная стартовая инструкция для P, Администратора, Antigravity и любого нового исполнителя DEEPSYQ.** Секреты не копировать, не печатать и не встраивать в код. Этот раздел регулирует только использование существующих учётных данных, не даёт разрешения обходить защиту публикации из D33.
+
+1. Перед словами «нет доступа к Cloudflare», предложением создать новый API-токен или запросом ключа у владельца открыть [docs/DEEPSYQ_CLOUDFLARE_ACCESS_RUNBOOK.md](docs/DEEPSYQ_CLOUDFLARE_ACCESS_RUNBOOK.md). Репозиторий: `mvryhan-web/video-variator-android`, ветка `deepsyq-platform`, проект Cloudflare Pages `deepsyq`, production `https://deepsyq.app`.
+2. Существующие GitHub Actions secrets / vars: `CLOUDFLARE_API_TOKEN` (защищённое значение) и `CLOUDFLARE_ACCOUNT_ID` (secret или variable). В workflow ссылаться на `${{ secrets.CLOUDFLARE_API_TOKEN }}` и `${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}`. Значения НЕ доступны для чтения через GitHub API или GitHub connector; GitHub Actions подставляет их лишь в разрешённый запуск. **Любой новый агент с разрешением изменять этот репозиторий может использовать существующее соединение через проверенный Actions workflow, без запроса ключа у владельца.** Агент без подключения GitHub или прав на запуск Actions автоматически этих прав не получает.
+3. Проверка доступа: запустить существующий `.github/workflows/owner-cloudflare-worker-permissions-audit.yml` вручную через GitHub Actions (`workflow_dispatch`). Проверка только читает Cloudflare API; результат — статусы HTTP и имена разрешений без секретов. Выполнение workflow не равно публикации.
+4. Не путать **существование токена** с его **областью разрешений**. Последняя проверка 10.11.2026: Cloudflare Pages GET — 200; Workers list — 200; чтение содержимого Pages-managed production Worker — 404; чтение Workers Routes для зоны `deepsyq.app` — 403. При ограниченном доступе не объявлять «токена нет»; указать недостающие разрешения/ресурсы. Проверки повторять, поскольку роли и настройки могут изменяться.
+5. Сайт содержит рабочий Pages Worker/Functions, авторизацию, Stripe и Neon. Даже с токеном не выкатывать статический сборочный каталог и не отключать Worker. При невозможности сохранить live Worker, bindings и точный список ресурсов действует **D33: `BLOCKED_MAIN — NOT PUBLISHED`**. Нельзя публиковать весь DEV-сайт ради маленького изменения.
+
+---
+
 ## OWNER D33 — 2026-11-10 — ОБЯЗАТЕЛЬНАЯ ТОЧЕЧНАЯ ПУБЛИКАЦИЯ (SURGICAL RELEASE)
 
 **Прямое решение владельца, действует для P, Администратора, Antigravity и всех будущих исполнителей. Уточняет D28 и D32; не отменяет безопасность D31.**
