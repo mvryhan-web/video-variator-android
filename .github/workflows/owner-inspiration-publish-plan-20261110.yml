@@ -28,6 +28,29 @@ jobs:
           node --check app/src/main/assets/home-inspiration.js
           node --check app/src/main/assets/deepsyq.js
           node --check app/src/main/assets/ai-apps.js
+      - name: Check all 20 owner video sources via HTTP HEAD
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const c=fs.readFileSync('app/src/main/assets/home-inspiration.js','utf8');
+          const raw=c.split('const ownerVideoSource=[')[1]?.split('\n];')[0];
+          const base=c.match(/const ownerMediaBase="([^"]+)"/)?.[1];
+          if(!raw||!base)throw Error('Owner catalog is absent');
+          const rows=JSON.parse('['+raw+']');
+          if(rows.length!==20||new Set(rows.map(x=>x.id)).size!==20)throw Error('Not exactly 20 unique videos');
+          const results=[];
+          for(let k=0;k<rows.length;k+=5){
+            const batch=rows.slice(k,k+5);
+            const checks=await Promise.all(batch.map(async x=>{
+              const url=base+x.previewUrl+'.mp4';
+              const response=await fetch(url,{method:'HEAD',signal:AbortSignal.timeout(12000)});
+              return {id:x.id,status:response.status,type:response.headers.get('content-type')};
+            }));
+            results.push(...checks);
+          }
+          console.log('OWNER_VIDEO_LINKS',JSON.stringify(results));
+          if(results.some(x=>x.status!==200||!String(x.type).includes('video')))throw Error('One or more owner video links are not playable');
+          JS
       - name: Install existing guarded publisher prerequisites
         run: python -m pip install --disable-pip-version-check 'requests==2.32.3' 'blake3==1.0.8'
       - name: Read-only exact LIVE Worker/asset preflight — never publish
