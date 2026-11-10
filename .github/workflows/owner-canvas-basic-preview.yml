@@ -1,0 +1,220 @@
+name: Canvas Basic Local QA - D29 TEST release gated
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'app/src/main/assets/canvas.html'
+      - 'app/src/main/assets/canvas-workspace.js'
+      - 'app/src/main/assets/canvas-workspace.css'
+      - '.github/workflows/owner-canvas-basic-preview.yml'
+permissions:
+  contents: read
+jobs:
+  preview:
+    if: github.head_ref == 'owner-canvas-basic-workspace-20261109'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      AI_BILLING_MODE: test
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Scope and syntax
+        run: |
+          set -euo pipefail
+          git fetch origin deepsyq-platform
+          git merge-base --is-ancestor FETCH_HEAD HEAD
+          git diff --name-only FETCH_HEAD HEAD > /tmp/canvas-files
+          while IFS= read -r f; do
+            case "$f" in
+              app/src/main/assets/canvas.html|app/src/main/assets/canvas-workspace.js|app/src/main/assets/canvas-workspace.css|.github/workflows/owner-canvas-basic-preview.yml) ;;
+              *) echo "::error::Unexpected path $f"; exit 1;;
+            esac
+          done < /tmp/canvas-files
+          node --check app/src/main/assets/canvas-workspace.js
+      - name: Install test browser
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Local Canvas browser QA only; D29 TEST deploy is gated on full Worker bundle
+        run: |
+          set -euo pipefail
+          python3 -m http.server 3019 --bind 127.0.0.1 --directory app/src/main/assets >/tmp/canvas-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID' EXIT
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -fsS http://127.0.0.1:3019/canvas.html >/dev/null; then break; fi
+            sleep 1
+          done
+          export TEST_URL=http://127.0.0.1:3019
+          mkdir -p artifacts/canvas
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try {
+            for(const [name,width,mobile] of [['desktop',1365,false],['mobile390',390,true],['mobile320',320,true]]) {
+              const ctx=await browser.newContext({viewport:{width,height:900},isMobile:mobile,hasTouch:mobile});
+              try {
+                const page=await ctx.newPage();
+                const response=await page.goto(process.env.TEST_URL+'/canvas.html',{waitUntil:'domcontentloaded',timeout:30000});
+                assert.equal(response?.status(),200);
+                await page.locator('#cwNodes .cw-node').first().waitFor({timeout:20000});
+                assert.equal(await page.locator('#cwNodes .cw-node').count(),1);
+                await page.locator('#cwNodes textarea').fill('Emerald ceramic vase on a wooden table');
+                await page.locator('[data-cw-add="image"]').click();
+                assert.equal(await page.locator('#cwNodes .cw-node').count(),2);
+                await page.locator('#cwNodes .cw-node').nth(1).getByRole('button',{name:'Link'}).click();
+                await page.locator('#cwNodes .cw-node').first().locator('.cw-node-handle').click();
+                assert.equal(await page.locator('#cwEdges path').count(),1);
+                await page.locator('#cwZoomIn').click();
+                assert.equal(await page.locator('#cwZoomLabel').innerText(),'115%');
+                page.once('dialog',d=>d.accept('Canvas '+name));
+                await page.locator('#cwSave').click();
+                await page.getByText('Project saved in this browser.').waitFor({timeout:10000});
+                await page.reload({waitUntil:'domcontentloaded'});
+                await page.locator('#cwNodes .cw-node').nth(1).waitFor({timeout:20000});
+                assert.equal(await page.locator('#cwNodes textarea').inputValue(),'Emerald ceramic vase on a wooden table');
+                assert.equal(await page.locator('#cwEdges path').count(),1);
+                await page.locator('#cwOpen').click();
+                await page.locator('#cwProjectsDialog').waitFor({state:'visible'});
+                assert.equal(await page.locator('#cwProjectList button').count(),1);
+                await page.locator('#cwProjectsClose').click();
+                await page.locator('#cwGenerate').click();
+                await page.locator('#cwStudioOverlay').waitFor({state:'visible',timeout:20000});
+                assert.match(await page.locator('#cwStudioFrame').getAttribute('src'),/generate-studio.html/);
+                const frame=page.frameLocator('#cwStudioFrame');
+                await frame.locator('body').waitFor({state:'attached',timeout:20000});
+                await frame.locator('body').evaluate(body=>{
+                  const doc=body.ownerDocument;
+                  let holder=doc.querySelector('#media');
+                  if(!holder){holder=doc.createElement('div');holder.id='media';doc.body.append(holder);}
+                  const bytes=Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO97n4YAAAAASUVORK5CYII='),c=>c.charCodeAt(0));
+                  const image=doc.createElement('img');
+                  image.src=URL.createObjectURL(new Blob([bytes],{type:'image/png'}));
+                  holder.replaceChildren(image);
+                });
+                await page.locator('#cwStudioImport').click();
+                await page.locator('#cwStudioOverlay').waitFor({state:'hidden',timeout:10000});
+                assert.equal(await page.locator('#cwNodes .cw-node').count(),3,name+' simulated Studio result import');
+                const returned=page.locator('#cwNodes .cw-node').nth(2);
+                const visible=await returned.boundingBox();
+                assert.ok(visible&&visible.x<width&&visible.x+visible.width>0,name+' imported result should be in viewport');
+                await returned.getByRole('button',{name:'Crop 1:1'}).click();
+                const mime=await returned.locator('img').evaluate(async img=>(await(await fetch(img.src)).blob()).type);
+                assert.equal(mime,'image/png',name+' PNG transparency-safe output');
+                page.once('dialog',d=>d.accept('Canvas '+name));
+                await page.locator('#cwSave').click();
+                await page.getByText('Project saved in this browser.').waitFor({timeout:10000});
+                await page.reload({waitUntil:'domcontentloaded'});
+                await page.locator('#cwNodes .cw-node').nth(2).waitFor({timeout:20000});
+                assert.equal(await page.locator('#cwNodes .cw-node').count(),3,name+' imported file persisted');
+                await page.screenshot({path:'artifacts/canvas/'+name+'.png',fullPage:true});
+                console.log('PASS '+name+' add, connect, zoom, save, restore, Studio overlay, result import and persistence; zero AI calls');
+              } finally {await ctx.close();}
+            }
+          } finally {await browser.close();}
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canvas-basic-test-screens
+          path: artifacts/canvas/*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+  deploy-stable-test:
+    needs: preview
+    if: github.head_ref == 'owner-canvas-basic-workspace-20261109' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    concurrency:
+      group: deepsyq-owner-d29-stable-test
+      cancel-in-progress: false
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      AI_BILLING_MODE: test
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Inspect canonical MAIN and stable TEST before release
+        shell: bash
+        run: |
+          set -euo pipefail
+          ACTUAL_HEAD=$(git ls-remote origin refs/heads/owner-canvas-basic-workspace-20261109 | cut -f1)
+          test "$ACTUAL_HEAD" = "$EXPECTED_SHA" || { echo "::error::Canvas source branch changed since this build"; exit 1; }
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq"
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API" > /tmp/project-before.json
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API/deployments?per_page=20&page=1" > /tmp/deployments-before.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const p=JSON.parse(fs.readFileSync('/tmp/project-before.json','utf8'));
+          const d=JSON.parse(fs.readFileSync('/tmp/deployments-before.json','utf8'));
+          if(!p.success||p.result?.production_branch!=='deepsyq-platform'||!p.result?.canonical_deployment?.id||!d.success||!Array.isArray(d.result))throw Error('Cloudflare safety inspection failed');
+          const existing=d.result.filter(v=>v.environment==='preview'&&v.deployment_trigger?.metadata?.branch==='test');
+          if(existing.length){
+            const mostRecent=existing.sort((a,b)=>new Date(b.created_on)-new Date(a.created_on))[0];
+            const prior=mostRecent.deployment_trigger?.metadata?.commit_hash;
+            const allowedPrior=['509d7629d0d794b45b202e3105e39faba3f1a6c6','2c53a37d2334c41e4284274f54f13829d8440794'];
+            console.log('TEST_CURRENT_SHA',prior,'uses_functions',mostRecent.uses_functions);
+            if(!allowedPrior.includes(prior))throw Error('Existing stable TEST belongs to an unknown release; refuse to overwrite');
+            if(mostRecent.uses_functions!==false)throw Error('Stable TEST has server Functions; do not overwrite with static Canvas Preview');
+            console.log('RECONCILED_OLDER_CANVAS_TEST_RELEASE');
+          }
+          fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_BEFORE='+p.result.canonical_deployment.id+'\n');
+          console.log('TEST_BRANCH_UNOCCUPIED; MAIN_BASELINE_CAPTURED');
+          JS
+      - name: Publish new static Canvas-only TEST (never MAIN)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy app/src/main/assets --project-name=deepsyq --branch=test --commit-hash="${{ github.event.pull_request.head.sha }}" | tee /tmp/deploy.log
+          cat /tmp/deploy.log | grep -Eo 'https://[a-z0-9-]+[.]deepsyq[.]pages[.]dev' | head -n1
+          echo "STABLE_TEST_URL=https://test.deepsyq.pages.dev/canvas.html"
+      - name: Verify MAIN unchanged and TEST target published
+        shell: bash
+        run: |
+          set -euo pipefail
+          API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq"
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API" > /tmp/project-after.json
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API/deployments?per_page=20&page=1" > /tmp/deployments-after.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const p=JSON.parse(fs.readFileSync('/tmp/project-after.json','utf8'));
+          const d=JSON.parse(fs.readFileSync('/tmp/deployments-after.json','utf8'));
+          if(!p.success||p.result?.canonical_deployment?.id!==process.env.MAIN_BEFORE)throw Error('MAIN changed');
+          const test=d.result.find(x=>x.environment==='preview'&&x.deployment_trigger?.metadata?.branch==='test'&&x.deployment_trigger?.metadata?.commit_hash===process.env.EXPECTED_SHA);
+          if(!test)throw Error('Stable TEST exact commit not verified in Cloudflare');
+          console.log('TEST_DEPLOYMENT_BRANCH',test.deployment_trigger.metadata.branch);
+          console.log('TEST_USES_FUNCTIONS',test.uses_functions);
+          console.log('MAIN_UNCHANGED_VERIFIED');
+          JS
+          for i in 1 2 3 4 5 6 7 8; do
+            code=$(curl -L -s -o /tmp/testcanvas.html -w '%{http_code}' https://test.deepsyq.pages.dev/canvas.html || true)
+            if [ "$code" = "200" ] && grep -q 'id="canvasWorkspace"' /tmp/testcanvas.html; then echo "STABLE_TEST_CANVAS_HTTP_200"; exit 0; fi
+            sleep 5
+          done
+          echo "::error::TEST alias did not serve Canvas"
+          exit 1
