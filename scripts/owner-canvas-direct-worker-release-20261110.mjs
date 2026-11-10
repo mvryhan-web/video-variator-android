@@ -61,14 +61,17 @@ function patchCanvas(latest,source){
  const [a,b]=find(latest),[x,y]=find(source);
  let html=latest.slice(0,a)+source.slice(x,y)+latest.slice(b);
  assert(html.includes('id="cwGallery"')&&html.includes('id="cwStage"')&&html.includes('id="cwRatioQuick"'),'New Canvas controls absent');
+ const legacyJS='<script type="module" src="canvas-editor.js"></script>';
  const oldJS='<script type="module" src="canvas-workspace.js?v=20261110"></script>';
  const newJS='<script type="module" src="canvas-workspace.js?v=20261110-ux2"></script>';
- assert(html.includes(oldJS)||html.includes(newJS),'Old Canvas script link missing');
- html=html.replace(oldJS,newJS);
+ assert([legacyJS,oldJS,newJS].some(x=>html.includes(x)),'Recognized Canvas script link missing');
+ html=html.replace(legacyJS,newJS).replace(oldJS,newJS);
+ const legacyCSS='<link rel="stylesheet" href="canvas-page.css">';
  const oldCSS='<link rel="stylesheet" href="canvas-workspace.css?v=20261110">';
  const newCSS='<link rel="stylesheet" href="canvas-workspace.css?v=20261110-ux2">';
- assert(html.includes(oldCSS)||html.includes(newCSS),'Old Canvas CSS link missing');
+ assert(html.includes(oldCSS)||html.includes(newCSS)||html.includes(legacyCSS),'Recognized Canvas CSS missing');
  html=html.replace(oldCSS,newCSS);
+ if(!html.includes(newCSS))html=html.replace(legacyCSS,legacyCSS+newCSS);
  assert(html.includes('deepsyq-site-shell.js')&&html.includes('deepsyq-mobile-shell.js')&&html.includes('jarvis-core.js'),'Site shell or JARVIX lost');
  return html;
 }
