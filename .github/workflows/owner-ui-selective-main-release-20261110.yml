@@ -1,0 +1,79 @@
+name: OWNER selective ten-asset UI production release, preserve Worker and all other files
+on:
+  push:
+    branches: [owner-ui-selective-main-release-20261110]
+    paths: ['.github/workflows/owner-ui-selective-main-release-20261110.yml']
+permissions: {contents: read}
+concurrency:
+  group: owner-deepsyq-selective-ui-main-20261110
+  cancel-in-progress: false
+jobs:
+  selective:
+    if: github.repository == 'mvryhan-web/video-variator-android'
+    runs-on: ubuntu-latest
+    timeout-minutes: 29
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Validate owner approval patch, current unchanged Worker and secret binding names
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/deepsyq-platform:refs/remotes/origin/deepsyq-platform
+          node --check scripts/owner-ui-selective-main-release-20261110.mjs
+          node scripts/owner-ui-selective-main-release-20261110.mjs prepare
+          echo "TARGET_SHA=$(node -p "require('/tmp/deepsyq-owner-ui-status.json').dev")" >> "$GITHUB_ENV"
+      - name: Stage exact current public MAIN and apply only the approved ten-file patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/owner-ui-selective-main-release-20261110.mjs snapshot
+      - name: Install isolated no-spend browser tests
+        shell: bash
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Deploy exact unchanged production assets plus ten UI fixes to isolated preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy /tmp/deepsyq-owner-ui-selective/app/src/main/assets \
+            --project-name=deepsyq --branch=owner-tools-scoped-20261110 \
+            --commit-hash="$TARGET_SHA" --commit-dirty=true \
+            --commit-message="Owner approved selective 10-file UI preview, original Worker"
+      - name: Browser verify preview navigation, logout, pricing, images and preserved unchanged files
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/owner-ui-selective-main-release-20261110.mjs preview
+      - name: Guard against another publisher changing MAIN meanwhile
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/owner-ui-selective-main-release-20261110.mjs guard
+      - name: Promote only the changed asset contents with existing Worker preserved
+        id: deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "MAIN_PROMOTION_ATTEMPTED=true" >> "$GITHUB_ENV"
+          npx --yes wrangler@4 pages deploy /tmp/deepsyq-owner-ui-selective/app/src/main/assets \
+            --project-name=deepsyq --branch=deepsyq-platform \
+            --commit-hash="$TARGET_SHA" --commit-dirty=true \
+            --commit-message="Owner approved 10 scoped UI changes, unchanged production assets and Worker"
+      - name: Verify MAIN live API, four social icons, logout, Tools and Pricing
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/owner-ui-selective-main-release-20261110.mjs main
+          echo "MAIN_VERIFIED=true" >> "$GITHUB_ENV"
+      - name: Emergency rollback only the just-attempted release, never anyone else's MAIN
+        if: always() && env.MAIN_PROMOTION_ATTEMPTED == 'true' && env.MAIN_VERIFIED != 'true'
+        shell: bash
+        run: |
+          node scripts/owner-ui-selective-main-release-20261110.mjs rollback
