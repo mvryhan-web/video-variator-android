@@ -1,0 +1,69 @@
+name: OWNER Canvas workspace — 13 photos — surgical production release
+
+on:
+  push:
+    branches: [owner-canvas-workspace-20261110]
+    paths:
+      - '.github/workflows/owner-canvas-workspace-production-20261110.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      AI_BILLING_MODE: test
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate owner-approved Canvas-only scope and current LIVE Worker
+        run: |
+          set -euo pipefail
+          node --check app/src/main/assets/canvas-workspace.js
+          node --check scripts/owner-canvas-workspace-production-release-20261110.mjs
+          node scripts/owner-canvas-workspace-production-release-20261110.mjs prepare
+      - name: Rebuild from LIVE (not old DEV), overlay only Canvas and 13 photos
+        run: |
+          set -euo pipefail
+          node scripts/owner-canvas-workspace-production-release-20261110.mjs stage
+      - name: Deploy reserve test for isolated regression checking
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy /tmp/deepsyq-canvas-workspace/app/src/main/assets \
+            --project-name=deepsyq --branch=test \
+            --commit-hash="$GITHUB_SHA" --commit-dirty=true \
+            --commit-message="Owner Canvas workspace + exactly 13 approved images, LIVE worker preserved"
+      - name: Check 13 photo files, UI, API and unrelated TEST pages
+        run: node scripts/owner-canvas-workspace-production-release-20261110.mjs test
+      - name: Block MAIN if another deployment happened during staging
+        run: node scripts/owner-canvas-workspace-production-release-20261110.mjs guard
+      - name: Publish owner-requested Canvas workspace to production
+        run: |
+          set -euo pipefail
+          echo "MAIN_PROMOTION_ATTEMPTED=true" >> "$GITHUB_ENV"
+          npx --yes wrangler@4 pages deploy /tmp/deepsyq-canvas-workspace/app/src/main/assets \
+            --project-name=deepsyq --branch=deepsyq-platform \
+            --commit-hash="$GITHUB_SHA" --commit-dirty=true \
+            --commit-message="Owner Canvas interactive workspace 13 photos; no other product changes"
+      - name: Verify MAIN page, all 13 photos, 8 protected pages, Worker/billing
+        run: |
+          set -euo pipefail
+          node scripts/owner-canvas-workspace-production-release-20261110.mjs main
+          echo "MAIN_VERIFIED=true" >> "$GITHUB_ENV"
+      - name: Roll back our release only if it failed verification
+        if: always() && env.MAIN_PROMOTION_ATTEMPTED == 'true' && env.MAIN_VERIFIED != 'true'
+        run: node scripts/owner-canvas-workspace-production-release-20261110.mjs rollback
