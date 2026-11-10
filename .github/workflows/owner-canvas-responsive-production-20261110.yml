@@ -21,7 +21,7 @@ jobs:
         with: {node-version: '22'}
       - name: Install Cloudflare content hash verifier
         run: python3 -m pip install --quiet blake3 --break-system-packages
-      - name: Stage exact two-file Canvas responsiveness change against current LIVE
+      - name: Stage ONLY responsive HTML and CSS; preserve currently published Canvas JavaScript
         run: |
           set -euo pipefail
           node --check scripts/owner-canvas-responsive-release-20261110.mjs
