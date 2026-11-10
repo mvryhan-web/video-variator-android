@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `b9a0055c94b5b6938748a7100d533721a418c915`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `683a492ca0c105fcea3513ec0c219ca22340792f`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 119 | Named symbols: 391 | Checked relations: 74
 
 ## Topic finder (matching filenames)
@@ -118,7 +118,7 @@ inspiration.js (L1)
 
 ### `app/src/main/assets/jarvis-core.js`
 
-JARVIX_ONBOARDING (L77) · jarvixContext (L80) · cachedVoices (L87) · WORLD_CITIES (L386)
+JARVIX_ONBOARDING (L80) · jarvixContext (L83) · cachedVoices (L90) · WORLD_CITIES (L316)
 
 ### `app/src/main/assets/jarvix-action-plan.js`
 
@@ -126,7 +126,7 @@ ACTION_ROUTES (L2)
 
 ### `app/src/main/assets/jarvix-chat.js`
 
-urls (L38) · composer (L126) · pending (L181) · modeHeaderLabels (L185) · composerInput (L220) · wpPane (L230) · expandBtn (L249)
+urls (L40) · composer (L138) · pending (L193) · modeHeaderLabels (L197) · composerInput (L232) · wpPane (L242) · expandBtn (L261)
 
 ### `app/src/main/assets/jarvix-clip-library.js`
 
