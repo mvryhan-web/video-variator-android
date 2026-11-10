@@ -88,4 +88,22 @@ test.describe('Owner Canvas — isolated UX regression checks',()=>{
       await expect(page.locator('.cw-gallery')).toHaveCSS('overflow-x','auto');
     }
   });
+
+  test('export PNG downloads an edited image',async({page})=>{
+    await page.locator('[data-cw-tool="text"]').click();
+    await page.locator('#cwInlineText').fill('Canvas export example');
+    const save=page.waitForEvent('download',{timeout:20000});
+    await page.locator('#cwExport').click();
+    const downloaded=await save;
+    expect(downloaded.suggestedFilename()).toMatch(/^DEEPSYQ-Canvas-.*\.png$/);
+    const {readFile}=await import('node:fs/promises');
+    const bytes=await readFile(await downloaded.path());
+    expect(bytes.subarray(0,8).toString('hex')).toBe('89504e470d0a1a0a');
+    expect(bytes.length).toBeGreaterThan(10000);
+  });
+
+  test('AI Studio toolbar opens the existing Studio without generating or charging',async({page})=>{
+    await page.locator('[data-cw-tool="apps"]').click();
+    await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=canvas/,{timeout:20000});
+  });
 });
