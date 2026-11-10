@@ -164,7 +164,9 @@ async function snapshot(){
  const workerBlob=sh('git',['hash-object',path.join(stage,'_worker.js')]);
  assert.equal(workerBlob,data.worker,'Staged Worker differs from production');
  for(const f of changes.filter(x=>x.endsWith('.js')))sh('node',['--check',path.join(stage,f)]);
- const protectedHashes=Object.fromEntries(important.map(n=>[n,original[n]]));
+ // The root /index.html is Cloudflare's alias of the explicitly changed
+ // deepsyq.html Home page: it must change together with Home, not stay frozen.
+ const protectedHashes=Object.fromEntries(important.filter(n=>n!=='index.html').map(n=>[n,original[n]]));
  fs.writeFileSync('/tmp/deepsyq-ui-protected.json',JSON.stringify(protectedHashes));
  console.log('OWNER_ONLY_TEN_FILES_CHANGED',JSON.stringify({count:changed.length,files:changed,liveTextCopied:Object.keys(original).length,normalizedHtml:normalized,missingStaleFiles:skipped.length}));
 }
@@ -180,6 +182,13 @@ async function check(mode){
   await sleep(3500);
  }
  assert(cfg?.plans,mode+' live Cloudflare Worker /api/config invalid');
+ // Both Home endpoints must serve the approved new Home, without the removed
+ // Search Anywhere or Promo Code. This verifies the only special alias change.
+ const [index,home]=await Promise.all([getAsset('index.html',base),getAsset('deepsyq.html',base)]);
+ assert.equal(index.status,200,'Home alias missing');
+ assert.equal(home.status,200,'Home page missing');
+ assert.equal(dig(index.bytes),dig(home.bytes),'Home alias differs from canonical Home');
+ assert(!home.bytes.toString('utf8').includes('home-global-search')&&!home.bytes.toString('utf8').includes('id="topPromo"'),'Search or Promo remains on Home');
  const cssJs=changes.filter(n=>/\.(js|css)$/.test(n));
  for(const name of cssJs){
   const r=await getAsset(name,base);
