@@ -7,7 +7,6 @@ test.describe('Owner Canvas — isolated UX regression checks',()=>{
     await page.goto('/canvas.html',{waitUntil:'domcontentloaded'});
     await expect(page.locator('#cwGallery [data-cw-photo]')).toHaveCount(13,{timeout:20000});
     await expect(page.locator('#cwStage')).toBeVisible();
-    await page.evaluate(()=>window.__canvasPageErrors=errs);
   });
 
   test('internal gallery, editor, inspector never overlap global sidebar',async({page,isMobile})=>{
