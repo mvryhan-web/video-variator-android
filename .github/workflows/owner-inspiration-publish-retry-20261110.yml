@@ -1,0 +1,47 @@
+name: Owner Inspiration surgical production publish retry
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/owner-inspiration-publish-retry-20261110.yml'
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  production:
+    if: contains(github.event.head_commit.message, 'release(inspiration): guarded production retry')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify current requested assets and no imported missing module
+        run: |
+          node --check app/src/main/assets/deepsyq.js
+          node --check app/src/main/assets/ai-apps.js
+          node --check app/src/main/assets/home-inspiration.js
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const module=fs.readFileSync('app/src/main/assets/home-inspiration.js','utf8');
+          const home=fs.readFileSync('app/src/main/assets/deepsyq.js','utf8');
+          const apps=fs.readFileSync('app/src/main/assets/ai-apps.js','utf8');
+          if((module.match(/"id":"owner-20261110-/g)||[]).length!==20)throw Error('20 approved video prompts missing');
+          for(const [name,src] of [['Home',home],['AI Apps',apps]])if(!src.includes('renderHomeInspiration(mergeOwnerVideoInspiration('))throw Error(name+' does not show owner video collection');
+          JS
+      - name: Use already configured GitHub Cloudflare secret with fail-closed surgical release
+        run: python -m pip install --disable-pip-version-check 'requests==2.32.3' 'blake3==1.0.8'
+      - name: Publish only 3 requested frontend files if Worker and unchanged assets are provably preserved
+        run: |
+          python scripts/deepsyq_surgical_publish.py \
+            --mode publish \
+            --files 'home-inspiration.js,deepsyq.js,ai-apps.js' \
+            --commit "$GITHUB_SHA"
