@@ -21,7 +21,7 @@ const imgCache=new Map(),transparentCache=new Map(),objectUrls=new Set();
 const originalAccount=localStorage.getItem('vv_token')||'guest';
 const sameAccount=()=>originalAccount===(localStorage.getItem('vv_token')||'guest');
 const note=message=>{$('cwStatus').textContent=message;};
-const clean={mode:'image',id:'demo-1',ratio:'16:9',fit:'cover',offsetX:0,offsetY:0,size:100,rotation:0,opacity:100,brightness:100,contrast:100,saturation:100,effect:'original',background:'#ffffff',removeWhite:false,layers:[],selected:-1,locked:false};
+const clean={mode:'image',id:'demo-1',ratio:'16:9',fit:'cover',offsetX:0,offsetY:0,size:100,rotation:0,flipX:false,flipY:false,opacity:100,brightness:100,contrast:100,saturation:100,effect:'original',background:'#ffffff',removeWhite:false,layers:[],selected:-1,locked:false};
 let state=JSON.parse(JSON.stringify(clean)),history=[],future=[],loadingSeq=0,played=null;
 let sequence=['demo-1','demo-4','demo-5','demo-9','demo-11'];
 const ratios={'16:9':[1280,720],'1:1':[1080,1080],'4:5':[1000,1250],'9:16':[720,1280]};
@@ -89,12 +89,12 @@ async function render(){
    const iw=source.width||source.naturalWidth,ih=source.height||source.naturalHeight;
    const f=(state.fit==='contain'?Math.min(w/iw,h/ih):Math.max(w/iw,h/ih))*(state.size/100);
    ctx.save();ctx.translate(w/2+state.offsetX*w/1280,h/2+state.offsetY*h/720);
-   ctx.rotate(state.rotation*Math.PI/180);ctx.globalAlpha=state.opacity/100;
+   ctx.rotate(state.rotation*Math.PI/180);ctx.scale(state.flipX?-1:1,state.flipY?-1:1);ctx.globalAlpha=state.opacity/100;
    ctx.filter=effectFilter();ctx.drawImage(source,-iw*f/2,-ih*f/2,iw*f,ih*f);ctx.restore();
   }catch(_){if(serial!==loadingSeq)return;note('This example could not load. Choose another photo or upload your own.');}
  }
- state.layers.forEach((layer,i)=>drawLayer(layer,i===state.selected));
- $('cwEmptyState').hidden=!!photo;
+ state.layers.forEach((layer,i)=>{if(layer.type==='text'&&i===state.selected&&document.activeElement===$('cwInlineText'))return;drawLayer(layer,i===state.selected);});
+ syncTextControls();$('cwEmptyState').hidden=!!photo;
 }
 function updateControls(){
  $('cwImageMode').classList.toggle('cw-mode-active',state.mode==='image');$('cwVideoMode').classList.toggle('cw-mode-active',state.mode==='video');
@@ -102,16 +102,18 @@ function updateControls(){
  for(const [key,value,suffix] of [['cwSize',state.size,'%'],['cwRotation',state.rotation,'°'],['cwOpacity',state.opacity,'%'],['cwBrightness',state.brightness,'%'],['cwContrast',state.contrast,'%'],['cwSaturation',state.saturation,'%']]){
   $(key).value=String(value);const label=$(key+'Label');if(label)label.textContent=String(value)+suffix;
  }
- $('cwRatio').value=state.ratio;$('cwRatioQuick').value=state.ratio;
+ $('cwRatio').value=state.ratio;$('cwRatioQuick').value=state.ratio;$('cwSettingsRatio').value=state.ratio;$('cwSettingsMode').value=state.mode;
+ $('cwModeInfo').hidden=state.mode!=='video';$('cwGenerate').textContent=state.mode==='video'?'✧ Generate Video ↗':'✧ Generate Image ↗';
+ $('cwPrompt').placeholder=state.mode==='video'?'Describe the motion you want in your video…':'Describe what you want to create…';
  $('cwFitCover').classList.toggle('cw-option-active',state.fit!=='contain');$('cwFitContain').classList.toggle('cw-option-active',state.fit==='contain');
  $('cwLock').setAttribute('aria-pressed',String(state.locked));
  document.querySelectorAll('[data-cw-effect]').forEach(b=>b.classList.toggle('cw-preset-active',b.dataset.cwEffect===state.effect));
  document.querySelectorAll('#cwGallery [data-cw-photo]').forEach(b=>{const active=b.dataset.cwPhoto===state.id;b.classList.toggle('cw-selected',active);b.setAttribute('aria-pressed',String(active));});
- updateUndo();renderFrames();
+ updateUndo();renderFrames();syncTextControls();
 }
 function switchPhoto(id,{addToFrames=false}={}){
  if(!accountGuard()||!srcMap.has(id))return;
- mark();state.id=id;state.offsetX=0;state.offsetY=0;state.size=100;state.rotation=0;state.removeWhite=false;state.layers=[];state.selected=-1;state.locked=false;
+ mark();state.id=id;state.offsetX=0;state.offsetY=0;state.size=100;state.rotation=0;state.flipX=false;state.flipY=false;state.removeWhite=false;state.layers=[];state.selected=-1;state.locked=false;
  state.brightness=state.contrast=state.saturation=state.opacity=100;state.effect='original';
  if(addToFrames&&!sequence.includes(id))sequence.push(id);
  updateControls();void render();note(srcMap.get(id).name+' opened on the Canvas. You can edit or export it.');
@@ -149,6 +151,7 @@ function addLayer(type){if(!accountGuard())return;mark();const base={x:canvas.wi
  if(type==='text')state.layers.push({...base,type,text:'Your text',size:60,color:'#ffffff'});
  else state.layers.push({...base,type,w:190,h:150,color:type==='star'?'#ffc45c':'#bd60f8'});
  state.selected=state.layers.length-1;updateControls();void render();note('Added '+type+'. Drag it on the canvas to position.');
+ if(type==='text')requestAnimationFrame(()=>{$('cwInlineText').focus({preventScroll:true});$('cwInlineText').select();});
 }
 function showToolPane(tool){
  const pane=$('cwToolPane');pane.replaceChildren();pane.hidden=false;
@@ -159,14 +162,13 @@ function showToolPane(tool){
   case 'photos':pane.hidden=true;scrollToGallery();break;
   case 'elements':option('▢ Rectangle',()=>addLayer('rect'));option('◯ Circle',()=>addLayer('ellipse'));option('★ Star',()=>addLayer('star'));break;
   case 'text':{
-    let selected=state.layers[state.selected];
-    if(!selected||selected.type!=='text'){addLayer('text');selected=state.layers[state.selected];}
+    const selected=state.layers[state.selected];
+    if(!selected||selected.type!=='text')addLayer('text');
     grid.hidden=true;
-    const l=document.createElement('label');l.textContent='Type your text';l.htmlFor='cwTextInput';pane.append(l);
-    const input=document.createElement('input');input.id='cwTextInput';input.type='text';input.maxLength=120;input.placeholder='Write something on the image';input.value=selected.text||'';pane.append(input);
-    const help=document.createElement('p');help.className='cw-tool-help';help.textContent='Your text appears directly on the photo. Drag it to move.';pane.append(help);
-    input.addEventListener('input',()=>{if(!accountGuard())return;if(!input.dataset.dirty){mark();input.dataset.dirty='yes';}selected.text=input.value;void render();});
-    input.focus({preventScroll:true});input.select();break;
+    const help=document.createElement('p');help.className='cw-tool-help';help.textContent='Type directly on the photo, or use the Text field above it. Drag to move; Delete text to remove.';pane.append(help);
+    syncTextControls();
+    requestAnimationFrame(()=>{$('cwInlineText').focus({preventScroll:true});$('cwInlineText').select();});
+    break;
   }
   case 'upload':option('＋ Choose photo',openUpload);break;
   case 'design':case 'templates':{
@@ -199,6 +201,7 @@ for(const [id,field] of [['cwSize','size'],['cwRotation','rotation'],['cwOpacity
 }
 $('cwCrop').onclick=()=>{document.querySelector('[data-cw-tab="edit"]')?.click();$('cwRatio').focus();note('To crop: choose a frame format, use Fill frame, then drag the photo to position it.');};
 for(const [id,delta] of [['cwRotateLeft',-90],['cwRotateRight',90]])$(id).onclick=()=>{mark();state.rotation=((state.rotation+delta+540)%360)-180;updateControls();void render();note('Photo rotated '+(delta<0?'left':'right')+' by 90°.');};
+for(const [id,axis] of [['cwFlipTop','flipX'],['cwMirrorX','flipX'],['cwMirrorY','flipY']])$(id).onclick=()=>{mark();state[axis]=!state[axis];void render();note(axis==='flipX'?'Photo mirrored left-to-right.':'Photo flipped top-to-bottom.');};
 for(const [id,fit] of [['cwFitCover','cover'],['cwFitContain','contain']])$(id).onclick=()=>{if(state.fit===fit)return;mark();state.fit=fit;updateControls();void render();note(fit==='contain'?'Whole image fits inside frame. Background color is now visible.':'Photo fills the frame; drag to reposition if needed.');};
 $('cwReplace').onclick=openUpload;
 $('cwRemoveBg').onclick=()=>{
@@ -218,6 +221,7 @@ for(const button of document.querySelectorAll('[data-cw-tab]'))button.onclick=()
 };
 for(const button of document.querySelectorAll('[data-cw-tool]'))button.onclick=()=>{
  document.querySelectorAll('[data-cw-tool]').forEach(x=>{x.classList.toggle('cw-rail-active',x===button);x.setAttribute('aria-pressed',String(x===button))});
+ if(button.dataset.cwTool==='apps'){void handoff();return;}
  if(button.dataset.cwTool==='upload'){openUpload();showToolPane('upload');}else showToolPane(button.dataset.cwTool);
 };
 $('cwGallerySearch').addEventListener('input',renderGallery);
