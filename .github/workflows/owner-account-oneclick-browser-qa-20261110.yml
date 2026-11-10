@@ -1,0 +1,88 @@
+name: Owner Account first click desktop and mobile browser QA
+on:
+  push:
+    branches: [owner-account-oneclick-browser-qa-20261110]
+    paths: ['.github/workflows/owner-account-oneclick-browser-qa-20261110.yml']
+permissions: {contents: read}
+jobs:
+  account:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Syntax and regression assertions
+        shell: bash
+        run: |
+          node --check app/src/main/assets/deepsyq-mobile-shell.js
+          node --check app/src/main/assets/deepsyq-unified-platform-header.js
+          node --check app/src/main/assets/deepsyq.js
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const root='app/src/main/assets/';
+          const m=fs.readFileSync(root+'deepsyq-mobile-shell.js','utf8');
+          const u=fs.readFileSync(root+'deepsyq-unified-platform-header.js','utf8');
+          const h=fs.readFileSync(root+'deepsyq.js','utf8');
+          assert(!m.includes("index.html?view=profile"),"Old Home detour must be absent");
+          assert(!u.includes("video-uniquifier.html#profile"),"Old inconsistent profile hash must be absent");
+          assert(!h.includes("video-uniquifier.html#profile"),"Home button old route must be absent");
+          assert(m.includes("video-uniquifier.html?view=profile"));
+          assert(u.includes("if (login.tagName === 'A') login.href = token ?"));
+          assert(h.includes("if(localStorage.getItem('vv_token'))location.assign('video-uniquifier.html?view=profile')"));
+          assert(h.includes("else openAuth()"),"Guest login modal preserved");
+          console.log('ACCOUNT_SOURCE_ROUTE_PASS');
+          JS
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Local static pages without paid or production API requests
+        run: |
+          python3 -m http.server 4321 --bind 127.0.0.1 --directory app/src/main/assets >/tmp/owner-account-http.log 2>&1 &
+          for n in $(seq 1 24); do if curl -fsS http://127.0.0.1:4321/deepsyq.html >/dev/null; then exit 0; fi; sleep .5; done
+          exit 1
+      - name: Desktop and mobile one-click Account goes directly to actual profile
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import {chromium} from 'playwright';
+          import assert from 'node:assert/strict';
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          const origin='http://127.0.0.1:4321';
+          const pages=['deepsyq.html','pricing.html','jarvix-chat.html','free-tools.html'];
+          const allowedProfile='/video-uniquifier.html?view=profile';
+          try{
+            for(const [label,width,height] of [['desktop',1360,900],['mobile',390,844]]){
+              for(const route of pages){
+                const ctx=await browser.newContext({viewport:{width,height},isMobile:width<700,hasTouch:width<700});
+                await ctx.addInitScript(()=>{try{localStorage.setItem('vv_token','local-fake-session-token')}catch{}});
+                await ctx.route('**/api/**',async request=>{
+                  const url=request.request().url();
+                  const body=url.includes('/api/me')?{user:{name:'Local QA',email:'local@example.test',isAdmin:false}}:
+                    url.includes('/api/config')?{googleClientId:'',billingConfigured:false,plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}}}:
+                    url.includes('/api/ai-billing/config')?{packs:[],billingConfigured:false}: {available:0,items:[]};
+                  await request.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});
+                });
+                const page=await ctx.newPage();
+                try{
+                  const res=await page.goto(origin+'/'+route,{waitUntil:'domcontentloaded',timeout:45000});
+                  assert.equal(res?.status(),200,label+' '+route+' base route unavailable');
+                  await page.locator('#topLogin').first().waitFor({state:'attached',timeout:18000});
+                  await page.waitForTimeout(550);
+                  const details=await page.locator('#topLogin').first().evaluate(el=>({
+                    tag:el.tagName,href:el.getAttribute('href'),visible:!!el.getClientRects().length,
+                    text:el.textContent?.trim().slice(0,70)
+                  }));
+                  if(details.tag==='A')assert.equal(new URL(details.href,origin).pathname+new URL(details.href,origin).search,allowedProfile,label+' '+route+' link');
+                  if(!details.visible){
+                    console.log('ACCOUNT_VISIBLE_SKIPPED',label,route,JSON.stringify(details));
+                    continue;
+                  }
+                  await page.locator('#topLogin').first().click({timeout:14000});
+                  await page.waitForURL(url=>url.pathname==='/video-uniquifier.html'&&url.searchParams.get('view')==='profile',{timeout:18000});
+                  console.log('ACCOUNT_FIRST_CLICK_PASS',label,route,JSON.stringify({start:route,destination:new URL(page.url()).pathname+new URL(page.url()).search}));
+                }finally{await ctx.close()}
+              }
+            }
+          }finally{await browser.close()}
+          JS
