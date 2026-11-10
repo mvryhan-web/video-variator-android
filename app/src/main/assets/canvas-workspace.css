@@ -307,3 +307,11 @@ body.canvas-detail-page #canvasWorkspace .cw-artboard{
  .cw-top-actions>.cw-export{min-width:86px}
  .cw-top-actions>button:not(.cw-export){min-width:30px!important}
 }
+
+/* Owner phone controls remain visible on 320–390px devices. */
+@media(max-width:390px){
+ body.canvas-detail-page #canvasWorkspace .cw-prompt-small{display:flex!important;align-items:center;justify-content:center;min-width:30px!important;flex:0 0 30px!important;height:34px!important;padding:0}
+ body.canvas-detail-page #canvasWorkspace .cw-primary{min-width:92px!important;padding:6px!important;font-size:10px!important}
+ body.canvas-detail-page #canvasWorkspace .cw-prompt{gap:3px}
+ body.canvas-detail-page #canvasWorkspace .cw-prompt-star{display:none}
+}
