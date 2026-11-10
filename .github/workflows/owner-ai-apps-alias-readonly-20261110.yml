@@ -1,0 +1,25 @@
+name: Owner AI Apps preview read-only alias and protected pages
+on:
+  push:
+    branches: [owner-ai-apps-main-guarded-release-20261110]
+    paths: ['.github/workflows/owner-ai-apps-alias-readonly-20261110.yml']
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Compare protected routes on MAIN and just-created preview without mutations
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          for(const name of ['index.html','deepsyq.html','jarvix-chat.html','canvas.html','ai-apps.html','free-tools.html','pricing.html','video-uniquifier.html','my-creations.html','audio-studio.html']){
+            for(const base of ['https://deepsyq.app','https://owner-aiapps-1110.deepsyq.pages.dev','https://44c62bda.deepsyq.pages.dev']){
+              try{const r=await fetch(base+'/'+name+'?owner-audit='+Date.now(),{headers:{'cache-control':'no-cache'},signal:AbortSignal.timeout(14000)});const body=await r.text();console.log('AI_APPS_ALIAS_AUDIT',JSON.stringify({name,base,status:r.status,length:body.length,type:r.headers.get('content-type'),opening:body.slice(0,100)}));}
+              catch(e){console.log('AI_APPS_ALIAS_AUDIT_ERROR',name,base,String(e))}
+            }
+          }
+          JS
