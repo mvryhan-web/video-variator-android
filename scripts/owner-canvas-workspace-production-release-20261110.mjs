@@ -18,6 +18,7 @@ const paths=['canvas.html','canvas-workspace.js','canvas-workspace.css',
 const stageRoot='/tmp/deepsyq-canvas-workspace',stage=stageRoot+'/'+sourceRoot;
 const metadata='/tmp/deepsyq-canvas-workspace-meta.json';
 const checks='/tmp/deepsyq-canvas-protected-checks.json';
+const manifestFile='/tmp/deepsyq-canvas-live-assets-manifest.json';
 const prod='https://deepsyq.app',test='https://test.deepsyq.pages.dev';
 const projectUrl='https://api.cloudflare.com/client/v4/accounts/'+account+'/pages/projects/deepsyq';
 const protectedPages=['index.html','free-tools.html','jarvix-chat.html','pricing.html','video-uniquifier.html','generate-studio.html','my-creations.html','ai-apps.html'];
@@ -119,84 +120,91 @@ async function prepare(){
  const workerSettings=await api('https://api.cloudflare.com/client/v4/accounts/'+account+'/workers/scripts/'+encodeURIComponent(p.production_script_name)+'/settings');
  assert(workerSettings&&typeof workerSettings==='object','Worker settings not readable');
  const cfg=await getLive('api/config');assert.equal(cfg.status,200,'Production API unhealthy');
- const state={liveId:live.id,previous,workerSha:liveWorker,workerName:p.production_script_name,
+ const liveManifest=live.result.files;
+ assert(liveManifest&&typeof liveManifest==='object'&&Object.keys(liveManifest).length>=1000,'Full live Pages asset manifest missing; cannot publish');
+ assert(Object.hasOwn(liveManifest,'/canvas.html')&&Object.hasOwn(liveManifest,'/canvas-workspace.js')&&Object.hasOwn(liveManifest,'/canvas-workspace.css'),'Live Canvas asset manifest incomplete');
+ const liveUrl=live.result.url||p.canonical_deployment.url;
+ assert(/^https:\/\/[a-z0-9-]+\.deepsyq\.pages\.dev$/.test(liveUrl),'Immutable LIVE deployment URL missing');
+ fs.writeFileSync(manifestFile,JSON.stringify(liveManifest));
+ const state={liveId:live.id,previous,liveUrl,manifestSize:Object.keys(liveManifest).length,workerSha:liveWorker,workerName:p.production_script_name,
   target:sh('git',['rev-parse','HEAD']),settingsHash:settingsDigest(workerSettings),
   startedAt:new Date().toISOString()};
  fs.writeFileSync(metadata,JSON.stringify(state));
- console.log('OWNER_CANVAS_SAFE_LIVE_BASELINE',JSON.stringify({liveId:live.id,previous,target:state.target,workerUnchanged:true}));
+ console.log('OWNER_CANVAS_SAFE_LIVE_BASELINE',JSON.stringify({liveId:live.id,previous,target:state.target,workerUnchanged:true,manifestAssets:state.manifestSize}));
 }
 async function stageResources(){
  const data=load();assert(!fs.existsSync(stageRoot),'Staging directory must start clean');
  const previousRoot='/tmp/deepsyq-canvas-prod-baseline';
  sh('git',['worktree','add','--detach',previousRoot,data.previous]);
- fs.mkdirSync(stageRoot,{recursive:true});fs.cpSync(previousRoot+'/'+sourceRoot,stage,{recursive:true});
- // Only copy the latest LIVE text assets. Copying the raw DEV tree over the
- // production baseline is prohibited; it would revert unrelated changes.
- const textPaths=sh('git',['ls-tree','-r','--name-only',data.previous,sourceRoot]).split('\n')
-  .filter(x=>x.startsWith(sourceRoot+'/'))
-  .map(x=>x.slice(sourceRoot.length+1))
-  .filter(x=>/\.(?:html|css|js|mjs|json|svg|txt|xml|webmanifest)$/i.test(x) && x!=='_worker.js');
- let cursor=0;const unchanged={},removed=[],protectedHashes={};
- const webPage=await getLive('canvas.html');assert.equal(webPage.status,200,'Current Canvas unavailable on MAIN');
- let liveCanvas=stripPagesInjectedSnippet(webPage.bytes).toString('utf8');
- mainContent(liveCanvas);
- async function copyOne(){while(cursor<textPaths.length){const rel=textPaths[cursor++];
-   const r=await getLive(rel);if(r.status!==200){
-     if(protectedPages.includes(rel)||rel==='canvas.html')throw Error('LIVE required asset missing: '+rel);
-     fs.rmSync(path.join(stage,rel),{force:true});removed.push(rel);continue;
-   }
-   const extension=path.extname(rel).slice(1).toLowerCase();
-   const valid=extension==='html'?r.type.includes('html'):
-    extension==='css'?r.type.includes('css'):
-    ['js','mjs'].includes(extension)?/javascript|text\/plain/.test(r.type):
-    ['json','webmanifest'].includes(extension)?/json|text\/plain/.test(r.type):true;
-   assert(valid&&r.bytes.length<6000000,'Unexpected type or size for LIVE asset '+rel);
-   const raw=extension==='html'?stripPagesInjectedSnippet(r.bytes):r.bytes;
-   const dest=path.join(stage,rel);fs.mkdirSync(path.dirname(dest),{recursive:true});fs.writeFileSync(dest,raw);
-   unchanged[rel]=hash(raw);
-   if(protectedPages.includes(rel))protectedHashes[rel]=hash(r.bytes);
- }}
- await Promise.all(Array.from({length:12},()=>copyOne()));
- for(const filename of protectedPages)assert(protectedHashes[filename], 'Cannot audit protected page '+filename);
- // Surgical v2: only existing Canvas JavaScript and CSS may be replaced.
- // The 26 previously approved photo assets must remain byte-for-byte identical.
- const scopedCode=new Set(['canvas-workspace.js','canvas-workspace.css']);
- for(const rel of paths.slice(1)){
-   const dest=path.join(stage,rel),source=path.join(sourceRoot,rel);
-   assert(fs.existsSync(dest)&&fs.existsSync(source),'Live Canvas file missing '+rel);
-   if(scopedCode.has(rel)){
-     fs.copyFileSync(source,dest);
-   }else{
-     const expected=hash(fs.readFileSync(source));
-     assert.equal(hash(fs.readFileSync(dest)),expected,'Demo media changed in baseline '+rel);
-     const actual=await getLive(rel);
-     assert.equal(actual.status,200,'Demo media missing on LIVE '+rel);
-     assert.equal(hash(actual.bytes),expected,'Demo media does not match approved image '+rel);
-   }
+ fs.mkdirSync(stageRoot,{recursive:true});
+ fs.cpSync(previousRoot+'/'+sourceRoot,stage,{recursive:true});
+ const manifest=JSON.parse(textOf(manifestFile));
+ assert(Object.keys(manifest).length===data.manifestSize,'LIVE manifest size changed during staging');
+ const allowed=new Set(['canvas.html','canvas-workspace.js','canvas-workspace.css']);
+ const manifestPaths=new Set(Object.keys(manifest).map(k=>{
+  assert(k.startsWith('/')&&!k.split('/').includes('..'),'Unsafe manifest path');
+  return k.slice(1);
+ }));
+ // Remove Git-only stale assets that are NOT in current live deployment.
+ // Preserve the actual Worker and Cloudflare configuration files from LIVE source.
+ const special=new Set(['_worker.js','_headers','_redirects','_routes.json','functions-filepath-routing-config.json']);
+ let removed=0;
+ function trim(dir){
+  for(const item of fs.readdirSync(dir,{withFileTypes:true})){
+   const full=path.join(dir,item.name);
+   if(item.isDirectory()){trim(full);if(fs.readdirSync(full).length===0)fs.rmdirSync(full);continue;}
+   if(!item.isFile())throw Error('Unsupported staging entry '+full);
+   const rel=path.relative(stage,full).split(path.sep).join('/');
+   if(!manifestPaths.has(rel)&&!special.has(rel)){fs.rmSync(full);removed++;}
+  }
  }
- // The latest live header, site-wide sidebar, account & footer are untouched.
- const updated=patchLatestCanvas(liveCanvas,textOf(path.join(sourceRoot,'canvas.html')));
- fs.writeFileSync(path.join(stage,'canvas.html'),updated);
- assert(updated.includes('id="canvasWorkspace"'),'Workspace main not installed');
- const changed=[];
- for(const [rel,oldHash] of Object.entries(unchanged)){
-   const now=hash(fs.readFileSync(path.join(stage,rel)));
-   if(now!==oldHash)changed.push(rel);
+ trim(stage);
+ // The Cloudflare deployment manifest is the complete authoritative static
+ // baseline, INCLUDING files uploaded by another agent and absent from Git.
+ // Verify every file using Wrangler's BLAKE3(base64(data)+ext) content hash.
+ const python='scripts/owner-canvas-manifest-audit-20261110.py';
+ const audit=mode=>JSON.parse(sh('python3',[python,mode,manifestFile,stage]));
+ const initial=audit('scan');
+ assert.equal(initial.count,data.manifestSize);
+ const missing=initial.mismatches;let cursor=0,downloaded=0;
+ async function restore(){
+  while(cursor<missing.length){
+   const rel=missing[cursor++];
+   assert(manifestPaths.has(rel),'Attempted to fetch file outside live manifest');
+   const response=await getLive(rel,data.liveUrl);
+   assert.equal(response.status,200,'Canonical live file unavailable '+rel);
+   assert(response.bytes.length>0&&response.bytes.length<90*1024*1024,'Invalid live file length '+rel);
+   const dest=path.join(stage,rel);
+   fs.mkdirSync(path.dirname(dest),{recursive:true});
+   fs.writeFileSync(dest,rel.endsWith('.html')?stripPagesInjectedSnippet(response.bytes):response.bytes);
+   downloaded++;
+  }
  }
- assert.deepEqual(changed.sort(),['canvas.html','canvas-workspace.js','canvas-workspace.css'].sort(),'Unrequested existing LIVE text file changed');
- const stagedWorker=sh('git',['hash-object',path.join(stage,'_worker.js')]);
- assert.equal(stagedWorker,data.workerSha,'Worker source not identical to current LIVE commit');
+ await Promise.all(Array.from({length:12},()=>restore()));
+ audit('verify'); // Any byte difference or missing file stops release BEFORE staging.
+ // Preserve owner-approved 13 photographs and their thumbnails EXACTLY.
+ for(const rel of paths.filter(p=>p.endsWith('.webp'))){
+  assert.equal(hash(fs.readFileSync(path.join(stage,rel))),hash(fs.readFileSync(path.join(sourceRoot,rel))),'Approved photo altered on live '+rel);
+ }
+ // The only changes are the requested updated Canvas main and its own JS/CSS.
+ const latestCanvas=textOf(path.join(stage,'canvas.html'));
+ const patched=patchLatestCanvas(latestCanvas,textOf(path.join(sourceRoot,'canvas.html')));
+ fs.writeFileSync(path.join(stage,'canvas.html'),patched);
+ for(const rel of ['canvas-workspace.js','canvas-workspace.css'])fs.copyFileSync(path.join(sourceRoot,rel),path.join(stage,rel));
+ const diff=audit('diff');
+ assert.deepEqual(diff.onlyChanged,['canvas-workspace.css','canvas-workspace.js','canvas.html'].sort(),'Unrelated live resource changed');
+ const stageWorker=sh('git',['hash-object',path.join(stage,'_worker.js')]);
+ assert.equal(stageWorker,data.workerSha,'Staged LIVE Worker differs from production Git source');
  sh('node',['--check',path.join(stage,'canvas-workspace.js')]);
- assert.equal(textOf(path.join(stage,'canvas-workspace.js')),textOf(path.join(sourceRoot,'canvas-workspace.js')));
- assert.equal(textOf(path.join(stage,'canvas-workspace.css')),textOf(path.join(sourceRoot,'canvas-workspace.css')));
- for(let i=1;i<=13;i++){
-   const s=String(i).padStart(2,'0');for(const suffix of ['.webp','-thumb.webp']){
-     const rel='media/canvas-demos/20261110/canvas-demo-'+s+suffix;
-     assert(hash(fs.readFileSync(path.join(stage,rel)))===hash(fs.readFileSync(path.join(sourceRoot,rel))),'Photo bytes changed '+rel);
-   }
+ const protectedHashes={};
+ for(const rel of protectedPages){
+  assert(manifestPaths.has(rel),'Protected page missing from live manifest '+rel);
+  const live=await getLive(rel,prod);
+  assert.equal(live.status,200,'Current protected page not accessible '+rel);
+  protectedHashes[rel]=hash(live.bytes);
  }
  fs.writeFileSync(checks,JSON.stringify(protectedHashes));
- console.log('OWNER_CANVAS_EXACT_ALLOWED_CHANGE',JSON.stringify({changedOld:changed,newFiles:0,protectedChecked:Object.keys(protectedHashes).length,staleGitTextExcluded:removed.length,workerPreserved:true}));
+ console.log('OWNER_CANVAS_EXACT_ALLOWED_CHANGE',JSON.stringify({changedExisting:diff.onlyChanged,originalAssets:data.manifestSize,recoveredFromImmutableLive:downloaded,gitOnlyRemoved:removed,protectedChecked:Object.keys(protectedHashes).length,workerPreserved:true}));
 }
 async function guard(){const data=load(),p=await getProject();assert.equal(p.canonical_deployment?.id,data.liveId,'Concurrent MAIN update detected: do not deploy');assert.equal(p.production_script_name,data.workerName,'Production Worker changed while preparing');console.log('OWNER_CANVAS_CONCURRENCY_GUARD_PASS');}
 async function verify(kind){
