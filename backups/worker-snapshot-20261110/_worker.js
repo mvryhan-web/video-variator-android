@@ -133,11 +133,11 @@ function buildPublicUser(u, env) {
       isAdmin: true,
       usage: {
         plan: 'business',
-        limit: 1000000000,
+        limit: 15000,
         used: 0,
-        remaining: 1000000000,
+        remaining: 15000,
         active: true,
-        unlimited: true,
+        unlimited: false,
         allFeatures: true,
         unit: 'credits',
         status: 'admin',
@@ -523,15 +523,31 @@ export default {
         } else if (userId) {
           const user = edgeUsers.get(userId) || { id: userId, provider: 'google', plan: 'basic', plan_limit: 750, period_used: 0, trial_used: 0, subscription_status: 'active' };
           const plan = s.metadata?.plan || (s.mode === 'payment' ? 'lifetime' : 'pro');
+          const planCreditsMap = { trial: 100, basic: 750, pro: 2250, business: 15000 };
           if (plan === 'lifetime') {
             user.plan = 'lifetime';
             user.subscription_status = 'lifetime';
             user.plan_limit = 2147483647;
           } else {
-            const limits = { basic: 750, pro: 2250, business: 15000 };
-            user.plan = limits[plan] ? plan : 'pro';
-            user.plan_limit = limits[user.plan] || 2250;
+            const creditsToAdd = planCreditsMap[plan] || 750;
+            user.plan = planCreditsMap[plan] ? plan : 'pro';
+            user.plan_limit = creditsToAdd;
             user.subscription_status = 'active';
+
+            // Credit the user's AI wallet directly with the plan's promised credits
+            const w = getWallet(userId);
+            w.available += creditsToAdd;
+            const list = edgeWalletLedger.get(userId) || [];
+            list.unshift({
+              id: event.id || ('sub_' + Date.now()),
+              kind: 'subscription_' + user.plan,
+              plan: user.plan,
+              availableDelta: creditsToAdd,
+              reservedDelta: 0,
+              debtDelta: 0,
+              createdAt: new Date().toISOString()
+            });
+            edgeWalletLedger.set(userId, list.slice(0, 50));
           }
           edgeUsers.set(userId, user);
         }
@@ -563,9 +579,6 @@ export default {
     if (pathname === '/api/ai-wallet/balance' || pathname === '/api/ai-billing/balance') {
       const user = await getAuthenticatedUser(request, env);
       if (!user) return json({ error: 'AUTH_REQUIRED' }, 401);
-      if (isOwnerEmail(user.email, env)) {
-        return json({ available: 1000000, reserved: 0, debt: 0 });
-      }
       return json(getWallet(user.id));
     }
 
