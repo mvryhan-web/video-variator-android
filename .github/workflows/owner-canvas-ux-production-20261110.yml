@@ -1,0 +1,49 @@
+name: Owner Canvas UX3 — surgical MAIN with Worker preservation
+on:
+  push:
+    branches: [owner-canvas-ux-controls-20261110]
+    paths: ['.github/workflows/owner-canvas-ux-production-20261110.yml']
+permissions: {contents: read}
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install verified Cloudflare asset hashing
+        run: python3 -m pip install --quiet blake3 --break-system-packages
+      - name: Verify approved three-file Canvas changes against current LIVE
+        run: |
+          set -euo pipefail
+          node --check app/src/main/assets/canvas-workspace.js
+          node --check scripts/owner-canvas-ux-production-20261110.mjs
+          node scripts/owner-canvas-ux-production-20261110.mjs prepare
+      - name: Upload only changed Canvas HTML CSS JS assets
+        run: node scripts/owner-canvas-ux-production-20261110.mjs upload
+      - name: Preserve and bundle current LIVE Worker
+        run: node scripts/owner-canvas-ux-production-20261110.mjs bundle
+      - name: Verify isolated reserve TEST retains Worker
+        run: |
+          node scripts/owner-canvas-ux-production-20261110.mjs test
+          node scripts/owner-canvas-ux-production-20261110.mjs test-verify
+      - name: Publish Canvas UX3 only to MAIN
+        run: |
+          set -euo pipefail
+          echo "MAIN_PROMOTION_ATTEMPTED=true" >> "$GITHUB_ENV"
+          node scripts/owner-canvas-ux-production-20261110.mjs main
+      - name: Verify MAIN Canvas resources and critical APIs
+        run: |
+          node scripts/owner-canvas-ux-production-20261110.mjs main-verify
+          echo "MAIN_VERIFIED=true" >> "$GITHUB_ENV"
+      - name: Roll back own failed release only
+        if: always() && env.MAIN_PROMOTION_ATTEMPTED == 'true' && env.MAIN_VERIFIED != 'true'
+        run: node scripts/owner-canvas-ux-production-20261110.mjs rollback
