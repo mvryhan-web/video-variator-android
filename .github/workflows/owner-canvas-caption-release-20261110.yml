@@ -1,22 +1,16 @@
-name: OWNER Canvas single-paragraph surgical release
-
+name: OWNER Canvas exact latest-live single-paragraph production release
 on:
   push:
     branches: [owner-canvas-remove-description-20261110]
-    paths:
-      - '.github/workflows/owner-canvas-caption-release-20261110.yml'
-
-permissions:
-  contents: read
-
+    paths: ['.github/workflows/owner-canvas-caption-release-20261110.yml']
+permissions: {contents: read}
 concurrency:
-  group: deepsyq-surgical-pages-release
+  group: owner-deepsyq-canvas-live-caption-20261110
   cancel-in-progress: false
-
 jobs:
-  canvas:
+  release:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 29
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
@@ -24,38 +18,52 @@ jobs:
       AI_BILLING_MODE: test
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+        with: {fetch-depth: 0, persist-credentials: false}
       - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Verify the ONLY user-visible change is the requested paragraph removal
-        env:
-          OWNER_BASELINE: 8a758f647847f7a2592648311af5ef7891025311
+        with: {node-version: '22'}
+      - name: Verify owner-approved one-file change and latest LIVE Worker
+        shell: bash
         run: |
-          python - <<'PY'
-          import os,subprocess
-          from pathlib import Path
-          base=os.environ['OWNER_BASELINE']
-          file='app/src/main/assets/canvas.html'
-          old=subprocess.check_output(['git','show',base+':'+file])
-          new=Path(file).read_bytes()
-          remove=b'<p>Start with a prompt, bring your own photos and continue in the real Image or Video Studio.</p>'
-          assert old.count(remove)==1,'Original paragraph missing or duplicated'
-          assert new==old.replace(remove,b''),'Any changes beyond requested paragraph are forbidden'
-          changed=subprocess.check_output(['git','diff','--name-only',base,'HEAD','--','app/src/main/assets'],text=True).splitlines()
-          assert changed==[file],f'Unrequested site assets changed: {changed}'
-          print('CANVAS_EXACT_SINGLE_PARAGRAPH_PASS',file)
-          PY
-      - name: Install exact uploader dependencies
-        run: python -m pip install --disable-pip-version-check "requests==2.32.3" "blake3==1.0.8"
-      - name: Read-only plan of LIVE-based one-file release (NO publishing)
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/deepsyq-platform:refs/remotes/origin/deepsyq-platform
+          node --check scripts/owner-canvas-live-caption-release-20261110.mjs
+          node scripts/owner-canvas-live-caption-release-20261110.mjs prepare
+          echo "TARGET_SHA=$(node -p "require('/tmp/deepsyq-owner-canvas-status.json').dev")" >> "$GITHUB_ENV"
+      - name: Reconstruct latest LIVE assets and remove only Canvas description
+        shell: bash
         run: |
-          python scripts/deepsyq_surgical_publish.py \
-            --mode plan \
-            --files canvas.html \
-            --commit "$GITHUB_SHA"
+          set -euo pipefail
+          node scripts/owner-canvas-live-caption-release-20261110.mjs snapshot
+      - name: Publish to reserve TEST only for safe validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy /tmp/deepsyq-owner-canvas-live/app/src/main/assets \
+            --project-name=deepsyq --branch=test \
+            --commit-hash="$TARGET_SHA" --commit-dirty=true \
+            --commit-message="Canvas latest-live one paragraph deletion, all other assets and Worker unchanged"
+      - name: Verify exact Canvas text removal, Worker, unaffected TEST pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/owner-canvas-live-caption-release-20261110.mjs preview
+      - name: Fail if MAIN changed since live baseline was captured
+        run: node scripts/owner-canvas-live-caption-release-20261110.mjs guard
+      - name: Promote only exact Canvas caption removal to production
+        id: publish
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "MAIN_PROMOTION_ATTEMPTED=true" >> "$GITHUB_ENV"
+          npx --yes wrangler@4 pages deploy /tmp/deepsyq-owner-canvas-live/app/src/main/assets \
+            --project-name=deepsyq --branch=deepsyq-platform \
+            --commit-hash="$TARGET_SHA" --commit-dirty=true \
+            --commit-message="Owner-approved one paragraph removal from latest live Canvas, Worker preserved"
+      - name: Verify live MAIN Canvas, protected pages and backend
+        run: |
+          set -euo pipefail
+          node scripts/owner-canvas-live-caption-release-20261110.mjs main
+          echo "MAIN_VERIFIED=true" >> "$GITHUB_ENV"
+      - name: Roll back ONLY this just-attempted release on verification failure
+        if: always() && env.MAIN_PROMOTION_ATTEMPTED == 'true' && env.MAIN_VERIFIED != 'true'
+        run: node scripts/owner-canvas-live-caption-release-20261110.mjs rollback
