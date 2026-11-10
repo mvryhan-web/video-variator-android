@@ -808,7 +808,7 @@ export default {
         archived: false,
         created_at: new Date().toISOString(),
         svg,
-        mime: kind === 'video' ? 'video/mp4' : 'image/svg+xml'
+        mime: kind === 'video' ? 'video/mp4' : (kind === 'audio' || kind === 'music') ? 'audio/mpeg' : 'image/svg+xml'
       };
       studioJobs.set(id, jobRecord);
       if (env.R2_BUCKET && kind !== 'video') {
@@ -839,7 +839,7 @@ export default {
           mime: j.mime,
           creditsReserved: 0,
           creditsCharged: 0,
-          previewUrl: j.kind === 'video' ? '/media/home/neon-20261018/apps-card.mp4' : ('/api/studio/jobs/' + j.id + '/media')
+          previewUrl: j.kind === 'video' ? '/media/home/neon-20261018/apps-card.mp4' : (j.kind === 'audio' || j.kind === 'music') ? '/media/jarvix/clips/jarvix_en_01.mp3' : ('/api/studio/jobs/' + j.id + '/media')
         })).reverse().slice(0, 30);
       return json({ ok: true, filter, jobs: list, items: list });
     }
