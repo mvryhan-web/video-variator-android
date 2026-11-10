@@ -1,0 +1,33 @@
+name: Owner JARVIX history above account - exact CSS production release
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths: ['.github/workflows/owner-jarvix-history-css-onefile-release-20261110.yml']
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  one-css:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: deepsyq-platform, fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Verify approved CSS and publisher syntax
+        run: |
+          python -m py_compile scripts/owner_jarvix_history_css_release_20261110.py
+          node --check app/src/main/assets/jarvix-chat.js
+          node --check tests/jarvix-history-toggle-swipe.browser.test.mjs
+      - name: Install only Pages upload libraries
+        run: python -m pip install --disable-pip-version-check requests==2.32.3 blake3==1.0.8
+      - name: Publish exactly one JARVIX CSS hash while preserving the live Worker
+        run: python scripts/owner_jarvix_history_css_release_20261110.py
