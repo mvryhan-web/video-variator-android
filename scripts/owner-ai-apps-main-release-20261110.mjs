@@ -218,7 +218,7 @@ async function check(mode){
      id:'owner-qa-template-'+i,
      title:'Owner template '+(i+1),
      description:'Preview of creative workflow '+(i+1),
-     thumbnail:'deepsyq-logo.png',
+     thumbnail:'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
      category:'Creative Effect',
      generationType:'image',
      requiredInputTypes:['image'],
