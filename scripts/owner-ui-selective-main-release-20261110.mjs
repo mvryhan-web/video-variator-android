@@ -71,7 +71,7 @@ async function prepare(){
  const liveCfg=await getAsset('api/config');
  assert.equal(liveCfg.status,200,'MAIN API unhealthy before release');
  const data={id:d.id,previous,worker:currentWorker,workerName:p.production_script_name,
-  dev:sh('git',['rev-parse','HEAD']),prepared:new Date().toISOString()};
+  dev:sh('git',['rev-parse','origin/deepsyq-platform']),prepared:new Date().toISOString()};
  fs.writeFileSync(statusFile,JSON.stringify(data));
  console.log('OWNER_SELECTIVE_MAIN_PREFLIGHT_PASS',JSON.stringify({id:d.id,previous,dev:data.dev,workerUnchanged:true,bindings:true}));
 }
