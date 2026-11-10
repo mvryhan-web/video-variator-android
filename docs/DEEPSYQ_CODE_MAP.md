@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `0f3492d711952dbcaacb26033868e96ca3d419cd`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `993c76d36506bc5f165d0efea7ec722472596b4a`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 120 | Named symbols: 408 | Checked relations: 76
 
 ## Topic finder (matching filenames)
@@ -98,7 +98,7 @@ MODELS (L37) · RAW_MODEL_CATALOG (L42) · MODEL_CATALOG (L75)
 
 ### `app/src/main/assets/generate-studio.js`
 
-curLang (L19) · studioI18n (L26) · hintEl (L36) · requested (L39) · config (L41) · catalog (L41) · refs (L42) · historyThumbUrls (L61) · drafts (L63) · studioDocumentToken (L214) · studioRequests (L216) · walletKinds (L270) · imageEditPrompts (L493) · cropDialog (L508) · cropRatio (L511) · cropZoom (L511) · cropX (L511) · cropY (L511) · studioDialogAnchors (L720) · UNCERTAIN_VIDEO_ERRORS (L814) · targetJobId (L1488) · aiCheckoutState (L1491)
+curLang (L20) · studioI18n (L27) · hintEl (L37) · requested (L40) · config (L42) · catalog (L42) · refs (L43) · historyThumbUrls (L62) · drafts (L64) · studioDocumentToken (L215) · studioRequests (L217) · walletKinds (L271) · imageEditPrompts (L494) · cropDialog (L509) · cropRatio (L512) · cropZoom (L512) · cropX (L512) · cropY (L512) · studioDialogAnchors (L721) · UNCERTAIN_VIDEO_ERRORS (L815) · targetJobId (L1492) · aiCheckoutState (L1495)
 
 ### `app/src/main/assets/home-creative-examples.js`
 
