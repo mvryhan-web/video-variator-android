@@ -21,7 +21,7 @@ const imgCache=new Map(),transparentCache=new Map(),objectUrls=new Set();
 const originalAccount=localStorage.getItem('vv_token')||'guest';
 const sameAccount=()=>originalAccount===(localStorage.getItem('vv_token')||'guest');
 const note=message=>{$('cwStatus').textContent=message;};
-const clean={mode:'image',id:'demo-1',ratio:'16:9',offsetX:0,offsetY:0,size:100,rotation:0,opacity:100,brightness:100,contrast:100,saturation:100,effect:'original',background:'#ffffff',removeWhite:false,layers:[],selected:-1,locked:false};
+const clean={mode:'image',id:'demo-1',ratio:'16:9',fit:'cover',offsetX:0,offsetY:0,size:100,rotation:0,opacity:100,brightness:100,contrast:100,saturation:100,effect:'original',background:'#ffffff',removeWhite:false,layers:[],selected:-1,locked:false};
 let state=JSON.parse(JSON.stringify(clean)),history=[],future=[],loadingSeq=0,played=null;
 let sequence=['demo-1','demo-4','demo-5','demo-9','demo-11'];
 const ratios={'16:9':[1280,720],'1:1':[1080,1080],'4:5':[1000,1250],'9:16':[720,1280]};
@@ -87,7 +87,7 @@ async function render(){
    let source=im;if(state.removeWhite)source=await removeWhiteBackground(im,photo.id);
    if(serial!==loadingSeq)return;
    const iw=source.width||source.naturalWidth,ih=source.height||source.naturalHeight;
-   const f=Math.max(w/iw,h/ih)*(state.size/100);
+   const f=(state.fit==='contain'?Math.min(w/iw,h/ih):Math.max(w/iw,h/ih))*(state.size/100);
    ctx.save();ctx.translate(w/2+state.offsetX*w/1280,h/2+state.offsetY*h/720);
    ctx.rotate(state.rotation*Math.PI/180);ctx.globalAlpha=state.opacity/100;
    ctx.filter=effectFilter();ctx.drawImage(source,-iw*f/2,-ih*f/2,iw*f,ih*f);ctx.restore();
@@ -102,7 +102,9 @@ function updateControls(){
  for(const [key,value,suffix] of [['cwSize',state.size,'%'],['cwRotation',state.rotation,'°'],['cwOpacity',state.opacity,'%'],['cwBrightness',state.brightness,'%'],['cwContrast',state.contrast,'%'],['cwSaturation',state.saturation,'%']]){
   $(key).value=String(value);const label=$(key+'Label');if(label)label.textContent=String(value)+suffix;
  }
- $('cwRatio').value=state.ratio;$('cwLock').setAttribute('aria-pressed',String(state.locked));
+ $('cwRatio').value=state.ratio;$('cwRatioQuick').value=state.ratio;
+ $('cwFitCover').classList.toggle('cw-option-active',state.fit!=='contain');$('cwFitContain').classList.toggle('cw-option-active',state.fit==='contain');
+ $('cwLock').setAttribute('aria-pressed',String(state.locked));
  document.querySelectorAll('[data-cw-effect]').forEach(b=>b.classList.toggle('cw-preset-active',b.dataset.cwEffect===state.effect));
  document.querySelectorAll('#cwGallery [data-cw-photo]').forEach(b=>{const active=b.dataset.cwPhoto===state.id;b.classList.toggle('cw-selected',active);b.setAttribute('aria-pressed',String(active));});
  updateUndo();renderFrames();
@@ -148,33 +150,56 @@ function addLayer(type){if(!accountGuard())return;mark();const base={x:canvas.wi
  else state.layers.push({...base,type,w:190,h:150,color:type==='star'?'#ffc45c':'#bd60f8'});
  state.selected=state.layers.length-1;updateControls();void render();note('Added '+type+'. Drag it on the canvas to position.');
 }
-function showToolPane(tool){const pane=$('cwToolPane');pane.replaceChildren();pane.hidden=false;
- const heading=document.createElement('strong');heading.textContent={design:'Try a look',elements:'Add an element',text:'Add text',upload:'Your photos',photos:'Gallery',templates:'Quick templates',background:'Background',apps:'AI Studio'}[tool]||'Tools';pane.append(heading);
+function showToolPane(tool){
+ const pane=$('cwToolPane');pane.replaceChildren();pane.hidden=false;
+ const heading=document.createElement('strong');heading.textContent={design:'Choose a layout',elements:'Add a shape',text:'Write on your photo',upload:'Your photos',photos:'Choose a photo',templates:'Ready layouts',background:'Background color',apps:'AI Studio'}[tool]||'Tools';pane.append(heading);
  const grid=document.createElement('div');grid.className='cw-tool-grid';pane.append(grid);
- const option=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',fn);grid.append(b)};
+ const option=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',fn);grid.append(b);return b};
  switch(tool){
-  case 'design':case 'photos':pane.hidden=true;$('cwGallerySearch').focus();break;
-  case 'elements':option('Rectangle',()=>addLayer('rect'));option('Circle',()=>addLayer('ellipse'));option('Star',()=>addLayer('star'));break;
-  case 'text':option('Add heading',()=>addLayer('text'));option('Edit text',()=>{
-   const selected=state.layers[state.selected];if(!selected||selected.type!=='text'){note('First add or select a text layer.');return;}
-   const t=window.prompt('Edit selected text',selected.text);if(t===null||!t.trim())return;mark();selected.text=t.slice(0,120);void render();
-  });break;
-  case 'upload':option('+ Choose photo',openUpload);break;
-  case 'templates':option('Portrait 4:5',()=>setRatio('4:5'));option('Story 9:16',()=>setRatio('9:16'));option('Square 1:1',()=>setRatio('1:1'));option('Wide 16:9',()=>setRatio('16:9'));break;
-  case 'background':for(const [color,title] of [['#ffffff','White'],['#0d142b','Midnight'],['#f9d7e9','Rose'],['#3a2362','Violet']])option(title,()=>{mark();state.background=color;void render()});break;
-  case 'apps':option('Open AI Studio',()=>void handoff());break;
+  case 'photos':pane.hidden=true;scrollToGallery();break;
+  case 'elements':option('▢ Rectangle',()=>addLayer('rect'));option('◯ Circle',()=>addLayer('ellipse'));option('★ Star',()=>addLayer('star'));break;
+  case 'text':{
+    let selected=state.layers[state.selected];
+    if(!selected||selected.type!=='text'){addLayer('text');selected=state.layers[state.selected];}
+    grid.hidden=true;
+    const l=document.createElement('label');l.textContent='Type your text';l.htmlFor='cwTextInput';pane.append(l);
+    const input=document.createElement('input');input.id='cwTextInput';input.type='text';input.maxLength=120;input.placeholder='Write something on the image';input.value=selected.text||'';pane.append(input);
+    const help=document.createElement('p');help.className='cw-tool-help';help.textContent='Your text appears directly on the photo. Drag it to move.';pane.append(help);
+    input.addEventListener('input',()=>{if(!accountGuard())return;if(!input.dataset.dirty){mark();input.dataset.dirty='yes';}selected.text=input.value;void render();});
+    input.focus({preventScroll:true});input.select();break;
+  }
+  case 'upload':option('＋ Choose photo',openUpload);break;
+  case 'design':case 'templates':{
+    const info=document.createElement('p');info.className='cw-tool-help';info.textContent='Choose a real canvas layout; your current photo stays selected.';pane.append(info);
+    for(const [label,ratio,text] of [['Social 4:5','4:5','Your caption'],['Story 9:16','9:16','Your story'],['Square 1:1','1:1','Your title'],['Wide 16:9','16:9','Your headline']])option(label,()=>{mark();state.ratio=ratio;state.fit='contain';state.layers=[{type:'text',text,x:ratios[ratio][0]/2,y:ratios[ratio][1]*.82,size:Math.min(64,ratios[ratio][0]*.07),color:'#ffffff',opacity:1,locked:false}];state.selected=0;updateControls();void render();note(label+' layout applied. Tap Text to edit the title.');});break;
+  }
+  case 'background':{
+    const info=document.createElement('p');info.className='cw-tool-help';info.textContent='Choose a color. Photo switches to Fit so the background is visible.';pane.append(info);
+    for(const [color,title] of [['#ffffff','White'],['#0d142b','Midnight'],['#f9d7e9','Rose'],['#3a2362','Violet']])option(title,()=>{mark();state.background=color;state.fit='contain';updateControls();void render();note(title+' background selected.');});break;
+  }
+  case 'apps':{const help=document.createElement('p');help.className='cw-tool-help';help.textContent='Use your Canvas photo and prompt in the existing AI Studio. You can review settings before generation.';pane.append(help);option('Open AI Studio ↗',()=>void handoff());break;}
  }
+ if(!pane.hidden && window.matchMedia('(max-width:760px)').matches){pane.scrollIntoView({behavior:'smooth',block:'nearest'});}
 }
+function scrollToGallery(){const gallery=$('cwGallery');gallery.scrollIntoView({behavior:'smooth',block:'nearest'});}
+function dockToolPane(){
+ const pane=$('cwToolPane'),dock=$('cwMobileToolDock'),library=$('cwLibraryTop')||document.querySelector('.cw-library-top');
+ if(window.matchMedia('(max-width:760px)').matches){if(pane.parentNode!==dock)dock.append(pane);}
+ else if(library && pane.parentNode!==library)library.insertAdjacentElement('afterend',pane);
+}
+window.addEventListener('resize',dockToolPane);
 function setRatio(r){if(!ratios[r])return;mark();state.ratio=r;$('cwRatio').value=r;updateControls();void render();note('Canvas aspect ratio: '+r);}
-function switchMode(kind){if(!['image','video'].includes(kind)||kind===state.mode)return;mark();state.mode=kind;state.ratio=kind==='video'?'9:16':'16:9';updateControls();void render();note(kind==='video'?'Video storyboard preview: use AI Studio for actual video generation.':'Image editing mode active.');}
+function switchMode(kind){if(!['image','video'].includes(kind)||kind===state.mode)return;mark();state.mode=kind;updateControls();void render();note(kind==='video'?'Video mode selected. Your '+state.ratio+' format stays unchanged; choose another under Format if needed. AI Studio generates the video.':'Image editing mode active.');}
 $('cwImageMode').onclick=()=>switchMode('image');$('cwVideoMode').onclick=()=>switchMode('video');
-$('cwRatio').addEventListener('change',e=>setRatio(e.target.value));
+$('cwRatio').addEventListener('change',e=>setRatio(e.target.value));$('cwRatioQuick').addEventListener('change',e=>setRatio(e.target.value));
 for(const [id,field] of [['cwSize','size'],['cwRotation','rotation'],['cwOpacity','opacity'],['cwBrightness','brightness'],['cwContrast','contrast'],['cwSaturation','saturation']]){
  let snapshotMade=false;$(id).addEventListener('pointerdown',()=>{snapshotMade=false});
  $(id).addEventListener('input',e=>{if(!snapshotMade){mark();snapshotMade=true;}state[field]=+e.target.value;const label=$(id+'Label');if(label)label.textContent=e.target.value+(field==='rotation'?'°':'%');void render();});
  $(id).addEventListener('change',()=>{snapshotMade=false;});
 }
-$('cwCrop').onclick=()=>{const order=['16:9','1:1','4:5','9:16'];setRatio(order[(order.indexOf(state.ratio)+1)%order.length]);};
+$('cwCrop').onclick=()=>{document.querySelector('[data-cw-tab="edit"]')?.click();$('cwRatio').focus();note('To crop: choose a frame format, use Fill frame, then drag the photo to position it.');};
+for(const [id,delta] of [['cwRotateLeft',-90],['cwRotateRight',90]])$(id).onclick=()=>{mark();state.rotation=((state.rotation+delta+540)%360)-180;updateControls();void render();note('Photo rotated '+(delta<0?'left':'right')+' by 90°.');};
+for(const [id,fit] of [['cwFitCover','cover'],['cwFitContain','contain']])$(id).onclick=()=>{if(state.fit===fit)return;mark();state.fit=fit;updateControls();void render();note(fit==='contain'?'Whole image fits inside frame. Background color is now visible.':'Photo fills the frame; drag to reposition if needed.');};
 $('cwReplace').onclick=openUpload;
 $('cwRemoveBg').onclick=()=>{
  if(!state.id)return;mark();state.removeWhite=!state.removeWhite;
@@ -210,7 +235,9 @@ $('cwBringForward').onclick=()=>{if(state.selected<0||state.selected===state.lay
 $('cwLock').onclick=()=>{if(state.selected<0){note('Select a text or shape to lock.');return;}mark();const l=state.layers[state.selected];l.locked=!l.locked;state.locked=l.locked;$('cwLock').setAttribute('aria-pressed',String(l.locked));note(l.locked?'Layer locked.':'Layer unlocked.');};
 $('cwUndo').onclick=()=>{if(!history.length)return;future.push(clone());const x=history.pop();state=x.state;sequence=x.sequence;updateControls();void render();};
 $('cwRedo').onclick=()=>{if(!future.length)return;history.push(clone());const x=future.pop();state=x.state;sequence=x.sequence;updateControls();void render();};
-$('cwZoom').onchange=()=>{const z=+$('cwZoom').value;$('cwStageInner').style.transform=`scale(${z/100})`;$('cwStageInner').style.transformOrigin='center';note('View zoom: '+z+'%. Export size stays unchanged.');};
+function setZoom(value){const z=Math.max(50,Math.min(200,Math.round(value/10)*10));$('cwZoom').value=z;$('cwZoomValue').textContent=z+'%';$('cwStageInner').style.zoom=z/100;note('Canvas view: '+z+'%. Export size remains unchanged.');}
+$('cwZoom').addEventListener('input',e=>setZoom(+e.target.value));
+$('cwZoomOut').onclick=()=>setZoom(+$('cwZoom').value-10);$('cwZoomIn').onclick=()=>setZoom(+$('cwZoom').value+10);
 let drag=null;
 canvas.addEventListener('pointerdown',e=>{
  if(!accountGuard())return;const rect=canvas.getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width*canvas.width,y=(e.clientY-rect.top)/rect.height*canvas.height;
@@ -244,6 +271,7 @@ async function handoff(){
 }
 $('cwGenerate').onclick=()=>void handoff();
 $('cwPromptUpload').onclick=openUpload;
+$('cwUploadMain').onclick=openUpload;$('cwGalleryUpload').onclick=openUpload;
 $('cwSettings').onclick=()=>{$('cwTabAdjust').hidden=false;$('cwTabEdit').hidden=true;$('cwTabEffects').hidden=true;document.querySelector('[data-cw-tab="adjust"]')?.click();$('cwTabAdjust').scrollIntoView({behavior:'smooth',block:'nearest'});};
 $('cwPlay').onclick=()=>{
  if(played){clearInterval(played);played=null;$('cwPlay').textContent='▷';$('cwSequenceTime').textContent='Preview';return;}
@@ -257,4 +285,4 @@ document.addEventListener('keydown',e=>{
  if(e.key.toLowerCase()==='z'){e.preventDefault();(e.shiftKey?$('cwRedo'):$('cwUndo')).click();}
  if(e.key.toLowerCase()==='y'){e.preventDefault();$('cwRedo').click();}
 });
-renderGallery();updateControls();void render();
+dockToolPane();renderGallery();updateControls();void render();
