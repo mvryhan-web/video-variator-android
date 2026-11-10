@@ -247,18 +247,25 @@ async function verify(kind){
   const oldFiles=JSON.parse(textOf(manifestFile));
   const deployed=await api(projectUrl+'/deployments/'+p.canonical_deployment.id);
   assert(deployed.files&&deployed.uses_functions===true,'New production manifest or Worker missing');
-  assert.deepEqual(Object.keys(deployed.files).sort(),Object.keys(oldFiles).sort(),'Production file list differs outside owner scope');
-  const approved=new Set(['/canvas.html','/canvas-workspace.js','/canvas-workspace.css']);
-  let changes=0;
+  const approved=new Set(paths.map(x=>'/'+x));
+  const core=new Set(['/canvas.html','/canvas-workspace.js','/canvas-workspace.css']);
+  const expected=new Set([...Object.keys(oldFiles),...approved]);
+  assert.deepEqual(Object.keys(deployed.files).sort(),[...expected].sort(),'Production file list changed outside approved Canvas scope');
+  let changed=0,restored=0;
   for(const [filename,digest] of Object.entries(oldFiles)){
-    if(approved.has(filename)){
-      assert.notEqual(deployed.files[filename],digest,'Canvas update not included '+filename);
-      changes++;
+    if(core.has(filename)){
+      assert.notEqual(deployed.files[filename],digest,'Canvas update not included '+filename);changed++;
     }else{
       assert.equal(deployed.files[filename],digest,'Unapproved production asset changed '+filename);
     }
   }
-  assert.equal(changes,3,'Unexpected Canvas manifest diff');
+  for(const filename of approved){
+    if(!Object.hasOwn(oldFiles,filename)){
+      assert.match(deployed.files[filename]||'',/^[a-f0-9]{32}$/,'Missing restored Canvas asset '+filename);
+      restored++;
+    }
+  }
+  assert.equal(changed+restored,3+paths.length-3-[...approved].filter(x=>Object.hasOwn(oldFiles,x)&&!core.has(x)).length,'Canvas manifest diff incomplete');
   const settings=await api('https://api.cloudflare.com/client/v4/accounts/'+account+'/workers/scripts/'+encodeURIComponent(p.production_script_name)+'/settings');
   assert.equal(settingsDigest(settings),data.settingsHash,'Critical Worker bindings/settings changed (excluding CF_PAGES deployment metadata)');
   const billing=await getLive('api/ai-billing/config');assert.equal(billing.status,200,'Billing configuration API unavailable');
