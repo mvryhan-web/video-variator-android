@@ -149,7 +149,7 @@ document.querySelectorAll('[data-social]').forEach(button=>button.addEventListen
  catch(_){$('navShareStatus').textContent='Copy this link to share: '+url;}
  window.open(kind==='discord'?'https://discord.com/channels/@me':'https://www.instagram.com/','_blank','noopener,noreferrer');
 }));
-let authOpener;function openAuth(){if(window.AndroidBridge){location.assign('index.html#signin');return;}authOpener=document.activeElement;$('authModal').hidden=false;setTimeout(()=>$('emailAuthEmail')?.focus(),0);initGoogle();}function closeAuth(){$('authModal').hidden=true;authOpener?.focus();}
+let authOpener;function openAuth(){if(window.AndroidBridge){location.assign('video-uniquifier.html#signin');return;}authOpener=document.activeElement;$('authModal').hidden=false;setTimeout(()=>$('emailAuthEmail')?.focus(),0);initGoogle();}function closeAuth(){$('authModal').hidden=true;authOpener?.focus();}
 $('accountButton').onclick=()=>{closeMobileDrawer(true);openAuth();};document.querySelectorAll('[data-close-auth]').forEach(b=>b.onclick=closeAuth);
 document.addEventListener('keydown',e=>{if($('authModal').hidden)return;if(e.key==='Escape')closeAuth();if(e.key==='Tab'){const items=[...$('authModal').querySelectorAll('button:not(:disabled),input:not(:disabled)')].filter(e=>e.getClientRects().length);const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}});
 $('logout').onclick=()=>{clearRecentCreations('Sign in to see your saved Studio creations.');localStorage.removeItem('vv_token');sessionStorage.removeItem('vu_generation_job');location.reload();};
@@ -251,7 +251,7 @@ $('inviteShare')?.addEventListener('click',async()=>{
 // Header sign-in must not depend on dispatching a click to the inert,
 // off-canvas mobile sidebar account button.
 $('topLogin')?.addEventListener('click',()=>{
- if(localStorage.getItem('vv_token'))location.assign('index.html#profile');
+ if(localStorage.getItem('vv_token'))location.assign('video-uniquifier.html#profile');
  else openAuth();
 });
 function markHomeLogin(){const b=$('topLogin');if(b){const t=b.querySelector('.ds-pod-text');const txt=localStorage.getItem('vv_token')?homeLangText().account:homeLangText().login;if(t)t.textContent=txt;else b.textContent=txt;}}
@@ -598,7 +598,7 @@ if(requestedIdentityToken)try{
   dashboardAccountOwnerToken=requestedIdentityToken;
   $('accountLabel').textContent=user.name||'Your workspace';
   $('accountButton').textContent='Account settings';
-  $('accountButton').onclick=()=>location.assign('index.html#profile');
+  $('accountButton').onclick=()=>location.assign('video-uniquifier.html#profile');
   $('logout').hidden=false;
   if(user.isAdmin&&!document.getElementById('adminAiControl')){
    const a=document.createElement('a');a.id='adminAiControl';a.href='deepsyq-admin.html';a.textContent='Owner AI Control';document.querySelector('.sidebar-bottom').prepend(a);

@@ -1158,7 +1158,12 @@ export default {
       });
     }
 
-    // 1. Homepage routes -> deepsyq.html
+        // Account & Profile routes
+    if (pathname === '/profile' || pathname === '/account' || pathname === '/account.html') {
+      return Response.redirect(new URL('/video-uniquifier.html#profile', url.origin).toString(), 302);
+    }
+
+// 1. Homepage routes -> deepsyq.html
     if (pathname === '/' || pathname === '/dashboard' || pathname === '/deepsyq.html' || pathname === '/deepsyq') {
       return serveHtmlAsset('/deepsyq');
     }

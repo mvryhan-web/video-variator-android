@@ -82,7 +82,7 @@ export function installUnifiedPlatformHeader() {
 
   // Ensure login exists
   if (!login) {
-    login = link(dictionary().login, 'deepsyq.html?panel=login', 'top-login');
+    login = link(dictionary().login, (localStorage.getItem('vv_token') ? 'video-uniquifier.html#profile' : 'deepsyq.html?panel=login'), 'top-login');
     login.id = 'topLogin';
   }
 
@@ -221,6 +221,7 @@ export function installUnifiedPlatformHeader() {
     try { tkn = localStorage.getItem('vv_token') || ''; } catch {}
     const l = login.querySelector('.ds-pod-text');
     if (l) l.textContent = tkn ? (locale() === 'ru' ? 'Аккаунт' : 'Account') : dictionary().login;
+    if (tkn) login.onclick = (e) => { e.preventDefault(); location.assign('video-uniquifier.html#profile'); };
   });
 
   window.dispatchEvent(new Event('resize'));
