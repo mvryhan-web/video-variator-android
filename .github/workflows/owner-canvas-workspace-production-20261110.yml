@@ -32,7 +32,7 @@ jobs:
           node-version: '22'
       - name: Install verified Cloudflare asset hash checker
         run: python3 -m pip install --quiet blake3 --break-system-packages
-      - name: Validate owner-approved Canvas-only scope and current LIVE Worker
+      - name: Validate exact latest LIVE manifest and preserve owner Canvas scope
         run: |
           set -euo pipefail
           node --check app/src/main/assets/canvas-workspace.js
