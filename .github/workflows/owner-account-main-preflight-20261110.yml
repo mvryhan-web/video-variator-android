@@ -107,3 +107,20 @@ jobs:
             console.log('HISTORIC_BLOB_MATCH',JSON.stringify({name,liveSha:hash,searched:seen.size,matched:found}));
           }
           JS
+      - name: Compare preview and MAIN HTML without writes
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import {createHash} from 'node:crypto';
+          const digest=s=>createHash('sha256').update(s).digest('hex');
+          for(const name of ['pricing.html','deepsyq.html','index.html','jarvix-chat.html','free-tools.html','video-uniquifier.html','pricing-page.css']){
+            const query='?verifyOwner='+Date.now();
+            const [a,b]=await Promise.all(['https://deepsyq.app/','https://owner-account-navsafe-202611.deepsyq.pages.dev/'].map(async base=>{
+              const r=await fetch(base+name+query,{headers:{'cache-control':'no-cache'},signal:AbortSignal.timeout(17000)});
+              return {status:r.status,url:r.url,body:await r.text(),type:r.headers.get('content-type')};
+            }));
+            let i=0;while(i<a.body.length&&i<b.body.length&&a.body[i]===b.body[i])i++;
+            const same=a.body===b.body;
+            console.log('LIVE_PREVIEW_DIFF',JSON.stringify({name,prodStatus:a.status,previewStatus:b.status,prodBytes:a.body.length,previewBytes:b.body.length,match:same,firstDiff:i,prodHash:digest(a.body),previewHash:digest(b.body),prodAround:same?'':a.body.slice(Math.max(0,i-80),i+120),previewAround:same?'':b.body.slice(Math.max(0,i-80),i+120)}));
+          }
+          JS
