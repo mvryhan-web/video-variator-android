@@ -959,6 +959,17 @@ export default {
     }
 
     if (pathname === '/api/jarvix/chat' && request.method === 'POST') {
+      // Only server-verified, active paid JARVIX accounts can call external LLMs.
+      // Guest/free/trial requests are handled by prerecorded local catalog in the frontend.
+      const jarvixAccount = await getAuthenticatedUser(request, env);
+      const jarvixPublic = jarvixAccount ? buildPublicUser(jarvixAccount, env) : null;
+      const jarvixUsage = jarvixPublic?.usage;
+      const jarvixPaid = jarvixPublic?.isAdmin === true || (
+        jarvixUsage?.active === true &&
+        ['basic', 'pro', 'business', 'lifetime'].includes(jarvixUsage.plan) &&
+        ['active', 'lifetime'].includes(jarvixUsage.status)
+      );
+      if (!jarvixPaid) return json({error:'SUBSCRIPTION_REQUIRED'}, 403);
       const body = await request.json().catch(() => ({}));
       const message = typeof body.message === 'string' ? body.message.trim() : '';
       if (!message || message.length > 2000) return json({ error: 'INVALID_MESSAGE' }, 400);
