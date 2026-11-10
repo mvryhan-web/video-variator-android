@@ -174,8 +174,17 @@ async function check(branch){
  for(const [n,v] of Object.entries(s.manifest))assert.equal(d.files[n],v,'Deployment asset changed '+n);
  const url=branch==='test'?'https://test.deepsyq.pages.dev':'https://deepsyq.app';
  for(const rel of cors){
-  const b=await file(url+'/'+rel+'?canvasRelease='+Date.now());
-  assert.equal(sha(b),sha(read(src+'/'+rel)),branch+' Canvas bytes mismatch '+rel);
+  let matched=false,last='';
+  for(let retry=0;retry<12;retry++){
+   try{
+    const b=await file(url+'/'+rel+'?canvasRelease='+Date.now());
+    const actual=rel.endsWith('.html')?Buffer.from(stripInjected(b)):b;
+    if(sha(actual)===sha(read(src+'/'+rel))){matched=true;break}
+    last='content digest different';
+   }catch(e){last=String(e.message)}
+   await sleep(2000);
+  }
+  assert(matched,branch+' Canvas bytes mismatch '+rel+': '+last);
  }
  for(const rel of ['media/canvas-demos/20261110/canvas-demo-01.webp','media/canvas-demos/20261110/canvas-demo-13.webp']){
   const b=await file(url+'/'+rel+'?canvasRelease='+Date.now());
