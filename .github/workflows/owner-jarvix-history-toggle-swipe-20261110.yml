@@ -1,0 +1,46 @@
+name: Owner JARVIX drawer history toggle and swipe browser QA
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/owner-jarvix-history-toggle-swipe-20261110.yml'
+permissions:
+  contents: read
+jobs:
+  jarvix-history-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_ENV: test
+      OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+      JARVIX_FREE_LLM_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: deepsyq-platform
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Ensure only one existing JARVIX history drawer and composer
+        run: |
+          node --check app/src/main/assets/jarvix-chat.js
+          node --check tests/jarvix-history-toggle-swipe.browser.test.mjs
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const html=fs.readFileSync('app/src/main/assets/jarvix-chat.html','utf8');
+          const css=fs.readFileSync('app/src/main/assets/jarvix-chat.css','utf8');
+          for(const id of ['jChatForm','jChatDropdown','jDrawerHistoryToggle','jMenuHistoryList'])
+            assert.equal(html.split('id="'+id+'"').length-1,1,'Duplicate or missing '+id);
+          assert.match(css, /#jMenuHistoryList\[hidden\]/);
+          JS
+      - name: Install existing Node dependencies and Chromium
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Verify desktop/mobile history toggle, conversation restore and swipe
+        run: node --test tests/jarvix-history-toggle-swipe.browser.test.mjs
