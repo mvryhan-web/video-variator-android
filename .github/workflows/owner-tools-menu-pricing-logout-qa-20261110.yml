@@ -1,0 +1,123 @@
+name: Owner Everyday Tools Pricing Logout focused browser QA
+on:
+  push:
+    branches: [owner-tools-menu-pricing-logout-qa-20261110]
+    paths: ['.github/workflows/owner-tools-menu-pricing-logout-qa-20261110.yml']
+permissions: {contents: read}
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Check only edited page scripts and no-spend test browser
+        run: |
+          set -euo pipefail
+          for file in everyday-tools-visual.js deepsyq-mobile-shell.js deepsyq-unified-platform-header.js video-uniquifier-reference.js app-v4.js; do
+            node --check "app/src/main/assets/$file"
+          done
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Start isolated local site
+        run: |
+          python3 -m http.server 4321 --bind 127.0.0.1 --directory app/src/main/assets >/tmp/owner-ui-http.log 2>&1 &
+          for i in $(seq 1 40); do if curl -fsS http://127.0.0.1:4321/free-tools.html -o /dev/null; then exit 0; fi; sleep .25; done
+          exit 1
+      - name: Test Tools menu, real logout, card link and Pricing arrows on desktop and mobile
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const b=await chromium.launch({headless:true,args:['--no-sandbox']});
+          const origin='http://127.0.0.1:4321';
+          const makeContext=async (width)=>{
+            const ctx=await b.newContext({viewport:{width,height:900},isMobile:width<=700,hasTouch:width<=700});
+            await ctx.addInitScript(()=>{localStorage.setItem('vv_token','qa-fake-no-spend')});
+            await ctx.route('**/api/**',async r=>{
+              const url=r.request().url();
+              const data=url.includes('/api/me')?{user:{name:'QA',email:'qa@example.test',isAdmin:false}}:
+                url.includes('/api/config')?{googleClientId:'',billingConfigured:false,plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}}}:
+                url.includes('/api/ai-billing/config')?{packs:[],billingConfigured:false}:{available:0,items:[]};
+              await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)});
+            });
+            return ctx;
+          };
+          try{
+            for(const [label,width] of [['desktop',1360],['mobile',390]]){
+              const ctx=await makeContext(width);
+              try{
+                const page=await ctx.newPage();
+                page.on('pageerror',e=>{if(!/favicon|tracking|GOOGLE|oauth/i.test(e.message))console.log('LOCAL_ERROR',label,e.message.slice(0,180))});
+                await page.goto(origin+'/free-tools.html',{waitUntil:'domcontentloaded',timeout:40000});
+                await page.locator('#etShowcase').waitFor({state:'attached',timeout:20000});
+                assert.equal(await page.locator('.et-topbar').count(),0,label+' secondary horizontal toolbar remains');
+                assert.equal(await page.locator('.et-top-search').count(),0,label+' Search Anywhere remains');
+                assert.equal(await page.locator('.et-promo').count(),0,label+' Promo Code remains');
+                assert.equal(await page.locator('.et-uniquifier').getAttribute('href'),'video-uniquifier.html',label+' video banner wrong href');
+                assert.equal(await page.locator('.ds-owner-sidebar-invite').count(),1,label+' invite missing from existing sidebar');
+                assert.equal(await page.locator('.ds-owner-social-link').count(),4,label+' expected four unboxed social logos');
+                assert.equal(await page.locator('#dsSiteSidebar a[href="video-uniquifier.html"]').count(),1,label+' original VU sidebar link');
+                if(width>700){
+                  assert(await page.locator('.ds-header-help-link').isVisible(),label+' desktop Help not beside credits');
+                  const r=await page.evaluate(()=>{
+                    const a=document.querySelector('.ds-header-help-link').getBoundingClientRect();
+                    const c=document.querySelector('.ds-header-credit').getBoundingClientRect();
+                    return {helpRight:a.right,creditsLeft:c.left};
+                  });
+                  assert(r.helpRight<=r.creditsLeft+2,label+' Help not to left of AI Credit');
+                  assert.equal(await page.locator('.ds-owner-sidebar-language').isVisible(),false,label+' mobile language visible on desktop');
+                }else{
+                  assert(await page.locator('.ds-owner-sidebar-language').count()===1,label+' mobile language missing');
+                }
+                await page.locator('.et-uniquifier').click();
+                await page.waitForURL(u=>u.pathname==='/video-uniquifier.html',{timeout:16000});
+                console.log('OWNER_TOOLS_NAV_PASS',label);
+              }finally{await ctx.close()}
+              const priced=await makeContext(width);
+              try{
+                const p=await priced.newPage();
+                await p.goto(origin+'/pricing.html',{waitUntil:'domcontentloaded',timeout:40000});
+                await p.locator('#planCards .price-plan').first().waitFor({state:'visible',timeout:20000});
+                assert.equal(await p.locator('#planCards .price-plan').count(),5,'five pricing plans retained');
+                assert.equal(await p.locator('#creditCards .price-credit-card').count(),5,'five credit packs retained');
+                assert.equal((await p.locator('.price-offer-badge').textContent()).trim(),'85% OFF');
+                if(width<=700){
+                  const arrow=await p.locator('#pricePlanNext').evaluate(e=>({border:getComputedStyle(e).borderTopWidth,bg:getComputedStyle(e).backgroundColor,shadow:getComputedStyle(e).boxShadow}));
+                  assert.equal(arrow.border,'0px','arrow has old rectangle border');
+                  assert(['transparent','rgba(0, 0, 0, 0)'].includes(arrow.bg),'arrow background frame remains '+arrow.bg);
+                  assert.equal(arrow.shadow,'none','arrow frame shadow remains');
+                  await p.locator('#pricePlanNext').click();
+                  await p.waitForFunction(()=>document.querySelector('#pricePlanPosition').textContent.includes('2 / 5'));
+                }
+                console.log('OWNER_PRICING_SCOPED_PASS',label);
+              }finally{await priced.close()}
+              const profile=await makeContext(width);
+              try{
+                const p=await profile.newPage();
+                await p.goto(origin+'/video-uniquifier.html#profile',{waitUntil:'domcontentloaded',timeout:40000});
+                await p.locator('#profileView').waitFor({state:'visible',timeout:20000});
+                assert(await p.locator('#profileLogoutBtn').isVisible(),'logout missing in Profile');
+                await p.locator('#profileLogoutBtn').click();
+                await p.waitForURL(u=>u.pathname==='/deepsyq.html',{timeout:15000});
+                assert.equal(await p.evaluate(()=>localStorage.getItem('vv_token')),null,'logout retained token');
+                console.log('OWNER_PROFILE_LOGOUT_PASS',label);
+              }finally{await profile.close()}
+              const home=await makeContext(width);
+              try{
+                const p=await home.newPage();
+                await p.goto(origin+'/deepsyq.html',{waitUntil:'domcontentloaded',timeout:40000});
+                await p.locator('.ds-owner-social-link').first().waitFor({state:'attached',timeout:20000});
+                assert.equal(await p.locator('.home-global-search').count(),0,'Home Search Anywhere still rendered');
+                assert.equal(await p.locator('#topPromo').count(),0,'Home Promo Code still rendered');
+                assert.equal(await p.locator('#promoDialog').count(),0,'Promo dialog still in UI');
+                assert.equal(await p.locator('.ds-owner-social-link').count(),4,'Home social logos missing');
+                assert.equal(await p.locator('.ds-owner-sidebar-invite').count(),1,'Home invite missing');
+                if(width<=700)assert(await p.locator('.ds-owner-sidebar-language-wrap').count()===1,'Home language missing in sidebar');
+                console.log('OWNER_HOME_UI_CLEAN_PASS',label);
+              }finally{await home.close()}
+            }
+          }finally{await b.close()}
+          JS
