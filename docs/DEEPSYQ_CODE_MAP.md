@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `683a492ca0c105fcea3513ec0c219ca22340792f`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `644863da8f6bcdea8366a33a563ae6983d794572`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 119 | Named symbols: 391 | Checked relations: 74
 
 ## Topic finder (matching filenames)
@@ -130,7 +130,7 @@ urls (L40) · composer (L138) · pending (L193) · modeHeaderLabels (L197) · co
 
 ### `app/src/main/assets/jarvix-clip-library.js`
 
-blobs (L9) · SECTION_KEYWORDS (L14) · INTENT_KEYWORDS (L33) · topicContext (L45) · defaultLib (L283) · prepareStaticClips (L284) · getStaticClip (L285) · findCatalogReply (L286)
+blobs (L9) · SECTION_KEYWORDS (L14) · INTENT_KEYWORDS (L33) · topicContext (L45) · defaultLib (L286) · prepareStaticClips (L287) · getStaticClip (L288) · findCatalogReply (L289)
 
 ### `app/src/main/assets/jarvix-guided-tour.js`
 
