@@ -49,7 +49,7 @@ jobs:
             --commit-message="Owner Canvas workspace + exactly 13 approved images, LIVE worker preserved"
       - name: Check 13 photo files, UI, API and unrelated TEST pages
         run: node scripts/owner-canvas-workspace-production-release-20261110.mjs test
-      - name: Block MAIN if another deployment happened during staging
+      - name: Block MAIN on concurrent deployment; preserve latest production Worker
         run: node scripts/owner-canvas-workspace-production-release-20261110.mjs guard
       - name: Publish owner-requested Canvas workspace to production
         run: |
