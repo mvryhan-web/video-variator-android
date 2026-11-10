@@ -174,6 +174,11 @@ export function installUnifiedPlatformHeader() {
   credit.classList.add('ds-pod-btn', 'ds-pod-credit');
   credit.innerHTML = '<span class="ds-pod-icon" aria-hidden="true" style="margin-right:6px;display:inline-flex;align-items:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="#facc15" stroke="#facc15" stroke-width="1"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></span><span class="ds-pod-text">AI Credits</span>';
   credit.setAttribute('aria-label', 'AI Credit');
+  if (location.pathname.endsWith('/free-tools.html')) {
+    const help=link('Help','contact.html','ds-header-help-link');
+    help.setAttribute('aria-label','Help');
+    right.append(help);
+  }
   right.append(credit);
 
   pricing.classList.add('ds-pod-btn', 'ds-pod-pricing');
