@@ -52,10 +52,10 @@
     </header>
 
     <section id="dashboardView" class="view active">
-      <div class="hero card">
+      <div class="hero card" style="display:none;" hidden>
         <div>
           <span class="pill success" data-i18n="trialPill">100 free videos included</span>
-          <h2 id="heroTitle">Уникализируй своё старое видео</h2>
+          <h2 id="heroTitle">Видеоуникализатор</h2>
           <p data-i18n="heroText">Upload a video, choose a processing style, and let Video Uniquifier handle the rest.</p>
         </div>
         <div class="usageBox">
@@ -72,7 +72,7 @@
       </div>
 
       <section class="card workspace">
-        <div class="sectionHead"><div><h2 data-i18n="newProject" style="font-size:22px;margin:0 0 4px">Видео-уникализатор</h2><p data-i18n="newProjectSub">Choose one or more videos. Completed files are saved automatically.</p></div><span id="engineBadge" class="statusDot" data-i18n="engineStandby">Engine standby</span></div>
+        <div class="sectionHead"><div><h2 class="vu-workspace-title" style="font-size:26px;font-weight:800;margin:0 0 6px;color:#fff;letter-spacing:-0.02em;">Видеоуникализатор</h2><p class="vu-workspace-subhead" style="font-size:13px;color:#94a3b8;margin:0;display:flex;align-items:center;gap:8px;"><span class="vu-new-variation-badge" style="display:inline-block;background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.35);padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">New variation</span><span data-i18n="newProjectSub">Choose one or more videos. Completed files are saved automatically.</span></p></div><span id="engineBadge" class="statusDot" data-i18n="engineStandby">Engine standby</span></div>
         <div class="pickerGrid singlePicker">
           <label class="picker">
             <input id="fileInput" type="file" accept="video/*" multiple hidden>

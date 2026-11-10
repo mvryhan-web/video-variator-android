@@ -96,23 +96,23 @@ function build(){
  if(p)p.remove();
  if(title){
   title.removeAttribute('data-i18n');title.textContent='Video Uniquifier';
-  // Creator Showcase has already removed the original data-i18n attribute and
-  // inserted a second paragraph. Delete both paragraphs, not just the old selector.
   title.parentElement?.querySelectorAll(':scope > p').forEach(copy=>copy.remove());
  }
- hero.prepend(image('hero','vu-hero-image'));
- const frames=node('div','vu-hero-films');
- frames.innerHTML='<div class="vu-workflow-tag">Example workflow ↘</div>';
- ['film1','film2','film3'].forEach((name,i)=>{const f=node('div','vu-film');f.append(image(name));frames.append(f);if(i<2)frames.append(node('span','vu-film-arrow','›'));});
- hero.append(frames);
+ // Large banner with pictures is removed cleanly per owner directive
+ hero.style.display='none';
+ hero.setAttribute('hidden','');
+
  // All original functional file and processing nodes stay attached to this exact workspace.
  const grid=node('div','vu-content-grid'),left=node('div','vu-left'),right=node('div','vu-right');
  hero.after(grid);grid.append(left,right);left.append(workspace);
- const sh=workspace.querySelector('.sectionHead h3'),sub=workspace.querySelector('.sectionHead p');
- if(sh){sh.removeAttribute('data-i18n');sh.textContent='Upload your video';}
- // Decorative Creator studio eyebrow isn't part of the approved compact form.
+
+ // Title 'Видеоуникализатор' is moved down right to workspace / 'New variation' section
+ const headDiv=workspace.querySelector('.sectionHead > div');
+ if(headDiv){
+  const isRu=(navigator.languages?.[0]||navigator.language||'').toLowerCase().startsWith('ru')||(document.getElementById('homeLanguage')?.value==='ru');
+  headDiv.innerHTML=`<h2 class="vu-workspace-title" style="font-size:26px!important;font-weight:800!important;margin:0 0 6px!important;color:#ffffff!important;letter-spacing:-0.02em;">${isRu?'Видеоуникализатор':'Video Uniquifier'}</h2><p class="vu-workspace-subhead" style="font-size:13px!important;color:#94a3b8!important;margin:0!important;display:flex!important;align-items:center!important;gap:8px!important;"><span class="vu-new-variation-badge" style="display:inline-block;background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.35);padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">New variation</span><span>${isRu?'Выберите видео для создания уникальных копий':'Choose one or more videos to begin processing'}</span></p>`;
+ }
  workspace.querySelectorAll('.sectionHead .workspaceEyebrow').forEach(label=>label.remove());
- if(sub){sub.removeAttribute('data-i18n');sub.textContent='';sub.hidden=true;}
  const picker=workspace.querySelector('.picker');
  if(picker){const t=picker.querySelector('[data-i18n="chooseVideos"]'),s=picker.querySelector('[data-i18n="chooseVideosSub"]');
   if(t){t.removeAttribute('data-i18n');t.textContent='Drag and drop a video file here';}
