@@ -330,7 +330,7 @@ async function processMessage(message){
 
   const isAdviceOrQuestion = (
    rawText.includes('?') ||
-   /(?:^|[^a-zа-яё0-9])(как|дела|почему|зачем|что|какой|какая|какое|какие|расскажи|посоветуй|подскажи|помоги|объясни|совет|совета|советом|идея|идеи|рекомендац|можно|стоит|сколько|научи|привет|здравствуй|хай|салют|hello|hi|hey|who|what|how|why|can|could|tell|suggest|advice|explain|help)(?:[^a-zа-яё0-9]|$)/iu.test(rawText)
+   /(?:^|[^a-zа-яё0-9])(как|дела|почему|зачем|что|когда|где|куда|откуда|кто|чем|какой|какая|какое|какие|расскажи|посоветуй|подскажи|помоги|объясни|совет|совета|советом|идея|идеи|рекомендац|можно|стоит|сколько|научи|привет|здравствуй|хай|салют|погода|время|дата|день|hello|hi|hey|who|what|when|where|why|how|can|could|tell|suggest|advice|explain|help)(?:[^a-zа-яё0-9]|$)/iu.test(rawText)
   );
   const isExplicitGen = /^(?:сгенерируй|нарисуй|создай|сделай|запусти|generate|create|draw|make|render)(?=[^а-яёa-z0-9]|$)/iu.test(cleanedText);
   const isModification = /измен|сделай.*(ярче|темнее)|ещё/iu.test(rawText);
