@@ -1,0 +1,79 @@
+name: OWNER MAIN Account first-click and Video Uniquifier navigation surgical release
+on:
+  push:
+    branches: [owner-account-nav-surgical-main-release-20261110]
+    paths: ['.github/workflows/owner-account-nav-surgical-main-release-20261110.yml']
+permissions: {contents: read}
+concurrency:
+  group: owner-deepsyq-account-navigation-main-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.repository == 'mvryhan-web/video-variator-android'
+    runs-on: ubuntu-latest
+    timeout-minutes: 29
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Verify current MAIN, exact existing Worker, production bindings and owner-approved fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/owner-account-nav-surgical-release-20261110.mjs
+          node scripts/owner-account-nav-surgical-release-20261110.mjs prepare
+          echo "TARGET_SHA=$(node -p "require('/tmp/owner-account-nav-main-release.json').dev")" >> "$GITHUB_ENV"
+      - name: Mirror current public MAIN assets and surgically correct ONLY Account and VU links
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/owner-account-nav-surgical-release-20261110.mjs snapshot
+      - name: Install isolated browser for no-spend acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Publish exact recovered MAIN snapshot to isolated PREVIEW first
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy /tmp/owner-account-nav-stage \
+            --project-name=deepsyq --branch=owner-account-navsafe-20261110 \
+            --commit-hash="$TARGET_SHA" --commit-dirty=true \
+            --commit-message="Owner-approved surgical Account + Video Uniquifier navigation preview"
+      - name: Browser-check PREVIEW: first-click Account, actual Profile, Video Uniquifier, unchanged pages and Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/owner-account-nav-surgical-release-20261110.mjs preview
+      - name: Protect concurrent production releases
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/owner-account-nav-surgical-release-20261110.mjs guard
+      - name: Publish surgical snapshot with original Worker to MAIN deepsyq.app
+        id: production
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "MAIN_PROMOTION_ATTEMPTED=true" >> "$GITHUB_ENV"
+          npx --yes wrangler@4 pages deploy /tmp/owner-account-nav-stage \
+            --project-name=deepsyq --branch=deepsyq-platform \
+            --commit-hash="$TARGET_SHA" --commit-dirty=true \
+            --commit-message="Owner-approved: Account first click + direct Video Uniquifier link"
+      - name: Verify live MAIN for functional first-click profile, tools, Worker and unchanged core pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/owner-account-nav-surgical-release-20261110.mjs main
+          echo "MAIN_RELEASE_VERIFIED=true" >> "$GITHUB_ENV"
+      - name: Roll back only our own failed deployment; never revert another owner's release
+        if: always() && env.MAIN_PROMOTION_ATTEMPTED == 'true' && env.MAIN_RELEASE_VERIFIED != 'true'
+        shell: bash
+        run: |
+          node scripts/owner-account-nav-surgical-release-20261110.mjs rollback
