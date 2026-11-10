@@ -21,7 +21,7 @@ jobs:
         run: |
           node --check app/src/main/assets/canvas-workspace.js
           node --check tests/owner-canvas-ux-controls.spec.mjs
-      - name: Run mobile and desktop Canvas UX browser tests
+      - name: Run all twelve mobile/desktop Canvas UX, PNG and Studio handoff browser checks
         env:
           NODE_ENV: test
         run: npx playwright test tests/owner-canvas-ux-controls.spec.mjs --project=chromium --project=mobile-chromium --reporter=list --retries=0
