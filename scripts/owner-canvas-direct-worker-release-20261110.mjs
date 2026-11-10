@@ -165,8 +165,17 @@ async function publish(branch){
  const s=state();
  const p=await projectInfo();
  if(branch==='deepsyq-platform')assert.equal(p.canonical_deployment.id,s.baselineId,'Another owner published since snapshot; abort');
- const d=await cloud(project+'/deployments',{method:'POST',body:multipart(branch)});
- assert(d.id&&d.uses_functions===true,'New deployment did not preserve Worker/Functions');
+ const created=await cloud(project+'/deployments',{method:'POST',body:multipart(branch)});
+ assert(created.id,'Cloudflare deployment ID missing');
+ console.log('CANVAS_DIRECT_CREATED',JSON.stringify({branch,id:created.id,url:created.url,initialUsesFunctions:created.uses_functions,stage:created.latest_stage?.status}));
+ let d=created;
+ for(let i=0;i<14;i++){
+  d=await deployment(created.id);
+  if(d.latest_stage?.status==='failure'||d.latest_stage?.status==='canceled')break;
+  if(d.uses_functions===true&&d.latest_stage?.status==='success')break;
+  await sleep(2000);
+ }
+ assert(d.uses_functions===true,'Deployment dropped Worker/Functions: '+JSON.stringify({id:d.id,usesFunctions:d.uses_functions,stage:d.latest_stage?.status,errors:d.latest_stage?.name}));
  fs.writeFileSync(tmp+'/'+branch+'.json',JSON.stringify({id:d.id,url:d.url,branch}));
  console.log('CANVAS_DIRECT_DEPLOYED',JSON.stringify({branch,id:d.id,url:d.url,worker:true}));
 }
