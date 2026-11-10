@@ -432,6 +432,7 @@ export async function handleJarvisVoiceCommand(commandText) {
     isJarvisSpeaking = false;
     currentSpokenUtterance = '';
     updateJarvisState('listening');
+    resetSilenceTimer();
     return;
   }
 
@@ -520,6 +521,7 @@ export async function handleJarvisVoiceCommand(commandText) {
     isJarvisSpeaking = false;
     currentSpokenUtterance = '';
     updateJarvisState('listening');
+    resetSilenceTimer();
     return;
   }
 
@@ -1012,6 +1014,7 @@ export function resumeJarvisRecognition() {
           isJarvisSpeaking = false;
           currentSpokenUtterance = '';
           updateJarvisState('listening');
+          resetSilenceTimer();
           accumulatedText = '';
 
           if (isExplicitInterrupt && !isActionCommand) {
@@ -1282,6 +1285,7 @@ if (typeof window !== 'undefined') {
       isJarvisSpeaking = false;
       currentSpokenUtterance = '';
       updateJarvisState('listening');
+      resetSilenceTimer();
     }
   });
 }
