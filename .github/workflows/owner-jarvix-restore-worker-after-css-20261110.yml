@@ -1,0 +1,63 @@
+name: Owner JARVIX safeguard - restore previous production Worker and bindings
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths: ['.github/workflows/owner-jarvix-restore-worker-after-css-20261110.yml']
+permissions: {contents: read}
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    env:
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Restore ONLY if our exact CSS trial is current, preserving any concurrent deployment
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          const account=process.env.CF_ACCOUNT, token=process.env.CF_TOKEN;
+          if(!account||!token)throw Error('Cloudflare existing credentials absent');
+          const url='https://api.cloudflare.com/client/v4/accounts/'+account+'/pages/projects/deepsyq';
+          const prev='34c074f7-9e77-402e-885a-e874258f5d63';
+          const trial='659ce36b-b703-4f6b-8516-bc2678b898f7';
+          const headers={Authorization:'Bearer '+token};
+          const api=async(method,path)=>{
+            const r=await fetch(url+path,{method,headers,signal:AbortSignal.timeout(25000)});
+            const o=await r.json().catch(()=>({}));
+            if(!r.ok||o.success!==true)throw Error(method+' Cloudflare denied HTTP '+r.status+' '+JSON.stringify((o.errors||[]).map(x=>x.code)));
+            return o.result;
+          };
+          const p=await api('GET','');
+          const current=p.canonical_deployment?.id;
+          const old=await api('GET','/deployments/'+prev);
+          const before=await api('GET','/deployments/'+trial);
+          if(current!==trial){
+            console.log('JARVIX_SAFE_ROLLBACK_NOT_NEEDED',JSON.stringify({canonical:current,trialIsCurrent:false,readOnly:true}));
+            process.exit(0);
+          }
+          if(old.latest_stage?.status!=='success'||old.uses_functions!==true)throw Error('Previous production not verified as functional; no rollback');
+          const changed=Object.keys(old.files||{}).filter(k=>(old.files||{})[k]!==before.files?.[k]);
+          if(changed.length!==1||!changed.includes('/jarvix-chat.css'))throw Error('Trial differs beyond approved CSS asset; automatic rollback blocked');
+          const response=await api('POST','/deployments/'+prev+'/rollback');
+          console.log('JARVIX_SAFE_ROLLBACK_REQUESTED',JSON.stringify({previousDeployment:prev,trialDeployment:trial,result:response?.id||null}));
+          for(let i=0;i<18;i++){
+            const after=await api('GET','');
+            if(after.canonical_deployment?.id!==trial){
+              const live=await api('GET','/deployments/'+after.canonical_deployment.id);
+              const manifestsMatch=Object.keys(old.files||{}).length===Object.keys(live.files||{}).length && Object.keys(old.files||{}).every(k=>old.files[k]===live.files[k]);
+              if(!manifestsMatch||live.uses_functions!==true)throw Error('Rollback deployed unexpected assets or lost functions');
+              for(const path of ['/api/config','/jarvix-chat.html']){
+                const res=await fetch('https://deepsyq.app'+path,{signal:AbortSignal.timeout(15000)});
+                if(!res.ok)throw Error('Health check failed '+path+' '+res.status);
+              }
+              console.log('JARVIX_SAFE_ROLLBACK_VERIFIED',JSON.stringify({canonical:after.canonical_deployment.id,manifestMatchesPrevious:true,workerActive:true}));
+              process.exit(0);
+            }
+            await new Promise(r=>setTimeout(r,2000));
+          }
+          throw Error('Rollback could not be confirmed; inspect Cloudflare');
+          JS
