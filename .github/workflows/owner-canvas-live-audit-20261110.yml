@@ -1,0 +1,29 @@
+name: Owner Canvas read-only production overwrite audit 20261110
+on:
+  push:
+    branches: [owner-canvas-workspace-20261110]
+    paths: ['.github/workflows/owner-canvas-live-audit-20261110.yml']
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Read latest Cloudflare production deployments, Canvas fingerprint, Worker health
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          const account=process.env.CLOUDFLARE_ACCOUNT_ID,token=process.env.CLOUDFLARE_API_TOKEN,base='https://api.cloudflare.com/client/v4/accounts/'+account+'/pages/projects/deepsyq';
+          const get=async (url)=>{const r=await fetch(url,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(18000)});const x=await r.json();if(!r.ok||!x.success)throw Error('read API '+r.status);return x.result};
+          const p=await get(base);
+          const d=await get(base+'/deployments/'+p.canonical_deployment.id);
+          const recent=await get(base+'/deployments?per_page=10');
+          const deployments=Array.isArray(recent)?recent:recent?.results||[];
+          const page=await fetch('https://deepsyq.app/canvas.html?ownerAudit='+Date.now(),{signal:AbortSignal.timeout(20000)});const html=await page.text();
+          const js=await fetch('https://deepsyq.app/canvas-workspace.js?ownerAudit='+Date.now(),{signal:AbortSignal.timeout(20000)});
+          const css=await fetch('https://deepsyq.app/canvas-workspace.css?ownerAudit='+Date.now(),{signal:AbortSignal.timeout(20000)});
+          console.log('OWNER_CANVAS_LIVE_AUDIT',JSON.stringify({canonical:p.canonical_deployment.id,sourceCommit:d.deployment_trigger?.metadata?.commit_hash,created:d.created_on,usesFunctions:d.uses_functions,assets:Object.keys(d.files||{}).length,canvasInManifest:Object.keys(d.files||{}).filter(k=>k.includes('canvas')).slice(0,12),hasNewCanvasMain:html.includes('id="canvasWorkspace"'),hasNewCanvasLoader:html.includes('canvas-workspace.js'),hasLegacyCanvasLoader:html.includes('canvas-editor.js'),workspaceJsHTTP:js.status,workspaceCssHTTP:css.status,htmlHTTP:page.status,recent:deployments.slice(0,10).map(x=>({id:x.id,created:x.created_on,environment:x.environment,branch:x.deployment_trigger?.metadata?.branch,commit:x.deployment_trigger?.metadata?.commit_hash,stage:x.latest_stage?.status,functions:x.uses_functions}))}));
+          JS
