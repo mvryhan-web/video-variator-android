@@ -17,20 +17,33 @@
     <aside class="j-drawer-panel" aria-label="Диалоги JARVIX">
       <div class="j-drawer-header">
         <div class="j-drawer-title-group">
-          <span class="j-drawer-glow-dot"></span>
-          <span class="j-drawer-heading">Диалоги JARVIX</span>
+          <span class="j-drawer-heading" id="jDrawerHeading">JARVIX Чат</span>
         </div>
-        <button type="button" id="jDrawerClose" class="j-drawer-close" aria-label="Закрыть">✕</button>
+        <button type="button" id="jDrawerClose" class="j-drawer-close" aria-label="Закрыть меню">✕</button>
       </div>
       <div class="j-drawer-action-row">
-        <button type="button" id="jMenuNewChat" class="j-drawer-new-item">
-          <span class="j-drawer-plus">＋</span>
-          <span>Новый чат</span>
-        </button>
+        <button type="button" id="jMenuNewChat" class="j-drawer-new-item"><span class="j-drawer-plus" aria-hidden="true">＋</span><span>Новый чат</span></button>
       </div>
-      <div class="j-drawer-subhead">Недавние</div>
+      <nav class="j-drawer-quick-nav" aria-label="JARVIX быстрый доступ">
+        <button type="button" class="j-drawer-nav-item" id="jDrawerRecent"><span class="j-drawer-nav-icon" aria-hidden="true">◷</span><span>Последние чаты</span><span class="j-drawer-nav-arrow" aria-hidden="true">›</span></button>
+        <button type="button" class="j-drawer-nav-item" data-j-drawer-mode="image"><span class="j-drawer-nav-icon" aria-hidden="true">▧</span><span>Изображения</span><span class="j-drawer-nav-arrow" aria-hidden="true">›</span></button>
+        <button type="button" class="j-drawer-nav-item" data-j-drawer-mode="video"><span class="j-drawer-nav-icon" aria-hidden="true">▷</span><span>Видео</span><span class="j-drawer-nav-arrow" aria-hidden="true">›</span></button>
+        <button type="button" class="j-drawer-nav-item" data-j-drawer-mode="audio"><span class="j-drawer-nav-icon" aria-hidden="true">♫</span><span>Аудио</span><span class="j-drawer-nav-arrow" aria-hidden="true">›</span></button>
+      </nav>
+      <div class="j-drawer-conversations-head">
+        <span class="j-drawer-subhead">Чаты</span>
+        <div class="j-drawer-conversation-actions">
+          <button type="button" id="jDrawerSearchToggle" aria-label="Поиск по чатам" title="Поиск по чатам">⌕</button>
+          <button type="button" id="jDrawerSortToggle" aria-label="Сначала старые чаты" title="Сортировать чаты">☷</button>
+        </div>
+      </div>
+      <input id="jDrawerSearch" class="j-drawer-search" type="search" placeholder="Найти разговор…" aria-label="Поиск разговора" hidden>
       <div id="jMenuHistoryList" class="j-drawer-history-list"></div>
-      <a class="j-drawer-account" href="video-uniquifier.html#profile">Аккаунт</a>
+      <div class="j-drawer-footer">
+        <button type="button" id="jDrawerSettings" class="j-drawer-footer-item"><span aria-hidden="true">⚙</span> Настройки</button>
+        <a href="contact.html" class="j-drawer-footer-item"><span aria-hidden="true">ⓘ</span> Помощь и поддержка</a>
+        <a class="j-drawer-account" id="jDrawerAccountLink" href="video-uniquifier.html#profile"><span class="j-drawer-avatar" aria-hidden="true">◉</span><span class="j-drawer-account-copy"><strong>Аккаунт DEEPSYQ</strong><small>Профиль и подписка</small></span><span aria-hidden="true">•••</span></a>
+      </div>
     </aside>
   </div>
 
