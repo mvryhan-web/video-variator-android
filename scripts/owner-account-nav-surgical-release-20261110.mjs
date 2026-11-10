@@ -101,7 +101,7 @@ else if(mode==='snapshot'){
     .map(p=>p.slice('app/src/main/assets/'.length))
     .filter(name=>/\.(html|css|mjs|js|json|svg|webmanifest|xml|txt)$/i.test(name));
   const critical=new Set(['deepsyq.html','index.html','pricing.html','jarvix-chat.html','free-tools.html','video-uniquifier.html']);
-  const saved={},skip=[],replaced=[];
+  const saved={},skip=[],replaced=[],normalizedHtml=[];
   let next=0;const concurrency=10;
   async function work(){
     while(next<names.length){
@@ -120,7 +120,23 @@ else if(mode==='snapshot'){
       const dest=path.join(stage,name);
       fs.mkdirSync(path.dirname(dest),{recursive:true});
       const original=fs.existsSync(dest)?fs.readFileSync(dest):Buffer.alloc(0);
-      fs.writeFileSync(dest,response.bytes);
+      // Cloudflare adds an automatic URL normalization script to non-home HTML
+      // responses. Live HTML already contains one; remove it from the upload
+      // source so Pages will inject exactly one again, preserving live bytes.
+      let stageBytes=response.bytes;
+      if(ext==='html' && name!=='index.html' && name!=='deepsyq.html'){
+        const text=stageBytes.toString('utf8');
+        const start=text.indexOf('<script>(function(){if(location.pathname!==');
+        const end=start>=0?text.indexOf('</script>',start):-1;
+        if(start>=0&&end>=start){
+          const snippet=text.slice(start,end+9);
+          if(snippet.includes('history.replaceState(null,')&&snippet.includes('location.search+location.hash')){
+            stageBytes=Buffer.from(text.slice(0,start)+text.slice(end+9));
+            normalizedHtml.push(name);
+          }
+        }
+      }
+      fs.writeFileSync(dest,stageBytes);
       saved[name]=hash(response.bytes);
       if(hash(original)!==hash(response.bytes))replaced.push(name);
     }
@@ -142,7 +158,7 @@ else if(mode==='snapshot'){
   assert.equal(stagedWorkerBlob,originalWorker,'Staged Worker not identical to known production Worker source');
   const preserved=Object.fromEntries([...critical].map(name=>[name,saved[name]]));
   fs.writeFileSync('/tmp/owner-account-nav-preserved.json',JSON.stringify({preserved,patched,count:names.length,copied:Object.keys(saved).length,drifted:replaced.length,skipped:skip.length}));
-  console.log('LIVE_NAV_STAGE_READY',JSON.stringify({totalText:names.length,recoveredFromActualMain:Object.keys(saved).length,liveDifferencesPreserved:replaced.length,skipped:skip.length,patched,preservedCritical:[...critical]}));
+  console.log('LIVE_NAV_STAGE_READY',JSON.stringify({totalText:names.length,recoveredFromActualMain:Object.keys(saved).length,liveDifferencesPreserved:replaced.length,skipped:skip.length,normalizedHtml:normalizedHtml.length,patched,preservedCritical:[...critical]}));
 }
 else if(mode==='preview'||mode==='main'){
   const data=source();
