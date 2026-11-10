@@ -13,7 +13,7 @@ const project='https://api.cloudflare.com/client/v4/accounts/'+account+'/pages/p
 const store='/tmp/owner-account-nav-main-release.json';
 const stage='/tmp/owner-account-nav-stage';
 const live='https://deepsyq.app';
-const preview='https://owner-account-navsafe-20261110.deepsyq.pages.dev';
+const preview='https://owner-account-navsafe-202611.deepsyq.pages.dev';
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const git=(...args)=>execFileSync('git',args,{encoding:'utf8',maxBuffer:10000000}).trim();
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
