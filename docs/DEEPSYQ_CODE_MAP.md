@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `f5378f9e7454acb15a30d13ef989a304bc175b03`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 119 | Named symbols: 388 | Checked relations: 74
+Source commit: `5af9093fff722913e02800b805a3a28aa658a428`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 120 | Named symbols: 390 | Checked relations: 74
 
 ## Topic finder (matching filenames)
 
@@ -179,6 +179,10 @@ copy (L3)
 ### `app/src/main/assets/owner-home-hero-headings.js`
 
 OWNER_HOME_HERO_HEADINGS (L1)
+
+### `app/src/main/assets/owner-inspiration-20261110.js`
+
+source (L4) · OWNER_VIDEO_INSPIRATION (L26)
 
 ### `app/src/main/assets/photo-collage-core.js`
 
