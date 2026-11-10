@@ -1739,3 +1739,63 @@ main.jarvix-chat #jChatDropdown .j-drawer-account>span:last-child{color:#bbcaea!
 @media(prefers-reduced-motion:reduce){
  main.jarvix-chat #jChatDropdown .j-drawer-panel{animation:none!important}
 }
+
+
+/* JARVIX existing history: expand/collapse and mobile left-swipe only. */
+main.jarvix-chat #jChatDropdown .j-drawer-history-toggle {
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  flex:1 1 auto!important;
+  width:auto!important;
+  min-width:0!important;
+  min-height:35px!important;
+  gap:10px!important;
+  padding:4px 2px!important;
+  border:0!important;
+  border-radius:7px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  text-align:left!important;
+  color:#dbe8ff!important;
+  cursor:pointer!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-history-toggle:hover {
+  background:rgba(58,79,119,.25)!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-history-toggle:focus-visible {
+  outline:2px solid #5be2f4!important;
+  outline-offset:2px!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-history-chevron {
+  display:inline-block!important;
+  flex:0 0 auto!important;
+  color:#c8dcff!important;
+  font-size:21px!important;
+  line-height:1!important;
+  transition:transform .18s ease!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-history-toggle[aria-expanded="true"] .j-drawer-history-chevron {
+  transform:rotate(180deg)!important;
+}
+main.jarvix-chat #jChatDropdown #jMenuHistoryList[hidden] {
+  display:none!important;
+}
+main.jarvix-chat #jChatDropdown .j-drawer-footer {
+  margin-top:auto!important;
+}
+@media(max-width:760px){
+  main.jarvix-chat #jChatDropdown.j-swipe-closing .j-drawer-panel {
+    animation:jJarvixHistorySwipeLeft .16s ease-in both!important;
+    pointer-events:none!important;
+  }
+}
+@keyframes jJarvixHistorySwipeLeft {
+  from {opacity:1;transform:translateX(0)}
+  to {opacity:.7;transform:translateX(-104%)}
+}
+@media(prefers-reduced-motion:reduce){
+  main.jarvix-chat #jChatDropdown .j-drawer-history-chevron {
+    transition:none!important;
+  }
+}
