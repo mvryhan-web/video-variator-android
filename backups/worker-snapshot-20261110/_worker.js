@@ -1084,19 +1084,18 @@ export default {
       let replyText = '';
       let providerUsed = 'Google Gemini';
 
-      const geminiRules = `Ты Google Gemini — официальный разговорный AI-ассистент платформы DeepSyQ (работаешь в стиле ChatGPT / Gemini).
-Ты дружелюбный, умный, внимательный собеседник и эксперт по креативности.
-Твои задачи:
-- Свободно, подробно и естественно общаться с пользователем на любые темы на языке ${language}.
-- Помогать пользователю формулировать и развивать идеи, составлять промпты для генерации фото (Image Studio, Flux), видео (Video Studio, Wan 2.6) и музыки (Audio Studio).
-- Отвечать на любые вопросы о платформе DeepSyQ, технологиях, искусстве, коде, науке или повседневных делах.
-Отвечай качественно, дружелюбно, со структурированным форматированием и списками, когда это уместно.`;
+      const geminiRules = `Отвечай пользователю прямо, естественно, по-человечески и по делу на языке ${language} (как умный, эрудированный живой эксперт и собеседник).
+СТРОГИЕ ПРАВИЛА:
+1. НИКОГДА не представляйся, не говори шаблонных фраз вроде "Привет! Рад знакомству!", "Hello, welcome to...", "Я твой виртуальный ассистент", "Я нейросеть" и т.п.
+2. Не называй себя по имени (никаких "Я Gemini", "Я ассистент"), сразу отвечай на суть вопроса пользователя или веди живой диалог без шаблонных вступлений.
+3. Отвечай содержательно, конкретно, без лишней воды и роботизированных приветствий.
+4. Помогай с любыми задачами: идеи, креативные промпты для фото и видео, советы, код, ответы на любые вопросы.`;
 
       // Google Gemini API is the default conversational model for all chat modes
       if (env.GEMINI_API_KEY) {
         try {
-          const context = history.slice(-16).map(x => (x.role === 'user' ? 'User: ' : 'Gemini: ') + x.content).join('\n');
-          const prompt = (context ? context + '\n' : '') + 'User: ' + message + '\nGemini:';
+          const context = history.slice(-16).map(x => (x.role === 'user' ? 'User: ' : 'Assistant: ') + x.content).join('\n');
+          const prompt = (context ? context + '\n' : '') + 'User: ' + message + '\nAssistant:';
           const candidateModels = ['gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.5-flash', 'gemini-flash-latest'];
           for (const mId of candidateModels) {
             if (replyText) break;
