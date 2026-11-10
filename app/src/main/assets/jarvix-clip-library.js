@@ -17,9 +17,9 @@ const SECTION_KEYWORDS = {
   PRICE: ['цена', 'цены', 'стоимост', 'тариф', 'тарифы', 'подписк', 'купить', 'pricing', 'план', 'сколько стоит'],
   CANVAS: ['холст', 'канвас', 'canvas', 'доск'],
   APPS: ['приложени', 'apps', 'шаблон', 'воркфлоу'],
-  IMAGE: ['картинк', 'изображен', 'фото', 'image', 'рисунок', 'арт'],
-  VIDEO: ['видео', 'ролик', 'video', 'клип', 'фильм'],
-  AUDIO: ['аудио', 'музык', 'звук', 'трек', 'audio', 'песн'],
+  IMAGE: ['картинк', 'изображен', 'фото', 'image', 'imagen', 'photo', 'рисунок', 'арт'],
+  VIDEO: ['видео', 'ролик', 'video', 'vidéo', 'vídeo', 'клип', 'фильм'],
+  AUDIO: ['аудио', 'музык', 'звук', 'трек', 'audio', 'musique', 'música', 'песн'],
   CREDITS: ['кредит', 'баланс', 'пополн', 'токен'],
   TRIAL: ['триал', 'пробн', 'бесплатн', 'попроб'],
   MIC: ['микрофон', 'голос', 'диктовк', 'запис'],
@@ -139,7 +139,9 @@ export function createClipLibrary(fetchImpl = fetch) {
         }
       }
 
-      const section = detectedSection || ctx.section;
+      // Carry a topic only for an actual follow-up, not an unrelated new question.
+      const isFollowUp = /^(?:а\s|и\s|а\s+сколько|сколько стоит|что дальше|как начать|а как|ещ[её]|then\b|and\s|what next|how much|et\s|cuánto|y\s)/iu.test(String(query).trim());
+      const section = detectedSection || (isFollowUp ? ctx.section : null);
 
       // 2. Detect intent step
       let detectedStep = null;
@@ -201,9 +203,10 @@ export function createClipLibrary(fetchImpl = fetch) {
 
       // A broad unrelated question must not be answered with a fabricated fact.
       // Use an existing neutral recording for queries without a reliable match.
+      const usedFallback = !bestScenario;
       if (!bestScenario && allowFallback) bestScenario = playableScenarios.find(sc => sc.id === 'F-CHAT-08') || null;
       if (bestScenario) {
-        setTopicContext({
+        if (!usedFallback) setTopicContext({
           section: bestScenario.section,
           chainStep: bestScenario.chainStep,
           lastScenarioId: bestScenario.id
