@@ -32,33 +32,8 @@
  const showcase=make('section','et-showcase');showcase.id='etShowcase';
  showcase.setAttribute('aria-label','Everyday Tools');
  // Real navigation and local filter actions, with unavailable paid actions disabled.
- const bar=make('div','et-topbar');
- const search=make('input','et-search');search.type='search';search.placeholder='Search anything...';search.setAttribute('aria-label','Search tools');
- const barLinks=make('nav','et-top-actions');barLinks.setAttribute('aria-label','Quick links');
- for(const [label,url] of [['Help','index.html#faq'],['Credits','pricing.html'],['Pricing','pricing.html']]){
-  const a=make('a','et-top-link',label);a.href=url;barLinks.append(a);
- }
- const invite=make('button','et-top-link','Invite Friend');invite.type='button';
- const invitationFeedback=make('span','et-invite-feedback');invitationFeedback.setAttribute('role','status');
- invite.addEventListener('click',async()=>{
-  const url=new URL('deepsyq.html',location.href).href;
-  try{
-   if(navigator.share)await navigator.share({title:'Deepsyq',url});
-   else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url);invitationFeedback.textContent='Link copied';}
-   else invitationFeedback.textContent='Open: '+url;
-  }catch(e){if(e?.name!=='AbortError')invitationFeedback.textContent='Sharing unavailable';}
- });
- const promo=make('button','et-promo','Promo Code');promo.type='button';
- const dialog=make('dialog','et-promo-dialog');dialog.append(make('h2','','Promo Code'),make('p','','Promo codes are not enabled on this preview. No payment will be charged.'));
- const dismiss=make('button','','Close');dismiss.type='button';dismiss.addEventListener('click',()=>dialog.close());dialog.append(dismiss);
- promo.addEventListener('click',()=>dialog.showModal()); 
- const language=make('select','et-language');language.setAttribute('aria-label','Language');
- for(const [code,label] of [['en','English'],['fr','Français'],['ru','Русский']]){const o=make('option','',label);o.value=code;language.append(o);}
- const status=make('span','et-language-feedback');status.setAttribute('role','status');
- language.addEventListener('change',()=>{status.textContent=language.value==='en'?'English':language.value==='fr'?'Français sélectionné':'Выбран русский';});
- const topSearch=make('label','et-top-search');topSearch.append(make('span','','⌕'),search);bar.append(topSearch,barLinks,promo,invite,language,invitationFeedback,status,dialog);
- showcase.append(bar);
- // Owner 2026-11-06: remove oversized Everyday Tools showcase banner;
+ // Owner: no secondary toolbar below the shared header.
+// Owner 2026-11-06: remove oversized Everyday Tools showcase banner;
  // navigation, gallery and real tool links below remain intact.
  const leadRow=make('div','et-section-heading');
  const inner=make('div');inner.append(make('h2','','Choose a tool'),make('p','','Everyday essentials for your creative workflow.'));
@@ -98,7 +73,7 @@
   speech.forEach(a=>links.append(a));
   utilities.append(links);
  }
- const banner=make('a','et-uniquifier');banner.href='index.html';
+ const banner=make('a','et-uniquifier');banner.href='video-uniquifier.html';
  const iconArt=crop([205,867,198,161],'et-play-art');const videoArt=crop([807,867,590,161],'et-video-art');
  const bannerCopy=make('div','et-uniquifier-copy');
  const legacyText={
@@ -114,14 +89,13 @@
  const cap=[...document.querySelectorAll('#dsSiteSidebar .ds-site-caption')].find(e=>e.textContent.trim()==='Tools');
  if(cap)cap.textContent='Everyday Tools';
  function filter(){
-  const q=search.value.trim().toLocaleLowerCase();
   const kind=picker.value;
   let n=0;
   for(const a of gallery.children){
-   const match=(!q||a.textContent.toLocaleLowerCase().includes(q))&&(kind==='all'||a.dataset.category===kind);
+   const match=kind==='all'||a.dataset.category===kind;
    a.hidden=!match;if(match)n++;
   }
   leadRow.querySelector('p').textContent=n?'Everyday essentials for your creative workflow.':'No matching tools. Try another search.';
  }
- search.addEventListener('input',filter);picker.addEventListener('change',filter);
+ picker.addEventListener('change',filter);
 })();

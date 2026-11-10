@@ -169,6 +169,12 @@
   $('variantCount').addEventListener('change',scheduleEstimate);$('aspectRatio').addEventListener('change',scheduleEstimate);$('mode').addEventListener('change',scheduleEstimate);
   $('startBtn').addEventListener('click',startProcessing);$('cancelBtn').addEventListener('click',()=>core.cancel());$('dismissErrorBtn').addEventListener('click',()=>{$('errorCard').hidden=true;});
   $('signInBtn').addEventListener('click',()=>{if(state.user){state.token='';state.user=null;localStorage.removeItem('vv_token');renderAll();}else openAuth();});
+   $('profileLogoutBtn')?.addEventListener('click',()=>{
+     // Visible within Profile & Settings even when the legacy topbar is hidden.
+     state.token='';state.user=null;localStorage.removeItem('vv_token');
+     sessionStorage.removeItem('vu_generation_job');renderAll();
+     location.assign('deepsyq.html');
+   });
   qsa('[data-close-auth]').forEach(x=>x.addEventListener('click',closeAuth));$('googleFallback').addEventListener('click',()=>{if(!state.config?.googleClientId)toast(t('authUnavailable'));});$('appleButton').addEventListener('click',appleSignIn);
   qsa('.planBtn').forEach(b=>b.addEventListener('click',()=>checkout(b.dataset.plan)));$('manageBillingBtn').addEventListener('click',manageBilling);$('cancelSubscriptionBtn').addEventListener('click',cancelSubscription);$('checkUpdateBtn').addEventListener('click',checkUpdates);$('applyUpdateBtn').addEventListener('click',applyUpdate);
   $('clearHistoryBtn').addEventListener('click',()=>{const mediaKeys=state.history.map(x=>x.mediaCacheKey).filter(Boolean);state.history=[];sessionDownloads.clear();saveHistory();renderHistory();mediaKeys.forEach(k=>persistentMedia?.remove?.(k));toast(t('clearConfirm'));if(state.user)api('/api/history',{method:'DELETE'}).catch(()=>{});});
