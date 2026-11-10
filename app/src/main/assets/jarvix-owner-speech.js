@@ -1,4 +1,4 @@
-import {prepareStaticClips, getStaticClip, findCatalogReply} from './jarvix-clip-library.js';
+import {prepareStaticClips, getStaticClip, findCatalogReply, findTourFallback} from './jarvix-clip-library.js';
 // Owner-hosted speech; no private URL or key is sent to the browser.
 let version = 0, pending = null, playing = null, objectUrl = null;
 // Only generic action acknowledgements are retained, never user prompts.
@@ -68,12 +68,22 @@ export async function speakOwnerSpeech(text, language, hooks) {
       if (turn !== version) return;
       if (nearestReply?.text) nearestAudio = await getStaticClip(nearestReply.text, language, controller.signal);
     }
-    const cached = staticCached || greetingCached || ackCached || nearestAudio;
+    // The master manifest can list MP3 files absent from the deployed assets.
+    // Fall back to a real, pre-existing tour narration in the SAME language.
+    let tourBackup = null, tourAudio = null;
+    if (!staticCached && !greetingCached && !ackCached && !nearestAudio &&
+        !actionWords.has(text.trim())) {
+      tourBackup = await findTourFallback(text, language);
+      if (turn !== version) return;
+      if (tourBackup?.text) tourAudio = await getStaticClip(tourBackup.text, language, controller.signal);
+    }
+    const cached = staticCached || greetingCached || ackCached || nearestAudio || tourAudio;
     if (turn !== version) return;
     if (!cached) { hooks.unavailable?.(); hooks.complete?.(); return; }
-    if (nearestAudio && nearestReply) hooks.recordedText?.(nearestReply.text);
+    if (tourAudio && tourBackup) hooks.recordedText?.(tourBackup.text);
+    else if (nearestAudio && nearestReply) hooks.recordedText?.(nearestReply.text);
     hooks.source?.(ackCached ? 'memory-ack' : greetingCached ? 'cached-greeting' :
-                   staticCached ? 'static-clip' : 'nearest-recording');
+                   staticCached ? 'static-clip' : nearestAudio ? 'nearest-recording' : 'tour-v3-recording');
     hooks.start();
     hooks.phase?.('generating');
     // A cached recording is complete: play it exactly once, regardless of text length.
