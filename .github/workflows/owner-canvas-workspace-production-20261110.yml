@@ -59,7 +59,7 @@ jobs:
             --project-name=deepsyq --branch=deepsyq-platform \
             --commit-hash="$GITHUB_SHA" --commit-dirty=true \
             --commit-message="Owner Canvas interactive workspace 13 photos; no other product changes"
-      - name: Verify MAIN page, all 13 photos, 8 protected pages, Worker/billing
+      - name: Verify MAIN Canvas, 13 photos, protected pages, stable Worker bindings
         run: |
           set -euo pipefail
           node scripts/owner-canvas-workspace-production-release-20261110.mjs main
