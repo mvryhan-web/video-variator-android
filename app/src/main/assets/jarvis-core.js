@@ -1290,6 +1290,16 @@ if (typeof window !== 'undefined') {
 export function initJarvis() {
   if (typeof document === 'undefined') return;
   prepareOwnerGreetings();
+  // Navigating and interacting with DEEPSYQ counts as activity; do not turn
+  // JARVIX off just because the user opened another page.
+  if (!document.__jarvixIdleActivityBound) {
+    document.__jarvixIdleActivityBound = true;
+    for (const eventName of ['pointerdown', 'keydown', 'wheel', 'touchstart']) {
+      document.addEventListener(eventName, () => {
+        if (isJarvisActive) resetSilenceTimer();
+      }, {passive:true, capture:true});
+    }
+  }
 
   // Restore saved theme on load
   try {
