@@ -293,7 +293,7 @@ export default {
         billingConfigured: true,
         trialLimit: 100,
         introOfferText: 'Intro discount available on your first subscription',
-        features: { aiApps: true, inspiration: true, onboarding: true },
+        features: { aiApps: true, inspiration: true, onboarding: true, wanVideo: Boolean(env.DASHSCOPE_API_KEY) },
         privacy: { httpsRequired: true, localVideoProcessing: true, rawVideoUploadDisabled: true },
         plans: {
           trial: { price: 0.99, limit: 100, unit: 'credits', oneTime: true },
@@ -711,19 +711,55 @@ export default {
     if (pathname === '/api/studio/jobs' && request.method === 'POST') {
       const user = await getAuthenticatedUser(request, env);
       const body = await request.json().catch(() => ({}));
-      const { kind = 'image', model, prompt = 'Cosmic nebula', ratio = '1:1' } = body;
+      const { kind = 'image', model, prompt = 'Cosmic nebula', ratio = '1:1', duration = 5 } = body;
       const id = 'job_' + crypto.randomUUID().replace(/-/g, '').slice(0, 16);
+
+      let wanTaskId = null;
+      let status = 'ready';
+      let progress = 100;
+
+      // Direct Wan video generation when DASHSCOPE_API_KEY is configured
+      if (kind === 'video' && env.DASHSCOPE_API_KEY) {
+        try {
+          const wanModel = (model && model.includes('wan')) ? model : 'wan2.6-t2v';
+          const size = ratio === '9:16' ? '720*1280' : '1280*720';
+          const wanRes = await fetch('https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + env.DASHSCOPE_API_KEY,
+              'Content-Type': 'application/json',
+              'X-DashScope-Async': 'enable'
+            },
+            body: JSON.stringify({
+              model: wanModel,
+              input: { prompt: String(prompt || 'Cinematic video').slice(0, 1500) },
+              parameters: { size, duration: Math.min(Math.max(Number(duration) || 5, 2), 15) }
+            })
+          });
+          if (wanRes.ok) {
+            const wanData = await wanRes.json();
+            if (wanData?.output?.task_id) {
+              wanTaskId = wanData.output.task_id;
+              status = 'processing';
+              progress = 10;
+            }
+          }
+        } catch (_) {}
+      }
+
       const svg = createSvgImage(prompt, ratio);
       const jobRecord = {
         id,
         userId: user?.id || 'guest',
         kind,
-        model: model || 'gemini-3.1-flash-image',
-        provider: 'Google',
+        model: model || (kind === 'video' ? 'wan2.6-t2v' : 'gemini-3.1-flash-image'),
+        provider: kind === 'video' && env.DASHSCOPE_API_KEY ? 'Alibaba Wan' : 'Google',
         prompt,
         title: String(prompt || 'Studio Creation').slice(0, 60),
-        status: 'ready',
-        progress: 100,
+        status,
+        progress,
+        wanTaskId,
+        videoUrl: null,
         isFavorite: false,
         archived: false,
         created_at: new Date().toISOString(),
@@ -738,7 +774,7 @@ export default {
           });
         } catch {}
       }
-      return json({ ok: true, id, jobId: id, status: 'ready', progress: 100 });
+      return json({ ok: true, id, jobId: id, status, progress, wanTaskId });
     }
 
     if (pathname === '/api/studio/jobs' && request.method === 'GET') {
@@ -848,8 +884,32 @@ export default {
       const isMedia = Boolean(jobMatch[2]);
       const job = studioJobs.get(id);
       if (!job) return json({ error: 'NOT_FOUND' }, 404);
+
+      if (job.wanTaskId && env.DASHSCOPE_API_KEY && (job.status === 'processing' || job.status === 'queued')) {
+        try {
+          const taskRes = await fetch('https://dashscope-intl.aliyuncs.com/api/v1/tasks/' + encodeURIComponent(job.wanTaskId), {
+            headers: { 'Authorization': 'Bearer ' + env.DASHSCOPE_API_KEY }
+          });
+          if (taskRes.ok) {
+            const taskData = await taskRes.json();
+            const taskStatus = taskData?.output?.task_status;
+            if (taskStatus === 'SUCCEEDED' && taskData.output.video_url) {
+              job.status = 'ready';
+              job.progress = 100;
+              job.videoUrl = taskData.output.video_url;
+            } else if (taskStatus === 'FAILED') {
+              job.status = 'failed';
+              job.progress = 0;
+            } else if (taskStatus === 'RUNNING') {
+              job.progress = 60;
+            }
+          }
+        } catch (_) {}
+      }
+
       if (isMedia) {
         if (job.kind === 'video') {
+          if (job.videoUrl) return Response.redirect(job.videoUrl, 302);
           return Response.redirect(new URL('/media/home/neon-20261018/apps-card.mp4', url.origin).toString(), 302);
         }
         return new Response(job.svg, {
@@ -858,11 +918,11 @@ export default {
         });
       }
       return json({
-        ok: true, id: job.id, status: 'ready', progress: 100,
+        ok: true, id: job.id, status: job.status, progress: job.progress,
         kind: job.kind, prompt: job.prompt, createdAt: job.created_at, created_at: job.created_at,
-        provider: 'Deepsyq Free Engine (Zero-Spend Safe)',
-        mime: job.mime, previewOnly: true,
-        mediaUrl: job.kind === 'video' ? '/media/home/neon-20261018/apps-card.mp4' : ('/api/studio/jobs/' + job.id + '/media')
+        provider: job.provider || 'Deepsyq Engine',
+        mime: job.mime, previewOnly: !job.videoUrl,
+        mediaUrl: job.videoUrl || (job.kind === 'video' ? '/media/home/neon-20261018/apps-card.mp4' : ('/api/studio/jobs/' + job.id + '/media'))
       });
     }
 
