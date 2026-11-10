@@ -1,10 +1,6 @@
 name: Owner My Creations eight originals to permanent R2
 on:
   workflow_dispatch:
-  push:
-    branches: [deepsyq-platform]
-    paths:
-      - '.github/workflows/owner-my-creations-r2-storage.yml'
 permissions:
   contents: read
 concurrency:
