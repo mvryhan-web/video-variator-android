@@ -33,6 +33,8 @@ import {downloadResult,mediaExtension} from './jarvix-result-cache.js';
 import {makeId,conversationStore,resolveMode} from './jarvix-conversations.js';
 import {bindComposer,trackViewport} from './jarvix-composer.js';
 import {getJarvixSessionId,getJarvixLanguage,speakJarvis} from './jarvis-core.js';
+import {findCatalogReply} from './jarvix-clip-library.js';
+import {hasVerifiedJarvixSubscription} from './jarvix-access.js';
 import {saveStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id),status=text=>$('jStatus').textContent=text;
 const store=await conversationStore();let conversation=null,busy=false,epoch=0,controller=null,config=null,urls=[];
@@ -101,8 +103,18 @@ async function processMessage(message){
    // Same brain endpoint and session as the voice sphere; never a second assistant.
    const textFiles=await Promise.all((message.files||[]).filter(f=>f.type==='text/plain').map(f=>f.text()));store.guard();
    const text=(message.text+(textFiles.length?'\n'+textFiles.join('\n'):'')).slice(0,2000);
-   const d=await api('/api/jarvix/chat',{sessionId:conversation.sessionId,message:text,language:getJarvixLanguage()});
-   answer={id:makeId(),role:'assistant',text:d.reply||'No answer received.',limitReached:d.limitReached===true,createdAt:Date.now()};
+   // Free/guest: local recorded-script catalog only, without Gemini/OpenAI network calls.
+   // Paid: use the same AI endpoint only after verifying subscription via /api/me.
+   const paid = await hasVerifiedJarvixSubscription(); store.guard();
+   let replyText='', limitReached=false;
+   if (paid) {
+     const d=await api('/api/jarvix/chat',{sessionId:conversation.sessionId,message:text,language:getJarvixLanguage()});
+     replyText=d.reply||'';limitReached=d.limitReached===true;
+   } else {
+     const recorded=await findCatalogReply(text,getJarvixLanguage());
+     replyText=recorded?.text||({ru:'Пожалуйста, уточните вопрос.',en:'Please clarify your question.',fr:'Veuillez préciser votre question.',es:'Por favor, aclara tu pregunta.'}[getJarvixLanguage()]);
+   }
+   answer={id:makeId(),role:'assistant',text:replyText||'No answer received.',limitReached,createdAt:Date.now()};
    if((message.files||[]).some(f=>f.type!=='text/plain'))answer.text+='\nMedia attachments are saved in this conversation. This text handler does not inspect their contents.';
   }else{
    config=config||await api('/api/studio/config');
