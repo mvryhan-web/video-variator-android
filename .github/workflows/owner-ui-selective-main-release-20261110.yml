@@ -1,4 +1,5 @@
 name: OWNER selective ten-asset UI production release, preserve Worker and all other files
+# Retry after preserving original CRLF line endings during ten-file patch
 on:
   push:
     branches: [owner-ui-selective-main-release-20261110]
