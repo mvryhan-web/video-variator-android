@@ -105,8 +105,13 @@ async function prepare(){
  const previous=live.result.deployment_trigger?.metadata?.commit_hash || p.canonical_deployment?.deployment_trigger?.metadata?.commit_hash;
  requireCommit(previous);
  const liveWorker=sh('git',['rev-parse',previous+':'+sourceRoot+'/_worker.js']);
- const plannedWorker=sh('git',['rev-parse','HEAD:'+sourceRoot+'/_worker.js']);
- assert.equal(liveWorker,plannedWorker,'Production Worker differs from candidate; no publish');
+ // Other owner may have published a newer production Worker after this isolated Canvas branch.
+ // NEVER copy this branch's Worker. stageResources reconstructs the entire deployment
+ // from the current LIVE commit, checks its exact Worker blob and overlays only Canvas.
+ const candidateWorker=sh('git',['rev-parse','HEAD:'+sourceRoot+'/_worker.js']);
+ if(candidateWorker!==liveWorker){
+   console.log('CANVAS_PRESERVING_NEWER_PRODUCTION_WORKER',JSON.stringify({previous,liveWorker,staleBranchWorker:candidateWorker}));
+ }
  const binds=p.deployment_configs?.production||{};
  for(const key of ['DATABASE_URL','STRIPE_SECRET_KEY','STRIPE_WEBHOOK_SECRET','GOOGLE_CLIENT_ID'])
    assert(Object.hasOwn(binds.env_vars||{},key),'Missing production binding '+key);
