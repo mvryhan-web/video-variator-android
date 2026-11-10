@@ -61,27 +61,14 @@ export async function speakOwnerSpeech(text, language, hooks) {
     const ackKey=language+':'+text.trim(),ackCached=actionAudio.get(ackKey);
     const cached = staticCached || greetingCached || ackCached;
     if (turn !== version) return;
-    const configReply = cached ? null : await fetch('/api/jarvix/voice-config', {signal:controller.signal});
-    const config = cached ? {configured:true, speechModelInstalled:true} : configReply.ok ? await configReply.json() : {};
-    if (turn !== version) return;
-    if (!config.configured) { hooks.fallback(); return; }
-    if (!config.speechModelInstalled) throw Error('Voice worker unavailable');
-    hooks.source?.(ackCached ? 'memory-ack' : greetingCached ? 'cached-greeting' : cached ? 'static-clip' : 'worker');
+    // Offline-only JARVIX voice: do not synthesize speech or use browser voices.
+    if (!cached) { hooks.unavailable?.(); hooks.complete?.(); return; }
+    hooks.source?.(ackCached ? 'memory-ack' : greetingCached ? 'cached-greeting' : 'static-clip');
     hooks.start();
     hooks.phase?.('generating');
     // A cached recording is complete: play it exactly once, regardless of text length.
-    const chunks = cached ? [text.trim()] : splitSpeechChunks(text);
-    const loadChunk = async chunk => {
-      try {
-        if (cached) return {blob: cached};
-        const reply = await fetch('/api/jarvix/tts', {method:'POST', signal:controller.signal,
-          headers:{'Content-Type':'application/json'},body:JSON.stringify({text:chunk,language})});
-        if (!reply.ok || !reply.headers.get('content-type')?.startsWith('audio/wav')) throw Error('Speech failed');
-        const blob=await reply.blob();
-        if(actionWords.has(text.trim())&&blob.size<=256*1024){if(actionAudio.size>=24)actionAudio.delete(actionAudio.keys().next().value);actionAudio.set(ackKey,blob);}
-        return {blob};
-      } catch (error) { return {error}; }
-    };
+    const chunks = [text.trim()];
+    const loadChunk = async () => ({blob: cached});
     let next = loadChunk(chunks[0]);
     for (let index = 0; index < chunks.length && turn === version; index++) {
       const result = await next;
