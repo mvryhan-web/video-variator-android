@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `e300005284810feea7801bf9e630401154e883ba`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 120 | Named symbols: 408 | Checked relations: 76
+Source commit: `2bc9ef94f9869070126b78407eea00437065c727`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 120 | Named symbols: 409 | Checked relations: 77
 
 ## Topic finder (matching filenames)
 
@@ -34,7 +34,7 @@ Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code 
 
 ### `app/src/main/assets/_worker.js`
 
-_worker.js (L1) · INSPIRATION_ITEMS (L3) · CREATIVE_TEMPLATES (L4) · studioJobs (L8) · jarvixSessions (L9) · edgeUsers (L10) · edgeWallets (L11) · edgeWalletLedger (L12) · edgeHistory (L13) · edgeOnboarding (L14) · edgeRevenueLedger (L15) · platformUnitEconomics (L16) · LIVE_SUBSCRIPTION_LINKS (L24) · LIVE_CREDIT_PACKS (L32)
+_worker.js (L1) · INSPIRATION_ITEMS (L3) · CREATIVE_TEMPLATES (L4) · studioJobs (L8) · dailyUserUsage (L9) · jarvixSessions (L18) · edgeUsers (L19) · edgeWallets (L20) · edgeWalletLedger (L21) · edgeHistory (L22) · edgeOnboarding (L23) · edgeRevenueLedger (L24) · platformUnitEconomics (L25) · LIVE_SUBSCRIPTION_LINKS (L33) · LIVE_CREDIT_PACKS (L41)
 
 ### `app/src/main/assets/ai-apps.js`
 
@@ -130,7 +130,7 @@ ACTION_ROUTES (L2)
 
 ### `app/src/main/assets/jarvix-chat.js`
 
-urls (L40) · composer (L420) · pending (L494) · modeHeaderLabels (L498) · composerInput (L535) · wpPane (L600) · expandBtn (L619)
+urls (L40) · composer (L419) · pending (L493) · modeHeaderLabels (L497) · composerInput (L534) · wpPane (L599) · expandBtn (L618)
 
 ### `app/src/main/assets/jarvix-clip-library.js`
 
