@@ -1,4 +1,4 @@
-import {prepareStaticClips, getStaticClip} from './jarvix-clip-library.js';
+import {prepareStaticClips, getStaticClip, findCatalogReply} from './jarvix-clip-library.js';
 // Owner-hosted speech; no private URL or key is sent to the browser.
 let version = 0, pending = null, playing = null, objectUrl = null;
 // Only generic action acknowledgements are retained, never user prompts.
@@ -59,11 +59,20 @@ export async function speakOwnerSpeech(text, language, hooks) {
     if (turn !== version) return;
     const greetingCached = greetingBlob(greetingData, text, language);
     const ackKey=language+':'+text.trim(),ackCached=actionAudio.get(ackKey);
-    const cached = staticCached || greetingCached || ackCached;
+    // For phrases not present verbatim, choose the closest *known* recording,
+    // never synthesize new audio or play unknown/unverified filenames.
+    let nearestReply = null, nearestAudio = null;
+    if (!staticCached && !greetingCached && !ackCached) {
+      nearestReply = await findCatalogReply(text, language);
+      if (turn !== version) return;
+      if (nearestReply?.text) nearestAudio = await getStaticClip(nearestReply.text, language, controller.signal);
+    }
+    const cached = staticCached || greetingCached || ackCached || nearestAudio;
     if (turn !== version) return;
-    // Offline-only JARVIX voice: do not synthesize speech or use browser voices.
     if (!cached) { hooks.unavailable?.(); hooks.complete?.(); return; }
-    hooks.source?.(ackCached ? 'memory-ack' : greetingCached ? 'cached-greeting' : 'static-clip');
+    if (nearestAudio && nearestReply) hooks.recordedText?.(nearestReply.text);
+    hooks.source?.(ackCached ? 'memory-ack' : greetingCached ? 'cached-greeting' :
+                   staticCached ? 'static-clip' : 'nearest-recording');
     hooks.start();
     hooks.phase?.('generating');
     // A cached recording is complete: play it exactly once, regardless of text length.
