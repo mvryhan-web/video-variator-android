@@ -66,7 +66,8 @@ export async function speakOwnerSpeech(text, language, hooks) {
     if (!staticCached && !greetingCached && !ackCached && !actionWords.has(text.trim())) {
       nearestReply = await findCatalogReply(text, language);
       if (turn !== version) return;
-      if (nearestReply?.text) nearestAudio = await getStaticClip(nearestReply.text, language, controller.signal);
+      if (nearestReply?.text && nearestReply.text.trim() !== text.trim())
+        nearestAudio = await getStaticClip(nearestReply.text, language, controller.signal);
     }
     // The master manifest can list MP3 files absent from the deployed assets.
     // Fall back to a real, pre-existing tour narration in the SAME language.
