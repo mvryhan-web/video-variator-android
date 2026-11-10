@@ -28,6 +28,19 @@ export async function conversationStore(){
   create(sessionId){guard();return {id:makeId(),sessionId,owner:scope,title:'New conversation',messages:[],updatedAt:Date.now()};}
  };
 }
+const ALLOWED_EXTS = /\.(png|jpe?g|webp|gif|heic|heif|svg|mp4|mov|webm|avi|mkv|m4v|3gp|mp3|wav|m4a|aac|ogg|flac|txt|pdf|md)$/i;
+
+export function isAllowedAttachment(f) {
+ if (!f || typeof f.size !== 'number') return false;
+ if (f.size > 100 * 1024 * 1024) return false;
+ const type = String(f.type || '').toLowerCase();
+ if (type.startsWith('image/') || type.startsWith('video/') || type.startsWith('audio/') || type === 'text/plain' || type === 'application/pdf' || type === 'application/octet-stream') {
+  return true;
+ }
+ const name = String(f.name || '').toLowerCase();
+ return ALLOWED_EXTS.test(name);
+}
+
 export function validateAttachments(files){
  const list=Array.from(files||[]);
  if(list.length>10){
@@ -35,9 +48,12 @@ export function validateAttachments(files){
   throw Error(lang==='ru'?'Максимум 10 файлов за один раз.':'Up to 10 files per message.');
  }
  for(const f of list){
-  if(!(f instanceof Blob)||f.size>16*1024*1024||!['image/png','image/jpeg','video/mp4','audio/mpeg','audio/wav','text/plain'].includes(f.type)){
+  if(!isAllowedAttachment(f)){
    let lang='ru';try{lang=(localStorage.getItem('deepsyq_home_language')||document.documentElement.lang||'ru').slice(0,2)}catch{}
-   throw Error(lang==='ru'?'Поддерживаются файлы PNG, JPG, MP4, MP3, WAV или TXT до 16 МБ каждый.':'Use PNG, JPG, MP4, MP3, WAV or TXT, up to 16 MB each.');
+   if (f && f.size > 100 * 1024 * 1024) {
+    throw Error(lang==='ru'?'Файл слишком большой (максимум 100 МБ).':'File is too large (100 MB max).');
+   }
+   throw Error(lang==='ru'?'Поддерживаются фото, видео, аудио и текстовые файлы до 100 МБ.':'Supported formats: photos, videos, audio and text files up to 100 MB.');
   }
  }
  return list;

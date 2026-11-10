@@ -11,9 +11,11 @@ function formatSize(bytes){
 
 function detectModeFromFiles(list){
  for(const f of list||[]){
-  if(f.type?.startsWith('image/'))return 'image';
-  if(f.type?.startsWith('video/'))return 'video';
-  if(f.type?.startsWith('audio/'))return 'audio';
+  const type = String(f.type || '').toLowerCase();
+  const ext = String(f.name || '').toLowerCase();
+  if(type.startsWith('image/') || /\.(png|jpe?g|webp|gif|heic|heif|svg)$/i.test(ext))return 'image';
+  if(type.startsWith('video/') || /\.(mp4|mov|webm|avi|mkv|m4v|3gp)$/i.test(ext))return 'video';
+  if(type.startsWith('audio/') || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(ext))return 'audio';
  }
  return null;
 }
@@ -56,9 +58,11 @@ export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
    const thumbBox=document.createElement('div');
    thumbBox.className='j-attachment-thumb-box';
 
-   const isImg=f.type?.startsWith('image/');
-   const isVid=f.type?.startsWith('video/');
-   const isAud=f.type?.startsWith('audio/');
+   const type=String(f.type||'').toLowerCase();
+   const ext=String(f.name||'').toLowerCase();
+   const isImg=type.startsWith('image/')||/\.(png|jpe?g|webp|gif|heic|heif|svg)$/i.test(ext);
+   const isVid=type.startsWith('video/')||/\.(mp4|mov|webm|avi|mkv|m4v|3gp)$/i.test(ext);
+   const isAud=type.startsWith('audio/')||/\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(ext);
 
    if(isImg){
     const img=document.createElement('img');
