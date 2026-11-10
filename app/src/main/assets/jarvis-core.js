@@ -1133,6 +1133,17 @@ function startSilenceTimer() {
       button.title = notice;
       button.dataset.voicePhase = 'auto-standby';
     }
+    // Visible, accessible standby notice while the matching prerecorded farewell
+    // does not exist. Never substitute another person's voice or generated TTS.
+    if (document.body && !document.querySelector('[data-jarvix-standby-note]')) {
+      const note = document.createElement('div');
+      note.dataset.jarvixStandbyNote = 'true';
+      note.setAttribute('role', 'status');
+      note.textContent = notice;
+      note.style.cssText = 'position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:min(90vw,430px);padding:10px 14px;border-radius:12px;background:rgba(10,15,31,.96);color:#eef2ff;font:500 13px/1.45 system-ui,sans-serif;text-align:center;z-index:2147483000;pointer-events:none;box-shadow:0 4px 22px rgba(0,0,0,.24)';
+      document.body.append(note);
+      setTimeout(() => note.remove(), 6000);
+    }
     // Do not invent a recorded announcement: only show it until a matching owner MP3 exists.
     window.dispatchEvent(new CustomEvent('jarvix:auto-standby', {detail:{notice}}));
   }, remaining);
