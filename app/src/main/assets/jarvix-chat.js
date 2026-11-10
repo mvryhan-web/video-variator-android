@@ -419,19 +419,53 @@ function initChatMenuDrawer() {
     else status('Настройки студии сейчас недоступны.');
   });
 
+  // Account identity is resolved from /api/me for the CURRENT session only.
+  // Never infer an email from an unverified token or reuse a previous account.
+  const updateDrawerAccount = async () => {
+    const account = $('jDrawerAccountLink');
+    if (!account) return;
+    const token = localStorage.getItem('vv_token');
+    const label = account.querySelector('strong');
+    const subtitle = account.querySelector('small');
+    const avatar = account.querySelector('.j-drawer-avatar');
+    account.href = token ? 'video-uniquifier.html#profile' : 'video-uniquifier.html#signin';
+    if (label) label.textContent = token ? 'Аккаунт DEEPSYQ' : 'Войти в аккаунт';
+    if (subtitle) {
+      subtitle.textContent = token ? 'Профиль и подписка' : 'Вход и регистрация';
+      subtitle.removeAttribute('title');
+    }
+    if (avatar) avatar.textContent = 'D';
+    if (!token) return;
+    try {
+      const response = await fetch('/api/me', {
+        headers: {Authorization:'Bearer ' + token}, cache:'no-store'
+      });
+      if (!response.ok || token !== localStorage.getItem('vv_token') || dropdown.hidden) return;
+      const data = await response.json();
+      if (token !== localStorage.getItem('vv_token') || dropdown.hidden) return;
+      const user = data?.user;
+      const email = typeof user?.email === 'string' ? user.email.trim() : '';
+      if (!email || !email.includes('@')) return;
+      if (subtitle) {
+        subtitle.textContent = email;
+        subtitle.title = email;
+      }
+      const displayName = typeof user.name === 'string' && user.name.trim()
+        ? user.name.trim() : email.split('@')[0];
+      const initial = Array.from(displayName)[0];
+      if (avatar) avatar.textContent = initial ? initial.toLocaleUpperCase() : 'D';
+    } catch (_) {
+      // Keep neutral copy when identity cannot be verified, never show stale email.
+    }
+  };
+
   const openDropdown = async () => {
     await updateHistoryList();
-    const account = $('jDrawerAccountLink');
-    if(account){
-      const loggedIn=!!localStorage.getItem('vv_token');
-      account.href=loggedIn?'video-uniquifier.html#profile':'video-uniquifier.html#signin';
-      const name=account.querySelector('strong');
-      if(name)name.textContent=loggedIn?'Аккаунт DEEPSYQ':'Войти в аккаунт';
-    }
     setChatHeaderMode($('jActiveModeLabel')?.dataset.mode||'auto');
     dropdown.hidden = false;
     titleBtn.setAttribute('aria-expanded', 'true');
     titleBtn.classList.add('open');
+    void updateDrawerAccount();
   };
 
   const closeDropdown = () => {
