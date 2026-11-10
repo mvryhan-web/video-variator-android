@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `666925bd51549f1ea6c066873fca0fe2b02ba7d6`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 118 | Named symbols: 382 | Checked relations: 74
+Source commit: `e267b8392fe208258c8368978d6267c9014e5902`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 118 | Named symbols: 385 | Checked relations: 74
 
 ## Topic finder (matching filenames)
 
@@ -118,7 +118,7 @@ inspiration.js (L1)
 
 ### `app/src/main/assets/jarvis-core.js`
 
-JARVIX_ONBOARDING (L77) · jarvixContext (L80) · cachedVoices (L87) · WORLD_CITIES (L377)
+JARVIX_ONBOARDING (L77) · jarvixContext (L80) · cachedVoices (L87) · WORLD_CITIES (L386)
 
 ### `app/src/main/assets/jarvix-action-plan.js`
 
@@ -130,7 +130,7 @@ urls (L38) · composer (L126) · pending (L181) · modeHeaderLabels (L185) · co
 
 ### `app/src/main/assets/jarvix-clip-library.js`
 
-answerRules (L3) · library (L74) · prepareStaticClips (L75) · getStaticClip (L76) · findCatalogReply (L77)
+blobs (L8) · SECTION_KEYWORDS (L13) · INTENT_KEYWORDS (L32) · topicContext (L44) · defaultLib (L255) · prepareStaticClips (L256) · getStaticClip (L257) · findCatalogReply (L258)
 
 ### `app/src/main/assets/jarvix-guided-tour.js`
 
