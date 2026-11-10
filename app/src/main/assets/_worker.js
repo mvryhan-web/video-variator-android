@@ -901,6 +901,8 @@ export default {
     }
 
     if (pathname === '/api/jarvix/tts' && request.method === 'POST') {
+      // Owner rule: never create new speech; JARVIX only plays verified prerecorded audio.
+      return json({error:'JARVIX_RECORDINGS_ONLY'}, 410);
       const voiceUrl = (env.JARVIX_VOICE_URL || '').replace(/\/$/, '');
       const voiceKey = env.JARVIX_VOICE_TOKEN || '';
       if (!voiceUrl || !voiceKey) return json({ error: 'VOICE_NOT_CONFIGURED' }, 503);
