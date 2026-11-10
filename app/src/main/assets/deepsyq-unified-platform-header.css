@@ -286,3 +286,23 @@
     box-sizing: border-box !important;
   }
 }
+
+/* Scoped owner's desktop Help: text only, left of AI Credit. */
+@media(min-width:761px){
+ body:has(.free-tools-page) .ds-header-help-link{display:inline-flex;align-items:center;justify-content:center;min-height:36px;margin-right:2px;padding:4px 8px;color:#d5eafd;background:transparent;border:0;box-shadow:none;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap}
+ body:has(.free-tools-page) .ds-header-help-link:hover{color:#7ae8ff;text-decoration:underline}
+}
+/* Reuse only the left navigation below Pricing, no separate horizontal bar. */
+.ds-owner-sidebar-extras{display:flex;flex-direction:column;gap:11px;padding:12px 13px 16px;margin:12px 0 0;border-top:1px solid rgba(138,162,202,.21);min-width:0}
+.ds-owner-sidebar-invite{display:inline-flex;align-items:center;min-height:33px;padding:4px 0;border:0;background:transparent;color:#d2e4fa;text-decoration:none;font-size:12px;font-weight:600;cursor:pointer}
+.ds-owner-sidebar-invite:hover{text-decoration:underline;color:#fff}
+.ds-owner-social-icons{display:flex;align-items:center;justify-content:flex-start;gap:10px;flex-wrap:nowrap}
+.ds-owner-social-link{display:inline-flex;align-items:center;justify-content:center;flex:0 0 29px;width:29px;height:31px;border:0;background:transparent;box-shadow:none;border-radius:0;text-decoration:none;color:#bfcee9}
+.ds-owner-social-link:hover,.ds-owner-social-link:focus-visible{color:#fff}
+.ds-owner-sidebar-language,.ds-owner-sidebar-language-wrap{display:none}
+@media(max-width:760px){
+ .ds-owner-sidebar-language{display:block;max-width:100%;width:100%;min-height:36px;border:1px solid #395175;border-radius:8px;background:#0b1731;color:#f2f7ff;padding:5px 8px}
+ .ds-owner-sidebar-language-wrap{display:flex;align-items:center}
+ .ds-owner-sidebar-language-wrap select{width:100%;min-height:36px;border:1px solid #395175;border-radius:8px;background:#0b1731;color:#f2f7ff}
+}
+#sidebar .sidebar-social{display:none!important}
