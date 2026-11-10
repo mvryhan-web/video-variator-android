@@ -99,6 +99,7 @@ try {
 
         if(profile.mobile){
           await page.locator('#jChatTitleBtn').click();
+          await dropdown.waitFor({state:'visible',timeout:7000});
           assert.equal(await dropdown.isVisible(),true);
           await page.evaluate(()=>{
             const panel=document.querySelector('#jChatDropdown .j-drawer-panel');
