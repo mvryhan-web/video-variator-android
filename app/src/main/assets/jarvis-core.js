@@ -438,7 +438,7 @@ export async function handleJarvisVoiceCommand(commandText) {
   // 2. PRIORITY: Authentic 500-Scenario Human Voice & Topic Engine
   // Searches the 500 scenarios (1,900 clips) for exact or topic-aware match
   try {
-    const catalogReply = await findCatalogReply(t, lang);
+    const catalogReply = await findCatalogReply(t, lang, {allowFallback:false});
     if (turnVersion !== jarvixTurnVersion) return;
     if (catalogReply && catalogReply.text) {
       speakJarvis(catalogReply.text, () => {
@@ -817,7 +817,7 @@ export async function handleJarvisVoiceCommand(commandText) {
       const langCode = getJarvixLanguage();
 
       // Ready recordings answer known information questions before any AI request.
-      const catalogReply = await findCatalogReply(t, langCode);
+      const catalogReply = await findCatalogReply(t, langCode, {allowFallback:false});
       if (turnVersion !== jarvixTurnVersion) return;
       if (catalogReply) {
         speakJarvis(catalogReply.text);
