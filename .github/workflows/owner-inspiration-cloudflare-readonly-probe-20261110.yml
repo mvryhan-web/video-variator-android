@@ -54,8 +54,29 @@ jobs:
             ('/workers/scripts/'+script+'/content/v2','worker_content'),
             ('/workers/scripts/'+script+'/settings','worker_settings'),
           ]:
-            res=check(end,label)
-            if isinstance(res,list):print('CF_READ_ONLY',label,'count',len(res))
+            try:
+              response=S.get(base+end,timeout=15)
+              obj=response.json()
+              result=obj.get('result') or {}
+              print('CF_READ_ONLY',label,'http',response.status_code,'success',obj.get('success'),
+                    'result_type',type(result).__name__,
+                    'result_keys',sorted(result.keys()) if isinstance(result,dict) else [],
+                    'errors',[z.get('code') for z in obj.get('errors') or []])
+              if label=='worker_deployments' and isinstance(result,dict):
+                dep=result.get('deployments') or []
+                print('CF_READ_ONLY worker_deployment_count',len(dep))
+                if dep:
+                  print('CF_READ_ONLY first_deployment',{'id':dep[0].get('id'),'versions':dep[0].get('versions')})
+                  for ver in dep[0].get('versions') or []:
+                    version=ver.get('version_id','')
+                    if not version:continue
+                    vcheck=S.get(base+'/workers/scripts/'+script+'/versions/'+version,timeout=15)
+                    vd=vcheck.json()
+                    vs=vd.get('result') or {}
+                    print('CF_READ_ONLY active_version',{'status':vcheck.status_code,'success':vd.get('success'),
+                          'etag':(vs.get('resources') or {}).get('script',{}).get('etag'),
+                          'errors':[z.get('code') for z in vd.get('errors') or []]})
+            except Exception as error:print('CF_READ_ONLY '+label+' exception '+type(error).__name__)
           expected=(deployment.get('files') or {}).get('/404.html') or (deployment.get('files') or {}).get('404.html')
           print('CF_READ_ONLY has_404_in_manifest',bool(expected))
           for host in ['https://deepsyq.app','https://deepsyq.pages.dev',deployment.get('url','')]:
