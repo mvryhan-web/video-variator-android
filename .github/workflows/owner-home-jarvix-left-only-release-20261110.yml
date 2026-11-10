@@ -1,0 +1,54 @@
+name: Owner mobile Home JARVIX spotlight left alignment (CSS only)
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/owner-home-jarvix-left-only-release-20261110.yml'
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  publish-only-css:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: deepsyq-platform
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify mobile change is limited to JARVIX card alignment
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from subprocess import check_output
+          css=Path('app/src/main/assets/deepsyq.css').read_bytes()
+          previous=check_output(['git','show','06bb977014d52cbf093db41975023b834aaacbda^:app/src/main/assets/deepsyq.css'])
+          old=b'display:flex;flex-direction:row;align-items:center;gap:10px;'
+          new=b'display:flex;flex-direction:row;align-items:center;justify-content:flex-start!important;gap:10px;'
+          assert previous.count(old)==1
+          assert css == previous.replace(old,new,1), 'Additional CSS changes detected. Blocked.'
+          assert css.count(new)==1
+          print('OWNER_APPROVED_CSS_SINGLE_DECLARATION_VERIFIED')
+          PY
+      - name: Check surgical uploader regressions
+        shell: bash
+        run: |
+          python -m pip install --disable-pip-version-check 'requests==2.32.3' 'blake3==1.0.8'
+          python -m unittest discover -s tests -p 'test_deepsyq_surgical_publish.py' -v
+      - name: Publish only deepsyq.css preserving live Worker and all other assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/deepsyq_surgical_publish.py --mode publish --files "deepsyq.css" --commit "$GITHUB_SHA"
