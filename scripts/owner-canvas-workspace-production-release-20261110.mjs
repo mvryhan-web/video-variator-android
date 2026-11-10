@@ -235,6 +235,23 @@ async function verify(kind){
   const p=await getProject();assert.notEqual(p.canonical_deployment?.id,data.liveId,'Production release has not landed');
   assert.equal(p.canonical_deployment?.uses_functions,true,'Production Worker was dropped');
   assert.equal(p.production_script_name,data.workerName,'Worker identity changed');
+  // Assert the new production asset manifest is IDENTICAL to the exact live baseline
+  // except the three owner-approved Canvas static resources. Not just a few pages.
+  const oldFiles=JSON.parse(textOf(manifestFile));
+  const deployed=await api(projectUrl+'/deployments/'+p.canonical_deployment.id);
+  assert(deployed.files&&deployed.uses_functions===true,'New production manifest or Worker missing');
+  assert.deepEqual(Object.keys(deployed.files).sort(),Object.keys(oldFiles).sort(),'Production file list differs outside owner scope');
+  const approved=new Set(['/canvas.html','/canvas-workspace.js','/canvas-workspace.css']);
+  let changes=0;
+  for(const [filename,digest] of Object.entries(oldFiles)){
+    if(approved.has(filename)){
+      assert.notEqual(deployed.files[filename],digest,'Canvas update not included '+filename);
+      changes++;
+    }else{
+      assert.equal(deployed.files[filename],digest,'Unapproved production asset changed '+filename);
+    }
+  }
+  assert.equal(changes,3,'Unexpected Canvas manifest diff');
   const settings=await api('https://api.cloudflare.com/client/v4/accounts/'+account+'/workers/scripts/'+encodeURIComponent(p.production_script_name)+'/settings');
   assert.equal(settingsDigest(settings),data.settingsHash,'Critical Worker bindings/settings changed (excluding CF_PAGES deployment metadata)');
   const billing=await getLive('api/ai-billing/config');assert.equal(billing.status,200,'Billing configuration API unavailable');
