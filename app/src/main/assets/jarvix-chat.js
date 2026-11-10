@@ -330,13 +330,16 @@ async function processMessage(message){
 
   const isAdviceOrQuestion = (
    rawText.includes('?') ||
-   /\b(как|почему|зачем|что\s+если|какой|какая|какое|какие|расскажи|посоветуй|подскажи|помоги|объясни|совет|совета|советом|идея|идею|идеи|рекомендац|можно\s+ли|стоит\s+ли|сколько|научи|привет|здравствуй|хай|салют|hello|hi|hey|who|what|how|why|can\s+you|could\s+you|tell\s+me|suggest|advice|tips?|explain|help)\b/i.test(rawText)
+   /(?:^|[^a-zа-яё0-9])(как|дела|почему|зачем|что|какой|какая|какое|какие|расскажи|посоветуй|подскажи|помоги|объясни|совет|совета|советом|идея|идеи|рекомендац|можно|стоит|сколько|научи|привет|здравствуй|хай|салют|hello|hi|hey|who|what|how|why|can|could|tell|suggest|advice|explain|help)(?:[^a-zа-яё0-9]|$)/iu.test(rawText)
   );
-  const isExplicitGen = /^(сгенерируй|нарисуй|создай|сделай|запусти|generate|create|draw|make|render)\b/i.test(cleanedText);
+  const isExplicitGen = /^(?:сгенерируй|нарисуй|создай|сделай|запусти|generate|create|draw|make|render)(?=[^а-яёa-z0-9]|$)/iu.test(cleanedText);
+  const isModification = /измен|сделай.*(ярче|темнее)|ещё/iu.test(rawText);
   const shouldGenerateMedia = !isAdviceOrQuestion && (
-   (['image','video','audio'].includes(mode) && (isExplicitGen || ['image','video','audio'].includes(message.mode))) ||
+   isExplicitGen ||
+   isModification ||
    (message.action?.intent === 'GENERATE_MEDIA') ||
-   (['image','video','audio'].includes(mode) && /измен|сделай.*(ярче|темнее)|ещё/i.test(rawText))
+   (command?.intent === 'GENERATE_MEDIA' && !/(?:^|[^a-zа-яё0-9])(как|дела|привет|что)/iu.test(rawText)) ||
+   (['image','video','audio'].includes(message.mode) && cleanedText.length > 3 && !/(?:^|[^a-zа-яё0-9])(как|дела|привет|хай|кто)/iu.test(cleanedText) && isExplicitGen)
   );
 
   if(!shouldGenerateMedia){
