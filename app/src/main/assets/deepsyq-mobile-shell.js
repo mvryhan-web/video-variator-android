@@ -100,6 +100,59 @@ function setupMobileShell() {
   if(invite){invite.classList.add('ds-invite-entry');(sidebar.querySelector('.sidebar-bottom')||sidebar).append(invite);}
   const language=document.getElementById('homeLanguage');
   if(language)for(const option of language.options)option.textContent=option.value.toUpperCase();
+  // One small footer directly below Pricing in the already-existing left menu.
+  // Reuse Home's working Invite Friends button; other pages go to the same invitation dialog.
+  const extras=document.createElement('div');extras.className='ds-owner-sidebar-extras';
+  const friend=invite||document.createElement('a');
+  if(!invite){friend.href='deepsyq.html?panel=invite';friend.textContent='Invite Friends';}
+  friend.classList.add('ds-owner-sidebar-invite');
+  extras.append(friend);
+  const homeLanguageWrap=language?.closest('label');
+  if(!homeLanguageWrap){
+    const languageSelect=document.createElement('select');
+    languageSelect.className='ds-owner-sidebar-language';
+    languageSelect.setAttribute('aria-label','Language');
+    for(const [value,label] of [['ru','Русский'],['en','English'],['fr','Français'],['es','Español']]){
+      const option=document.createElement('option');option.value=value;option.textContent=label;languageSelect.append(option);
+    }
+    const readLanguage=()=>localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang')||'en';
+    languageSelect.value=readLanguage();
+    languageSelect.addEventListener('change',()=>{
+      localStorage.setItem('deepsyq_home_language',languageSelect.value);
+      localStorage.setItem('deepsyq_lang',languageSelect.value);
+      window.dispatchEvent(new Event('deepsyq:lang'));
+    });
+    window.addEventListener('deepsyq:lang',()=>{languageSelect.value=readLanguage()});
+    extras.append(languageSelect);
+  }
+  const icons=document.createElement('div');icons.className='ds-owner-social-icons';
+  icons.setAttribute('aria-label','Social networks');
+  const artwork={
+    discord:'<path d="M7 7c3-1.5 7-1.5 10 0l2 9c-1 1.4-2.3 2.4-4 3l-.8-1.5M7 7L5 16c1 1.4 2.3 2.4 4 3l.8-1.5M8.5 16.5c2.4 1.2 4.6 1.2 7 0"/><circle cx="9" cy="13" r=".8" fill="currentColor"/><circle cx="15" cy="13" r=".8" fill="currentColor"/>',
+    x:'<path d="M4.5 3.5h3.3l11.7 17h-3.3zM19 3.5L5 20.5"/>',
+    instagram:'<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.5" cy="6.6" r=".9" fill="currentColor"/>',
+    facebook:'<path d="M14.8 20V12h3l.5-3.6h-3.5V6.1c0-1 .4-1.6 1.7-1.6H19V1.3c-.5-.1-1.5-.2-2.9-.2C13.3 1.1 11.5 2.8 11.5 5.9v2.5H9V12h2.5v8z" fill="currentColor" stroke="none"/>'
+  };
+  const homeURL=new URL('deepsyq.html',location.href).href;
+  const destinations={
+    discord:'https://discord.com/channels/@me',
+    x:'https://twitter.com/intent/tweet?text='+encodeURIComponent('Create with Deepsyq')+'&url='+encodeURIComponent(homeURL),
+    instagram:'https://www.instagram.com/',
+    facebook:'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(homeURL)
+  };
+  for(const [key,label] of [['discord','Discord'],['x','X'],['instagram','Instagram'],['facebook','Facebook']]){
+    const link=document.createElement('a');
+    link.className='ds-owner-social-link';link.href=destinations[key];
+    link.target='_blank';link.rel='noopener noreferrer';link.title=label;
+    link.setAttribute('aria-label',label+' — share Deepsyq');
+    link.innerHTML='<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+artwork[key]+'</svg>';
+    if(key==='discord'||key==='instagram')link.addEventListener('click',()=>navigator.clipboard?.writeText(homeURL).catch(()=>{}));
+    icons.append(link);
+  }
+  extras.append(icons);
+  const siteNav=sidebar.querySelector('nav');
+  if(siteNav)siteNav.after(extras);else sidebar.append(extras);
+
 
   const brand = document.createElement('a');
   brand.href = 'deepsyq.html'; brand.className = 'ds-mobile-brand'; brand.setAttribute('aria-label', 'Deepsyq Home');
@@ -151,7 +204,7 @@ function setupMobileShell() {
     };
     new MutationObserver(placeExtras).observe(document.body,{attributes:true,attributeFilter:['class']});placeExtras();
   }
-  const reused = [toggle, tools, tour, pricing, login];
+  const reused = [toggle, tools, tour, pricing, login, ...(homeLanguageWrap ? [homeLanguageWrap] : [])];
   const saved = new Map();
   const move = (el, parent) => {
     if (el.parentNode) { const marker = document.createComment('mobile header slot'); el.before(marker); saved.set(el, marker); }
@@ -210,6 +263,7 @@ function setupMobileShell() {
       header.append(brand, controls);
       move(toggle, document.body); toggle.classList.add('ds-mobile-menu');
       move(tools, left); move(tour, right); move(pricing, right); move(login, right);
+      if(homeLanguageWrap){homeLanguageWrap.classList.add('ds-owner-sidebar-language-wrap');move(homeLanguageWrap,extras);}
     } else if (!mobile.matches && mounted) {
       if (isOpen()) toggle.click();
       mounted = false;
