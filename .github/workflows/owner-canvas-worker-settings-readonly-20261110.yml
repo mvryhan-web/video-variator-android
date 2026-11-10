@@ -1,0 +1,25 @@
+name: Canvas Worker settings read-only diagnostic 20261110
+on:
+  push:
+    branches: [owner-canvas-workspace-20261110]
+    paths: ['.github/workflows/owner-canvas-worker-settings-readonly-20261110.yml']
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Read production Worker binding names and metadata ONLY (no values)
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          const a=process.env.CLOUDFLARE_ACCOUNT_ID,t=process.env.CLOUDFLARE_API_TOKEN;
+          const prefix='https://api.cloudflare.com/client/v4/accounts/'+a;
+          async function get(p){const r=await fetch(prefix+p,{headers:{Authorization:'Bearer '+t}});if(!r.ok)throw Error('Cloudflare status '+r.status);return (await r.json()).result}
+          const p=await get('/pages/projects/deepsyq'),w=await get('/workers/scripts/'+encodeURIComponent(p.production_script_name)+'/settings');
+          const binds=(w.bindings||[]).map(x=>({name:x.name,type:x.type,namespace_id:x.namespace_id||null,bucket_name:x.bucket_name||null,service:x.service||null})).sort((a,b)=>a.name.localeCompare(b.name));
+          console.log('WORKER_SETTINGS_SAFE_READ',JSON.stringify({deployment:p.canonical_deployment?.id,uses_functions:p.canonical_deployment?.uses_functions,script_name:p.production_script_name,keys:Object.keys(w).sort(),compatibility_date:w.compatibility_date,compatibility_flags:w.compatibility_flags,bindings:binds,envNames:Object.keys(p.deployment_configs?.production?.env_vars||{}).sort(),bucketNames:Object.keys(p.deployment_configs?.production?.r2_buckets||{}).sort()}));
+          JS
