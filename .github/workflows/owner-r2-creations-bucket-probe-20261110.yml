@@ -1,0 +1,42 @@
+name: Owner My Creations R2 permanent storage capability (read only)
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/owner-r2-creations-bucket-probe-20261110.yml'
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Inspect R2 bucket, public domains, and object permissions without writing anything
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          const token=process.env.CF_API_TOKEN,acct=process.env.CF_ACCOUNT_ID;
+          if(!token || !acct)throw Error('GitHub Cloudflare credentials not configured');
+          const base='https://api.cloudflare.com/client/v4/accounts/'+encodeURIComponent(acct)+'/r2/buckets';
+          async function check(label,u){
+            try{
+              const r=await fetch(u,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(13000)});
+              const data=await r.json().catch(()=>({}));
+              const result=data.result;
+              const summary={label,status:r.status,success:data.success===true,errorCodes:(data.errors||[]).map(x=>x.code)};
+              if(label==='buckets'&&summary.success)summary.names=Array.isArray(result?.buckets)?result.buckets.map(x=>x.name):Array.isArray(result)?result.map(x=>x.name):[];
+              if(label==='bucket'&&summary.success)summary.bucket={name:result?.name,jurisdiction:result?.jurisdiction,publicDevUrlEnabled:result?.publicDevUrlEnabled};
+              if(label==='domains'&&summary.success)summary.domains=(result?.domains||[]).map(x=>({domain:x.domain,enabled:x.enabled,ssl:x.status?.ssl,ownership:x.status?.ownership}));
+              if(label==='objects'&&summary.success)summary.keys=(result?.objects||result?.result||[]).slice(0,15).map(x=>x.key);
+              console.log('R2_CREATIONS_STORAGE_PROBE',JSON.stringify(summary));
+            }catch(e){console.log('R2_CREATIONS_STORAGE_PROBE',JSON.stringify({label,error:String(e).slice(0,130)}))}
+          }
+          await check('buckets',base);
+          await check('bucket',base+'/deepsyq-media');
+          await check('domains',base+'/deepsyq-media/domains/custom');
+          await check('objects',base+'/deepsyq-media/objects?prefix=my-creations/showcase/');
+          console.log('READ_ONLY_NO_CHANGES',true);
+          JS
