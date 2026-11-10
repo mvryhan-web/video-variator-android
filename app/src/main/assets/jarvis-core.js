@@ -1098,6 +1098,10 @@ export function resumeJarvisRecognition() {
 
     jarvisRecognition.onerror = (err) => {
       if (recognitionTurn !== recognitionVersion || !isJarvisActive) return;
+      // Normal silence and aborts are NOT errors - do not break session
+      if (err.error === 'no-speech' || err.error === 'aborted') {
+        return;
+      }
       const recognitionErrors = {
         'not-allowed': 'permission',
         'service-not-allowed': 'service',
@@ -1105,17 +1109,15 @@ export function resumeJarvisRecognition() {
         network: 'network'
       };
       if (recognitionErrors[err.error]) showRecognitionError(recognitionErrors[err.error]);
-      // A visible voice error is more useful than a sphere that only animates.
-      if (!recognitionErrors[err.error] && err.error) showRecognitionError('service');
+      else if (err.error) showRecognitionError('service');
       recognitionStarting = false;
-      // A denied/unavailable service must not trigger Android's mic start tone in a loop.
-      if (recognitionErrors[err.error]) {
+      // Only permanent permission denials stop the loop
+      if (err.error === 'not-allowed' || err.error === 'service-not-allowed') {
         keepListening = false;
         jarvisRecognition.onend = null;
         isJarvisListening = false;
         updateJarvisState('idle');
       }
-
     };
 
     recognitionStarting = true;

@@ -1,8 +1,8 @@
 import {createSpeechDraft} from './jarvix-speech-draft.js';
 import {pauseJarvisRecognition, resumeJarvisRecognition, deactivateJarvisVoice, isJarvisVoiceActive} from './jarvis-core.js';
 
-// Isolated browser dictation controller for the existing JARVIX text composer.
-// Stop keeps the draft; Send awaits final speech results before the caller submits.
+// Isolated browser dictation controller for the JARVIX text composer.
+// Rebuilt from A to Z: robust silence handling, mobile auto-restart, touch debounce.
 export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.SpeechRecognition||window.webkitSpeechRecognition,getLanguage=()=>document.documentElement.lang.slice(0,2),onStatus=()=>{}}){
  const wave=document.createElement('span');
  wave.className='j-voice-waves';
@@ -12,7 +12,6 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
  mic.before(wave);
  const initialRequired=input.required;
  let active=null;
- // JARVIX sphere and the chat square share ONE voice session.
  let liveActive=isJarvisVoiceActive();
  const liveStopLabels={ru:'Остановить разговор с JARVIX',en:'Stop JARVIX voice conversation',fr:'Arrêter la conversation vocale JARVIX',es:'Detener la conversación de voz JARVIX'};
  const labels={
@@ -37,7 +36,6 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
   const label=live?liveStopLabels[language()]:labels[language()][listening?'stop':'start'];
   mic.setAttribute('aria-label',label);
   mic.title=label;
-  // Allow Send to stop and collect final text even before a first interim result.
   input.required=listening?false:initialRequired;
  }
  function finished(current){
@@ -46,8 +44,7 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
   active=null;
   display(false);
   current.resolve();
-  // Restore the sphere microphone only after the chat recognizer fully stops.
-  setTimeout(() => resumeJarvisRecognition(), 180);
+  setTimeout(() => resumeJarvisRecognition(), 200);
  }
  function stop({abort=false}={}){
   const current=active;
@@ -55,88 +52,117 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
   if(!current.stopping){
    current.stopping=true;
    display(false);
-   // SpeechRecognition.stop() may emit one last onresult before onend.
-   // Do not discard that final transcript or submit before it arrives.
-   current.timeout=setTimeout(()=>finished(current),1700);
+   current.timeout=setTimeout(()=>finished(current),1500);
    try{if(abort)current.recognition.abort();else current.recognition.stop();}
    catch{finished(current);}
   }
   return current.ended;
  }
- // Core sends activation/deactivation, idle timeout and restored cross-page state.
+
  window.addEventListener('jarvix:voice-state', event=>{
   liveActive=event.detail?.active===true;
   if(liveActive&&active)void stop();
   display(Boolean(active));
  });
+
  let lastToggleTime=0;
  mic.onclick=()=>{
   const now=Date.now();
-  if(now-lastToggleTime<350)return;
+  if(now-lastToggleTime<300)return;
   lastToggleTime=now;
+
+  // If live sphere was running in background, stop it cleanly and start dictation
   if(liveActive){
-   // Existing stop: cancels speech, recognition and the persisted session.
    if(active)void stop({abort:true});
    deactivateJarvisVoice();
+   liveActive=false;
+  }
+
+  // If already dictating, second tap stops and keeps the text
+  if(active){void stop();return;}
+
+  const Recognition=getRecognizer();
+  if(!Recognition){
+   onError(({ru:'Голосовой ввод не поддерживается в этом браузере.',en:'Voice input is unavailable in this browser.'})[language()]);
    return;
   }
-  if(active){void stop();return;}
-  const Recognition=getRecognizer();
-  if(!Recognition){onError('Voice input is unavailable in this browser.');return;}
+
   let recognition;
-  try{recognition=new Recognition();}
-  catch{onError('Microphone could not be started.');return;}
+  try{
+   recognition=new Recognition();
+  }catch{
+   onError(({ru:'Не удалось запустить микрофон.',en:'Microphone could not be started.'})[language()]);
+   return;
+  }
+
   const current={recognition,stopping:false,timeout:null,resolve:null,ended:null,seen:false,failed:false};
   current.ended=new Promise(resolve=>{current.resolve=resolve;});
   active=current;
+
   const base=input.value, draft=createSpeechDraft(base);
   recognition.lang=({ru:'ru-RU',en:'en-US',fr:'fr-FR',es:'es-ES'})[language()]||'ru-RU';
   recognition.interimResults=true;
-  recognition.continuous=true;
+  const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  recognition.continuous=!isMobile;
   recognition.maxAlternatives=1;
+
   recognition.onstart=()=>{
    if(active!==current)return;
-   onStatus(({ru:'Микрофон включён. Говорите — слова появятся в поле.',en:'Microphone on. Speak and words will appear in the field.',fr:'Micro activé. Parlez pour dicter le texte.',es:'Micrófono activado. Hable para dictar el texto.'})[language()]);
+   onStatus(({ru:'Слушаю… Говорите.',en:'Listening… Speak now.',fr:'Écoute… Parlez.',es:'Escuchando… Hable.'})[language()]);
   };
+
   recognition.onresult=e=>{
    if(active!==current)return;
    const transcript=draft(e);
-   if(transcript.trim()){
+   if(transcript&&transcript.trim()){
     current.seen=true;
     input.value=transcript;
     input.dispatchEvent(new Event('input',{bubbles:true}));
     onStatus('');
    }
   };
+
   recognition.onend=()=>{
    if(active!==current)return;
-   if(!current.stopping&&!current.seen&&!current.failed){
-    onError(({ru:'Речь не распознана. Проверьте разрешение микрофона и службу распознавания Chrome.',en:'No speech recognized. Check Chrome microphone permission and speech recognition service.',fr:'Aucune parole reconnue. Vérifiez le micro et le service vocal.',es:'No se reconoció voz. Compruebe el permiso del micrófono y el reconocimiento de voz.'})[language()]);
+   // Seamless auto-restart if user hasn't explicitly stopped dictation
+   if(!current.stopping&&!current.failed){
+    try{
+     recognition.start();
+     return;
+    }catch(_){}
    }
    finished(current);
   };
+
   recognition.onerror=e=>{
    if(active!==current)return;
-   current.failed=true;
    const kind=e?.error||'unavailable';
+   // 'no-speech' and 'aborted' are normal silence events, NOT fatal errors
+   if(kind==='no-speech'||kind==='aborted')return;
+
+   current.failed=true;
    const messages={
     'not-allowed':'Chrome заблокировал микрофон: разрешите доступ для deepsyq.app.',
-    'service-not-allowed':'Служба распознавания речи Chrome заблокирована.',
+    'service-not-allowed':'Служба распознавания речи браузера недоступна.',
     'audio-capture':'Микрофон не обнаружен или занят другим приложением.',
     'network':'Нет связи со службой распознавания речи браузера.',
-    'no-speech':'Не удалось услышать речь. Проверьте выбранный микрофон и говорите громче.',
     'language-not-supported':'Выбранный язык не поддерживается системой распознавания.'
    };
    onError(messages[kind]||('Распознавание речи: '+kind));
    finished(current);
   };
+
   try{
    pauseJarvisRecognition();
-   recognition.start();display(true);
+   recognition.start();
+   display(true);
    onStatus(({ru:'Подключаю микрофон…',en:'Starting microphone…',fr:'Activation du micro…',es:'Iniciando micrófono…'})[language()]);
+  }catch{
+   finished(current);
+   onError(({ru:'Не удалось включить микрофон. Разрешите доступ в браузере.',en:'Microphone could not be started.'})[language()]);
   }
-  catch{finished(current);onError('Microphone could not be started.');}
  };
+
  display(false);
  return {stop:()=>stop(),abort:()=>stop({abort:true})};
 }
