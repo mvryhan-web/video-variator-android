@@ -93,7 +93,7 @@ async function render({forExport=false}={}){
    ctx.filter=effectFilter();ctx.drawImage(source,-iw*f/2,-ih*f/2,iw*f,ih*f);ctx.restore();
   }catch(_){if(serial!==loadingSeq)return;note('This example could not load. Choose another photo or upload your own.');}
  }
- state.layers.forEach((layer,i)=>{if(!forExport&&layer.type==='text'&&i===state.selected&&document.activeElement===$('cwInlineText'))return;drawLayer(layer,i===state.selected);});
+ state.layers.forEach((layer,i)=>{if(!forExport&&layer.type==='text'&&i===state.selected&&document.activeElement===$('cwInlineText'))return;drawLayer(layer,!forExport&&i===state.selected);});
  syncTextControls();$('cwEmptyState').hidden=!!photo;
 }
 function updateControls(){
