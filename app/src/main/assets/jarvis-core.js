@@ -4,7 +4,8 @@ import {navigationReply} from './jarvix-navigation-reply.js';
 import {findCatalogReply} from './jarvix-clip-library.js';
 // JARVIX AI Core v6.0 — Autonomous Voice Butler & Resident Intelligence
 // Guaranteed Male Film Voice, Instant Navigation ("Сделано."), Multi-Turn Weather Brain & Smart ChatGPT Prompt Generation
-import {speakOwnerSpeech, stopOwnerSpeech, unlockOwnerSpeech, prepareOwnerGreetings, OWNER_GREETING_TEXT} from './jarvix-owner-speech.js';
+import {speakOwnerSpeech, stopOwnerSpeech, unlockOwnerSpeech, prepareOwnerGreetings, OWNER_GREETING_TEXT, TOUR_GREETING_TEXT} from './jarvix-owner-speech.js';
+import {hasVerifiedJarvixSubscription} from './jarvix-access.js';
 import { detectIntent } from './home-experience.js';
 import { saveStudioHandoff } from './studio-handoff.js';
 
@@ -70,7 +71,9 @@ let recognitionVersion = 0;
 let recognitionStarting = false;
 let keepListening = false;
 let silenceTimer = null;
-const SILENCE_TIMEOUT_MS = 45000;
+const SILENCE_TIMEOUT_MS = 30000; // Auto-standby after 30 seconds without user activity.
+const JARVIX_LAST_ACTIVITY_KEY = 'jarvix_last_activity_at';
+const JARVIX_GREETING_COUNTER_KEY = 'jarvix_greeting_counter';
 
 // Conversational context memory for multi-turn dialogs (e.g., weather city, prompt refinement)
 
@@ -179,86 +182,15 @@ let currentSpokenUtterance = '';
 let retainedSpeechUtterance = null;
 
 // 2. Text-to-Speech Engine with Guaranteed Complete Output & Mutual Acoustic Exclusion
-export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'ru', isRu = true) {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-    if (typeof onComplete === 'function') onComplete();
-    return;
-  }
-  try {
-    // Keep recognition active for instant ChatGPT-style user interruption (barge-in)
-    // pauseJarvisRecognition() is preserved for shutdown/standby
-    if (isJarvisActive && keepListening && !isJarvisListening) {
-      resumeJarvisRecognition();
-    }
-
-    const version = ++speechVersion;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    retainedSpeechUtterance = utterance;
-    const resolvedLang = (typeof langCode === 'string') ? langCode : (isRu ? 'ru' : 'en');
-    const isFr = resolvedLang === 'fr';
-    const isEs = resolvedLang === 'es';
-    const isRuTarget = resolvedLang === 'ru';
-    utterance.lang = isRuTarget ? 'ru-RU' : isFr ? 'fr-FR' : isEs ? 'es-ES' : 'en-US';
-
-    const voiceMeta = getJarvixVoice(resolvedLang);
-    if (voiceMeta && voiceMeta.voice) {
-      utterance.voice = voiceMeta.voice;
-    }
-    // Never silently substitute an unknown or female OS voice.
-    if (!voiceMeta?.isExplicitMale) {
-      window.dispatchEvent(new CustomEvent('jarvix:voice-unavailable', { detail: { language: resolvedLang } }));
-      if (typeof onComplete === 'function') onComplete();
-      return;
-    }
-    utterance.pitch = 1.0;
-    utterance.rate = 1.0;
-
-    utterance.onstart = () => {
-      if (version !== speechVersion) return;
-      isJarvisSpeaking = true;
-      currentSpokenUtterance = text;
-      updateJarvisState('speaking');
-    };
-
-    let finished = false;
-    const finish = () => {
-      if (finished) return;
-      finished = true;
-      // 300ms acoustic guard delay to prevent room reverberation / speaker tail from triggering mic
-      setTimeout(() => {
-        if (version !== speechVersion) return;
-        isJarvisSpeaking = false;
-        currentSpokenUtterance = '';
-        if (typeof onComplete === 'function') {
-          onComplete();
-        } else if (isJarvisActive && keepListening && !isTourActive()) {
-          resumeJarvisRecognition();
-          startSilenceTimer();
-          updateJarvisState('listening');
-        } else {
-          updateJarvisState('idle');
-        }
-      }, 300);
-    };
-
-    utterance.onend = finish;
-    utterance.onerror = finish;
-    window.speechSynthesis.speak(utterance);
-  } catch (err) {
-    console.warn('[JARVIX] Local speech error:', err);
-    isJarvisSpeaking = false;
-    currentSpokenUtterance = '';
-    if (typeof onComplete === 'function') onComplete();
-  }
+// Compatibility export: the owner explicitly forbids browser text-to-speech.
+export function speakLocalSpeechSynthesis(_text, onComplete = null) {
+  if (typeof onComplete === 'function') onComplete();
 }
 
 let lastSpokenText = '';
 let lastSpokenTime = 0;
 
-let actionFirstReply=false;
 export function speakJarvis(text, onComplete = null) {
-  if(actionFirstReply&&String(text||'').trim().split(/\s+/).length>2)text={ru:'Уточните промпт',en:'Clarify prompt',fr:'Précisez',es:'Aclara petición'}[getJarvixLanguage()]||'Clarify prompt';
   if (!text) {
     if (typeof onComplete === 'function') onComplete();
     return;
@@ -277,10 +209,7 @@ export function speakJarvis(text, onComplete = null) {
   resetSilenceTimer();
 
   const langCode = getJarvixLanguage();
-  const isRu = langCode === 'ru';
-
-  // Browser speech synthesis uses the language selected on the site.
-  // Microphone is strictly paused during speech and resumed safely on completion
+  // A previously recorded owner MP3 is the ONLY allowed speaking source.
   const version = speechVersion;
   const button = getTopBtn();
   const label = button?.querySelector('.jarvis-name');
@@ -289,13 +218,13 @@ export function speakJarvis(text, onComplete = null) {
   if (button) { button.dataset.voicePhase = 'connecting'; button.setAttribute('aria-busy','true'); button.title = waitingTitle[langCode]; }
   if (label) label.textContent = waiting[langCode];
   let speechFailed = false;
+  let audibleText = text;
   const speechStartedAt = performance.now();
   speakOwnerSpeech(text, langCode, {
     source: source => { if (button) button.dataset.voiceSource = source; },
-    fallback: () => {
-      if (label) label.textContent = 'JARVIS';
-      if (button) button.removeAttribute('aria-busy');
-      speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
+    recordedText: actual => { audibleText = actual; },
+    unavailable: () => {
+      if (button) button.dataset.voicePhase = 'recording-unavailable';
     },
     phase: phase => {
       if (button) {
@@ -306,8 +235,9 @@ export function speakJarvis(text, onComplete = null) {
     },
     start: () => {
       resetSilenceTimer(); clearTimeout(silenceTimer);
-      pauseJarvisRecognition(); isJarvisSpeaking = true;
-      currentSpokenUtterance = text; updateJarvisState('speaking');
+      // Keep the recognizer open for instantaneous user interruption.
+      isJarvisSpeaking = true;
+      currentSpokenUtterance = audibleText; updateJarvisState('speaking');
     },
     complete: () => setTimeout(() => {
       if (version !== speechVersion) return;
@@ -316,7 +246,7 @@ export function speakJarvis(text, onComplete = null) {
       if (!speechFailed && label) label.textContent = 'JARVIS';
       if (typeof onComplete === 'function') onComplete();
       else if (isJarvisActive && keepListening) {
-        resumeJarvisRecognition(); startSilenceTimer(); updateJarvisState('listening');
+        resumeJarvisRecognition(); resetSilenceTimer(); updateJarvisState('listening');
       } else updateJarvisState('idle');
     }, 300),
     error: code => {
@@ -486,7 +416,6 @@ function clearCurrentInputs() {
 // 8. Main Voice Command Handler (Hands, Ears, Instant Navigation & Conversational Brain)
 export async function handleJarvisVoiceCommand(commandText) {
   if (!commandText) return;
-  actionFirstReply=true;
   cancelJarvixTurn();
   const turnVersion = jarvixTurnVersion;
   const t = commandText.trim();
@@ -895,6 +824,16 @@ export async function handleJarvisVoiceCommand(commandText) {
         return;
       }
 
+      // Only an actively paid, server-verified subscription can access the AI brain.
+      // Guests and trial/free sessions remain 100% on local recorded MP3s.
+      if (!await hasVerifiedJarvixSubscription()) {
+        if (turnVersion === jarvixTurnVersion) {
+          const nearest = await findCatalogReply(t, langCode);
+          if (nearest?.text) speakJarvis(nearest.text);
+        }
+        return;
+      }
+      if (turnVersion !== jarvixTurnVersion) return;
       const controller = new AbortController();
       pendingJarvixTurn = controller;
       const res = await fetch('/api/jarvix/chat', {
@@ -1167,13 +1106,38 @@ export function resumeJarvisRecognition() {
 
 // 10. Silence Timer: Polite auto-standby after silence (silent standby, never unprompted talk)
 function startSilenceTimer() {
-  // Do not end an active listening session just because the user pauses.
   clearTimeout(silenceTimer);
+  if (!isJarvisActive || !keepListening || isJarvisSpeaking || isTourActive()) return;
+  let last = 0;
+  try { last = Number(sessionStorage.getItem(JARVIX_LAST_ACTIVITY_KEY)) || 0; } catch (_) {}
+  if (!last) last = Date.now();
+  const remaining = Math.max(0, SILENCE_TIMEOUT_MS - (Date.now() - last));
+  silenceTimer = setTimeout(() => {
+    if (!isJarvisActive || isJarvisSpeaking || isTourActive()) {
+      startSilenceTimer();
+      return;
+    }
+    const lang = getJarvixLanguage();
+    const notice = {
+      ru:'Я отключился после 30 секунд тишины. Нажмите на сферу, чтобы включить меня.',
+      en:'I went into standby after 30 seconds of silence. Press my orb to reactivate.',
+      fr:'Je me suis mis en veille après 30 secondes de silence. Appuyez sur ma sphère pour me réactiver.',
+      es:'Me puse en espera tras 30 segundos de silencio. Pulsa mi esfera para reactivarme.'
+    }[lang];
+    deactivateJarvisVoice();
+    const button = getTopBtn();
+    if (button) {
+      button.title = notice;
+      button.dataset.voicePhase = 'auto-standby';
+    }
+    // Do not invent a recorded announcement: only show it until a matching owner MP3 exists.
+    window.dispatchEvent(new CustomEvent('jarvix:auto-standby', {detail:{notice}}));
+  }, remaining);
 }
-
 function resetSilenceTimer() {
   clearTimeout(silenceTimer);
-  if (isJarvisActive && !isJarvisSpeaking) {
+  if (isJarvisActive && keepListening && !isJarvisSpeaking) {
+    try { sessionStorage.setItem(JARVIX_LAST_ACTIVITY_KEY, String(Date.now())); } catch (_) {}
     startSilenceTimer();
   }
 }
@@ -1258,11 +1222,15 @@ export function activateJarvisVoice() {
   const topBtn = getTopBtn();
   if (topBtn) topBtn.classList.add('is-active');
 
-  // Ordinary activation is a short listening acknowledgement, never the tour.
-  const listening = {ru:'Слушаю вас очень внимательно.',en:'Listening closely. Go ahead.',fr:'Je vous écoute très attentivement.',es:'Te escucho atentamente. Dime.'};
-  speakJarvis(listening[getJarvixLanguage()] || listening.en, () => {
+  // Rotate two verified owner-recorded greetings, not a repeated synthetic sentence.
+  const lang = getJarvixLanguage();
+  let greetingCount = 0;
+  try { greetingCount = Number(sessionStorage.getItem(JARVIX_GREETING_COUNTER_KEY)) || 0;
+    sessionStorage.setItem(JARVIX_GREETING_COUNTER_KEY, String(greetingCount + 1)); } catch (_) {}
+  const listening = (greetingCount % 2 === 0 ? OWNER_GREETING_TEXT : TOUR_GREETING_TEXT)[lang];
+  speakJarvis(listening || OWNER_GREETING_TEXT.ru, () => {
     if(isJarvisActive && keepListening && !isTourActive()){
-      resumeJarvisRecognition();updateJarvisState('listening');
+      resumeJarvisRecognition();resetSilenceTimer();updateJarvisState('listening');
     }
   });
 }
@@ -1276,6 +1244,7 @@ export function deactivateJarvisVoice() {
   isJarvisListening = false;
   try {
     sessionStorage.removeItem('jarvix_active');
+    sessionStorage.removeItem(JARVIX_LAST_ACTIVITY_KEY);
   } catch (_) {}
   clearTimeout(silenceTimer);
   stopAllSpeech();
@@ -1357,8 +1326,14 @@ export function initJarvis() {
     if (sayOnLoad) sessionStorage.removeItem('jarvix_say_on_load');
   } catch (_) {}
 
-  // Fresh visits stay idle; an explicitly enabled session survives navigation Home.
-
+  // A live voice session survives page navigation but not 30 seconds of inactivity.
+  let expiredOnNavigation = false;
+  try { const last = Number(sessionStorage.getItem(JARVIX_LAST_ACTIVITY_KEY)) || Date.now();
+    expiredOnNavigation = Date.now() - last >= SILENCE_TIMEOUT_MS; } catch (_) {}
+  if (expiredOnNavigation) {
+    wasActive = false; sayOnLoad = null;
+    try { sessionStorage.removeItem('jarvix_active'); } catch (_) {}
+  }
   if (wasActive || sayOnLoad) {
     isJarvisActive = true;
     keepListening = true;
