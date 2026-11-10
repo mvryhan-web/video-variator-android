@@ -1,3 +1,5 @@
+> **АКТУАЛЬНЫЙ ЕДИНЫЙ СВОД (10.11.2026):** [docs/DEEPSYQ_CANONICAL_OPERATING_RULES.md](docs/DEEPSYQ_CANONICAL_OPERATING_RULES.md) — четыре основные цели, SEO, экономика ≥ 2:1, действующие D20–D32, роли, безопасность и релизы. **При противоречии с историческими разделами ниже применять этот свод и более позднее прямое решение владельца.** Предыдущая редакция 25 правил сохранена в [архиве](docs/archive/DEEPSYQ_CANONICAL_OPERATING_RULES_20261018.md). Ниже сохранён журнал решений/контекст, а не второй конкурирующий набор команд.
+
 ## OWNER D32 — 2026-11-09 — PRODUCTION-FIRST; TEST IS RESERVE
 
 **New explicit owner instruction, effective immediately; supersedes D29 and older TEST-first/publish-only-to-TEST rules solely on the default publication destination. Applies to Coordinator P, Administrator, Antigravity and every future DEEPSYQ executor.**
