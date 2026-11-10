@@ -895,7 +895,7 @@ body.home-neon{background:#030b18;color:#eff6ff}
 .home-neon .home-spotlight-agent .home-spotlight-jarvix-orb{display:none!important}
 @media(max-width:760px){
  .home-neon .home-spotlight-agent>.home-spotlight-jarvix-mark{
-  display:flex;flex-direction:row;align-items:center;gap:10px;
+  display:flex;flex-direction:row;align-items:center;justify-content:flex-start!important;gap:10px;
   max-width:100%;position:relative;z-index:1;
  }
  .home-neon .home-spotlight-agent .home-spotlight-jarvix-orb{
