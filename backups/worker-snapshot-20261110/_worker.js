@@ -1084,12 +1084,12 @@ export default {
       let replyText = '';
       let providerUsed = 'Google Gemini';
 
-      const geminiRules = `Отвечай пользователю прямо, естественно, по-человечески и по делу на языке ${language} (как умный, эрудированный живой эксперт и собеседник).
+      const geminiRules = `Ты — умный, эрудированный, живой ассистент и собеседник платформы DeepSyQ. Общайся на языке ${language}.
 СТРОГИЕ ПРАВИЛА:
-1. НИКОГДА не представляйся, не говори шаблонных фраз вроде "Привет! Рад знакомству!", "Hello, welcome to...", "Я твой виртуальный ассистент", "Я нейросеть" и т.п.
-2. Не называй себя по имени (никаких "Я Gemini", "Я ассистент"), сразу отвечай на суть вопроса пользователя или веди живой диалог без шаблонных вступлений.
-3. Отвечай содержательно, конкретно, без лишней воды и роботизированных приветствий.
-4. Помогай с любыми задачами: идеи, креативные промпты для фото и видео, советы, код, ответы на любые вопросы.`;
+1. НИКОГДА не представляйся, не здоровайся шаблонно (никаких "Привет! 👋", "Hello, welcome to...", "Я Gemini", "Я искусственный интеллект"). Сразу давай прямой ответ на суть вопроса.
+2. Не называй себя по имени. Отвечай прямо, информативно и по-человечески.
+3. У тебя есть доступ к поиску Google и актуальным данным в реальном времени. Если пользователь спрашивает погоду, факты, новости или события — отвечай конкретно и точно, используя актуальные данные. Никогда не говори "у меня нет доступа к данным в реальном времени" или "я языковая модель".
+4. НИКОГДА не навязывай генерацию картинок, видео или студии DeepSyQ, если пользователь прямо сам об этом не попросил. Если спросили про погоду в Париже — расскажи про погоду в Париже, без рекламных вставок и призывов "покреативить".`;
 
       // Google Gemini API is the default conversational model for all chat modes
       if (env.GEMINI_API_KEY) {
@@ -1100,16 +1100,33 @@ export default {
           for (const mId of candidateModels) {
             if (replyText) break;
             try {
-              const gemRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + mId + ':generateContent?key=' + encodeURIComponent(env.GEMINI_API_KEY), {
+              // Try with Google Search grounding first for real-time web knowledge (weather, news, facts)
+              let gemRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + mId + ':generateContent?key=' + encodeURIComponent(env.GEMINI_API_KEY), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
                 body: JSON.stringify({
                   systemInstruction: { parts: [{ text: geminiRules }] },
                   contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                  tools: [{ googleSearch: {} }],
                   generationConfig: { temperature: 0.7, maxOutputTokens: 1500 }
                 }),
                 signal: AbortSignal.timeout(12000)
               });
+
+              // Fallback without tools if googleSearch is not enabled for the model/key
+              if (!gemRes.ok) {
+                gemRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + mId + ':generateContent?key=' + encodeURIComponent(env.GEMINI_API_KEY), {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
+                  body: JSON.stringify({
+                    systemInstruction: { parts: [{ text: geminiRules }] },
+                    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                    generationConfig: { temperature: 0.7, maxOutputTokens: 1500 }
+                  }),
+                  signal: AbortSignal.timeout(12000)
+                });
+              }
+
               if (gemRes.ok) {
                 const gemData = await gemRes.json();
                 replyText = (gemData.candidates?.[0]?.content?.parts || []).map(x => x.text || '').join('').trim();
