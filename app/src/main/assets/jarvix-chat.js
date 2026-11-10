@@ -313,15 +313,28 @@ async function processMessage(message){
    message.status='sent';conversation.messages.push(response);await save();render();return;
   }
   let mode=resolveMode(message.text,message.mode);
-  if(['image','video','audio'].includes(mode))setChatHeaderMode(mode);
   if(message.mode==='auto'&&mode==='text'&&/измен|сделай.*(ярче|темнее)|ещё|change|brighter|darker|modifier|cambiar/i.test(message.text)){const previous=[...conversation.messages].reverse().find(m=>m.role==='assistant'&&m.jobId);if(previous)mode=previous.kind;}
   let answer;
   const rawText = String(message.text || '').trim();
-  const isQuestion = rawText.includes('?') || /^(привет|здравствуй|хай|ку|салют|hello|hi|hey|как|что|почему|зачем|расскажи|посоветуй|помоги|объясни|who|what|how|why|can you|tell me|help)/i.test(rawText);
-  const isExplicitGen = /^(сгенерируй|нарисуй|создай|сделай|generate|create|draw|make|render)\b/i.test(rawText);
-  const shouldGenerateMedia = ['image','video','audio'].includes(mode) && (!isQuestion || isExplicitGen);
+  const cleanedText = rawText.replace(/^(слушай|смотри|эй|джарвис|jarvis|пожалуйста|hey|please)[,\s]+/i, '').trim();
+
+  const isAdviceOrQuestion = (
+   rawText.includes('?') ||
+   /\b(как|почему|зачем|что\s+если|какой|какая|какое|какие|расскажи|посоветуй|подскажи|помоги|объясни|совет|совета|советом|идея|идею|идеи|рекомендац|можно\s+ли|стоит\s+ли|сколько|научи|привет|здравствуй|хай|салют|hello|hi|hey|who|what|how|why|can\s+you|could\s+you|tell\s+me|suggest|advice|tips?|explain|help)\b/i.test(rawText)
+  );
+  const isExplicitGen = /^(сгенерируй|нарисуй|создай|сделай|запусти|generate|create|draw|make|render)\b/i.test(cleanedText);
+  const shouldGenerateMedia = !isAdviceOrQuestion && (
+   (['image','video','audio'].includes(mode) && isExplicitGen) ||
+   (message.action?.intent === 'GENERATE_MEDIA') ||
+   (['image','video','audio'].includes(mode) && /измен|сделай.*(ярче|темнее)|ещё/i.test(rawText))
+  );
 
   if(!shouldGenerateMedia){
+   // Text conversation / advice / question: dynamically switch header to Chat
+   setChatHeaderMode('auto');
+   window.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode:'auto'}}));
+   try{sessionStorage.removeItem('jarvix_composer_mode');}catch(_){}
+
    // Google Gemini is the default conversational model across all chat modes
    const textFiles=await Promise.all((message.files||[]).filter(f=>f.type==='text/plain').map(f=>f.text()));store.guard();
    const text=(message.text+(textFiles.length?'\n'+textFiles.join('\n'):'')).slice(0,3000);
@@ -329,6 +342,10 @@ async function processMessage(message){
    answer={id:makeId(),role:'assistant',text:d.reply||'No answer received.',limitReached:false,createdAt:Date.now()};
    if((message.files||[]).some(f=>f.type!=='text/plain'))answer.text+='\nMedia attachments are saved in this conversation.';
   }else{
+   // Real media generation requested: activate Video/Photo/Audio header mode
+   setChatHeaderMode(mode);
+   window.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode}}));
+   try{sessionStorage.setItem('jarvix_composer_mode',mode);}catch(_){}
    config=config||await api('/api/studio/config');
    // Fail closed outside the isolated zero-spend preview. Production launch remains in Studio's existing consent/payment flow.
    if(config.previewOnly!==true||config.outputMode!=='local-demo')throw Error('Generation here is limited to TEST demo mode. Open the existing Studio to review model, consent and cost.');
@@ -463,9 +480,7 @@ const composerInput=$('jInput');
 if(composerInput){
   composerInput.addEventListener('input',()=>{
     const val=composerInput.value.trim();
-    if(!val){try{setChatHeaderMode(sessionStorage.getItem('jarvix_composer_mode')||'auto');}catch{}return;}
-    const detected=resolveMode(val,'auto');
-    if(['image','video','audio'].includes(detected))setChatHeaderMode(detected);
+    if(!val){try{setChatHeaderMode(sessionStorage.getItem('jarvix_composer_mode')||'auto');}catch{}}
   });
 }
 

@@ -136,6 +136,14 @@ export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
   });
   for(const item of menu.querySelectorAll('[data-j-mode]'))item.setAttribute('aria-pressed',String(item.dataset.jMode===mode));
  }
+ window.addEventListener('jarvix:mode',e=>{
+  if(e.detail?.mode&&e.detail.mode!==mode){
+   mode=e.detail.mode;
+   form.dataset.mode=mode;
+   if(plus)plus.dataset.mode=mode;
+   if(menu)for(const item of menu.querySelectorAll('[data-j-mode]'))item.setAttribute('aria-pressed',String(item.dataset.jMode===mode));
+  }
+ });
  reportMode();
  if(attachBtn&&fileInput)attachBtn.onclick=()=>fileInput.click();
  if(fileInput){
