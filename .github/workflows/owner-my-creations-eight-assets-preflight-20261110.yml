@@ -1,0 +1,50 @@
+name: Owner My Creations 8 assets production preflight (READ ONLY)
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths: ['.github/workflows/owner-my-creations-eight-assets-preflight-20261110.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read-only baseline of existing production Worker and image paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          const account=process.env.CF_ACCOUNT,token=process.env.CF_TOKEN;
+          assert(account && token,'Cloudflare token/account unavailable');
+          const base='https://api.cloudflare.com/client/v4/accounts/'+account+'/pages/projects/deepsyq';
+          const hdr={Authorization:'Bearer '+token};
+          async function cf(path){
+            const r=await fetch(path,{headers:hdr,signal:AbortSignal.timeout(14000)});
+            const j=await r.json().catch(()=>({}));
+            if(!r.ok||!j.success){console.log('READ_ONLY_FAILURE',JSON.stringify({status:r.status,path:new URL(path).pathname,errors:j.errors?.map(x=>x.code)}));throw Error('read-only Cloudflare API blocked')}
+            return j.result;
+          }
+          const p=await cf(base),id=p.canonical_deployment?.id;
+          assert(id,'Current production deployment missing');
+          const d=await cf(base+'/deployments/'+id);
+          const names=['crystal-bloom','eclipse-portal','velvet-rain','bioluminescent-tide','skyward-citadel','porcelain-grace','neon-rider','sculpted-sound'].map(x=>'/media/my-creations/showcase/'+x+'.webp');
+          const available=names.filter(x=>Object.prototype.hasOwnProperty.call(d.files||{},x));
+          const deployedSha=d.deployment_trigger?.metadata?.commit_hash||p.canonical_deployment?.deployment_trigger?.metadata?.commit_hash||'';
+          const worker=p.production_script_name||'';
+          console.log('MY_CREATIONS_ASSET_PRODUCTION_PREFLIGHT',JSON.stringify({canonicalId:id,branch:p.production_branch,hasWorker:d.uses_functions===true,workerNamed:worker.startsWith('pages-worker--'),manifestCount:Object.keys(d.files||{}).length,assetKeysAlreadyPresent:available.length,missingAssetKeys:names.filter(x=>!available.includes(x)),deploymentCommit:deployedSha,sourceCommitInCurrentGitHubBranch:deployedSha===process.env.GITHUB_SHA}));
+          if(worker){
+            for(const suffix of ['/content/v2','/settings']){
+              const u='https://api.cloudflare.com/client/v4/accounts/'+account+'/workers/scripts/'+encodeURIComponent(worker)+suffix;
+              const r=await fetch(u,{headers:hdr,signal:AbortSignal.timeout(14000)});
+              console.log('MY_CREATIONS_WORKER_READ',JSON.stringify({kind:suffix,status:r.status,contentType:r.headers.get('content-type')?.split(';')[0]}));
+              await r.arrayBuffer();
+            }
+          }
+          console.log('READ_ONLY_NO_PUBLICATION',true);
+          JS
