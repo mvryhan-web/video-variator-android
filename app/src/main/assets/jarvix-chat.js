@@ -45,93 +45,28 @@ async function historyList(){const rows=await store.list();$('jHistory').replace
 const node=(tag,text)=>{const n=document.createElement(tag);if(text)n.textContent=text;return n;};
 function showFile(parent,file){const box=node('div'),url=URL.createObjectURL(file);urls.push(url);const el=node(file.type.startsWith('image/')?'img':file.type.startsWith('video/')?'video':file.type.startsWith('audio/')?'audio':'a');el.src=url;if(el.tagName==='IMG')el.alt=file.name||'Attachment';else if(el.tagName==='A'){el.href=url;el.download=file.name;el.textContent=file.name;}else el.controls=true;box.append(el);parent.append(box);}
 
-function createMessageFooter(m, item){
+function createMessageActions(m, bubble, item){
  if(!m.text||typeof m.text!=='string'||!m.text.trim())return null;
- const footer=node('div');
- footer.className='j-msg-footer';
+ const bar=node('div');
+ bar.className='j-msg-actions';
+
  const lang=typeof getJarvixLanguage==='function'?getJarvixLanguage():'ru';
  const i18n={
-  ru:{copy:'Копировать',copied:'Скопировано',edit:'Редактировать',save:'Отправить',cancel:'Отмена'},
-  en:{copy:'Copy',copied:'Copied',edit:'Edit',save:'Send',cancel:'Cancel'},
-  fr:{copy:'Copier',copied:'Copié',edit:'Modifier',save:'Envoyer',cancel:'Annuler'},
-  es:{copy:'Copiar',copied:'Copiado',edit:'Editar',save:'Enviar',cancel:'Cancelar'}
- }[lang]||{copy:'Копировать',copied:'Скопировано',edit:'Редактировать',save:'Отправить',cancel:'Отмена'};
+  ru:{copy:'Копировать',copied:'Скопировано',share:'Поделиться / Скачать',edit:'Редактировать'},
+  en:{copy:'Copy',copied:'Copied',share:'Share / Download',edit:'Edit'},
+  fr:{copy:'Copier',copied:'Copié',share:'Partager',edit:'Modifier'},
+  es:{copy:'Copiar',copied:'Copiado',share:'Compartir',edit:'Editar'}
+ }[lang]||{copy:'Копировать',copied:'Скопировано',share:'Поделиться / Скачать',edit:'Редактировать'};
 
- if(m.role==='user'){
-  const editBtn=node('button');
-  editBtn.type='button';
-  editBtn.className='j-msg-action-btn j-edit-btn';
-  editBtn.title=i18n.edit;
-  editBtn.setAttribute('aria-label',i18n.edit);
-  editBtn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg> <span>'+i18n.edit+'</span>';
-  editBtn.onclick=(e)=>{
-   e.stopPropagation();
-   if(item.querySelector('.j-inline-edit'))return;
-   const contentDiv=item.querySelector('.j-message-content')||item.firstElementChild;
-   const origDisp=contentDiv?contentDiv.style.display:'';
-   if(contentDiv)contentDiv.style.display='none';
-   footer.style.display='none';
-
-   const bottomInp=$('jInput');
-   if(bottomInp){bottomInp.value=m.text;bottomInp.dispatchEvent(new Event('input',{bubbles:true}));}
-
-   const editWrap=node('div');
-   editWrap.className='j-inline-edit';
-   const ta=document.createElement('textarea');
-   ta.className='j-edit-textarea';
-   ta.value=m.text;
-   ta.rows=Math.min(8,Math.max(2,(m.text.split('\n').length||1)+1));
-
-   const actions=node('div');
-   actions.className='j-edit-actions';
-   const saveBtn=node('button');
-   saveBtn.type='button';
-   saveBtn.className='j-edit-save-btn';
-   saveBtn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>'+i18n.save+'</span>';
-   const cancelBtn=node('button');
-   cancelBtn.type='button';
-   cancelBtn.className='j-edit-cancel-btn';
-   cancelBtn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> <span>'+i18n.cancel+'</span>';
-
-   cancelBtn.onclick=(ce)=>{
-    ce.stopPropagation();
-    editWrap.remove();
-    if(contentDiv)contentDiv.style.display=origDisp;
-    footer.style.display='flex';
-   };
-
-   saveBtn.onclick=async(se)=>{
-    se.stopPropagation();
-    const newText=ta.value.trim();
-    if(!newText||busy)return;
-    m.text=newText;
-    m.status='pending';
-    const idx=conversation.messages.indexOf(m);
-    if(idx!==-1&&idx+1<conversation.messages.length&&conversation.messages[idx+1].role==='assistant'){
-     conversation.messages.splice(idx+1,1);
-    }
-    await save();
-    render();
-    await run(()=>processMessage(m));
-   };
-
-   actions.append(saveBtn,cancelBtn);
-   editWrap.append(ta,actions);
-   item.insertBefore(editWrap,footer);
-   ta.focus();
-   ta.setSelectionRange(ta.value.length,ta.value.length);
-  };
-  footer.append(editBtn);
- }
-
+ // 1. Copy icon (overlapping rectangles)
  const copyBtn=node('button');
  copyBtn.type='button';
- copyBtn.className='j-msg-action-btn j-copy-btn';
+ copyBtn.className='j-icon-btn j-copy-btn';
  copyBtn.title=i18n.copy;
  copyBtn.setAttribute('aria-label',i18n.copy);
- const iconCopy='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
- const iconDone='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
- copyBtn.innerHTML=iconCopy+' <span>'+i18n.copy+'</span>';
+ const iconCopy='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+ const iconDone='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+ copyBtn.innerHTML=iconCopy;
  copyBtn.onclick=async(e)=>{
   e.stopPropagation();
   try{
@@ -147,39 +82,175 @@ function createMessageFooter(m, item){
     document.execCommand('copy');
     document.body.removeChild(temp);
    }
-   copyBtn.classList.add('copied');
-   copyBtn.innerHTML=iconDone+' <span style="color:#4ade80">'+i18n.copied+'</span>';
-   setTimeout(()=>{
-    copyBtn.classList.remove('copied');
-    copyBtn.innerHTML=iconCopy+' <span>'+i18n.copy+'</span>';
-   },2000);
+   copyBtn.innerHTML=iconDone;
+   setTimeout(()=>{copyBtn.innerHTML=iconCopy;},1500);
   }catch(_){}
  };
- footer.append(copyBtn);
- return footer;
+ bar.append(copyBtn);
+
+ // 2. Share / Download icon (tray with arrow up)
+ const shareBtn=node('button');
+ shareBtn.type='button';
+ shareBtn.className='j-icon-btn j-share-btn';
+ shareBtn.title=i18n.share;
+ shareBtn.setAttribute('aria-label',i18n.share);
+ const iconShare='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>';
+ shareBtn.innerHTML=iconShare;
+ shareBtn.onclick=async(e)=>{
+  e.stopPropagation();
+  try{
+   if(navigator.share){
+    await navigator.share({title:'DeepSyQ',text:m.text});
+   }else{
+    const blob=new Blob([m.text],{type:'text/plain;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='deepsyq-message.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+   }
+  }catch(_){}
+ };
+ bar.append(shareBtn);
+
+ // 3. Edit icon (pencil angled 45 deg) - for user messages
+ if(m.role==='user'){
+  const editBtn=node('button');
+  editBtn.type='button';
+  editBtn.className='j-icon-btn j-edit-btn';
+  editBtn.title=i18n.edit;
+  editBtn.setAttribute('aria-label',i18n.edit);
+  const iconEdit='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>';
+  editBtn.innerHTML=iconEdit;
+  editBtn.onclick=(e)=>{
+   e.stopPropagation();
+   const inp=$('jInput');
+   if(inp){
+    inp.value=m.text;
+    inp.dispatchEvent(new Event('input',{bubbles:true}));
+    if(typeof composer!=='undefined'&&composer)composer.editingMessage=m;
+    inp.focus();
+    inp.scrollIntoView({behavior:'smooth',block:'nearest'});
+   }
+  };
+  bar.append(editBtn);
+ }
+
+ return bar;
 }
 
-function render(){for(const url of urls)URL.revokeObjectURL(url);urls=[];const area=$('jMessages');area.replaceChildren();if(!conversation.messages.length){const empty=node('div');empty.className='j-empty';empty.append(node('h2','What would you like to create?'));area.append(empty);}
- for(const m of conversation.messages){const item=node('article');item.className='j-message '+m.role;const content=node('div',m.text);content.className='j-message-content';item.append(content);const footer=createMessageFooter(m,item);if(footer)item.append(footer);if(m.role==='assistant'&&m.limitReached===true){const pricing=node('a','View Pricing');pricing.href='pricing.html';pricing.style.cssText='display:inline-block;margin-top:10px;padding:10px 14px;border:1px solid #fff;border-radius:8px;color:#fff;font-weight:700';item.append(pricing);}for(const f of m.files||[])showFile(item,f);
- if(m.role==='assistant'&&m.toolAction){
-  const action=m.toolAction,valid=ACTION_ROUTES[action.target]===action.url;
-  if(valid&&action.kind==='navigate'){
-     const link=node('button',({ru:'Открыть прямо здесь ↗',en:'Open right here ↗',fr:'Ouvrir ici ↗',es:'Abrir aquí ↗'}[getJarvixLanguage()]||'Open right here ↗'));
-     link.type='button';
-     link.className='j-tool-open-btn';
-     link.onclick=()=>openWorkspace(action.url,action.target);
-     item.append(link);
-    }
-  if(valid&&action.kind==='prepare-studio'&&['image','video','audio'].includes(action.target)&&typeof action.prompt==='string'&&action.prompt.trim()){
-   const button=node('button',({ru:'Продолжить в Studio',en:'Continue in Studio',fr:'Continuer dans Studio',es:'Continuar en Studio'}[getJarvixLanguage()]||'Continue in Studio'));button.type='button';
-   button.onclick=async()=>{try{store.guard();await saveStudioHandoff({kind:action.target==='audio'?'music':action.target,prompt:action.prompt,settings:action.ratio?{ratio:action.ratio}:{},source:'jarvix-chat'});store.guard();location.assign(action.url);}catch(e){status(e.message);}};
-   item.append(button);
-  }
+function render(){
+ for(const url of urls)URL.revokeObjectURL(url);
+ urls=[];
+ const area=$('jMessages');
+ area.replaceChildren();
+ if(!conversation.messages.length){
+  const empty=node('div');
+  empty.className='j-empty';
+  empty.append(node('h2','What would you like to create?'));
+  area.append(empty);
  }
- if(m.jobId){item.append(node('small',(m.status||'processing')+(m.demo?' · AI Generation':'')));const mediaSrc=(m.resultFile instanceof Blob)?URL.createObjectURL(m.resultFile):(m.status==='ready'?m.mediaUrl:null);if(mediaSrc){if(m.resultFile instanceof Blob)urls.push(mediaSrc);const el=node(m.kind==='video'?'video':m.kind==='audio'?'audio':'img');el.src=mediaSrc;if(el.tagName==='IMG')el.alt=m.text||'Media';else el.controls=true;item.append(el);const download=node('a',({ru:'Скачать',en:'Download'}[getJarvixLanguage()]||'Download'));download.href=mediaSrc;download.download='deepsyq-'+m.jobId+(m.resultFile?.type?('.'+mediaExtension(m.resultFile.type)):'');download.target='_blank';item.append(download);if(m.resultFile instanceof Blob&&['image/png','image/jpeg','video/mp4','audio/wav','audio/mpeg'].includes(m.resultFile.type)){const reuse=node('button',({ru:'Прикрепить к сообщению',en:'Use as attachment'}[getJarvixLanguage()]||'Use as attachment'));reuse.type='button';reuse.onclick=()=>{try{store.guard();composer.add(new File([m.resultFile],'result-'+m.jobId+'.'+mediaExtension(m.resultFile.type),{type:m.resultFile.type}));status('Прикреплено к сообщению');}catch(e){status(e.message);}};item.append(reuse);}}else if(m.status==='ready'){item.append(node('p',m.mediaExpired?'This older result has expired. Your message is preserved; create a new creation to replace it.':'Saving result on this device…'));}
- if(m.status!=='ready'&&m.status!=='failed'){const check=node('button','Check task');check.type='button';check.onclick=()=>run(()=>poll(m));item.append(check);}}
- if(m.status==='pending'||(m.role==='user'&&m.status==='processing')||m.status==='interrupted'||m.status==='error'){const retry=node('button',m.status==='error'?'Retry':'Continue');retry.type='button';retry.onclick=()=>run(()=>processMessage(m));item.append(retry);}
- area.append(item);}
+ for(const m of conversation.messages){
+  const item=node('article');
+  item.className='j-message '+m.role;
+
+  const bubble=node('div');
+  bubble.className='j-bubble';
+
+  if(m.text&&typeof m.text==='string'){
+   const content=node('div',m.text);
+   content.className='j-message-content';
+   bubble.append(content);
+  }
+
+  if(m.role==='assistant'&&m.limitReached===true){
+   const pricing=node('a','View Pricing');
+   pricing.href='pricing.html';
+   pricing.style.cssText='display:inline-block;margin-top:10px;padding:10px 14px;border:1px solid #fff;border-radius:8px;color:#fff;font-weight:700';
+   bubble.append(pricing);
+  }
+  for(const f of m.files||[])showFile(bubble,f);
+  if(m.role==='assistant'&&m.toolAction){
+   const action=m.toolAction,valid=ACTION_ROUTES[action.target]===action.url;
+   if(valid&&action.kind==='navigate'){
+    const link=node('button',({ru:'Открыть прямо здесь ↗',en:'Open right here ↗',fr:'Ouvrir ici ↗',es:'Abrir aquí ↗'}[getJarvixLanguage()]||'Open right here ↗'));
+    link.type='button';
+    link.className='j-tool-open-btn';
+    link.onclick=()=>openWorkspace(action.url,action.target);
+    bubble.append(link);
+   }
+   if(valid&&action.kind==='prepare-studio'&&['image','video','audio'].includes(action.target)&&typeof action.prompt==='string'&&action.prompt.trim()){
+    const button=node('button',({ru:'Продолжить в Studio',en:'Continue in Studio',fr:'Continuer dans Studio',es:'Continuar en Studio'}[getJarvixLanguage()]||'Continue in Studio'));
+    button.type='button';
+    button.onclick=async()=>{
+     try{
+      store.guard();
+      await saveStudioHandoff({kind:action.target==='audio'?'music':action.target,prompt:action.prompt,settings:action.ratio?{ratio:action.ratio}:{},source:'jarvix-chat'});
+      store.guard();
+      location.assign(action.url);
+     }catch(e){
+      status(e.message);
+     }
+    };
+    bubble.append(button);
+   }
+  }
+  if(m.jobId){
+   bubble.append(node('small',(m.status||'processing')+(m.demo?' · AI Generation':'')));
+   const mediaSrc=(m.resultFile instanceof Blob)?URL.createObjectURL(m.resultFile):(m.status==='ready'?m.mediaUrl:null);
+   if(mediaSrc){
+    if(m.resultFile instanceof Blob)urls.push(mediaSrc);
+    const el=node(m.kind==='video'?'video':m.kind==='audio'?'audio':'img');
+    el.src=mediaSrc;
+    if(el.tagName==='IMG')el.alt=m.text||'Media';else el.controls=true;
+    bubble.append(el);
+    const download=node('a',({ru:'Скачать',en:'Download'}[getJarvixLanguage()]||'Download'));
+    download.href=mediaSrc;
+    download.download='deepsyq-'+m.jobId+(m.resultFile?.type?('.'+mediaExtension(m.resultFile.type)):'');
+    download.target='_blank';
+    bubble.append(download);
+    if(m.resultFile instanceof Blob&&['image/png','image/jpeg','video/mp4','audio/wav','audio/mpeg'].includes(m.resultFile.type)){
+     const reuse=node('button',({ru:'Прикрепить к сообщению',en:'Use as attachment'}[getJarvixLanguage()]||'Use as attachment'));
+     reuse.type='button';
+     reuse.onclick=()=>{
+      try{
+       store.guard();
+       composer.add(new File([m.resultFile],'result-'+m.jobId+'.'+mediaExtension(m.resultFile.type),{type:m.resultFile.type}));
+       status('Прикреплено к сообщению');
+      }catch(e){
+       status(e.message);
+      }
+     };
+     bubble.append(reuse);
+    }
+   }else if(m.status==='ready'){
+    bubble.append(node('p',m.mediaExpired?'This older result has expired. Your message is preserved; create a new creation to replace it.':'Saving result on this device…'));
+   }
+   if(m.status!=='ready'&&m.status!=='failed'){
+    const check=node('button','Check task');
+    check.type='button';
+    check.onclick=()=>run(()=>poll(m));
+    bubble.append(check);
+   }
+  }
+  if(m.status==='pending'||(m.role==='user'&&m.status==='processing')||m.status==='interrupted'||m.status==='error'){
+   const retry=node('button',m.status==='error'?'Retry':'Continue');
+   retry.type='button';
+   retry.onclick=()=>run(()=>processMessage(m));
+   bubble.append(retry);
+  }
+
+  item.append(bubble);
+
+  // External Action Bar directly beneath bubble (Copy / Share / Edit)
+  const actions=createMessageActions(m, bubble, item);
+  if(actions) item.append(actions);
+
+  area.append(item);
+ }
  area.scrollTop=area.scrollHeight;
 }
 async function run(work){if(busy)return;busy=true;const version=++epoch;controller=new AbortController();$('jSend').disabled=true;$('jStop').hidden=false;try{await work();}catch(e){if(e.name!=='AbortError')status(e.message);}finally{if(version===epoch){busy=false;controller=null;$('jSend').disabled=false;$('jStop').hidden=true;render();}}}
@@ -245,7 +316,22 @@ async function processMessage(message){
    status(e.message);if(message.voiceAction)speakJarvis(/credit|balance/i.test(e.message)?'Недостаточно кредитов':'Уточните промпт');const link=node('button','Open request in Studio');link.type='button';link.onclick=async()=>{const mode=resolveMode(message.text,message.mode),kind=mode==='audio'?'music':mode==='text'?'image':mode;const files=(message.files||[]).filter(f=>['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024);try{await saveStudioHandoff({kind,prompt:message.text,files,source:'jarvix-chat'});location.assign('jarvix-chat.html?mode='+(kind==='music'?'audio':kind)+'&prompt='+encodeURIComponent(message.text||''));}catch(e){status(e.message);}};$('jStatus').append(link);
   }if(e.name==='AbortError')throw e;}
 }
-const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();const m={id:makeId(),role:'user',text,mode,files,status:'pending',createdAt:Date.now()};if(!conversation.messages.length)conversation.title=text.slice(0,60);conversation.messages.push(m);await save();composer.clear();render();await run(()=>processMessage(m));}catch(e){status(e.message);}}});
+const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();if(composer.editingMessage){
+   const target=composer.editingMessage;
+   composer.editingMessage=null;
+   target.text=text;
+   target.status='pending';
+   const idx=conversation.messages.indexOf(target);
+   if(idx!==-1&&idx+1<conversation.messages.length&&conversation.messages[idx+1].role==='assistant'){
+    conversation.messages.splice(idx+1,1);
+   }
+   await save();
+   composer.clear();
+   render();
+   await run(()=>processMessage(target));
+   return;
+  }
+  const m={id:makeId(),role:'user',text,mode,files,status:'pending',createdAt:Date.now()};if(!conversation.messages.length)conversation.title=text.slice(0,60);conversation.messages.push(m);await save();composer.clear();render();await run(()=>processMessage(m));}catch(e){status(e.message);}}});
 $('jStop').onclick=()=>{controller?.abort();$('jStop').hidden=true;status('Browser waiting stopped. Already submitted generation tasks are not cancelled.');};
 function resetToDefaultChat(startNew = true, preserveMode = false) {
   if (startNew && busy) return;
