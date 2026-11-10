@@ -76,7 +76,7 @@ function drawLayer(layer,selected){
  }
  ctx.restore();
 }
-async function render(){
+async function render({forExport=false}={}){
  setupDimensions();const serial=++loadingSeq;
  const w=canvas.width,h=canvas.height;
  ctx.save();ctx.clearRect(0,0,w,h);ctx.fillStyle=state.background;ctx.fillRect(0,0,w,h);ctx.restore();
@@ -93,7 +93,7 @@ async function render(){
    ctx.filter=effectFilter();ctx.drawImage(source,-iw*f/2,-ih*f/2,iw*f,ih*f);ctx.restore();
   }catch(_){if(serial!==loadingSeq)return;note('This example could not load. Choose another photo or upload your own.');}
  }
- state.layers.forEach((layer,i)=>{if(layer.type==='text'&&i===state.selected&&document.activeElement===$('cwInlineText'))return;drawLayer(layer,i===state.selected);});
+ state.layers.forEach((layer,i)=>{if(!forExport&&layer.type==='text'&&i===state.selected&&document.activeElement===$('cwInlineText'))return;drawLayer(layer,i===state.selected);});
  syncTextControls();$('cwEmptyState').hidden=!!photo;
 }
 function updateControls(){
@@ -300,7 +300,7 @@ canvas.addEventListener('pointermove',e=>{if(!drag||state.locked)return;const r=
  void render();});
 canvas.addEventListener('pointerup',()=>{const just=drag;if(just?.moved)note('Position updated. Use Undo to restore.');drag=null;if(just?.selected>=0&&!just.moved&&state.layers[just.selected]?.type==='text'){syncTextControls();requestAnimationFrame(()=>{$('cwInlineText').focus({preventScroll:true});$('cwInlineText').select();});}});canvas.addEventListener('pointercancel',()=>{drag=null;});
 async function exportPng(){
- if(!accountGuard())return;await render();
+ if(!accountGuard())return;await render({forExport:true});
  canvas.toBlob(blob=>{if(!blob){note('Export failed. Try a different photo.');return;}
  const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='DEEPSYQ-Canvas-'+state.ratio.replace(':','x')+'.png';
  document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);note('PNG exported to your device.');},'image/png');
@@ -312,7 +312,7 @@ async function handoff(){
  if(prompt.length>2000){note('Keep the prompt under 2,000 characters.');return;}
  $('cwGenerate').disabled=true;note('Preparing a private Studio draft. No AI credits are spent here.');
  try{
-  await render();const files=[];const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.82));
+  await render({forExport:true});const files=[];const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.82));
   if(blob&&blob.size<=1024*1024){files.push(new File([blob],'canvas-reference.jpg',{type:'image/jpeg'}));}
   await saveStudioHandoff({kind:state.mode,prompt,settings:{ratio:state.ratio},files,source:'canvas-workspace'});
   location.assign('generate-studio.html?studio='+state.mode+'&from=canvas');
