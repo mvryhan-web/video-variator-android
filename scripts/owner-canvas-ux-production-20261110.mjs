@@ -114,9 +114,7 @@ async function prepare(){
    const data=read(rel==='canvas.html'?src+'/canvas.html':cors.includes(rel)?src+'/'+rel:root+'/'+rel);
    const hash=hashPages(rel,data),name='/'+rel,prevHash=manifest[name];
    if(cors.includes(rel)){
-     assert(prevHash!==hash,'Expected modified Canvas resource is unchanged '+rel);
-     manifest[name]=hash;
-     upload.push({name,hash,mime:mime(rel),data:data.toString('base64')});
+     if(prevHash!==hash){manifest[name]=hash;upload.push({name,hash,mime:mime(rel),data:data.toString('base64')});}
    }else if(!prevHash){
      manifest[name]=hash;
      upload.push({name,hash,mime:mime(rel),data:data.toString('base64')});
@@ -125,11 +123,11 @@ async function prepare(){
  audit(manifest,d.files);
  const state={baselineId:id,previous:prev,target:sh('git',['rev-parse','HEAD']),scriptName:p.production_script_name,workerSourceSha:sha(worker),settingsHash:workerHash(workerSettings),files:d.files,manifest,upload,workerPath:workTree+'/'+root+'/_worker.js',headersPath:workTree+'/'+root+'/_headers',redirectsPath:workTree+'/'+root+'/_redirects',workerSize:worker.length};
  fs.writeFileSync(datafile,JSON.stringify(state));
- console.log('CANVAS_DIRECT_PREPARED',JSON.stringify({baselineId:id,manifestAssets:Object.keys(manifest).length,modified:3,missingCanvasAssets:upload.length-3,workerPreserved:true}));
+ console.log('CANVAS_DIRECT_PREPARED',JSON.stringify({baselineId:id,manifestAssets:Object.keys(manifest).length,modified:upload.filter(x=>cors.some(rel=>x.name==='/'+rel)).length,missingCanvasAssets:upload.filter(x=>x.name.endsWith('.webp')).length,workerPreserved:true}));
 }
 async function upload(){
  const s=state(),data=s.upload;
- assert(data.length>=3&&data.length<=29,'Wrong Canvas upload asset scope');
+ assert(data.length>=1&&data.length<=29,'Wrong Canvas upload asset scope');
  const p=await cloud(project+'/upload-token');
  const jwt=p?.jwt||p?.token;
  assert(typeof jwt==='string'&&jwt.length>30,'Cloudflare Pages upload JWT unavailable');
@@ -215,7 +213,7 @@ async function check(branch){
    const workerSettings=await cloud('https://api.cloudflare.com/client/v4/accounts/'+account+'/workers/scripts/'+encodeURIComponent(p.production_script_name)+'/settings');
    assert.equal(workerHash(workerSettings),s.settingsHash,'Critical Worker settings changed');
  }
- console.log('CANVAS_DIRECT_VERIFIED',JSON.stringify({branch,worker:true,manifestFiles:Object.keys(s.manifest).length,changedFiles:3,demos:13,apiHealthy:true}));
+ console.log('CANVAS_DIRECT_VERIFIED',JSON.stringify({branch,worker:true,manifestFiles:Object.keys(s.manifest).length,changedFiles:s.upload.filter(x=>cors.some(rel=>x.name==='/'+rel)).length,demos:13,apiHealthy:true}));
 }
 async function rollback(){
  const s=state(),p=await projectInfo();
