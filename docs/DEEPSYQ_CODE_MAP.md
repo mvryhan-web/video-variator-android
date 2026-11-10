@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `21d39019a863d83fc35aaa8a96fabfce6cc91385`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `31d9e6eb5d45733081bbf92f5f727700884dad0f`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 119 | Named symbols: 393 | Checked relations: 76
 
 ## Topic finder (matching filenames)
