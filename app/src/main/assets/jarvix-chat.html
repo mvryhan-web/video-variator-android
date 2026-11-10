@@ -31,14 +31,16 @@
         <button type="button" class="j-drawer-nav-item" data-j-drawer-mode="audio"><span class="j-drawer-nav-icon" aria-hidden="true">♫</span><span>Аудио</span><span class="j-drawer-nav-arrow" aria-hidden="true">›</span></button>
       </nav>
       <div class="j-drawer-conversations-head">
-        <span class="j-drawer-subhead">Чаты</span>
+        <button type="button" id="jDrawerHistoryToggle" class="j-drawer-history-toggle" aria-expanded="false" aria-controls="jMenuHistoryList" aria-label="Развернуть список чатов">
+          <span class="j-drawer-subhead">Чаты</span><span class="j-drawer-history-chevron" aria-hidden="true">⌄</span>
+        </button>
         <div class="j-drawer-conversation-actions">
           <button type="button" id="jDrawerSearchToggle" aria-label="Поиск по чатам" title="Поиск по чатам">⌕</button>
           <button type="button" id="jDrawerSortToggle" aria-label="Сначала старые чаты" title="Сортировать чаты">☷</button>
         </div>
       </div>
       <input id="jDrawerSearch" class="j-drawer-search" type="search" placeholder="Найти разговор…" aria-label="Поиск разговора" hidden>
-      <div id="jMenuHistoryList" class="j-drawer-history-list"></div>
+      <div id="jMenuHistoryList" class="j-drawer-history-list" hidden></div>
       <div class="j-drawer-footer">
         <button type="button" id="jDrawerSettings" class="j-drawer-footer-item"><span aria-hidden="true">⚙</span> Настройки</button>
         <a href="contact.html" class="j-drawer-footer-item"><span aria-hidden="true">ⓘ</span> Помощь и поддержка</a>
