@@ -5,6 +5,7 @@ on:
     branches: [jarvis-new]
     paths:
       - 'scripts/verify_jarvix_new_browser.py'
+      - 'scripts/verify_jarvix_new_remote_bridge.py'
       - '.github/workflows/jarvis-new-browser-smoke.yml'
       - 'app/src/main/assets/jarvix-connect.html'
       - 'app/src/main/assets/jarvix-connect.js'
@@ -33,6 +34,21 @@ jobs:
         run: python -m scripts.verify_jarvix_new_browser
       - name: Unit-test localhost bridge security and state transitions
         run: python -m unittest discover -s tests -p 'test_jarvis_new_local_bridge.py' -v
+
+  browser-remote:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install real Chromium (supported LTS runner)
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.58.0
+          python -m playwright install chromium --with-deps
+      - name: Check actual Cloudflare preview in browser connecting to isolated local desktop bridge
+        run: python -m scripts.verify_jarvix_new_remote_bridge
 
   live-test-site:
     runs-on: ubuntu-latest
