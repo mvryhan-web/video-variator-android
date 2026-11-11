@@ -1,3 +1,27 @@
+# R2 access checkpoint — 2026-11-11 20:08 Paris time
+
+- Read-only inventory action: `.github/workflows/jarvis-new-r2-inventory.yml`.
+- Verified the syntax fix by actual GitHub Actions execution; the original
+  `IndentationError` is resolved.
+- Latest run: https://github.com/mvryhan-web/video-variator-android/actions/runs/43084417663
+  now fails at Cloudflare R2 REST `GET /accounts/{account}/r2/buckets`
+  with HTTP **403 Forbidden**. This is an R2 permission problem, not missing MP3.
+- Dedicated, least-privilege GitHub Actions secret already supported:
+  `CLOUDFLARE_R2_READ_TOKEN`. Its token needs Cloudflare API permission
+  **Workers R2 Storage Read** for the account. Keep existing Cloudflare
+  Pages deploy token unchanged. Do not paste the secret into chat or git.
+- After saving the secret in GitHub Settings > Secrets and variables >
+  Actions, re-run the action using workflow_dispatch. It will list bucket
+  object names and compare the 1900-entry manifest to actual R2 keys,
+  without uploading, changing or deleting anything.
+- Without that read permission we cannot honestly state how many MP3
+  are present in R2. The locally shipped 392 MP3 remain intact.
+- A separate JARVIX NEW preview deployment completed successfully at
+  https://github.com/mvryhan-web/video-variator-android/actions/runs/43080452576.
+  No changes were made to production or the legacy JARVIX.
+
+---
+
 # JARVIX NEW Voice Library — current package 0.3 (2026-11-11)
 
 The owner can download `JARVIX_Voice_Library_0.3_392_MP3_R2.zip` in
