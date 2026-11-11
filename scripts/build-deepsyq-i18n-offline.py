@@ -143,6 +143,16 @@ def english_script_phrases(content):
   for m in re.finditer(pat,content):
    phrase=normalize(m.group(2))
    if valid(phrase):yield phrase
+ # User-facing text also occurs inside plan benefits, tool arrays and modal
+ # configurations. Collect natural-language quoted literals, not API keys.
+ for m in re.finditer(r'''(['"])((?:\\.|(?!\1).){3,550}?)\1''',content):
+  phrase=normalize(m.group(2))
+  if not valid(phrase):continue
+  if phrase.count(' ')<1 and phrase not in CURATED:continue
+  if not re.search(r'[a-zA-Z]{2,}',phrase):continue
+  if re.search(r'[=<>;\\\[\]{}$]|(?:\.\w+\()|\b(?:const|function|return|document|window|localStorage)\b',phrase):continue
+  if len(phrase)>450:continue
+  yield phrase
 
 def collect():
  htmls=sorted(ROOT.glob('*.html'))
