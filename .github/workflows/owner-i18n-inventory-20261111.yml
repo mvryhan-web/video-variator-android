@@ -1,0 +1,22 @@
+name: DEEPSYQ i18n read-only source string inventory
+on:
+  push:
+    branches: [owner-sitewide-i18n-20261111]
+    paths: ['.github/workflows/owner-i18n-inventory-20261111.yml']
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Count all HTML and dynamic JavaScript translatable strings without installing models
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import runpy,json
+          script=runpy.run_path('scripts/build-sitewide-translations-20261111.py')
+          strings,pages,js=script['visible_strings']()
+          print('OWNER_I18N_EXTRACT_COUNTS',json.dumps({'pages':len(pages),'jsFiles':js,'uniqueStrings':len(strings),'pageCounts':pages},ensure_ascii=False))
+          print('OWNER_I18N_SAMPLE',json.dumps(strings[-50:],ensure_ascii=False))
+          PY
