@@ -2,7 +2,7 @@ name: Jarvix New test installers
 on:
   push:
     branches: [jarvis-new]
-    paths: ['jarvis_new/**', 'tests/test_jarvis_new_*.py', 'scripts/jarvis_new_installer.iss', 'app/src/main/assets/jarvix-download.html', '.github/workflows/jarvis-new-installers.yml']
+    paths: ['jarvis_new/**', 'tests/test_jarvis_new_*.py', 'scripts/jarvis_new_installer.iss', 'scripts/build_jarvix_new_icons.py', 'scripts/jarvix_new_version_info.txt', 'app/src/main/assets/jarvix-download.html', '.github/workflows/jarvis-new-installers.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -26,7 +26,30 @@ jobs:
         with: {python-version: '3.12'}
       - run: python -m pip install Pillow==11.3.0 imageio-ffmpeg==0.6.0 pyinstaller==6.16.0
       - run: python -m unittest discover -s tests -p "test_jarvis_new_*.py" -v
-      - run: python -m PyInstaller --noconfirm --clean --windowed --onedir --name JARVIX_NEW --collect-all imageio_ffmpeg jarvis_new/desktop_entry.py
+      - name: Build desktop icons from the original owner-supplied JARVIX sphere
+        run: python scripts/build_jarvix_new_icons.py
+      - name: Freeze Windows application with original icon and file metadata
+        run: python -m PyInstaller --noconfirm --clean --windowed --onedir --name JARVIX_NEW --collect-all imageio_ffmpeg --icon build/jarvix-new-icon/jarvix-new.ico --version-file scripts/jarvix_new_version_info.txt --add-data "build/jarvix-new-icon/jarvix-new.png:." jarvis_new/desktop_entry.py
+      # Identity must be validated by Microsoft. A self-signed certificate
+      # does not produce a trusted Windows publisher and must not be shipped.
+      - name: Sign installed application with verified Azure Artifact Signing identity
+        if: ${{ vars.JARVIX_NEW_TRUSTED_SIGNING_ENABLED == 'true' }}
+        uses: azure/trusted-signing-action@v0
+        with:
+          azure-tenant-id: ${{ secrets.JARVIX_SIGNING_TENANT_ID }}
+          azure-client-id: ${{ secrets.JARVIX_SIGNING_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.JARVIX_SIGNING_CLIENT_SECRET }}
+          endpoint: ${{ vars.JARVIX_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ vars.JARVIX_SIGNING_ACCOUNT_NAME }}
+          certificate-profile-name: ${{ vars.JARVIX_SIGNING_CERT_PROFILE_NAME }}
+          files: ${{ github.workspace }}\\dist\\JARVIX_NEW\\JARVIX_NEW.exe
+      - name: Verify trusted signature on the app before packaging
+        if: ${{ vars.JARVIX_NEW_TRUSTED_SIGNING_ENABLED == 'true' }}
+        shell: pwsh
+        run: |
+          $s = Get-AuthenticodeSignature dist/JARVIX_NEW/JARVIX_NEW.exe
+          if ($s.Status -ne 'Valid') { throw "JARVIX app signature is not trusted: $($s.Status)" }
+          Write-Host ("Authenticode publisher: " + $s.SignerCertificate.Subject)
       - name: Compile Windows installer
         shell: pwsh
         run: |
@@ -37,7 +60,26 @@ jobs:
           if($LASTEXITCODE -ne 0){throw 'Installer compilation failed'}
           if(-not (Test-Path dist\Jarvix-New-Windows-Setup.exe)){throw 'Missing Windows installer'}
           Get-FileHash dist\Jarvix-New-Windows-Setup.exe -Algorithm SHA256 | Format-List
-      - uses: actions/upload-artifact@v4
+      - name: Sign Windows installer using the same verified publisher identity
+        if: ${{ vars.JARVIX_NEW_TRUSTED_SIGNING_ENABLED == 'true' }}
+        uses: azure/trusted-signing-action@v0
+        with:
+          azure-tenant-id: ${{ secrets.JARVIX_SIGNING_TENANT_ID }}
+          azure-client-id: ${{ secrets.JARVIX_SIGNING_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.JARVIX_SIGNING_CLIENT_SECRET }}
+          endpoint: ${{ vars.JARVIX_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ vars.JARVIX_SIGNING_ACCOUNT_NAME }}
+          certificate-profile-name: ${{ vars.JARVIX_SIGNING_CERT_PROFILE_NAME }}
+          files: ${{ github.workspace }}\\dist\\Jarvix-New-Windows-Setup.exe
+      - name: Verify the actual installer's trusted signature
+        if: ${{ vars.JARVIX_NEW_TRUSTED_SIGNING_ENABLED == 'true' }}
+        shell: pwsh
+        run: |
+          $s = Get-AuthenticodeSignature dist/Jarvix-New-Windows-Setup.exe
+          if ($s.Status -ne 'Valid') { throw "Unsigned or untrusted installer: $($s.Status)" }
+          Write-Host ("Verified publisher: " + $s.SignerCertificate.Subject)
+      - name: Keep Windows build artifact for manual testing
+        uses: actions/upload-artifact@v4
         with: {name: jarvix-new-windows-test, path: dist/Jarvix-New-Windows-Setup.exe, if-no-files-found: error, retention-days: 14}
   macos:
     needs: checks
@@ -48,9 +90,11 @@ jobs:
         with: {python-version: '3.12'}
       - run: python -m pip install Pillow==11.3.0 imageio-ffmpeg==0.6.0 pyinstaller==6.16.0
       - run: python -m unittest discover -s tests -p "test_jarvis_new_*.py" -v
+      - name: Build desktop icons from the original owner-supplied JARVIX sphere
+        run: python scripts/build_jarvix_new_icons.py
       - name: Build native app and unsigned test DMG
         run: |
-          python -m PyInstaller --noconfirm --clean --windowed --onedir --name JARVIX_NEW --collect-all imageio_ffmpeg jarvis_new/desktop_entry.py
+          python -m PyInstaller --noconfirm --clean --windowed --onedir --name JARVIX_NEW --collect-all imageio_ffmpeg --icon build/jarvix-new-icon/jarvix-new.icns --add-data "build/jarvix-new-icon/jarvix-new.png:." jarvis_new/desktop_entry.py
           test -d dist/JARVIX_NEW.app
           hdiutil create -volname 'JARVIX NEW Test' -srcfolder dist/JARVIX_NEW.app -ov -format UDZO dist/Jarvix-New-macOS.dmg
           test -s dist/Jarvix-New-macOS.dmg
@@ -58,7 +102,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: {name: jarvix-new-mac-test, path: dist/Jarvix-New-macOS.dmg, if-no-files-found: error, retention-days: 14}
   release:
-    if: github.ref == 'refs/heads/jarvis-new'
+    # Never distribute an unsigned Windows binary as a trusted release.
+    # A real CA-issued verified certificate is mandatory before publishing.
+    if: ${{ github.ref == 'refs/heads/jarvis-new' && vars.JARVIX_NEW_TRUSTED_SIGNING_ENABLED == 'true' }}
     needs: [windows, macos]
     runs-on: ubuntu-latest
     steps:
@@ -77,7 +123,10 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
-            TEST ONLY, unsigned Windows and macOS packages.
+            TEST ONLY. Windows installer and JARVIX_NEW.exe are Authenticode-signed
+            with a Microsoft-verified code signing identity and verified as Valid.
+            macOS DMG is NOT Apple notarized yet.
+            SmartScreen reputation may still warn on new signed binaries.
             Local task journal, offline photo compression and reports only.
             VoiceOS microphone, real AI generation, browser sync and paid APIs are NOT part of this installer.
             Never bypass system security warnings to install the test build.
