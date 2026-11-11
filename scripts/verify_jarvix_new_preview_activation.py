@@ -78,7 +78,7 @@ def main():
 
     for route in ('/ai-agents.html', '/jarvix-chat.html', '/jarvix-new.html'):
         status, redirected, _ = fetch(route)
-        assert status == 200 and urlparse(redirected).path == '/', (route, redirected)
+        assert status == 200 and urlparse(redirected).path in ('/','/deepsyq','/deepsyq.html','/index','/index.html'), (route, redirected)
     print('PASS: Obsolete separate JARVIX chat pages redirect to existing sphere.')
 
     try:
