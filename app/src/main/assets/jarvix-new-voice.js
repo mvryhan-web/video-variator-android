@@ -3,6 +3,7 @@ import {recordedExact,recordedReply} from './jarvix-new-recorded-dialog.js';
    No new page, code form, paid API or simulated model answer. */
 const HOST='jarvis-new.deepsyq.pages.dev';
 const API='http://127.0.0.1:8768/v1/voice/chat';
+const VOICE_LIBRARY='http://127.0.0.1:8770/v1/find';
 const WORDS={
 ru:{lang:'ru-RU',hello:'Привет! Я JARVIX. Слушаю тебя.',listen:'Слушаю…',think:'Думаю…',speak:'Отвечаю…',start:'Подключаю микрофон…',deny:'Разреши микрофон в настройках браузера.',unsupported:'Голосовое распознавание здесь недоступно. Открой Chrome или Edge.',offline:'Я тебя слышу, но локальная модель ещё не подключена. Запусти JARVIX и Ollama на компьютере, затем нажми на сферу снова.'},
 en:{lang:'en-US',hello:"Hi! I'm JARVIX. I'm listening.",listen:'Listening…',think:'Thinking…',speak:'Speaking…',start:'Connecting microphone…',deny:'Allow microphone access in browser settings.',unsupported:'Speech recognition is unavailable here. Try Chrome or Edge.',offline:'I hear you, but the local AI is not connected. Start JARVIX and Ollama on your computer, then press the sphere again.'},
@@ -100,12 +101,33 @@ function listen(id){
  };
  try{r.start();}catch{stop(getLang().unsupported);}
 }
+async function ownerLibraryReply(question,language){
+ // Optional owner's local Windows library; it remains strictly on loopback.
+ // Regular site visitors continue to use the already hosted MP3 catalog.
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),650);
+ try{
+  const response=await fetch(VOICE_LIBRARY,{
+   method:'POST',mode:'cors',targetAddressSpace:'loopback',cache:'no-store',
+   signal:controller.signal,headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({question:question.slice(0,1000),language})
+  });
+  if(!response.ok)return null;
+  const data=await response.json();
+  if(!data.found||typeof data.text!=='string'||!data.text.trim()||
+      !/^[a-f0-9]{64}$/.test(data.id||''))return null;
+  const expected='http://127.0.0.1:8770/v1/audio?id='+data.id;
+  if(data.audio_url!==expected)return null;
+  return {id:data.id,text:data.text,audioUrl:expected,source:'local-voice-library'};
+ }catch{return null;}finally{clearTimeout(timeout);}
+}
 async function respond(message,id){
  if(!on||seq!==id)return;
  ui('thinking',getLang().think);
  const lang=recordedLanguage();
  let selected=null;
  try{selected=await recordedReply(message,lang);}catch{}
+ // Local owner-approved index can add phrases not present in static catalog.
+ if(!selected)selected=await ownerLibraryReply(message,lang);
  if(!on||seq!==id)return;
  if(selected){
   const success=await playOwnerRecording(selected,id);
