@@ -6,6 +6,12 @@
 
   const RELEASES = 'https://api.github.com/repos/mvryhan-web/video-variator-android/releases?per_page=25';
   const OWNER = '/mvryhan-web/video-variator-android/releases/download/';
+  // GitHub already published both exact test assets in this release.
+  // Fixed URLs remain clickable even when GitHub's anonymous API rate-limits.
+  const KNOWN_TEST_ASSETS = Object.freeze({
+    windows: 'https://github.com/mvryhan-web/video-variator-android/releases/download/jarvix-new-test-bdbcf50659ce49b416480bb1a35b2eca8cf0ad41/Jarvix-New-Windows-Setup.exe',
+    mac: 'https://github.com/mvryhan-web/video-variator-android/releases/download/jarvix-new-test-bdbcf50659ce49b416480bb1a35b2eca8cf0ad41/Jarvix-New-macOS.dmg'
+  });
   const BUILD_NAMES = Object.freeze({
     windows: 'Jarvix-New-Windows-Setup.exe',
     mac: 'Jarvix-New-macOS.dmg'
@@ -124,6 +130,15 @@
       });
       options[kind]=link;popup.append(link);
     }
+    // The latest known, existing GitHub prerelease downloads work immediately.
+    // Only later replace them if the GitHub API confirms a newer complete pair.
+    for (const [platform, url] of Object.entries(KNOWN_TEST_ASSETS)) {
+      const item=options[platform];
+      item.href=url;
+      item.textContent=(platform==='windows'?labels().win:labels().mac)+' · '+labels().test;
+      item.removeAttribute('aria-disabled');
+      item.removeAttribute('tabindex');
+    }
     const wait=make('div','jv-download-status',labels().loading);
     wait.setAttribute('role','status');
     wait.style.cssText='padding:4px 5px;font-size:12px;line-height:1.5;color:#c9a36b;';
@@ -142,7 +157,7 @@
       }
       wait.textContent='';
     } catch {
-      if (popup?.isConnected && anchor===target) wait.textContent=labels().pending;
+      if (popup?.isConnected && anchor===target) wait.textContent=labels().test;
     }
     position();
   }
