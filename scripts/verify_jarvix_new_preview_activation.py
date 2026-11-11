@@ -19,20 +19,20 @@ def main():
     assert status==200 and 'jarvix-new-preview-entry.js' in home, 'New JARVIX launcher not injected into published home page'
     assert '<script type="module" src="jarvis-core.js"></script>' not in home, 'Legacy Jarvis core still starts on test homepage'
     assert 'src="jarvix-home-chat.js' not in home, 'Legacy home chat still starts on test homepage'
-    assert 'jarvix-new-download-menu.js' in home, 'Download dropdown missing from live test header'
-    print('PASS: Live TEST homepage uses new JARVIX entry and header download dropdown.')
+    assert 'jarvix-new-download-menu.js' in home, 'Test homepage does not load download dropdown'
+    print('PASS: TEST homepage uses new JARVIX entry and header download dropdown.')
 
     status,where,script=fetch('/jarvix-new-download-menu.js')
     assert status==200 and 'Jarvix-New-Windows-Setup.exe' in script and 'Jarvix-New-macOS.dmg' in script
     status,where,_=fetch('/jarvix-download.html')
     assert status==200 and urlparse(where).path in ('/','/index','/index.html') and 'download=jarvix' in where, where
-    print('PASS: Legacy download-page route opens the main page with dropdown; standalone page removed.')
+    print('PASS: Standalone download page redirects to existing header dropdown.')
 
     status,where,ui=fetch('/jarvix-new.html')
     assert status==200 and '<h1>JARVIX NEW</h1>' in ui and 'jarvix-new.js' in ui
     assert 'd2ol7oe51mr4n9.cloudfront.net' in ui
-    assert 'jarvix-new-download-menu.js' in ui, 'New JARVIX header has no download menu'
-    print('PASS: Live JARVIX NEW page, original owner sphere and header menu are present.')
+    assert 'jarvix-new-download-menu.js' in ui, 'New JARVIX page header has no dropdown'
+    print('PASS: Live JARVIX NEW page, owner sphere and shared header dropdown.')
 
     for path in ['/ai-agents.html','/jarvix-chat.html?mode=video']:
         status,where,html=fetch(path)
@@ -62,7 +62,7 @@ def main():
             expect(page.locator('[data-mode="video"]')).to_have_attribute('aria-pressed','true')
             print('PASS: Real browser opens NEW agent page from test homepage; redirected Video mode works.')
 
-            # Header dropdown: user must not navigate to a separate HTML download page.
+            # Download links must be direct artifacts, not a separate download page.
             trigger=page.locator('header a.back')
             expect(trigger).to_be_visible()
             trigger.click()
@@ -72,27 +72,12 @@ def main():
             win=menu.locator('a[data-platform="windows"]')
             mac=menu.locator('a[data-platform="mac"]')
             expect(win).to_have_attribute('href',
-                re.compile(r'^https://github\\.com/mvryhan-web/video-variator-android/releases/download/[^/]+/Jarvix-New-Windows-Setup\\.exe
-        finally:
-            browser.close()
-    return 0
-
-if __name__=='__main__':
-    raise SystemExit(main())
-),timeout=18000)
+                re.compile(r'^https://github[.]com/mvryhan-web/video-variator-android/releases/download/[^/]+/Jarvix-New-Windows-Setup[.]exe$'),timeout=18000)
             expect(mac).to_have_attribute('href',
-                re.compile(r'^https://github\\.com/mvryhan-web/video-variator-android/releases/download/[^/]+/Jarvix-New-macOS\\.dmg
-        finally:
-            browser.close()
-    return 0
+                re.compile(r'^https://github[.]com/mvryhan-web/video-variator-android/releases/download/[^/]+/Jarvix-New-macOS[.]dmg$'),timeout=18000)
+            assert urlparse(page.url).path in ('/jarvix-new','/jarvix-new.html')
+            print('PASS: Header has two DIRECT Windows/Mac test build links.')
 
-if __name__=='__main__':
-    raise SystemExit(main())
-),timeout=18000)
-            assert page.url.rsplit('/',1)[-1].startswith('jarvix-new'), page.url
-            print('PASS: Header opens exactly two DIRECT GitHub downloads; no standalone download page.')
-
-            # Check actual mobile viewport: same two options and no overflow.
             mobile=browser.new_page(viewport={'width':390,'height':844})
             mobile.goto(ORIGIN+'/jarvix-new.html',wait_until='domcontentloaded',timeout=20000)
             mobile.locator('header a.back').click()
@@ -100,7 +85,7 @@ if __name__=='__main__':
             assert mobile.locator('#jv-download-popover a.jv-download-option').count()==2
             dims=mobile.locator('#jv-download-popover').bounding_box()
             assert dims and dims['x']>=0 and dims['x']+dims['width']<=391, dims
-            print('PASS: Windows/Mac dropdown fits mobile header.')
+            print('PASS: Dropdown fits mobile header.')
         finally:
             browser.close()
     return 0
