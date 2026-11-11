@@ -39,7 +39,7 @@ jobs:
           print(f"HTML_bytes={len(data)} title={title[:200]}")
           if status != 200:
               raise SystemExit(f"FAIL: preview returned HTTP {status}")
-          if "html" not in content_type.lower() or not re.search(r"<html\\b", html, flags=re.I):
+          if "html" not in content_type.lower() or not re.search(r"<html\b", html, flags=re.I):
               raise SystemExit("FAIL: preview did not return HTML")
           if not re.search(r"deepsyq|jarvix", html, flags=re.I):
               raise SystemExit("FAIL: neither DEEPSYQ nor JARVIX appears in homepage source")
