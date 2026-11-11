@@ -430,13 +430,13 @@ export default {
         form.set('metadata[credits]', String(pack.credits));
         form.set('metadata[baseCredits]', String(pack.baseCredits));
         form.set('metadata[bonusCredits]', String(pack.bonusCredits));
-        form.set('metadata[userId]', user.id);
+        form.set('metadata[userId]', userId);
         form.set('payment_intent_data[metadata][aiWallet]', 'v1');
         form.set('payment_intent_data[metadata][sku]', pack.sku);
         form.set('payment_intent_data[metadata][credits]', String(pack.credits));
         form.set('payment_intent_data[metadata][baseCredits]', String(pack.baseCredits));
         form.set('payment_intent_data[metadata][bonusCredits]', String(pack.bonusCredits));
-        form.set('payment_intent_data[metadata][userId]', user.id);
+        form.set('payment_intent_data[metadata][userId]', userId);
         form.set('success_url', url.origin + '/generate-studio.html?ai_checkout=returned');
         form.set('cancel_url', url.origin + '/generate-studio.html?ai_checkout=cancelled');
 
