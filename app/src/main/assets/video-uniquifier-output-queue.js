@@ -23,9 +23,9 @@ export function bindVideoUniquifierQueue({queue,lines,clear}){
  @media(max-width:590px){body.vu-reference .vu-output-row.vu-real-row{grid-template-columns:38px minmax(80px,1fr) 42px;grid-template-rows:auto auto;column-gap:8px;row-gap:6px}
  body.vu-reference .vu-real-row .vu-output-thumb{grid-column:1;grid-row:1/3}
  body.vu-reference .vu-real-row b{grid-column:2;grid-row:1}
- body.vu-reference .vu-real-row .vu-output-dash:first-of-type{grid-column:3;grid-row:1;text-align:right}
+ body.vu-reference .vu-real-row .vu-output-dash:nth-child(3){grid-column:3;grid-row:1;text-align:right}
  body.vu-reference .vu-real-row .vu-progress-line{grid-column:2;grid-row:2}
- body.vu-reference .vu-real-row .vu-output-dash:nth-of-type(2){grid-column:3;grid-row:2;text-align:right}
+ body.vu-reference .vu-real-row .vu-output-dash:nth-child(5){grid-column:3;grid-row:2;text-align:right}
  body.vu-reference .vu-real-row button{grid-column:2/4;grid-row:3;justify-self:stretch;min-height:32px}
  }`;
  if(!document.getElementById(style.id))document.head.append(style);
@@ -39,6 +39,8 @@ export function bindVideoUniquifierQueue({queue,lines,clear}){
  function update(job,progress,state){
   if(!job||job.ready)return;
   const p=clamp(progress);
+  job.progress=p;
+  job.track.setAttribute('aria-valuenow',String(Math.round(p*100)));
   job.percent.textContent=Math.round(p*100)+'%';
   job.fill.style.width=Math.round(p*100)+'%';
   job.indicator.textContent=state==='error'?'!':state==='saving'?'↓':p>0?'▶':'–';
