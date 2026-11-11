@@ -3,7 +3,7 @@
   "engine": "VoxCPM2",
   "approvedAudioOnly": true,
   "direction": "Same verified JARVIX male voice. Calm, confident and unhurried; clean pauses before pointing, no exaggerated sales inflection. Never replace with browser/system TTS.",
-  "status": "SCRIPT_ONLY_NO_MP3_GENERATED",
+  "status": "APPROVED_MP3_RECORDED",
   "segments": [
     {
       "id": "tools-overview",

@@ -1,0 +1,298 @@
+{
+  "schemaVersion": "jarvix-tour-v4-audio/v1",
+  "engine": "VoxCPM2",
+  "format": "mp3",
+  "reviewed": true,
+  "previewApproved": true,
+  "totalClips": 32,
+  "clips": [
+    {
+      "id": "tools-overview",
+      "language": "ru",
+      "text": "В разделе Everyday Tools собрано двадцать два повседневных инструмента: сжатие фотографий, работа с PDF, обрезка аудио и видео, QR-коды и многое другое. Доступные бесплатные функции можно использовать каждый день. Для расширенных возможностей предусмотрены тарифы Basic, Pro и Business.",
+      "filename": "v4_ru_3c59ac25dc89.mp3",
+      "reviewed": true,
+      "sha256": "d7892ae98ad3bdad8634e6dcb60f32ac77d85c6cd57366c71c8b46f85ba68c37",
+      "bytes": 523628
+    },
+    {
+      "id": "tools-overview",
+      "language": "en",
+      "text": "Everyday Tools brings together twenty-two everyday utilities, including photo compression, PDF tools, video and audio trimming, QR codes, and more. Available free functions can be used every day, while advanced capabilities depend on your plan.",
+      "filename": "v4_en_5418925b2eae.mp3",
+      "reviewed": true,
+      "sha256": "9a7bb31f6b438aacec7b72f16c012e21b5b3a739bc298e8c219085f1c080c0c5",
+      "bytes": 346796
+    },
+    {
+      "id": "tools-overview",
+      "language": "fr",
+      "text": "Everyday Tools réunit vingt-deux outils pratiques : compression de photos, gestion des PDF, découpage audio et vidéo, codes QR et bien plus. Les fonctions gratuites sont disponibles au quotidien ; les options avancées dépendent de votre forfait.",
+      "filename": "v4_fr_18f401841801.mp3",
+      "reviewed": true,
+      "sha256": "f42c63d979d0af719f9cc6236f0498707d4629f8546c62c9b4c9c7c0bde3ab67",
+      "bytes": 346796
+    },
+    {
+      "id": "tools-overview",
+      "language": "es",
+      "text": "Everyday Tools reúne veintidós herramientas prácticas: comprimir fotos, trabajar con PDF, recortar vídeo y audio, crear códigos QR y mucho más. Las funciones gratuitas están disponibles cada día; las avanzadas dependen de tu plan.",
+      "filename": "v4_es_efe84f62cb62.mp3",
+      "reviewed": true,
+      "sha256": "4fdeb9b77f197761bd54831e287f74b04b7f8efe4a91a18165acfab1b2bf5f44",
+      "bytes": 354860
+    },
+    {
+      "id": "uniquifier-variants",
+      "language": "ru",
+      "text": "Выберите число вариантов видео: один, пять, десять или пятнадцать. Затем настройте режим обработки: Gentle, Balance или Dynamic.",
+      "filename": "v4_ru_d8061284b004.mp3",
+      "reviewed": true,
+      "sha256": "bc684c0334886f7556889ce0cc71528bbf41194755fbafdb7f4f90eb3d5ca871",
+      "bytes": 235628
+    },
+    {
+      "id": "uniquifier-variants",
+      "language": "en",
+      "text": "Choose how many video variations you want: one, five, ten, or fifteen. Then select Gentle, Balance, or Dynamic processing.",
+      "filename": "v4_en_fc64ef3fde7c.mp3",
+      "reviewed": true,
+      "sha256": "7a3bf23713d6c4cbf200ed3f365be2d240c56b4c7d90beb4bfbd33b31bb38fa0",
+      "bytes": 173996
+    },
+    {
+      "id": "uniquifier-variants",
+      "language": "fr",
+      "text": "Choisissez le nombre de variantes vidéo : une, cinq, dix ou quinze. Puis sélectionnez Gentle, Balance ou Dynamic.",
+      "filename": "v4_fr_c34323dd7578.mp3",
+      "reviewed": true,
+      "sha256": "261e5d201fee9cb3b2e39d05d50337551803327089fcc03bb2684c7121d62589",
+      "bytes": 162476
+    },
+    {
+      "id": "uniquifier-variants",
+      "language": "es",
+      "text": "Elige cuántas variaciones de vídeo quieres: una, cinco, diez o quince. Después selecciona Gentle, Balance o Dynamic.",
+      "filename": "v4_es_ebcb09390f47.mp3",
+      "reviewed": true,
+      "sha256": "f7300e7590928d52c7e598fd29d5c74808d8e825c8d817d1fb14bbf7aa31f3f3",
+      "bytes": 193580
+    },
+    {
+      "id": "uniquifier-quality",
+      "language": "ru",
+      "text": "Выберите вертикальный или горизонтальный формат и разрешение: 720p, 1080p или 4K. Доступные режимы зависят от вашего плана. Запускать обработку во время экскурсии мы не будем.",
+      "filename": "v4_ru_96986f3e1466.mp3",
+      "reviewed": true,
+      "sha256": "bc23ef97d74c9f1c7ce6afddcb70fd56598a7f6744488b891cb9d1c8964b8852",
+      "bytes": 369836
+    },
+    {
+      "id": "uniquifier-quality",
+      "language": "en",
+      "text": "Choose portrait or landscape and a resolution of 720p, 1080p, or 4K. Available options depend on your plan. We will not start processing during the tour.",
+      "filename": "v4_en_953fff05d4a5.mp3",
+      "reviewed": true,
+      "sha256": "28835f0249620d25d3c3ec1112dfb2a215901e13965907a42be7c229cf95e0e5",
+      "bytes": 216620
+    },
+    {
+      "id": "uniquifier-quality",
+      "language": "fr",
+      "text": "Choisissez le format vertical ou horizontal et la résolution 720p, 1080p ou 4K. Les options disponibles dépendent de votre forfait. Aucun traitement ne sera lancé pendant la visite.",
+      "filename": "v4_fr_6daf66f9cd6d.mp3",
+      "reviewed": true,
+      "sha256": "8de5c7ca54b90770a3e084f3bee4f2d11c0ffb024570f721d319eda49b88a5a0",
+      "bytes": 366380
+    },
+    {
+      "id": "uniquifier-quality",
+      "language": "es",
+      "text": "Elige formato vertical u horizontal y resolución 720p, 1080p o 4K. Las opciones disponibles dependen de tu plan. No iniciaremos ningún procesamiento durante la visita.",
+      "filename": "v4_es_323bb36faeaf.mp3",
+      "reviewed": true,
+      "sha256": "0fa53b13ff9e268fb8894c002dadee3ddcffe7a1d58052ced9304baf590153ec",
+      "bytes": 312236
+    },
+    {
+      "id": "canvas-edit",
+      "language": "ru",
+      "text": "В Canvas вы можете выбрать фотографию из галереи, увеличить изображение и настроить его цвет. Посмотрите, как меняются масштаб и насыщенность. Настройки примера мы вернём обратно.",
+      "filename": "v4_ru_d47d4d3ed847.mp3",
+      "reviewed": true,
+      "sha256": "144f520d7b4b4c8f79fa806b589d67c5b80339606af28f89cadb819ae4a9c9d9",
+      "bytes": 316268
+    },
+    {
+      "id": "canvas-edit",
+      "language": "en",
+      "text": "In Canvas, choose a photo from the gallery, zoom in, and adjust its colors. Watch the scale and saturation change. We will restore the original example settings.",
+      "filename": "v4_en_66cdeac22ee9.mp3",
+      "reviewed": true,
+      "sha256": "4bc89bd220a179175b5e4b00d1fc27aacdb1e618e37de6bc9245f1c54b2ca4de",
+      "bytes": 239660
+    },
+    {
+      "id": "canvas-edit",
+      "language": "fr",
+      "text": "Dans Canvas, choisissez une photo, agrandissez-la et ajustez ses couleurs. Regardez évoluer le zoom et la saturation. Nous rétablirons ensuite les réglages de l'exemple.",
+      "filename": "v4_fr_9773dcc226d0.mp3",
+      "reviewed": true,
+      "sha256": "576748aca35d1bcb5833df8caa06703359d5f70d7b5fb33ff664283050d87e78",
+      "bytes": 228140
+    },
+    {
+      "id": "canvas-edit",
+      "language": "es",
+      "text": "En Canvas, elige una foto, amplíala y ajusta sus colores. Observa cómo cambian el zoom y la saturación. Después restauraremos los ajustes del ejemplo.",
+      "filename": "v4_es_851c2a2522d1.mp3",
+      "reviewed": true,
+      "sha256": "d5d03cf9605b1f4d99262bb19f47c57b7b892af101a647063a5a95711af92ed8",
+      "bytes": 281708
+    },
+    {
+      "id": "inspiration-clone",
+      "language": "ru",
+      "text": "Выберите понравившуюся фотографию. Здесь вы можете изучить промпт, скопировать его или нажать Clone & Try, чтобы продолжить в JARVIX.",
+      "filename": "v4_ru_ba285b268977.mp3",
+      "reviewed": true,
+      "sha256": "d29891e891cbd0ed167e60c3819959ddb64335111dea85f70688c5c746a02bbe",
+      "bytes": 254636
+    },
+    {
+      "id": "inspiration-clone",
+      "language": "en",
+      "text": "Choose an image you like. Here you can explore its prompt, copy it, or select Clone & Try to continue in JARVIX.",
+      "filename": "v4_en_aa9d00b653c3.mp3",
+      "reviewed": true,
+      "sha256": "c238312ab981a526dbd85a43655916e275ea9f7f3854e2c4ff4351bb6374e6de",
+      "bytes": 154988
+    },
+    {
+      "id": "inspiration-clone",
+      "language": "fr",
+      "text": "Choisissez une image qui vous plaît. Vous pouvez consulter son prompt, le copier ou appuyer sur Clone & Try pour continuer dans JARVIX.",
+      "filename": "v4_fr_e992c50cab50.mp3",
+      "reviewed": true,
+      "sha256": "f32ea2600a03fa0e7676ebd880f8e7de65c2565075d156aad47a205c7965ad78",
+      "bytes": 228140
+    },
+    {
+      "id": "inspiration-clone",
+      "language": "es",
+      "text": "Elige una imagen que te guste. Puedes ver su prompt, copiarlo o pulsar Clone & Try para continuar en JARVIX.",
+      "filename": "v4_es_1320e558ac6a.mp3",
+      "reviewed": true,
+      "sha256": "aade32f042b10a675e3d00cd518c918a9df9f7e31d9364389c7c760122dc243c",
+      "bytes": 185516
+    },
+    {
+      "id": "clone-arrival",
+      "language": "ru",
+      "text": "Здесь вы можете создать своё изображение или видео по понравившемуся примеру. Выберите нужный режим, дополните запрос и создавайте результат в своём стиле.",
+      "filename": "v4_ru_f1c364a5aaa6.mp3",
+      "reviewed": true,
+      "sha256": "1f39eacdcbeaa8ed78dcde44bea0dd7919b645a06682a43e9615efb7f6fee67b",
+      "bytes": 316268
+    },
+    {
+      "id": "clone-arrival",
+      "language": "en",
+      "text": "Here you can make your own image or video using the example you liked. Choose a mode, refine the prompt, and create something in your own style.",
+      "filename": "v4_en_fa23d63cbc5c.mp3",
+      "reviewed": true,
+      "sha256": "e25d926e51a4944d04cc8db56018bc4159224b464862ee60711e8c2ff595e044",
+      "bytes": 208556
+    },
+    {
+      "id": "clone-arrival",
+      "language": "fr",
+      "text": "Ici, vous pouvez créer votre propre image ou vidéo à partir de l'exemple choisi. Sélectionnez un mode, adaptez le prompt et créez dans votre style.",
+      "filename": "v4_fr_9306fd8b3cdb.mp3",
+      "reviewed": true,
+      "sha256": "32db7e4324c826e03c3425c3048387d581d77ebf09d8499764ef38c65bf031e3",
+      "bytes": 247148
+    },
+    {
+      "id": "clone-arrival",
+      "language": "es",
+      "text": "Aquí puedes crear tu propia imagen o vídeo con el ejemplo elegido. Escoge un modo, adapta el prompt y crea algo a tu manera.",
+      "filename": "v4_es_7588e54642c7.mp3",
+      "reviewed": true,
+      "sha256": "945a4cdc527172f862d27b96817c123e0157a258a39ea21b45146a8ba4fcd1dd",
+      "bytes": 205100
+    },
+    {
+      "id": "plans-available",
+      "language": "ru",
+      "text": "Планы и пакеты AI-кредитов доступны для выбора и покупки. Basic подходит для основных задач, Pro открывает больше возможностей, а Business рассчитан на более интенсивную работу.",
+      "filename": "v4_ru_a368747dec95.mp3",
+      "reviewed": true,
+      "sha256": "d8f53362cb1d6e0de9c3cb9c8162e94b4fe4c468cdaddde5686b62235f7ce4ac",
+      "bytes": 274220
+    },
+    {
+      "id": "plans-available",
+      "language": "en",
+      "text": "Plans and AI credit packages are available to choose and purchase. Basic covers essential tasks, Pro unlocks more possibilities, and Business is designed for higher-volume work.",
+      "filename": "v4_en_eccb08bfd508.mp3",
+      "reviewed": true,
+      "sha256": "f9950cb32096f009e569e3cc9793beafcbb72757193fff5e032d938e0ff645f5",
+      "bytes": 300716
+    },
+    {
+      "id": "plans-available",
+      "language": "fr",
+      "text": "Les forfaits et packs de crédits IA sont disponibles à l'achat. Basic couvre les besoins essentiels, Pro offre davantage de possibilités, et Business convient à une utilisation plus intensive.",
+      "filename": "v4_fr_4fb2767e7c54.mp3",
+      "reviewed": true,
+      "sha256": "34863f6b35ebb8035494ec0174dca206bd49d4819a4d7b662ea49d6851c5db37",
+      "bytes": 304748
+    },
+    {
+      "id": "plans-available",
+      "language": "es",
+      "text": "Los planes y paquetes de créditos de IA están disponibles para comprar. Basic cubre lo esencial, Pro ofrece más opciones y Business está pensado para un uso más intensivo.",
+      "filename": "v4_es_04d253c46cdf.mp3",
+      "reviewed": true,
+      "sha256": "34a889f8f29f0d4ce6e599fc74dc467c841cbece0cdfb0f35177884864ed0623",
+      "bytes": 277676
+    },
+    {
+      "id": "final-upgrade",
+      "language": "ru",
+      "text": "Это была бесплатная демонстрация возможностей JARVIX. Вы увидели лишь часть того, что доступно в DEEPSYQ. С планами Basic, Pro и Business вы сможете подобрать инструменты и возможности под свои задачи — от первых проектов до регулярного создания контента. Выберите подходящий план и начните создавать больше.",
+      "filename": "v4_ru_2521e14c28ed.mp3",
+      "reviewed": true,
+      "sha256": "ee85bcb62339dafd1582dbae0ff5b5b6c570e9deb76c2036391cb456a4f31718",
+      "bytes": 573740
+    },
+    {
+      "id": "final-upgrade",
+      "language": "en",
+      "text": "That was a free demonstration of JARVIX. You've seen only part of what DEEPSYQ can do. With Basic, Pro, and Business, you can choose the tools that fit your goals, from your first projects to regular content creation. Find your plan and create more.",
+      "filename": "v4_en_bc85469b98bd.mp3",
+      "reviewed": true,
+      "sha256": "e3a4d269f364d7a994d011b28596c9c7d6d802d3bdb64c2642670da405bc093b",
+      "bytes": 369836
+    },
+    {
+      "id": "final-upgrade",
+      "language": "fr",
+      "text": "Voilà pour cette démonstration gratuite de JARVIX. Vous n'avez découvert qu'une partie des possibilités de DEEPSYQ. Avec Basic, Pro et Business, choisissez les outils adaptés à vos projets, de vos premières créations à une production régulière. Choisissez votre offre et créez davantage.",
+      "filename": "v4_fr_8a47b256b6ea.mp3",
+      "reviewed": true,
+      "sha256": "05f1bb40e2d0660de1b682491cbd24205da59c0a0b9823ace9398f1a433ac759",
+      "bytes": 477548
+    },
+    {
+      "id": "final-upgrade",
+      "language": "es",
+      "text": "Esta fue una demostración gratuita de JARVIX. Solo has visto una parte de lo que ofrece DEEPSYQ. Con Basic, Pro y Business puedes elegir herramientas para tus proyectos, desde tus primeras creaciones hasta la producción habitual. Elige tu plan y crea más.",
+      "filename": "v4_es_520f74f3fe11.mp3",
+      "reviewed": true,
+      "sha256": "57d796b22e85867ae998341423cbf4107263b61350dd9923b91cf804581c1dad",
+      "bytes": 408428
+    }
+  ]
+}
