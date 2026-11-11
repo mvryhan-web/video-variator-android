@@ -48,3 +48,16 @@ for path in root.glob('*.html'):
 if count < 3:
     raise RuntimeError('Too few TEST HTML pages received JARVIX dropdown')
 print(f'TEST-ONLY: attached shared header download menu to {count} HTML pages.')
+
+
+# On the test website only, place the existing JARVIX download link immediately
+# after the Tour button in the mobile header (instead of the opposite pod).
+# Desktop unified header already orders Tour -> Download side by side.
+mobile_js = root / 'deepsyq-mobile-shell.js'
+mobile_content = mobile_js.read_text(encoding='utf-8')
+old_placement = 'move(tools, left); move(tour, right); move(pricing, right); move(login, right);'
+new_placement = 'move(tour, right); move(tools, right); move(pricing, right); move(login, right);'
+if mobile_content.count(old_placement) != 1:
+    raise RuntimeError('TEST mobile header placement anchor changed; do not deploy')
+mobile_js.write_text(mobile_content.replace(old_placement, new_placement), encoding='utf-8')
+print('TEST-ONLY: Download JARVIX placed beside Tour in mobile header, no duplicate button.')
