@@ -31,8 +31,12 @@ export default {
       });
     }
     const response = await env.ASSETS.fetch(request);
+    // Owner's live voice entry must never be stuck behind an older
+    // browser/Cloudflare cache after test-only deployments.
     if (url.pathname.endsWith('.html') || url.pathname.endsWith('/') ||
-        !url.pathname.includes('.')) {
+        !url.pathname.includes('.') ||
+        ['/jarvix-new-preview-entry.js', '/jarvix-new-voice.js',
+         '/jarvix-new-download-menu.js'].includes(url.pathname)) {
       const headers = new Headers(response.headers);
       headers.set('Cache-Control', 'no-store, must-revalidate');
       return new Response(response.body, {status:response.status,headers});
