@@ -57,11 +57,26 @@ const audioRecord=(record,lang,available)=>{
  if (!allowedText(text))return null;
  return {id:record.id,text,audioUrl:'/media/jarvix/clips/'+filename,source:'scenario'};
 };
+let verifiedPhysicalPromise=null;
+async function verifiedPhysicalPaths(){
+ if(!verifiedPhysicalPromise)verifiedPhysicalPromise=fetch('/jarvix-new-physical-audio-index.json',{cache:'no-store'})
+  .then(async response=>{
+   if(!response.ok)throw new Error('Physical MP3 index unavailable');
+   const index=await response.json();
+   if(index.schema!=='jarvix-new-physical-audio-index/v1'||
+      !Array.isArray(index.paths)||index.paths.length!==index.count)
+    throw new Error('Invalid physical MP3 index');
+   return new Set(index.paths);
+  }).catch(()=>new Set());
+ return verifiedPhysicalPromise;
+}
 async function catalog(lang){
- const data=await prepareStaticClips();
- const available=new Set((data.clips||[]).filter(c=>c.language===lang && FILE.test(c.filename)).map(c=>c.filename));
- return {available,scenarios:data.scenarios||[],tour:(data.tourClips||[]).filter(c=>c.language===lang &&
-  TOUR_FILE.test(c.filename) && allowedText(c.text))};
+ const [data,physical]=await Promise.all([prepareStaticClips(),verifiedPhysicalPaths()]);
+ const available=new Set((data.clips||[]).filter(c=>c.language===lang &&
+  FILE.test(c.filename) && physical.has('/media/jarvix/clips/'+c.filename)).map(c=>c.filename));
+ return {available,scenarios:data.scenarios||[],tour:(data.tourClips||[]).filter(c=>
+  c.language===lang && TOUR_FILE.test(c.filename) && allowedText(c.text) &&
+  physical.has('/media/jarvix/tour-v3/'+c.filename))};
 }
 /** Exact previously recorded text, useful for the tour and LLaMA exact replies. */
 export async function recordedExact(text,language='ru'){
