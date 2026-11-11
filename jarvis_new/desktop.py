@@ -78,6 +78,8 @@ class App:
         self._button(actions, "Сжать 1 фото", self.select_photo).pack(side="left", padx=(0, 8))
         self._button(actions, "Голосовой VoiceOS", self.start_voice).pack(side="left", padx=(0, 8))
         self._button(actions, "Демофайл", self.demo_selected).pack(side="left")
+        self._button(actions, "Локальный AI", self.open_local_chat).pack(side="left", padx=(8, 0))
+
 
         connection = tk.Frame(root, bg=BACKGROUND)
         connection.pack(fill="x", padx=24, pady=(0, 10))
@@ -273,6 +275,127 @@ class App:
             )
         except Exception as error:
             messagebox.showerror("Не удалось запустить VoiceOS", str(error))
+
+    def open_local_chat(self):
+        """Separate opt-in local-only chat; never dispatches computer actions."""
+        from .local_llm import available_models, chat, read_only_windows_status
+        from .windows_speech import listen_once, speak
+        popup = tk.Toplevel(self.root)
+        popup.title("JARVIX NEW — локальный AI · Windows")
+        popup.geometry("690x530")
+        popup.configure(bg=BACKGROUND)
+        popup.transient(self.root)
+        tk.Label(popup, text="Локальная модель Ollama · без облачных API",
+                 fg=TEXT, bg=BACKGROUND).pack(pady=(12, 5))
+        models = ttk.Combobox(popup, state="readonly", width=50)
+        models.pack(pady=4)
+        log = tk.Text(popup, wrap="word", bg=PANEL, fg=TEXT, height=15,
+                      state="disabled", font=("Arial", 11))
+        log.pack(fill="both", expand=True, padx=15, pady=10)
+        prompt = tk.Entry(popup, bg=PANEL_LIGHT, fg=TEXT, insertbackground=TEXT)
+        prompt.pack(fill="x", padx=15, ipady=8)
+        buttons = tk.Frame(popup, bg=BACKGROUND)
+        buttons.pack(fill="x", padx=15, pady=12)
+        history = []
+        busy = False
+
+        def append(who, message):
+            if not popup.winfo_exists():
+                return
+            log.configure(state="normal")
+            log.insert("end", who + ": " + message + "\\n\\n")
+            log.see("end")
+            log.configure(state="disabled")
+
+        def background(action, on_success):
+            nonlocal busy
+            if busy:
+                return
+            busy = True
+            def runner():
+                try:
+                    value = action()
+                    self.root.after(0, lambda: finish(value, None))
+                except Exception as error:
+                    message = str(error)
+                    self.root.after(0, lambda: finish(None, message))
+            def finish(value, error):
+                nonlocal busy
+                busy = False
+                if not popup.winfo_exists():
+                    return
+                if error:
+                    append("Система", error)
+                else:
+                    on_success(value)
+            threading.Thread(target=runner, daemon=True).start()
+
+        def load_models():
+            def show(items):
+                models.configure(values=items)
+                if items:
+                    models.set(items[0])
+                    append("Система", "Выбери локальную модель и напиши сообщение.")
+                else:
+                    append("Система", "Нет установленных моделей Ollama. Ничего не загружается автоматически.")
+            background(available_models, show)
+
+        def send():
+            value = prompt.get().strip()
+            selected = models.get()
+            if not value or not selected:
+                append("Система", "Сначала выбери установленную локальную модель и введи сообщение.")
+                return
+            prompt.delete(0, "end")
+            append("Вы", value)
+            snapshot = list(history)
+            def received(answer):
+                history.extend(({"role":"user","content":value},
+                                {"role":"assistant","content":answer}))
+                append("JARVIX", answer)
+            background(lambda: chat(value, selected, history=snapshot), received)
+
+        def listen():
+            if not messagebox.askyesno("Разрешение микрофона",
+                    "Однократно включить микрофон Windows на срок до 12 секунд? "
+                    "Запись не сохраняется и не отправляется в интернет.", parent=popup):
+                return
+            def heard(value):
+                if value:
+                    prompt.delete(0, "end")
+                    prompt.insert(0, value)
+                    append("Микрофон", "Распознано локально. Проверь текст и нажми Отправить.")
+                else:
+                    append("Микрофон", "Речь не распознана.")
+            background(lambda: listen_once(approved=True), heard)
+
+        def say():
+            text = next((item["content"] for item in reversed(history)
+                         if item["role"] == "assistant"), "")
+            if not text:
+                append("Система", "Пока нет ответа для озвучивания.")
+                return
+            if not messagebox.askyesno("Разрешение озвучивания",
+                    "Озвучить последний ответ через локальный голос Windows?", parent=popup):
+                return
+            background(lambda: speak(text, approved=True),
+                       lambda _: append("Система", "Озвучивание завершено."))
+
+        def os_status():
+            if not messagebox.askyesno("Разрешение на чтение сведений Windows",
+                    "Разрешить JARVIX однократно прочитать название, версию и "
+                    "архитектуру Windows? Файлы и настройки не изменяются.", parent=popup):
+                return
+            background(lambda: read_only_windows_status(approved=True),
+                       lambda result: append("Windows", str(result)))
+
+        self._button(buttons, "Модели", load_models).pack(side="left", padx=3)
+        self._button(buttons, "Отправить", send).pack(side="left", padx=3)
+        self._button(buttons, "🎤 Слушать", listen).pack(side="left", padx=3)
+        self._button(buttons, "Озвучить", say).pack(side="left", padx=3)
+        self._button(buttons, "Сведения Windows", os_status).pack(side="left", padx=3)
+        prompt.bind("<Return>", lambda _event: send())
+        load_models()
 
     def drain_events(self):
         try:
