@@ -13,7 +13,7 @@ export function tourPlan(language='en') {
  ['Compress photos','mobile-utility.html?tool=photo-compress',null,'#utilityFiles,#utilityRun'],
  ['Trim video','mobile-utility.html?tool=video-trim',null,'#utilityFiles,#utilityRun'],
  ['Trim audio','mobile-utility.html?tool=audio-trim',null,'#utilityFiles,#utilityRun'],
- ['Video Uniquifier','index.html',64,'#mode,#aspectRatio,#startBtn'],
+ ['Video Uniquifier','video-uniquifier.html',64,'#mode,#aspectRatio,#startBtn'],
  ['Inspiration','deepsyq.html#inspirationPreview',null,'#inspirationPreview'],
  ['Pricing','pricing.html',62,'#plans'],
  ...['trial','basic','pro','business','lifetime'].map(key=>[key,'pricing.html',null,`.price-plan.price-${key}`]),
