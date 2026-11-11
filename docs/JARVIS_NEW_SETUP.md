@@ -161,3 +161,39 @@ These tests validate import, file formats, Python syntax, per-owner local task
 states and safe tool registration. They do not validate a physical microphone,
 real Cloudflare site integration, AI media quality, account credentials or
 provider billing.
+
+
+## Test installer and local pairing milestone (2026-11-11)
+
+All changes are isolated in the jarvis-new branch. Only the Cloudflare Pages
+preview deployment may serve the modified website. Production remains untouched.
+
+Test website: https://jarvis-new.deepsyq.pages.dev/jarvix-download.html
+Pairing page: https://jarvis-new.deepsyq.pages.dev/jarvix-connect.html
+Installer CI: https://github.com/mvryhan-web/video-variator-android/actions/workflows/jarvis-new-installers.yml
+
+The installer workflow runs offline unit tests on Linux, Windows and macOS,
+builds Windows Inno Setup .exe and unsigned macOS .dmg, and publishes public
+test prerelease assets only after both builds pass. A GitHub API lookup on the
+download page retrieves actual assets; missing binaries do not appear as links.
+
+The preview workflow validates that jarvis-new is not the Pages production
+branch, deploys only --branch jarvis-new, replaces the production Worker with
+a safe static-preview Worker and returns 503 for all /api paths. This prevents
+payments, live provider calls and account mutations through the preview.
+
+LOCAL SAME-COMPUTER TEST: launch the desktop app, click the Connect test
+website control, and paste the copied session pairing code on the pairing
+page opened in a browser on the SAME computer. The local server binds only
+127.0.0.1 port 8768. The browser may ask permission for local network access.
+Read the SQLite report, submit one queued image/video/music task, refresh and
+confirm status. Press Disconnect or close the app to revoke access.
+
+The bridge requires an exact trusted preview origin and a randomly generated
+per-session bearer token. It does not expose local file paths, upload files,
+open programs, call paid APIs or automatically run AI models. Photo compression
+still requires explicit desktop file-selection and destination consent.
+
+DO NOT confuse this proof of local communication with cloud sync, a real
+voice conversation, true image/video/music AI generation, or signed/notarized
+production installers. All of these still need integration and physical tests.
