@@ -287,13 +287,33 @@ $('cwRedo').onclick=()=>{if(!future.length)return;history.push(clone());const x=
 function setZoom(value){const z=Math.max(50,Math.min(200,Math.round(value/10)*10));$('cwZoom').value=z;$('cwZoomValue').textContent=z+'%';$('cwArtboard').style.transform='scale('+(z/100)+')';note('Photo view: '+z+'%. The toolbar stays unchanged. PNG export size remains unchanged.');}
 $('cwZoom').addEventListener('input',e=>setZoom(+e.target.value));
 $('cwZoomOut').onclick=()=>setZoom(+$('cwZoom').value-10);$('cwZoomIn').onclick=()=>setZoom(+$('cwZoom').value+10);
+// On phones, ordinary one-finger swipes scroll the page. Tap Move to drag
+// photo/layers, then Done to return to natural page scrolling.
+let touchMoveEnabled=false;
+const touchMoveButton=$('cwTouchMove');
+function setTouchMove(enabled){
+ touchMoveEnabled=Boolean(enabled);
+ section.classList.toggle('cw-touch-move-active',touchMoveEnabled);
+ touchMoveButton.setAttribute('aria-pressed',String(touchMoveEnabled));
+ touchMoveButton.querySelector('small').textContent=touchMoveEnabled?'Done':'Move';
+ touchMoveButton.title=touchMoveEnabled?'Finish moving and scroll the page':'Move photo or objects with your finger';
+ touchMoveButton.setAttribute('aria-label',touchMoveButton.title);
+ note(touchMoveEnabled?'Move mode: drag the photo or an object with one finger. Tap Done to scroll.':'Scroll mode: swipe vertically to move through the page.');
+}
+touchMoveButton.onclick=()=>setTouchMove(!touchMoveEnabled);
 let drag=null;
 canvas.addEventListener('pointerdown',e=>{
  if(!accountGuard())return;const rect=canvas.getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width*canvas.width,y=(e.clientY-rect.top)/rect.height*canvas.height;
  let selected=-1;for(let i=state.layers.length-1;i>=0;i--){const layer=state.layers[i];const halfW=layer.type==='text'?Math.min(canvas.width*.45,Math.max(65,(layer.text||'Your text').length*(layer.size||60)*.32)):Math.max(layer.w||130,120)/2;const halfH=layer.type==='text'?Math.max(40,(layer.size||60)*.75):Math.max(layer.h||90,90)/2;if(Math.abs(layer.x-x)<halfW+15&&Math.abs(layer.y-y)<halfH+15){selected=i;break;}}
- state.selected=selected;state.locked=selected>=0?!!state.layers[selected].locked:false;drag={x:e.clientX,y:e.clientY,oldX:state.offsetX,oldY:state.offsetY,layerX:selected>=0?state.layers[selected].x:null,layerY:selected>=0?state.layers[selected].y:null,moved:false,selected};canvas.setPointerCapture(e.pointerId);void render();
+ state.selected=selected;state.locked=selected>=0?!!state.layers[selected].locked:false;
+ const scrollTouch=e.pointerType==='touch'&&!touchMoveEnabled;
+ drag={x:e.clientX,y:e.clientY,oldX:state.offsetX,oldY:state.offsetY,layerX:selected>=0?state.layers[selected].x:null,layerY:selected>=0?state.layers[selected].y:null,moved:false,selected,noMove:scrollTouch};
+ // Don't capture touch pointers in scroll mode: the browser handles vertical
+ // scrolling; a tap still selects or opens a text layer.
+ if(!scrollTouch)canvas.setPointerCapture(e.pointerId);
+ void render();
 });
-canvas.addEventListener('pointermove',e=>{if(!drag||state.locked)return;const r=canvas.getBoundingClientRect(),dx=(e.clientX-drag.x)/r.width*canvas.width,dy=(e.clientY-drag.y)/r.height*canvas.height;
+canvas.addEventListener('pointermove',e=>{if(!drag||drag.noMove||state.locked)return;const r=canvas.getBoundingClientRect(),dx=(e.clientX-drag.x)/r.width*canvas.width,dy=(e.clientY-drag.y)/r.height*canvas.height;
  if(Math.abs(dx)+Math.abs(dy)>3&&!drag.moved){mark();drag.moved=true;}
  if(drag.selected>=0){state.layers[drag.selected].x=drag.layerX+dx;state.layers[drag.selected].y=drag.layerY+dy;}
  else{state.offsetX=drag.oldX+dx*1280/canvas.width;state.offsetY=drag.oldY+dy*720/canvas.height;}

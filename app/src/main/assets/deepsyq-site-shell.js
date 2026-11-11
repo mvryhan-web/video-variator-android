@@ -1,6 +1,15 @@
 /* Site-wide read-only Deepsyq navigation & Multilingual Shell.
    Mirrors the owner-approved neon Home groups, applies themes and auto-translates subpages. */
 (() => {
+
+  // Shared locale bridge covers pages without duplicating or replacing their existing UI.
+  if (!document.querySelector('script[src*="deepsyq-i18n.js"]')) {
+    const siteLocale = document.createElement('script');
+    siteLocale.src = 'deepsyq-i18n.js?v=20261111';
+    siteLocale.defer = true;
+    document.head.append(siteLocale);
+  }
+
   // Apply saved theme immediately across all pages
   try {
     const savedTheme = localStorage.getItem('deepsyq_site_theme');

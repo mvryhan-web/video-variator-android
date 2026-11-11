@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `a9948ebc4ccbc83afea5583a220a1466d75b5870`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 120 | Named symbols: 409 | Checked relations: 77
+Source commit: `941e99bbe2dad8a065ebc2495778b0c128cbc5d4`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 120 | Named symbols: 410 | Checked relations: 77
 
 ## Topic finder (matching filenames)
 
@@ -66,7 +66,7 @@ quickCreateForm (L5) · quickCreateDropzone (L6) · quickPromptStarters (L18) ·
 
 ### `app/src/main/assets/canvas-workspace.js`
 
-section (L5) · canvas (L7) · ctx (L7) · photoLabels (L8) · photos (L18) · srcMap (L19) · imgCache (L20) · transparentCache (L20) · objectUrls (L20) · clean (L24) · state (L25) · history (L25) · future (L25) · sequence (L26) · ratios (L27)
+section (L5) · canvas (L7) · ctx (L7) · photoLabels (L8) · photos (L18) · srcMap (L19) · imgCache (L20) · transparentCache (L20) · objectUrls (L20) · clean (L24) · state (L25) · history (L25) · future (L25) · sequence (L26) · ratios (L27) · touchMoveButton (L293)
 
 ### `app/src/main/assets/deepsyq-admin.js`
 

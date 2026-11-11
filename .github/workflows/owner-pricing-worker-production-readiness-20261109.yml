@@ -4,6 +4,9 @@ on:
     branches: [deepsyq-platform]
     paths:
       - '.github/workflows/owner-pricing-worker-production-readiness-20261109.yml'
+      - 'app/src/main/assets/deepsyq-i18n.js'
+      - 'app/src/main/assets/app-v4.js'
+      - 'app/src/main/assets/free-tools.js'
 permissions:
   contents: read
 jobs:
