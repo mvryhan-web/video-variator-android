@@ -10,12 +10,29 @@ const el=id=>document.getElementById(id);
 function getLocale(){try{return(localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang')||navigator.language||'en').slice(0,2).toLowerCase()}catch{return'en'}}
 el('lang').value=LANG[getLocale()]?getLocale():'en';
 const tr=()=>LANG[el('lang').value]||LANG.en;
+const permissionDenied={
+ ru:'Браузер запретил доступ JARVIX к этому компьютеру. Открой настройки разрешений этого сайта (значок слева от адреса), разреши доступ к локальному приложению / loopback network и нажми «Подключить» снова.',
+ en:'Your browser blocked access to the JARVIX app on this computer. Open site permissions (icon beside address), allow Local Network / Loopback access, then select Connect again.',
+ fr:'Le navigateur bloque la liaison avec JARVIX sur cet ordinateur. Ouvrez les autorisations de ce site, autorisez le réseau local / loopback, puis réessayez.',
+ es:'El navegador ha bloqueado el acceso a JARVIX en este equipo. Abre los permisos del sitio, permite el acceso a la red local / loopback y vuelve a conectar.'
+};
+async function offlineReason(){
+ // Never query legacy "local-network-access" in navigator.permissions:
+ // older Chrome versions may crash. Unsupported granular names are normal.
+ try {
+  const result=await navigator.permissions.query({name:'loopback-network'});
+  if(result.state==='denied')return permissionDenied[el('lang').value]||permissionDenied.en;
+ }catch{}
+ return tr().offline;
+}
 function translate(){for(const id of ['title','explain','tokenLabel','connect','jobTitle','jobExplain','kindLabel','promptLabel','submit','refresh','warning','back'])el(id).textContent=tr()[id];document.documentElement.lang=el('lang').value}
 el('lang').addEventListener('change',()=>{try{localStorage.setItem('deepsyq_home_language',el('lang').value)}catch{}translate()});
 translate();
 let key='';
 async function api(path,method='GET',body=null){
- const res=await fetch(ENDPOINT+path,{method,cache:'no-store',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+ // Chrome 145+: explicit loopback target enables the browser's normal
+ // local-device permission prompt for an HTTPS test site. Do not disable it.
+ const res=await fetch(ENDPOINT+path,{method,mode:'cors',targetAddressSpace:'loopback',cache:'no-store',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
  const result=await res.json();if(!res.ok)throw Error(result.error||'Local bridge failed');return result;
 }
 async function refresh(){
@@ -28,14 +45,14 @@ el('connect').addEventListener('click',async()=>{
  key=el('token').value.trim();if(!key){el('status').textContent=tr().offline;return}
  el('connect').disabled=true;
  try{await refresh();el('status').textContent=tr().connected;el('submit').disabled=false;el('refresh').disabled=false;el('token').value=''}
- catch{key='';el('status').textContent=tr().offline;el('submit').disabled=true;el('refresh').disabled=true}
+ catch{key='';el('status').textContent=await offlineReason();el('submit').disabled=true;el('refresh').disabled=true}
  finally{el('connect').disabled=false}
 });
-el('refresh').addEventListener('click',()=>refresh().catch(()=>{el('status').textContent=tr().offline}));
+el('refresh').addEventListener('click',()=>refresh().catch(async()=>{el('status').textContent=await offlineReason()}));
 el('submit').addEventListener('click',async()=>{
  const prompt=el('prompt').value.trim();if(!prompt){el('status').textContent=tr().empty;return}
  el('submit').disabled=true;
  try{await api('/v1/tasks','POST',{kind:el('kind').value,prompt});el('prompt').value='';el('status').textContent=tr().saved;await refresh()}
- catch{el('status').textContent=tr().offline}
+ catch{el('status').textContent=await offlineReason()}
  finally{el('submit').disabled=false}
 });
