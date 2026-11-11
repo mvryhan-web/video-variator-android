@@ -20,7 +20,7 @@ NEGATIVE = re.compile(
     r"\bne\s+pas\s+(?:cr[eé]er|g[eé]n[eé]rer))", re.IGNORECASE
 )
 REPORT = re.compile(
-    r"(?:что\s+(?:ты\s+)?(?:сделал|выполнил)|"
+    r"(?:что\s+(?:ты\s+)?(?:сегодня\s+|за\s+сегодня\s+)?(?:сделал|выполнил)|"
     r"отч[её]т|отчитайся|статус\s+задач|"
     r"какие\s+(?:есть\s+)?(?:задания|задачи)|"
     r"what\s+(?:did\s+you\s+do|have\s+you\s+done)|"
