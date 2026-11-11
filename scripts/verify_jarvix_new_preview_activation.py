@@ -90,7 +90,7 @@ def main():
     print('PASS: Fake-answer / paid-provider cloud endpoint blocked.')
 
     with sync_playwright() as pw:
-        browser = pw.chromium.launch(headless=True)
+        browser = pw.chromium.launch(channel='chrome', headless=True)
         try:
             for width,height in ((1440,900),(390,844)):
                 context=browser.new_context(viewport={'width':width,'height':height})
