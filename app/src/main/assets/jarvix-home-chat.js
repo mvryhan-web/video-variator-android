@@ -1,5 +1,5 @@
 import {openHomeStudioSettings} from './home-studio-settings.js';
-import {stopJarvixGuidedTour} from './jarvix-guided-tour.js';
+import {stopJarvixGuidedTour} from './jarvix-guided-tour.js?v=20261111-v4b';
 import {makeId,conversationStore} from './jarvix-conversations.js';
 import {bindComposer,trackViewport} from './jarvix-composer.js';
 import {getJarvixSessionId} from './jarvis-core.js';

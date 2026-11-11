@@ -4,9 +4,9 @@ export function tourPlan(language='en') {
  const lang=['ru','en','fr','es'].includes(language)?language:'en';
  const rows=[
  ['Home','deepsyq.html',1,'#homeQuickBar'],
- ['Image','generate-studio.html?studio=image',52,'#creator,#modelButton,#settingsButton,#generate'],
- ['Video','generate-studio.html?studio=video',53,'#creator,#modelButton,#settingsButton,#generate'],
- ['Audio','generate-studio.html?studio=audio',63,'#creator,#modelButton,#settingsButton,#generate'],
+ ['Image','generate-studio.html?studio=image&settings=1',52,'#creator,#modelButton,#settingsButton,#generate'],
+ ['Video','generate-studio.html?studio=video&settings=1',53,'#creator,#modelButton,#settingsButton,#generate'],
+ ['Audio','generate-studio.html?studio=audio&settings=1',63,'#creator,#modelButton,#settingsButton,#generate'],
  ['AI Apps','ai-apps.html',72,'.app-card:first-child'],
  ['Canvas','canvas.html',70,'#quickCreateForm,#quickCreateSubmit'],
  ['Tools','free-tools.html',84,'#etGallery>a:first-child'],

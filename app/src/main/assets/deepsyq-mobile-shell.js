@@ -172,7 +172,7 @@ function setupMobileShell() {
   };
   const tools = link(copy()[0], 'free-tools.html', 'ds-header-tools');
   const tour = document.createElement('button');tour.type='button';tour.id='dsTakeTour';tour.textContent=copy()[3];tour.className='ds-header-tour';
-  tour.addEventListener('click', async () => {tour.disabled=true;try{const guide=await import('./jarvix-guided-tour.js');guide.startJarvixGuidedTour();}catch{tour.textContent='Tour unavailable';}finally{tour.disabled=false;}});
+  tour.addEventListener('click', async () => {tour.disabled=true;try{const guide=await import('./jarvix-guided-tour.js?v=20261111-v4b');guide.startJarvixGuidedTour();}catch{tour.textContent='Tour unavailable';}finally{tour.disabled=false;}});
   const desktopActions=document.createElement('div');desktopActions.className='ds-desktop-actions';desktopActions.append(tour);
   const orb=document.getElementById('topJarvisBtn');if(orb)orb.after(desktopActions);else header.append(desktopActions);
   const pricing = document.getElementById('topPricing') || link(copy()[1], 'pricing.html', '');

@@ -1,3 +1,9 @@
+/jarvix-guided-tour.js
+  Cache-Control: no-cache, no-store, must-revalidate
+/jarvix-tour-*
+  Cache-Control: no-cache, no-store, must-revalidate
+/deepsyq-mobile-shell.js
+  Cache-Control: no-cache, no-store, must-revalidate
 /media/*
   Cache-Control: public, max-age=2592000, immutable
 /vendor/*

@@ -1,5 +1,5 @@
 import {getJarvixLanguage,stopAllSpeech,pauseJarvisRecognition,updateJarvisState,suspendJarvisForTour} from './jarvis-core.js';
-import {speakOwnerSpeech,stopOwnerSpeech,unlockOwnerSpeech} from './jarvix-owner-speech.js';
+import {speakOwnerSpeech,stopOwnerSpeech,unlockOwnerSpeech,TOUR_GREETING_TEXT} from './jarvix-owner-speech.js';
 import {TOUR_KEY,tourAction,tourCues,cueAt,tourNavigationClip,planNarrationBeats,sectionNarrationBeats} from './jarvix-tour-plan.js';
 import {tourV3Plan as tourPlan} from './jarvix-tour-v3-script.js';
 import {getTourV3Recording} from './jarvix-tour-v3-audio.js';
@@ -25,7 +25,7 @@ async function speakOptionalTourV4(id,current){
  return current===turn&&state?.phase==='playing';
 }
 const clipTranscript=file=>{
- transcriptPromise ||= fetch('media/jarvix/clips/manifest.json',{signal:AbortSignal.timeout(5000)})
+ transcriptPromise ||= fetch('/media/jarvix/clips/manifest.json',{signal:AbortSignal.timeout(5000)})
   .then(r=>r.ok?r.json():null).then(data=>new Map((data?.clips||[]).map(item=>[item.url.split('/').pop().split('?')[0],item.text]))).catch(()=>new Map());
  return transcriptPromise.then(map=>map.get(file.split('/').pop())||'');
 };
@@ -182,26 +182,24 @@ function enterStudioFromPlus(step,target,current){
  if(!mode||location.pathname!==target.pathname||!location.pathname.endsWith('/generate-studio.html'))return false;
  const kind=mode==='audio'?'music':mode;
  const real=document.querySelector('.studio-nav [data-kind="'+kind+'"]');
- if(real?.getAttribute('aria-pressed')==='true'){
-  // Studio's native select() changes its live state but intentionally does not
-  // change the URL; keep browser back/refresh + narration route in sync.
+ if(!real||real.disabled)return false;
+ if(real.getAttribute('aria-pressed')==='true'){
   if(location.search!==target.search)history.replaceState(null,'',target.href);
   return false;
  }
- if(real){
-  closeV3Dialogs();
-  void showTourElement(real,()=>current===turn&&state?.phase==='playing',1100).then(()=>{
-   if(current!==turn||state?.phase!=='playing')return;
-   real.click();
-   if(location.search!==target.search)history.replaceState(null,'',target.href);
-   if(current===turn&&state?.phase==='playing')void play();
-  }).catch(()=>{
-   real.click();
-   if(current===turn&&state?.phase==='playing')void play();
-  });
-  return true;
- }
- return false;
+ const active=()=>current===turn&&state?.phase==='playing';
+ closeV3Dialogs();
+ void showTourElement(real,active,1100).catch(()=>{}).then(()=>{
+  if(!active())return;
+  real.click();
+  if(real.getAttribute('aria-pressed')!=='true'){
+   blocked(current,'Studio mode could not be opened. Press Continue to retry.');
+   return;
+  }
+  history.replaceState(null,'',target.href);
+  void play();
+ });
+ return true;
 }
 async function cueV3(beat){
  const initial=turn;
@@ -215,7 +213,8 @@ async function cueV3(beat){
   const name=beat.action==='openModel'?'modelButton':'settingsButton';
   const button=document.getElementById(name);
   const expected=beat.action==='openModel'?'modelDialog':'settingsDialog';
-  if(button?.getClientRects().length){
+  // Studio keeps its native controls inside a closed settings dialog.
+  if(button&&!button.disabled){
    const dialog=document.getElementById(expected);
    if(dialog&&!dialog.open)v3DialogsOpened.add(expected);
    button.click();
@@ -227,17 +226,14 @@ async function cueV3(beat){
 }
 async function speakV3(text,current,complete,beat=null){
  try{
-  // The very first welcome uses the original prerecorded Home narration
-  // (clip 01) from the first guided excursion. The other 18 stages retain
-  // their matching owner-recorded V3 beats and original spotlight timing.
+  // Keep the original Home greeting. The final upgrade plays once after the closing beat.
   const firstWelcome=state?.index===0 && (state?.beat||0)===0;
-  const isFinalStep=state?.index===tourPlan(state.language).length-1;
   const step=tourPlan(state.language)[state.index];
-  const v4id=firstWelcome ? null : isFinalStep ? 'final-upgrade' : (beat?v4BeatId(step?.title,state?.beat||0):null);
+  const v4id=!firstWelcome&&beat?v4BeatId(step.title,state.beat||0):null;
   const v4=v4id?await getTourV4Recording(v4id,state.language):null;
-  const narration=v4?.text||text;
+  const narration=firstWelcome?TOUR_GREETING_TEXT[state.language]:v4?.text||text;
   let voice=firstWelcome
-   ? (step.audio?.startsWith('/') ? step.audio : '/' + step.audio)
+   ? step.audio
    : v4?.url||await getTourV3Recording(text,state?.language||'en');
   if(voice&&!voice.startsWith('/')&&!voice.startsWith('http'))voice='/'+voice;
   if(current!==turn||!state||state.phase!=='playing')return;
@@ -318,9 +314,7 @@ function isSamePage(p1,p2){
 }
 function playV3(step,target,current){
  if(!state||state.phase!=='playing')return;
- // Image is the original entry page. Video and Audio are demonstrated by
- // the EXISTING Universal Hub '+' and selected in-place, never by a reload
- // that could cut the final syllable of a recorded owner voice.
+ // Image opens the Studio. Video and Audio use its native mode controls.
  if(enterStudioFromPlus(step,target,current))return;
  if(!isSamePage(target.pathname,location.pathname)||target.search!==location.search){
   // Navigate FIRST: title MP3 must not announce a section on the previous page.
@@ -342,6 +336,11 @@ function playV3(step,target,current){
  }
  if(state.pendingRoute?.index===state.index){
   // Let the newly opened page settle before the next introduction.
+  if(target.pathname.endsWith('/generate-studio.html')&&target.searchParams.get('settings')==='1'){
+   // The legacy Studio route opens its settings hub on entry. Close it
+   // before the first tour beat so the composer and tour controls are usable.
+   document.getElementById('studioSettingsHub')?.close();
+  }
   state.pendingRoute=null;save();
   waitTimer=setTimeout(()=>{if(current===turn&&state?.phase==='playing')void play();},1150);
   return;

@@ -59,7 +59,7 @@ export function installUnifiedPlatformHeader() {
     tour.addEventListener('click', async () => {
       tour.disabled = true;
       try {
-        const guide = await import('./jarvix-guided-tour.js');
+        const guide = await import('./jarvix-guided-tour.js?v=20261111-v4b');
         guide.startJarvixGuidedTour();
       } catch {
         tour.textContent = 'Tour unavailable';

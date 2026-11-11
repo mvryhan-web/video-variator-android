@@ -1,5 +1,5 @@
 import {extractAction} from './jarvix-action-plan.js';
-import { stopJarvixGuidedTour, isTourActive } from './jarvix-guided-tour.js';
+import { stopJarvixGuidedTour, isTourActive } from './jarvix-guided-tour.js?v=20261111-v4b';
 import {navigationReply} from './jarvix-navigation-reply.js';
 import {findCatalogReply} from './jarvix-clip-library.js';
 // JARVIX AI Core v6.0 — Autonomous Voice Butler & Resident Intelligence
@@ -522,7 +522,7 @@ export async function handleJarvisVoiceCommand(commandText) {
   // 1. CAPABILITIES & GUIDED TOUR
   if (/(?:экскурси|покажи сайт|презентаци|тур по сайту|обзор сайта|видеопрезентац|проведи тур|начни экскурсию|включи экскурсию|запусти экскурсию|tour|guided tour|showcase|show me the site)/i.test(lower)) {
     try {
-      const guide = await import('./jarvix-guided-tour.js');
+      const guide = await import('./jarvix-guided-tour.js?v=20261111-v4b');
       guide.startJarvixGuidedTour();
     } catch {
       speakJarvis({ru:'Нажмите кнопку «Экскурсия», чтобы начать обзор.',en:'Press Take a Tour to start the walkthrough.',fr:'Appuyez sur Visite guidée pour commencer.',es:'Pulsa Visita guiada para comenzar.'}[getJarvixLanguage()]);
