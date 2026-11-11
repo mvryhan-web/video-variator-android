@@ -1,0 +1,36 @@
+name: Jarvis New - isolated zero-cost smoke
+on:
+  push:
+    branches: [jarvis-new]
+    paths:
+      - 'jarvis_new/**'
+      - 'docs/JARVIS_NEW_SETUP.md'
+      - 'tests/test_jarvis_new_*.py'
+      - '.github/workflows/jarvis-new-smoke.yml'
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Source and license verification (no install)
+        run: |
+          test -f vendor/voiceos/main.py
+          test -f vendor/voiceos/LICENSE
+          test -f vendor/voiceos/llm/transports/openai_compatible.py
+      - name: Offline Jarvis New adapter tests
+        run: |
+          python -m compileall -q jarvis_new
+          python -m unittest discover -s tests -p 'test_jarvis_new_*.py' -v
+          python -m jarvis_new.launch --check
+      - name: Check if the existing provider secret is visible in this branch's GitHub Actions (no value printed)
+        env:
+          HAS_DASHSCOPE_KEY: ${{ secrets.DASHSCOPE_API_KEY != '' }}
+        run: |
+          echo "DASHSCOPE_API_KEY_AVAILABLE_IN_ACTIONS=$HAS_DASHSCOPE_KEY"
+          echo "No provider calls made; this is not proof that the model's free quota remains."
