@@ -315,6 +315,7 @@ async function speakV3(text,current,complete,beat=null){
       }
      });
     }
+    await pauseFrame(600);
     if(current===turn&&state?.phase==='playing')complete();
    })();
   };
@@ -377,8 +378,10 @@ function playV3(step,target,current){
   return;
  }
  if(state.pendingRoute?.index===state.index){
-  state.pendingRoute=null;
-  save();
+  // Let the newly opened page settle before the next introduction.
+  state.pendingRoute=null;save();
+  waitTimer=setTimeout(()=>{if(current===turn&&state?.phase==='playing')void play();},1150);
+  return;
  }
  closeNavigation();pauseJarvisRecognition();
  const index=Math.min(state.beat||0,step.beats.length);
@@ -504,7 +507,7 @@ export function startJarvixGuidedTour(){
 export function pauseJarvixGuidedTour(){if(!state)return;state={...tourAction(state,'pause'),position:audio?.currentTime||state.position||0};clearAudio();save();updateJarvisState('idle');render();}
 export function continueJarvixGuidedTour(){if(!state)return;unlockOwnerSpeech();state={...tourAction(state,'continue'),error:null,pendingRoute:null};save();void play();}
 export function stopJarvixGuidedTour(){closeV3Dialogs();clearAudio();state=null;save();stopAllSpeech();pauseJarvisRecognition();closeNavigation();activeFocus='';window.dispatchEvent(new Event('jarvix:tour-ended'));document.querySelectorAll('.jarvis-tour-spotlight').forEach(e=>e.classList.remove('jarvis-tour-spotlight'));updateJarvisState('idle');render();}
-export function resumeJarvixGuidedTour(){state=read();if(!state)return false;void play();return true;}
+export function resumeJarvixGuidedTour(){if(state)return true;state=read();if(!state)return false;void play();return true;}
 if(typeof window!=='undefined'){
  window.addEventListener('keydown',e=>{if(e.key==='Escape'&&isTourActive())stopJarvixGuidedTour();});
  window.addEventListener('pagehide',()=>{if(state){state.position=audio?.currentTime||0;save();audio?.pause();}});
