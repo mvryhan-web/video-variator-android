@@ -5,6 +5,9 @@
 AppId=JARVIX-NEW-DESKTOP-TEST
 AppName={#AppName}
 AppVersion={#AppVersion}
+VersionInfoCompany=DEEPSYQ
+VersionInfoDescription=JARVIX NEW Windows Test Installer
+VersionInfoProductName=JARVIX NEW
 AppPublisher=DEEPSYQ
 DefaultDirName={localappdata}\Programs\JARVIX_NEW
 DefaultGroupName=JARVIX NEW
@@ -14,6 +17,7 @@ Compression=lzma2
 SolidCompression=yes
 PrivilegesRequired=lowest
 WizardStyle=modern
+SetupIconFile=..\build\jarvix-new-icon\jarvix-new.ico
 UninstallDisplayIcon={app}\JARVIX_NEW.exe
 [Files]
 Source: "..\dist\JARVIX_NEW\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
