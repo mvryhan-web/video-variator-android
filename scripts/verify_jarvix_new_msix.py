@@ -67,7 +67,8 @@ def audit(path: Path, name: str, publisher: str, publisher_display: str) -> dict
             raise ValueError("No Windows start menu visual elements")
         if manifest.find("f:Capabilities/rescap:Capability[@Name='runFullTrust']", ns) is None:
             raise ValueError("Classic Windows application runFullTrust declaration missing")
-    digest = hashlib.file_digest(path.open("rb"), "sha256").hexdigest()
+    with path.open("rb") as stream:
+        digest = hashlib.file_digest(stream, "sha256").hexdigest()
     return {"name": name, "publisher": publisher, "publisher_display": publisher_display,
             "package_size": path.stat().st_size, "sha256": digest, "valid": True}
 
