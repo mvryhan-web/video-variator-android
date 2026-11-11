@@ -10,7 +10,7 @@ jobs:
     timeout-minutes: 4
     steps:
       - uses: actions/checkout@v4
-      - name: Count all HTML and dynamic JavaScript translatable strings without installing models
+      - name: Count exact UI text corpus after excluding existing native language dictionaries
         shell: bash
         run: |
           python3 - <<'PY'
