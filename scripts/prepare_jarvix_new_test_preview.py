@@ -35,6 +35,11 @@ for name in ('index.html','deepsyq.html'):
 download_page = root / 'jarvix-download.html'
 if download_page.exists():
     download_page.unlink()
+# Previous temporary JARVIX NEW text-chat was rejected. It must never be
+# deployed as a user-facing route: the approved sphere IS the voice UI.
+obsolete_chat = root / 'jarvix-new.html'
+if obsolete_chat.exists():
+    obsolete_chat.unlink()
 menu_src = '<script type="module" src="/jarvix-new-download-menu.js"></script>'
 count = 0
 for path in root.glob('*.html'):
