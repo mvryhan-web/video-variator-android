@@ -4,10 +4,10 @@
  * Right pod: [⚡] AI Credits, [👑] Pricing, [RU ⌵] Language, [👤] Log in
  */
 const labels = {
-  en: { credits: 'AI Credits', login: 'Log in', pricing: '♛ Pricing', tour: 'Tour', tools: 'Everyday Tools' },
-  ru: { credits: 'AI Credits', login: 'Войти', pricing: '♛ Тарифы', tour: 'Экскурсия', tools: 'Everyday Tools' },
-  fr: { credits: 'Crédits IA', login: 'Connexion', pricing: '♛ Tarifs', tour: 'Visite guidée', tools: 'Everyday Tools' },
-  es: { credits: 'Créditos IA', login: 'Acceder', pricing: '♛ Precios', tour: 'Visita guiada', tools: 'Everyday Tools' }
+  en: { credits: 'AI Credits', login: 'Log in', pricing: 'Pricing', tour: 'Tour', tools: 'Everyday Tools' },
+  ru: { credits: 'AI Credits', login: 'Войти', pricing: 'Тарифы', tour: 'Экскурсия', tools: 'Everyday Tools' },
+  fr: { credits: 'Crédits IA', login: 'Connexion', pricing: 'Tarifs', tour: 'Visite guidée', tools: 'Everyday Tools' },
+  es: { credits: 'Créditos IA', login: 'Acceder', pricing: 'Precios', tour: 'Visita guiada', tools: 'Everyday Tools' }
 };
 
 const locale = () => {

@@ -213,26 +213,40 @@ function renderPlans(config){
  // No technical/preview banner above the cards; status appears only after a user action.
  message('pricingStatus','');
 }
+const LIVE_STRIPE_LINKS={
+ trial:'https://buy.stripe.com/9B6fZicoSbdCd3b3e62go04',
+ basic:'https://buy.stripe.com/bJe8wQfB43La4wF15Y2go00',
+ pro:'https://buy.stripe.com/cNi7sMex04Pe5AJ2a22go01',
+ business:'https://buy.stripe.com/aFa9AUdsW0yY0gp9Cu2go02',
+ lifetime:'https://buy.stripe.com/28EeVefB4gxWd3b9Cu2go03'
+};
 async function checkoutPlan(plan){
  if(!['trial','basic','pro','business','lifetime'].includes(plan)||planCheckoutPending)return;
  if(billingPeriod==='yearly'&&annualPlanKeys.has(plan)){
-  // A displayed annual discount must never silently buy a monthly subscription.
   if(!token())openAuth();
   else message('pricingStatus','Yearly plans are a pricing preview only; annual checkout is not available. No payment was taken.');
   return;
  }
- 
- const scope=paymentScope();
- if(!scope.token){openAuth();return;}
- if(!toolBillingConfigured){message('pricingStatus','Checkout is not yet available. No payment was taken.');return;}
+
+ const fallbackUrl=LIVE_STRIPE_LINKS[plan];
  planCheckoutPending=true;message('pricingStatus','Opening secure checkout…');
  try{
   const d=await api('/api/billing/checkout',{method:'POST',body:JSON.stringify({plan})});
-  if(!current(scope))return;
-  if(!isValidCheckoutURL(d.url))throw new Error('UNSAFE_CHECKOUT_URL');
-  location.assign(d.url);
- }catch(e){if(current(scope))message('pricingStatus','Checkout could not be confirmed. Check your account and try again. No payment is confirmed by this page.');}
- finally{planCheckoutPending=false;}
+  if(d?.url&&isValidCheckoutURL(d.url)){
+   location.assign(d.url);
+   return;
+  }
+  if(fallbackUrl&&isValidCheckoutURL(fallbackUrl)){
+   location.assign(fallbackUrl);
+   return;
+  }
+ }catch(e){
+  if(fallbackUrl&&isValidCheckoutURL(fallbackUrl)){
+   location.assign(fallbackUrl);
+   return;
+  }
+  message('pricingStatus','Checkout could not be confirmed. Check your account and try again. No payment is confirmed by this page.');
+ }finally{planCheckoutPending=false;}
 }
 const creditOptions=[
  {credits:1000,bonus:200,price:10,image:'credit1000'},
@@ -376,7 +390,7 @@ window.addEventListener('load',()=>{if(!authModal.hidden)initGoogle();});
 const fallbackPlanConfig={
  billingConfigured:false,googleClientId:'',
  plans:{
-  trial:{price:0.99,limit:100},basic:{price:9,limit:750},pro:{price:24,limit:2250},
+  basic:{price:9,limit:750},pro:{price:24,limit:2250},
   business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}
  }
 };

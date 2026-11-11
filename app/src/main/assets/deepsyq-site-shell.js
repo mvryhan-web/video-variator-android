@@ -36,28 +36,28 @@
       Home: 'Home', Creation: 'Creation', Tools: 'Tools', Library: 'Library', Community: 'Community', More: 'More',
       home: 'Home', image: 'Image', video: 'Video', agents: 'JARVIX', pet: 'Virtual Pet', voice: 'Voice Agent', audio: 'Audio',
       tools: 'Tools', apps: 'AI Apps', canvas: 'Canvas', legacy: 'Video Uniquifier',
-      history: 'My Creations', share: 'Share link', inspiration: 'Inspiration', pricing: '♛ Pricing',
+      history: 'My Creations', share: 'Share link', inspiration: 'Inspiration', pricing: 'Pricing',
       back: '← Back to Deepsyq Home', privacy: 'Privacy', soon: 'soon', copied: 'Link copied', backBtn: 'Back'
     },
     ru: {
       Home: 'Главная', Creation: 'Создание', Tools: 'Инструменты', Library: 'Коллекция', Community: 'Сообщество', More: 'Еще',
       home: 'Главная', image: 'Фото', video: 'Видео', agents: 'JARVIX', pet: 'Питомец', voice: 'Голосовой агент', audio: 'Аудио',
       tools: 'Инструменты', apps: 'AI Apps', canvas: 'Canvas', legacy: 'Видеоуникализатор',
-      history: 'Мои работы', share: 'Поделиться', inspiration: 'Вдохновение', pricing: '♛ Тарифы',
+      history: 'Мои работы', share: 'Поделиться', inspiration: 'Вдохновение', pricing: 'Тарифы',
       back: '← Назад в Deepsyq', privacy: 'Конфиденциальность', soon: 'скоро', copied: 'Ссылка скопирована', backBtn: 'Назад'
     },
     fr: {
       Home: 'Accueil', Creation: 'Création', Tools: 'Outils', Library: 'Bibliothèque', Community: 'Communauté', More: 'Plus',
       home: 'Accueil', image: 'Image', video: 'Vidéo', agents: 'JARVIX', pet: 'Animal virtuel', voice: 'Agent vocal', audio: 'Audio',
       tools: 'Outils', apps: 'Apps IA', canvas: 'Canvas', legacy: 'Unificateur vidéo',
-      history: 'Mes créations', share: 'Partager', inspiration: 'Inspiration', pricing: '♛ Tarifs',
+      history: 'Mes créations', share: 'Partager', inspiration: 'Inspiration', pricing: 'Tarifs',
       back: '← Retour à Deepsyq', privacy: 'Confidentialité', soon: 'bientôt', copied: 'Lien copié', backBtn: 'Retour'
     },
     es: {
       Home: 'Inicio', Creation: 'Creación', Tools: 'Herramientas', Library: 'Biblioteca', Community: 'Comunidad', More: 'Más',
       home: 'Inicio', image: 'Imagen', video: 'Vídeo', agents: 'JARVIX', pet: 'Mascota 3D', voice: 'Agente de voz', audio: 'Audio',
       tools: 'Herramientas', apps: 'AI Apps', canvas: 'Canvas', legacy: 'Unificador de vídeo',
-      history: 'Mis creaciones', share: 'Compartir enlace', inspiration: 'Inspiración', pricing: '♛ Precios',
+      history: 'Mis creaciones', share: 'Compartir enlace', inspiration: 'Inspiración', pricing: 'Precios',
       back: '← Volver a Deepsyq', privacy: 'Privacidad', soon: 'pronto', copied: 'Enlace copiado', backBtn: 'Atrás'
     }
   };
@@ -132,7 +132,7 @@
 
     { label: 'My Creations', icon: '▣', url:'my-creations.html', key: 'history' },
     { section:'More' },
-    { label: '♛ Pricing', icon: '♛', url:'pricing.html', key: 'pricing' }
+    { label: 'Pricing', icon: '＄', url:'pricing.html', key: 'pricing' }
   ];
 
   const path = location.pathname.split('/').pop() || 'deepsyq.html';
