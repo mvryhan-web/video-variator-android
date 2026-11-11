@@ -11,6 +11,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import secrets
 import threading
+import time
+from collections import deque
 from urllib.parse import urlsplit
 
 ALLOWED_ORIGIN = "https://jarvis-new.deepsyq.pages.dev"
@@ -80,10 +82,85 @@ class _Handler(BaseHTTPRequestHandler):
             return False
         return True
 
+    def _voice_origin_allowed(self):
+        # Read-only voice is auto-paired ONLY on localhost and ONLY for the
+        # actual test preview origin. The browser still asks the human for
+        # microphone and private-network access.
+        if not self._origin_ok():
+            self._reply(403, {"error": "Origin not permitted"})
+            return False
+        if not self.server.voice_enabled:
+            self._reply(403, {"error": "Desktop voice bridge not enabled"}, cors=True)
+            return False
+        return True
+
+    def _voice_model(self):
+        from .local_llm import available_models, LocalModelUnavailable
+        try:
+            models = available_models()
+        except LocalModelUnavailable:
+            return None
+        return next((value for value in models if isinstance(value, str) and value), None)
+
+    def _voice_chat(self):
+        if not self._voice_origin_allowed():
+            return
+        if self.headers.get("Content-Type", "").split(";", 1)[0].strip().lower() != "application/json":
+            return self._reply(415, {"error": "JSON required"}, cors=True)
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            return self._reply(400, {"error": "Invalid request size"}, cors=True)
+        if length <= 0 or length > MAX_BODY_BYTES:
+            return self._reply(413, {"error": "Invalid request size"}, cors=True)
+        try:
+            data = json.loads(self.rfile.read(length).decode("utf-8"))
+            prompt = data.get("message")
+            history = data.get("history", [])
+            if not isinstance(prompt, str) or not prompt.strip() or len(prompt) > 1200:
+                raise ValueError("Bad voice prompt")
+            if not isinstance(history, list) or len(history) > 8:
+                raise ValueError("Bad history")
+            if any(not isinstance(row, dict) or row.get("role") not in ("user", "assistant")
+                   or not isinstance(row.get("content"), str) or len(row["content"]) > 1200
+                   for row in history):
+                raise ValueError("Bad history entries")
+        except (ValueError, TypeError, AttributeError, UnicodeError):
+            return self._reply(400, {"error": "Invalid voice message"}, cors=True)
+        with self.server.voice_lock:
+            now = time.monotonic()
+            while self.server.voice_calls and self.server.voice_calls[0] < now - 300:
+                self.server.voice_calls.popleft()
+            if len(self.server.voice_calls) >= 20:
+                return self._reply(429, {"error": "Voice message rate limit"}, cors=True)
+            self.server.voice_calls.append(now)
+        if not self.server.voice_busy.acquire(blocking=False):
+            return self._reply(429, {"error": "Voice model is processing the previous message"}, cors=True)
+        try:
+            model = self._voice_model()
+            if not model:
+                return self._reply(503, {"error": "No local Ollama model installed or running"}, cors=True)
+            # The local_llm module enforces loopback-only Ollama and no
+            # tools, shell, network services, OS access or paid providers.
+            from .local_llm import chat, LocalModelUnavailable
+            try:
+                answer = chat(prompt, model, history=history)
+            except LocalModelUnavailable:
+                return self._reply(503, {"error": "Local Ollama model unavailable"}, cors=True)
+            return self._reply(200, {"reply": answer, "provider": "local-ollama"}, cors=True)
+        finally:
+            self.server.voice_busy.release()
+
     def do_GET(self):
+        route = urlsplit(self.path).path
+        if route == "/v1/voice/status":
+            if not self._voice_origin_allowed():
+                return
+            model = self._voice_model()
+            return self._reply(200, {"ready": bool(model), "provider": "local-ollama",
+                                     "model": model}, cors=True)
         if not self._authorized():
             return
-        route = urlsplit(self.path).path
         if route == "/v1/report":
             return self._reply(200, self.server.coordinator.report(), cors=True)
         if route == "/v1/tasks":
@@ -98,6 +175,8 @@ class _Handler(BaseHTTPRequestHandler):
         return self._reply(404, {"error": "Unknown endpoint"}, cors=True)
 
     def do_POST(self):
+        if urlsplit(self.path).path == "/v1/voice/chat":
+            return self._voice_chat()
         if not self._authorized():
             return
         if urlsplit(self.path).path != "/v1/tasks":
@@ -126,10 +205,11 @@ class _Handler(BaseHTTPRequestHandler):
 class LocalBridge:
     """Session-limited bridge. Never starts without a desktop user click."""
 
-    def __init__(self, coordinator, port=8768, allowed_origin=ALLOWED_ORIGIN):
+    def __init__(self, coordinator, port=8768, allowed_origin=ALLOWED_ORIGIN, *, allow_voice=False):
         self.coordinator = coordinator
         self.port = port
         self.allowed_origin = allowed_origin
+        self.allow_voice = bool(allow_voice)
         self.token = secrets.token_urlsafe(32)
         self._server = None
         self._thread = None
@@ -141,6 +221,10 @@ class LocalBridge:
         server.coordinator = self.coordinator
         server.allowed_origin = self.allowed_origin
         server.pairing_token = self.token
+        server.voice_enabled = self.allow_voice
+        server.voice_calls = deque()
+        server.voice_lock = threading.Lock()
+        server.voice_busy = threading.Lock()
         self._server = server
         self.port = server.server_address[1]
         self._thread = threading.Thread(target=server.serve_forever, daemon=True)
