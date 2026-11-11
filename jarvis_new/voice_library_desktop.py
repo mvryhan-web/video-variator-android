@@ -7,6 +7,7 @@ No paid API calls, automatic transcription claims, or new voice synthesis.
 from __future__ import annotations
 
 import hashlib
+from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
@@ -87,8 +88,16 @@ class Library:
             db.execute("CREATE INDEX IF NOT EXISTS clips_lang ON clips(lang, approved)")
         self._index_bundled()
 
+    @contextmanager
     def db(self):
-        return sqlite3.connect(self.db_file, timeout=10)
+        # sqlite3.Connection.__exit__ commits but does NOT close the file.
+        # Windows otherwise locks clips.sqlite and tests/upgrades fail.
+        connection=sqlite3.connect(self.db_file, timeout=10)
+        try:
+            with connection:
+                yield connection
+        finally:
+            connection.close()
 
     def _index_bundled(self):
         root = bundle_dir()
