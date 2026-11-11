@@ -77,7 +77,8 @@
     await ensureWrapper();
     const cdnCandidates=[
       {label:'same-origin',core:CORE_BASE+'/ffmpeg-core.js',wasm:CORE_BASE+'/ffmpeg-core.wasm',remote:false},
-      {label:'pinned FFmpeg 0.12.6',core:CDN_CORE+'/ffmpeg-core.js',wasm:CDN_CORE+'/ffmpeg-core.wasm',remote:true}
+      {label:'pinned FFmpeg 0.12.6 (jsDelivr)',core:CDN_CORE+'/ffmpeg-core.js',wasm:CDN_CORE+'/ffmpeg-core.wasm',remote:true},
+      {label:'pinned FFmpeg 0.12.6 (UNPKG)',core:'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.js',wasm:'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.wasm',remote:true}
     ];
     let last;
     for(const candidate of cdnCandidates){
