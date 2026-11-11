@@ -1,0 +1,57 @@
+name: JARVIX NEW package 160 existing MP3 not in owner ZIP
+on:
+  workflow_dispatch:
+  push:
+    branches: [jarvis-new]
+    paths: ['.github/workflows/jarvis-new-extra-mp3.yml']
+permissions:
+  contents: read
+jobs:
+  package:
+    if: github.ref == 'refs/heads/jarvis-new'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify original bytes and package ONLY existing 160 extra MP3
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib,json,re,zipfile,pathlib
+          root=pathlib.Path('app/src/main/assets/media/jarvix/clips')
+          assert root.is_dir()
+          legacy=[]
+          for p in root.glob('jarvix_*.mp3'):
+              m=re.fullmatch(r'jarvix_(ru|en|fr|es)_(\d+)\.mp3',p.name)
+              if m and int(m.group(2))>50:
+                  legacy.append(p)
+          tour=[p for p in root.glob('jarvix_tour_*.mp3')]
+          extra=sorted(legacy+tour,key=lambda p:p.name)
+          names=[p.name for p in extra]
+          if len(extra)!=160 or len(set(names))!=160 or len(legacy)!=144 or len(tour)!=16:
+              raise SystemExit(f'Unexpected MP3 count: {len(extra)} (legacy={len(legacy)}, tour={len(tour)}) — packaging aborted')
+          output=pathlib.Path('/tmp/jarvix-new-extra-160.zip')
+          manifest=[]
+          with zipfile.ZipFile(output,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=6) as z:
+              for p in extra:
+                  content=p.read_bytes()
+                  if not content.startswith(b'ID3') and content[:2] not in (bytes.fromhex('fffb'), bytes.fromhex('fff3'), bytes.fromhex('fff2')):
+                      raise RuntimeError('Not a recognised MP3 header: '+p.name)
+                  digest=hashlib.sha256(content).hexdigest()
+                  match=re.fullmatch(r'jarvix_(ru|en|fr|es)_\d+\.mp3',p.name)
+                  language=match.group(1) if match else ('ru' if p.name.endswith('_intro.mp3') else 'unknown')
+                  z.writestr('owner_bundle/'+p.name,content)
+                  manifest.append({'filename':p.name,'language':language,'sha256':digest,'verified_transcript':False})
+              z.writestr('extra_160_manifest.json',json.dumps({'count':len(extra),'items':manifest},ensure_ascii=False,indent=2))
+              z.writestr('README_RU.txt','160 MP3 уже существовали в GitHub jarvis-new. Это оригинальные байты, а НЕ новые генерации.\nПеред автоматическим ответом прослушайте запись, подтвердите текст и вопрос.\n')
+          with zipfile.ZipFile(output) as z:
+              assert z.testzip() is None and len([n for n in z.namelist() if n.endswith('.mp3')])==160
+          print('EXTRA_EXISTING_MP3_VERIFIED: 160')
+          print('ZIP_BYTES:',output.stat().st_size)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jarvix-new-extra-160-mp3
+          path: /tmp/jarvix-new-extra-160.zip
+          if-no-files-found: error
+          retention-days: 14
