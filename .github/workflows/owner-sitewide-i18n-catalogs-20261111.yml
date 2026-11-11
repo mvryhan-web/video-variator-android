@@ -62,7 +62,7 @@ jobs:
         with:
           pattern: deepsyq-locale-*
           merge-multiple: true
-          path: .
+          path: app/src/main/assets/i18n
       - name: Add i18n loader to every HTML entrypoint, no other markup changes
         run: python scripts/connect-sitewide-i18n-20261111.py
       - name: Check all 34 pages and three complete locale catalogs
