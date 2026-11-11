@@ -1,0 +1,53 @@
+name: JARVIX NEW browser and test-site end-to-end checks
+
+on:
+  push:
+    branches: [jarvis-new]
+    paths:
+      - 'scripts/verify_jarvix_new_browser.py'
+      - '.github/workflows/jarvis-new-browser-smoke.yml'
+      - 'app/src/main/assets/jarvix-connect.html'
+      - 'app/src/main/assets/jarvix-connect.js'
+      - 'app/src/main/assets/jarvix-download.html'
+      - 'jarvis_new/local_bridge.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-local:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chromium and Playwright for real browser interaction
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.58.0
+          python -m playwright install chromium --with-deps
+      - name: Browser creates and checks real SQLite task via paired desktop bridge
+        run: python -m scripts.verify_jarvix_new_browser
+      - name: Unit-test localhost bridge security and state transitions
+        run: python -m unittest discover -s tests -p 'test_jarvis_new_local_bridge.py' -v
+
+  live-test-site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Test-only Cloudflare Pages is reachable and has expected JARVIX NEW routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          for url in \
+            'https://jarvis-new.deepsyq.pages.dev/jarvix-connect.html' \
+            'https://jarvis-new.deepsyq.pages.dev/jarvix-download.html'; do
+            echo "Checking test route: $url"
+            curl --fail --location --silent --show-error --retry 2 --max-time 25 "$url" -o /tmp/jarvix-preview.html
+            grep -q 'JARVIX NEW' /tmp/jarvix-preview.html
+          done
+          echo 'PASS: Both JARVIX NEW test-site pages reachable'
+      - name: Ensure production application is never deployed during this test
+        run: echo 'No Cloudflare deployment or production API access in this workflow.'
