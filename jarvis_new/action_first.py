@@ -33,7 +33,7 @@ KIND_WORDS = {
     "video": re.compile(r"(?:\bвидео\b|\bролик\w*|\bvideos?\b|\bvid[eé]os?\b)", re.IGNORECASE),
     "image": re.compile(
         r"(?:\bизображени\w*|\bкартинк\w*|\bрисунок\b|\bimages?\b|"
-        r"\bphotos?\b|\bфото\b|\bfotos?\b)", re.IGNORECASE),
+        r"\bphotos?\b|\bфото\b|\bфотограф\w*|\bfotos?\b)", re.IGNORECASE),
     "music": re.compile(
         r"(?:\bмузык\w*|\bтрек\w*|\bпесн\w*|\bmusic\b|\bsong\b|"
         r"\bmusique\b|\bcanci[oó]n\w*|\bm[uú]sica\b)", re.IGNORECASE),
