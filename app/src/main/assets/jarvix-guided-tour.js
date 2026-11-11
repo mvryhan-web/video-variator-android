@@ -83,6 +83,7 @@ function render(){
   line.style.cssText='position:absolute;bottom:calc(100% + 8px);left:0;right:0;margin:auto;max-width:min(92vw,550px);padding:10px 12px;background:rgba(11,17,32,.94);border:1px solid rgba(245,181,81,.55);border-radius:10px;color:#fff;font:500 13px/1.5 system-ui,sans-serif;text-align:center;';
   bar.append(line);
  }
+ bar.querySelector('.ds-tour-caption').hidden=!!state.error;
  document.getElementById('topJarvisBtn')?.classList.toggle('ds-tour-speaking',state.phase==='playing'&&tourSpeaking);
 }
 function advance(current){if(current!==turn||!state||state.phase!=='playing')return;closeTourSettings();state=tourAction(state,'ended');save();if(state)void play();else{clearAudio();document.querySelectorAll('.jarvis-tour-spotlight,.ds-tour-drawer-target').forEach(e=>e.classList.remove('jarvis-tour-spotlight','ds-tour-drawer-target'));activeFocus='';updateJarvisState('idle');render();window.dispatchEvent(new Event('jarvix:tour-ended'));}}
@@ -285,6 +286,7 @@ async function speakV3(text,current,complete,beat=null){
    setTourSpeaking(true);
    if(spoken)return;
    spoken=true;
+   caption(text); // Always display exactly the phrase the current recording is meant to say.
    if(beat){
     const title=tourPlan(state.language)[state.index]?.title;
     const idx=state.beat||0;
