@@ -1,0 +1,52 @@
+name: DEEPSYQ complete offline 4-language page catalogs
+on:
+  push:
+    branches: [owner-pricing-i18n-20261111]
+    paths: ['.github/workflows/owner-i18n-build-all-pages-20261111.yml']
+permissions: {contents: write}
+concurrency:
+  group: owner-deepsyq-i18n-build
+  cancel-in-progress: false
+jobs:
+  build-all-page-locales:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Install offline translator (no cloud AI API)
+        run: python3 -m pip install --quiet argostranslate
+      - name: Produce static RU/FR/ES catalogs for 34 HTML pages
+        run: python3 scripts/build-deepsyq-i18n-offline.py
+      - name: Add one read-only localization script to all page heads
+        run: python3 scripts/inject-deepsyq-i18n.py
+      - name: Verify 34 page dictionaries and no missing language strings
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          base=Path('app/src/main/assets')
+          pages=sorted(base.glob('*.html'))
+          assert len(pages)==34
+          for page in pages:
+            assert 'deepsyq-page-i18n.js?v=20261111' in page.read_text(encoding='utf8'),page
+            data=json.loads((base/'i18n'/(page.name+'.json')).read_text(encoding='utf8'))
+            assert data['page']==page.name
+            for key,value in data['strings'].items():
+              assert key and set(value)=={'ru','fr','es'} and all(value.values()),(page,key)
+          shared=json.loads((base/'i18n/shared.json').read_text(encoding='utf8'))
+          assert len(shared['strings'])>=30
+          assert len(list((base/'i18n').glob('*.json')))==35
+          print('DEEPSYQ_ALL_PAGES_LOCALIZED',len(pages),'locales',4)
+          PY
+      - name: Commit generated translations to isolated owner i18n branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "DEEPSYQ i18n builder"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/assets/i18n app/src/main/assets/*.html
+          git diff --cached --stat
+          git diff --cached --quiet && exit 0
+          git commit -m "feat(i18n): offline RU FR ES catalogs for all 33 pages and 404; additive locale loader only"
+          git push origin HEAD:owner-pricing-i18n-20261111
