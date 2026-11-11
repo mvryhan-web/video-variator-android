@@ -3,18 +3,18 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `df0a1fc6ddb7a0106dfed993c17cb88093e0b784`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 120 | Named symbols: 412 | Checked relations: 77
+Source commit: `f09e1866aa1d3e7977df8c76eefedb6725e276af`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 121 | Named symbols: 413 | Checked relations: 77
 
 ## Topic finder (matching filenames)
 
 - **Credits, payments and pricing:** `app/src/main/assets/ai-pricing.js`, `app/src/main/assets/home-credit-store.js`, `app/src/main/assets/pricing-page.js`, `app/src/main/assets/pricing-wallet.js`, `server/generation-purchased-provider-boundary.js`, `server/generation-subscription-credits.js`, `server/generation-wallet.js`
 - **Video, providers and jobs:** `app/src/main/assets/_worker.js`, `app/src/main/assets/ffmpeg-worker.js`, `app/src/main/assets/video-compression-args.mjs`, `app/src/main/java/com/videovariator/app/MainActivity.java`, `app/src/main/java/com/videovariator/app/ProcessingService.java`, `app/src/main/java/com/videovariator/app/TeleprompterActivity.java`, `server/compare-ai-mock-worker.js`, `server/free-ai-provider.js`, `server/generation-provider.js`, `server/generation-purchased-provider-boundary.js`, `server/generation-storage.js`, `server/generation-video-submit-uncertainty.js`, `server/generation-worker.js`, `server/product-watcher/worker.js`, `server/telegram-video-core.js`, `server/telegram-video.js`
 - **Image, Canvas and Home:** `app/src/main/assets/audio-studio.js`, `app/src/main/assets/avatar-studio.js`, `app/src/main/assets/canvas-editor.js`, `app/src/main/assets/canvas-workspace.js`, `app/src/main/assets/generate-studio.js`, `app/src/main/assets/jarvix-studio-page.js`, `app/src/main/assets/studio-job-progress.js`, `server/deepsyq-preview.js`, `server/generation-openai-image.js`
-- **Audio and voice:** `app/src/main/assets/audio-studio.js`, `app/src/main/assets/jarvix-owner-speech.js`, `app/src/main/assets/jarvix-tour-v3-audio.js`, `app/src/main/assets/speech-client.js`, `app/src/main/assets/voice-agent-controller.js`, `server/jarvix-voice.js`, `server/speech.js`
+- **Audio and voice:** `app/src/main/assets/audio-studio.js`, `app/src/main/assets/jarvix-owner-speech.js`, `app/src/main/assets/jarvix-tour-v3-audio.js`, `app/src/main/assets/jarvix-tour-v4-audio.js`, `app/src/main/assets/speech-client.js`, `app/src/main/assets/voice-agent-controller.js`, `server/jarvix-voice.js`, `server/speech.js`
 - **AI Apps, Inspiration, History:** `app/src/main/assets/_worker.js`, `app/src/main/assets/ai-apps.js`, `app/src/main/assets/ai-pricing.js`, `app/src/main/assets/ai-template-product-name.js`, `app/src/main/assets/audio-studio.js`, `app/src/main/assets/avatar-studio.js`, `app/src/main/assets/bootstrap.js`, `app/src/main/assets/canvas-editor.js`, `app/src/main/assets/canvas-workspace.js`, `app/src/main/assets/deepsyq-admin.js`, `app/src/main/assets/deepsyq-canonical-nav-icons.js`, `app/src/main/assets/deepsyq-unified-platform-header.js`, `app/src/main/assets/deepsyq.js`, `app/src/main/assets/ffmpeg-worker.js`, `app/src/main/assets/folder.js`, `app/src/main/assets/generate-models.js`, `app/src/main/assets/generate-studio.js`, `app/src/main/assets/home-creative-examples.js`, `app/src/main/assets/home-credit-store.js`, `app/src/main/assets/home-experience.js`, `app/src/main/assets/home-inspiration.js`, `app/src/main/assets/inspiration.js`, `app/src/main/assets/jarvis-core.js`, `app/src/main/assets/jarvix-action-plan.js`, `app/src/main/assets/jarvix-chat.js`, `app/src/main/assets/jarvix-clip-library.js`, `app/src/main/assets/jarvix-guided-tour.js`, `app/src/main/assets/jarvix-home-chat.js`, `app/src/main/assets/jarvix-navigation-reply.js`, `app/src/main/assets/jarvix-owner-speech.js`
 - **Accounts and security:** `server/email-auth.js`, `server/generation-trial-policy.js`, `server/product-watcher/lite-delivery-policy.js`, `server/product-watcher/scheduler-state-policy.js`, `server/tool-policy.js`, `server/user-agent-plan.js`, `server/user-agent-stage1-local-draft.js`, `server/workspace-project-policy.js`
-- **JARVIX unified chat and composer:** `app/src/main/assets/jarvis-core.js`, `app/src/main/assets/jarvix-action-plan.js`, `app/src/main/assets/jarvix-chat.js`, `app/src/main/assets/jarvix-clip-library.js`, `app/src/main/assets/jarvix-guided-tour.js`, `app/src/main/assets/jarvix-home-chat.js`, `app/src/main/assets/jarvix-navigation-reply.js`, `app/src/main/assets/jarvix-owner-speech.js`, `app/src/main/assets/jarvix-studio-page.js`, `app/src/main/assets/jarvix-tour-plan.js`, `app/src/main/assets/jarvix-tour-v3-audio.js`, `app/src/main/assets/jarvix-tour-v3-script.js`, `server/jarvix-brain.js`, `server/jarvix-free-llm.js`, `server/jarvix-voice.js`
+- **JARVIX unified chat and composer:** `app/src/main/assets/jarvis-core.js`, `app/src/main/assets/jarvix-action-plan.js`, `app/src/main/assets/jarvix-chat.js`, `app/src/main/assets/jarvix-clip-library.js`, `app/src/main/assets/jarvix-guided-tour.js`, `app/src/main/assets/jarvix-home-chat.js`, `app/src/main/assets/jarvix-navigation-reply.js`, `app/src/main/assets/jarvix-owner-speech.js`, `app/src/main/assets/jarvix-studio-page.js`, `app/src/main/assets/jarvix-tour-plan.js`, `app/src/main/assets/jarvix-tour-v3-audio.js`, `app/src/main/assets/jarvix-tour-v3-script.js`, `app/src/main/assets/jarvix-tour-v4-audio.js`, `server/jarvix-brain.js`, `server/jarvix-free-llm.js`, `server/jarvix-voice.js`
 - **Pricing and subscriptions:** `app/src/main/assets/ai-pricing.js`, `app/src/main/assets/pricing-page.js`, `app/src/main/assets/pricing-wallet.js`, `server/generation-subscription-credits.js`
 - **Android app:** `app/src/main/java/com/videovariator/app/MainActivity.java`, `app/src/main/java/com/videovariator/app/ProcessingService.java`, `app/src/main/java/com/videovariator/app/TeleprompterActivity.java`
 
@@ -138,7 +138,7 @@ blobs (L9) · SECTION_KEYWORDS (L14) · INTENT_KEYWORDS (L33) · topicContext (L
 
 ### `app/src/main/assets/jarvix-guided-tour.js`
 
-v3DialogsOpened (L135)
+v3DialogsOpened (L152)
 
 ### `app/src/main/assets/jarvix-home-chat.js`
 
@@ -167,6 +167,10 @@ LANGUAGES (L6)
 ### `app/src/main/assets/jarvix-tour-v3-script.js`
 
 TOUR_V3_VERSION (L5) · TOUR_V3_DATA (L6)
+
+### `app/src/main/assets/jarvix-tour-v4-audio.js`
+
+langs (L2)
 
 ### `app/src/main/assets/mobile-utility.js`
 
