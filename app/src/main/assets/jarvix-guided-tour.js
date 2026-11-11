@@ -6,7 +6,7 @@ import {getTourV3Recording} from './jarvix-tour-v3-audio.js';
 import {getTourV4Recording,v4BeatId} from './jarvix-tour-v4-audio.js';
 import {installTourFocus,showTourElement,performTourDemo,endTourFocus} from './jarvix-tour-choreography.js';
 let audio=null,turn=0,bar=null,state=null,navTimer=null,waitTimer=null,stepWaitKey=null,stepWaitStart=0,activeFocus='',tourSettingsOpened=false;
-let transcriptPromise=null,tourSpeaking=false,cueTimer=null;
+let transcriptPromise=null,tourSpeaking=false,cueTimer=null,narrationTimer=null;
 const pauseFrame=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function speakOptionalTourV4(id,current){
  const approved=await getTourV4Recording(id,state?.language||'ru');
@@ -41,7 +41,7 @@ function setTourSpeaking(active){
  // The original orb state, not only the Tour decoration, must be silent between clips.
  updateJarvisState(playing?'speaking':'idle');
 }
-function clearAudio(){turn++;clearTimeout(navTimer);clearTimeout(waitTimer);clearTimeout(cueTimer);endTourFocus();setTourSpeaking(false);stopOwnerSpeech();if(audio){audio.onended=null;audio.onplay=null;audio.onplaying=null;audio.onwaiting=null;audio.onpause=null;audio.onerror=null;audio.ontimeupdate=null;audio.pause();audio.remove();audio=null;}}
+function clearAudio(){turn++;clearTimeout(navTimer);clearTimeout(waitTimer);clearTimeout(cueTimer);clearTimeout(narrationTimer);endTourFocus();setTourSpeaking(false);stopOwnerSpeech();if(audio){audio.onended=null;audio.onplay=null;audio.onplaying=null;audio.onwaiting=null;audio.onpause=null;audio.onerror=null;audio.ontimeupdate=null;audio.pause();audio.remove();audio=null;}}
 const navElements=()=>({sidebar:document.querySelector('#sidebar,#dsSiteSidebar,.shell>.sidebar'),toggle:document.querySelector('#menu,.ds-site-mobile-toggle,.vu-nav-toggle,#menuBtn')});
 function menuOpen(){return document.body.classList.contains('ds-mobile-drawer-open')||document.body.classList.contains('ds-site-nav-open')||document.body.classList.contains('menu-open')||document.body.classList.contains('vu-nav-open');}
 function showNavigation(url){
@@ -238,7 +238,6 @@ async function speakV3(text,current,complete,beat=null){
   if(voice&&!voice.startsWith('/')&&!voice.startsWith('http'))voice='/'+voice;
   if(current!==turn||!state||state.phase!=='playing')return;
   let spoken=false,ended=false,cueWork=Promise.resolve();
-  let audioSafetyTimer=null;
   const began=()=>{
    if(current!==turn||!state||state.phase!=='playing')return;
    setTourSpeaking(true);
@@ -260,7 +259,7 @@ async function speakV3(text,current,complete,beat=null){
   };
   const done=()=>{
    if(ended||current!==turn||!state||state.phase!=='playing')return;
-   ended=true;clearTimeout(audioSafetyTimer);setTourSpeaking(false);
+   ended=true;clearTimeout(narrationTimer);setTourSpeaking(false);
    void (async()=>{
     await cueWork;
     if(current!==turn||state?.phase!=='playing')return;
@@ -277,7 +276,17 @@ async function speakV3(text,current,complete,beat=null){
     if(current===turn&&state?.phase==='playing')complete();
    })();
   };
-  audioSafetyTimer=setTimeout(done,35000);
+  const showWithoutAudio=()=>{
+   if(ended||current!==turn||state?.phase!=='playing')return;
+   if(firstWelcome){clearTimeout(narrationTimer);blocked(current,'Owner greeting could not play. Press Continue to retry.');return;}
+   if(!spoken){
+    began();
+    setTourSpeaking(false);
+    cueWork=Promise.all([cueWork,pauseFrame(2200)]);
+   }
+   done();
+  };
+  narrationTimer=setTimeout(showWithoutAudio,35000);
   if(voice){
    audio=new Audio(voice);const clip=audio;clip.id='dsTourAudio';clip.hidden=true;document.body.append(clip);
    // Pause/Continue resumes the actual owner clip without replaying narration.
@@ -292,8 +301,16 @@ async function speakV3(text,current,complete,beat=null){
    clip.onwaiting=()=>{if(current===turn&&state?.phase==='playing')setTourSpeaking(false);};
    clip.onpause=()=>{if(current===turn)setTourSpeaking(false);};
    clip.onended=()=>{clip.remove();if(audio===clip)audio=null;done();};
-   clip.onerror=()=>blocked(current,'Owner voice recording unavailable');
-   void clip.play().catch(()=>blocked(current,'Press Continue'));
+   clip.onerror=showWithoutAudio;
+   void clip.play().catch(async error=>{
+    if(ended||current!==turn||state?.phase!=='playing')return;
+    if(error?.name==='AbortError'){
+     await pauseFrame(250);
+     if(ended||current!==turn||state?.phase!=='playing')return;
+     try{await clip.play();return;}catch{}
+    }
+    showWithoutAudio();
+   });
   }else{
    // The existing pinned VoxCPM2 narrator is the ONLY permitted live fallback.
    // Missing voice service must not silently switch to an unrelated system voice.
@@ -302,8 +319,8 @@ async function speakV3(text,current,complete,beat=null){
     start:()=>{},
     phase:phase=>{if(phase==='playing')began();else if(phase==='generating')setTourSpeaking(false);},
     complete:done,
-    fallback:()=>blocked(current,'Owner VoxCPM2 voice unavailable'),
-    error:()=>blocked(current,'Owner VoxCPM2 voice unavailable')
+    fallback:showWithoutAudio,
+    error:showWithoutAudio
    });
   }
  }catch{blocked(current,'Owner voice recording unavailable');}
