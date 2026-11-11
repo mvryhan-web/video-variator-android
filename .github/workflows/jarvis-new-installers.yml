@@ -1,0 +1,89 @@
+name: Jarvix New test installers
+on:
+  push:
+    branches: [jarvis-new]
+    paths: ['jarvis_new/**', 'scripts/jarvis_new_installer.iss', 'app/src/main/assets/jarvix-download.html', '.github/workflows/jarvis-new-installers.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  checks:
+    if: github.ref == 'refs/heads/jarvis-new'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install Pillow==11.3.0 imageio-ffmpeg==0.6.0
+      - run: python -m unittest discover -s tests -p 'test_jarvis_new_*.py' -v
+      - run: python -m jarvis_new.launch --check
+  windows:
+    needs: checks
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install Pillow==11.3.0 imageio-ffmpeg==0.6.0 pyinstaller==6.16.0
+      - run: python -m unittest discover -s tests -p "test_jarvis_new_*.py" -v
+      - run: python -m PyInstaller --noconfirm --clean --windowed --onedir --name JARVIX_NEW --collect-all imageio_ffmpeg jarvis_new/desktop_entry.py
+      - name: Compile Windows installer
+        shell: pwsh
+        run: |
+          choco install innosetup --yes --no-progress
+          $iscc=Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Inno Setup 6\ISCC.exe'
+          if(-not (Test-Path $iscc)){throw 'Missing Inno Setup compiler'}
+          & $iscc scripts\jarvis_new_installer.iss
+          if($LASTEXITCODE -ne 0){throw 'Installer compilation failed'}
+          if(-not (Test-Path dist\Jarvix-New-Windows-Setup.exe)){throw 'Missing Windows installer'}
+          Get-FileHash dist\Jarvix-New-Windows-Setup.exe -Algorithm SHA256 | Format-List
+      - uses: actions/upload-artifact@v4
+        with: {name: jarvix-new-windows-test, path: dist/Jarvix-New-Windows-Setup.exe, if-no-files-found: error, retention-days: 14}
+  macos:
+    needs: checks
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install Pillow==11.3.0 imageio-ffmpeg==0.6.0 pyinstaller==6.16.0
+      - run: python -m unittest discover -s tests -p "test_jarvis_new_*.py" -v
+      - name: Build native app and unsigned test DMG
+        run: |
+          python -m PyInstaller --noconfirm --clean --windowed --onedir --name JARVIX_NEW --collect-all imageio_ffmpeg jarvis_new/desktop_entry.py
+          test -d dist/JARVIX_NEW.app
+          hdiutil create -volname 'JARVIX NEW Test' -srcfolder dist/JARVIX_NEW.app -ov -format UDZO dist/Jarvix-New-macOS.dmg
+          test -s dist/Jarvix-New-macOS.dmg
+          shasum -a 256 dist/Jarvix-New-macOS.dmg
+      - uses: actions/upload-artifact@v4
+        with: {name: jarvix-new-mac-test, path: dist/Jarvix-New-macOS.dmg, if-no-files-found: error, retention-days: 14}
+  release:
+    if: github.ref == 'refs/heads/jarvis-new'
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: {pattern: 'jarvix-new-*-test', merge-multiple: true, path: release}
+      - name: Validate files and hashes
+        run: |
+          test -s release/Jarvix-New-Windows-Setup.exe
+          test -s release/Jarvix-New-macOS.dmg
+          (cd release && sha256sum Jarvix-New-Windows-Setup.exe Jarvix-New-macOS.dmg > SHA256SUMS.txt)
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: jarvix-new-test-${{ github.sha }}
+          target_commitish: ${{ github.sha }}
+          name: JARVIX NEW test - ${{ github.sha }}
+          prerelease: true
+          make_latest: false
+          body: |
+            TEST ONLY, unsigned Windows and macOS packages.
+            Local task journal, offline photo compression and reports only.
+            VoiceOS microphone, real AI generation, browser sync and paid APIs are NOT part of this installer.
+            Never bypass system security warnings to install the test build.
+            The DEEPSYQ production site is unchanged.
+          files: |
+            release/Jarvix-New-Windows-Setup.exe
+            release/Jarvix-New-macOS.dmg
+            release/SHA256SUMS.txt
+          fail_on_unmatched_files: true

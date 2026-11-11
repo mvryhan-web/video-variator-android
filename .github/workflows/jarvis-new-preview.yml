@@ -1,0 +1,46 @@
+name: Jarvix New test-only Cloudflare preview
+on:
+  push:
+    branches: [jarvis-new]
+    paths: ['app/src/main/assets/deepsyq-unified-platform-header.js', 'app/src/main/assets/deepsyq-mobile-shell.js', 'app/src/main/assets/jarvix-download.html', '.github/workflows/jarvis-new-preview.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preview:
+    if: github.ref == 'refs/heads/jarvis-new'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Verify syntax and preview credentials
+        run: |
+          node --check app/src/main/assets/deepsyq-unified-platform-header.js
+          node --check app/src/main/assets/deepsyq-mobile-shell.js
+          test -f app/src/main/assets/jarvix-download.html
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" -o /tmp/pages-project.json
+          jq -e '.success == true and .result.name == "deepsyq" and .result.production_branch != "jarvis-new"' /tmp/pages-project.json >/dev/null
+      - name: Isolate static preview (block all /api and production Worker)
+        run: |
+          mkdir -p /tmp/jarvix-new-preview
+          rsync -a --exclude='_worker.js' app/src/main/assets/ /tmp/jarvix-new-preview/
+          cat >/tmp/jarvix-new-preview/_worker.js <<'JS'
+          export default {
+            async fetch(request, env) {
+              if (new URL(request.url).pathname.startsWith('/api/')) {
+                return new Response('JARVIX_NEW_PREVIEW_API_DISABLED', {status:503, headers:{'cache-control':'no-store'}});
+              }
+              return env.ASSETS.fetch(request);
+            }
+          };
+          JS
+          printf 'User-agent: *\nDisallow: /\n' >/tmp/jarvix-new-preview/robots.txt
+      - name: Deploy ONLY to preview branch
+        run: npx --yes wrangler@4.48.0 pages deploy /tmp/jarvix-new-preview --project-name deepsyq --branch jarvis-new --commit-hash "$GITHUB_SHA"
