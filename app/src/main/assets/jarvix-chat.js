@@ -470,6 +470,10 @@ $('jHistory').onchange=async()=>{if(busy)return;const next=await store.get($('jH
 function freeze(){try{store.guard();}catch{++epoch;controller?.abort();composer.stop();for(const u of urls)URL.revokeObjectURL(u);$('jMessages').replaceChildren();$('jChatForm').hidden=true;status('Account changed. Reload to open the correct private conversations.');}}
 window.addEventListener('storage',freeze);window.addEventListener('focus',freeze);window.addEventListener('pageshow',freeze);
 conversation=await store.get(sessionStorage.getItem('jarvix_active_conversation'))||store.create(getJarvixSessionId());sessionStorage.setItem('jarvix_active_conversation',conversation.id);if(conversation.messages.length)await save();else await historyList();render();trackViewport();watchChatViewport();await restoreResults();
+const pendingMsg = conversation.messages.find(m => m.role === 'user' && m.status === 'pending');
+if (pendingMsg) {
+  void run(() => processMessage(pendingMsg));
+}
 
 function sizeChatToVisibleViewport() {
   const root = document.querySelector('main.jarvix-chat');
@@ -596,6 +600,11 @@ async function applyIncomingHandoffOrTemplate() {
     composerInput.dispatchEvent(new Event('input', { bubbles: true }));
     composerInput.style.height = 'auto';
     composerInput.style.height = Math.min(composerInput.scrollHeight, 180) + 'px';
+    setTimeout(() => {
+      if (!conversation.messages.some(m => m.status === 'processing' || m.status === 'pending')) {
+        $('jChatForm')?.requestSubmit();
+      }
+    }, 100);
   }
 }
 void applyIncomingHandoffOrTemplate();
