@@ -234,11 +234,11 @@ export const TOUR_V3_DATA=Object.freeze([
   },
   "op": [
    [
-    "#quickCreatePrompt,#quickCreateDropzone",
+    "#cwPrompt,#cwStage",
     "focus"
    ],
    [
-    "#quickCreateSubmit",
+    "#cwGenerate",
     "focus"
    ]
   ],
