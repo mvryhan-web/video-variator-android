@@ -30,6 +30,22 @@ jobs:
         run: python scripts/build_jarvix_new_icons.py
       - name: Build Windows executable
         run: python -m PyInstaller --noconfirm --clean --windowed --onedir --name JARVIX_NEW --collect-all imageio_ffmpeg --icon build/jarvix-new-icon/jarvix-new.ico --version-file scripts/jarvix_new_version_info.txt --add-data "build/jarvix-new-icon/jarvix-new.png:." jarvis_new/desktop_entry.py
+      - name: Smoke-test real frozen Windows desktop GUI process (no installation or network)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $exe=(Resolve-Path 'dist/JARVIX_NEW/JARVIX_NEW.exe').Path
+          $p=Start-Process -FilePath $exe -PassThru
+          if(-not $p){throw 'JARVIX NEW executable could not be started'}
+          try {
+            Start-Sleep -Seconds 5
+            $p.Refresh()
+            if($p.HasExited){throw "Frozen GUI exited immediately (exit=$($p.ExitCode))"}
+            Write-Host "PASS: frozen JARVIX NEW Windows GUI process remained alive after start, pid=$($p.Id)"
+          } finally {
+            $p.Refresh()
+            if(-not $p.HasExited){Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue}
+          }
       - name: Create UNSIGNED test MSIX with exact Partner Center package identity
         shell: pwsh
         run: |
