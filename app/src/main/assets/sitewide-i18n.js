@@ -12,7 +12,7 @@
   const origText = new WeakMap(), lastText = new WeakMap();
   const origAttr = new WeakMap(), lastAttr = new WeakMap();
   const attrs = ['placeholder','title','aria-label','alt'];
-  const ignored = 'script,style,svg,noscript,code,pre,kbd,samp,textarea,[contenteditable],[data-no-i18n],[data-user-content],[data-private],[data-role="user"],[data-message-role="user"],.jarvix-user-message,.jarvis-user-message,.chat-user-message';
+  const ignored = 'script,style,svg,noscript,code,pre,kbd,samp,textarea,[contenteditable],[data-no-i18n],[data-user-content],[data-private],[data-i18n],[data-t],[data-role="user"],[data-message-role="user"],.jarvix-user-message,.jarvis-user-message,.chat-user-message';
   const cached = new Map([['en',{}]]), counters = {translated:0,missing:new Set()};
   let locale = 'en', revision = 0, observer, scheduled = false, pending = new Set();
   function getLang(){
