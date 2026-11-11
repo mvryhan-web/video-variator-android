@@ -17,13 +17,14 @@ const words = value => normalize(value).split(' ').filter(w => w.length > 1 && !
 const sameWord = (a,b) => a===b || (a.length>=6 && b.length>=6 &&
  a.slice(0,Math.min(5,a.length-2))===b.slice(0,Math.min(5,b.length-2)));
 function intent(text){
- const q=normalize(text);
- if (/\b(?:где|куда|where|où|dónde)\b/u.test(q))return 'where';
- if (/\b(?:сколько|стоимость|цена|цены|price|cost|prix|precio|cuánto)\b/u.test(q))return 'price';
- if (/\b(?:как|how|comment|cómo)\b/u.test(q))return 'how';
- if (/\b(?:зачем|почему|why|pourquoi|porqué)\b/u.test(q))return 'why';
- if (/\b(?:когда|when|quand|cuándo)\b/u.test(q))return 'when';
- if (/\b(?:что|кто|какой|what|who|which|que|qué|qui)\b/u.test(q))return 'what';
+ // Unicode word boundaries: JS \\b alone fails for Cyrillic.
+ const q=' '+normalize(text)+' ';
+ if (/\s(?:где|куда|where|où|dónde)\s/u.test(q))return 'where';
+ if (/\s(?:сколько|стоимость|цена|цены|price|cost|prix|precio|cuánto)\s/u.test(q))return 'price';
+ if (/\s(?:как|how|comment|cómo)\s/u.test(q))return 'how';
+ if (/\s(?:зачем|почему|why|pourquoi|porqué)\s/u.test(q))return 'why';
+ if (/\s(?:когда|when|quand|cuándo)\s/u.test(q))return 'when';
+ if (/\s(?:что|кто|какой|what|who|which|que|qué|qui)\s/u.test(q))return 'what';
  return null;
 }
 export function scoreRecordedQuestion(query, reference, triggers=[]) {
