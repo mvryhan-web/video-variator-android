@@ -63,7 +63,7 @@ document.getElementById('language').addEventListener('change',e=>{try{localStora
  const response=await fetch('https://api.github.com/repos/mvryhan-web/video-variator-android/releases?per_page=30',{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
  if(!response.ok)throw Error('release unavailable');
  const releases=await response.json();
- const latest=releases.find(r=>r.prerelease&&r.tag_name?.startsWith('jarvix-new-test-')&&r.assets?.some(a=>a.name==='Jarvix-New-Windows-Setup.exe')&&r.assets?.some(a=>a.name==='Jarvix-New-macOS.dmg'));
+ const latest=releases.find(r=>r.prerelease&&r.tag_name?.startsWith('jarvix-new-signed-test-')&&r.assets?.some(a=>a.name==='Jarvix-New-Windows-Setup.exe')&&r.assets?.some(a=>a.name==='Jarvix-New-macOS.dmg'));
  if(latest){for(const [platform,name] of [['windows','Jarvix-New-Windows-Setup.exe'],['macos','Jarvix-New-macOS.dmg']]){const item=latest.assets.find(a=>a.name===name);if(item){const u=new URL(item.browser_download_url);if(u.protocol==='https:'&&u.hostname==='github.com'&&u.pathname.startsWith('/mvryhan-web/video-variator-android/releases/download/'))available[platform]=u.href;}}}
  }catch{available={}}render()})();
 document.getElementById('status').textContent=pick().checking;
