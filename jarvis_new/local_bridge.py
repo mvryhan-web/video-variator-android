@@ -144,10 +144,16 @@ class _Handler(BaseHTTPRequestHandler):
             # tools, shell, network services, OS access or paid providers.
             from .local_llm import chat, LocalModelUnavailable
             try:
-                answer = chat(prompt, model, history=history)
+                # The server-side owner journal—not untrusted browser input—
+                # supplies the context. Automatically remembers conversations
+                # after browser reloads on the SAME local computer.
+                context = self.server.coordinator.voice_history(8)
+                answer = chat(prompt, model, history=context)
             except LocalModelUnavailable:
                 return self._reply(503, {"error": "Local Ollama model unavailable"}, cors=True)
-            return self._reply(200, {"reply": answer, "provider": "local-ollama"}, cors=True)
+            self.server.coordinator.record_voice_turn(prompt, answer)
+            return self._reply(200, {"reply": answer, "provider": "local-ollama",
+                                     "memory": "local-only"}, cors=True)
         finally:
             self.server.voice_busy.release()
 
