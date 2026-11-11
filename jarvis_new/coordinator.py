@@ -223,7 +223,11 @@ def make_simulated_media(coordinator: Coordinator, job_id: str, target: Path) ->
         elif kind == "video":
             exe = shutil.which("ffmpeg")
             if not exe:
-                raise RuntimeError("ffmpeg not installed; simulated video was not made")
+                try:
+                    from imageio_ffmpeg import get_ffmpeg_exe
+                    exe = get_ffmpeg_exe()
+                except ImportError as exc:
+                    raise RuntimeError("ffmpeg is needed for a real MP4 test fixture") from exc
             output = target / (job_id + "-SIMULATED.mp4")
             subprocess.run(
                 [exe, "-hide_banner", "-loglevel", "error", "-nostdin", "-y",
