@@ -6,8 +6,7 @@ export async function getTourV4Recording(id,language){
  if(!langs.has(language)||!/^[a-z][a-z0-9-]{2,50}$/.test(id))return null;
  if(!cache)cache=fetch('media/jarvix/tour-v4/manifest.json',{signal:AbortSignal.timeout(4000)})
   .then(async r=>r.ok?r.json():null).catch(()=>null);
- const manifest=await cache;
- if(!manifest)cache=null;
+ const manifest=await cache; // Cache missing optional packs for this page; no repeated 404s.
  if(manifest?.schemaVersion!=='jarvix-tour-v4-audio/v1'||manifest.engine!=='VoxCPM2'||manifest.format!=='mp3'
   ||(manifest.reviewed!==true&&manifest.previewApproved!==true))return null;
  const clip=manifest.clips?.find(item=>item.id===id&&item.language===language);
