@@ -1,19 +1,15 @@
 User-agent: *
-Allow: /
 Disallow: /api/
 Disallow: /deepsyq-admin.html
 Disallow: /product-watcher-admin.html
 
+User-agent: OAI-SearchBot
 User-agent: GPTBot
-Allow: /
-
 User-agent: PerplexityBot
-Allow: /
-
 User-agent: ClaudeBot
-Allow: /
-
 User-agent: Applebot-Extended
-Allow: /
+Disallow: /api/
+Disallow: /deepsyq-admin.html
+Disallow: /product-watcher-admin.html
 
 Sitemap: https://deepsyq.app/sitemap.xml
