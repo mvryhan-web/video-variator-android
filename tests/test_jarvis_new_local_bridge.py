@@ -31,7 +31,8 @@ class LocalBridgeTests(unittest.TestCase):
         request = Request(self.base + path, data=data, headers=headers, method=method)
         try:
             with urlopen(request, timeout=5) as response:
-                return response.status, dict(response.headers), json.loads(response.read())
+                raw = response.read()
+                return response.status, dict(response.headers), json.loads(raw) if raw else {}
         except HTTPError as error:
             return error.code, dict(error.headers), json.loads(error.read())
 
