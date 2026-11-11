@@ -47,7 +47,11 @@ def main():
             expect(page.locator('#send')).to_be_disabled()
             page.locator('[data-mode="video"]').click()
             expect(page.locator('[data-mode="video"]')).to_have_attribute('aria-pressed','true')
-            print('PASS: Real browser opens NEW agent page from test homepage; controls behave safely.')
+            # Old test chat URL must preserve video mode in the NEW interface.
+            page.goto(ORIGIN+'/jarvix-chat.html?mode=video',wait_until='domcontentloaded',timeout=20000)
+            expect(page.locator('h1')).to_have_text('JARVIX NEW')
+            expect(page.locator('[data-mode="video"]')).to_have_attribute('aria-pressed','true')
+            print('PASS: Real browser opens NEW agent page from test homepage; redirected Video mode works.')
         finally:
             browser.close()
     return 0
