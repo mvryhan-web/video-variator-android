@@ -64,6 +64,14 @@ class Coordinator:
                     updated_at TEXT NOT NULL
                 );
                 CREATE INDEX IF NOT EXISTS jobs_owner_created ON jobs(owner, created_at);
+                CREATE TABLE IF NOT EXISTS voice_turns (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    owner TEXT NOT NULL,
+                    role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+                    content TEXT NOT NULL,
+                    recorded_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS voice_owner_id ON voice_turns(owner, id);
                 CREATE TABLE IF NOT EXISTS events (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     job_id TEXT NOT NULL,
@@ -84,6 +92,36 @@ class Coordinator:
                 yield db
         finally:
             db.close()
+
+    def voice_history(self, limit: int = 8) -> list[dict]:
+        """Return recent spoken exchanges for this owner (same PC only).
+
+        Never synchronizes to Cloudflare or any hosted account. Raw microphone
+        audio is not retained; only locally recognized text + model replies.
+        """
+        take = max(1, min(30, int(limit)))
+        with self._connect() as db:
+            rows = db.execute(
+                "SELECT role, content FROM voice_turns WHERE owner=? "
+                "ORDER BY id DESC LIMIT ?", (self.owner, take)
+            ).fetchall()
+        return [{"role": row["role"], "content": row["content"]}
+                for row in reversed(rows)]
+
+    def record_voice_turn(self, prompt: str, reply: str) -> None:
+        """Atomically remember a verified Ollama answer with its user question."""
+        if not isinstance(prompt, str) or not prompt.strip() or len(prompt) > 1200:
+            raise ValueError("Invalid local voice prompt")
+        if not isinstance(reply, str) or not reply.strip() or len(reply) > 8000:
+            raise ValueError("Invalid local voice reply")
+        moment = now()
+        with self._connect() as db:
+            db.executemany(
+                "INSERT INTO voice_turns(owner,role,content,recorded_at) "
+                "VALUES(?,?,?,?)",
+                [(self.owner, "user", prompt, moment),
+                 (self.owner, "assistant", reply, moment)]
+            )
 
     def submit(self, kind: str, prompt: str, source: str | None = None) -> str:
         if kind not in KINDS:
