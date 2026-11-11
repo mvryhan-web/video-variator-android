@@ -36,7 +36,7 @@ export default {
     if (url.pathname.endsWith('.html') || url.pathname.endsWith('/') ||
         !url.pathname.includes('.') ||
         ['/jarvix-new-preview-entry.js', '/jarvix-new-voice.js',
-         '/jarvix-new-download-menu.js'].includes(url.pathname)) {
+         '/jarvix-new-download-menu.js', '/jarvix-connect.js'].includes(url.pathname)) {
       const headers = new Headers(response.headers);
       headers.set('Cache-Control', 'no-store, must-revalidate');
       return new Response(response.body, {status:response.status,headers});
