@@ -83,9 +83,9 @@ class App:
 
         connection = tk.Frame(root, bg=BACKGROUND)
         connection.pack(fill="x", padx=24, pady=(0, 10))
-        self.bridge_button = self._button(connection, "Подключить тестовый сайт", self.toggle_bridge)
+        self.bridge_button = self._button(connection, "Отключить голосовую связь с сайтом", self.toggle_bridge)
         self.bridge_button.pack(side="left")
-        tk.Label(connection, text="Только этот компьютер · Без облачной синхронизации",
+        tk.Label(connection, text="Автоподключение после запуска · Только этот компьютер · Без доступа к файлам",
                  bg=BACKGROUND, fg=MUTED).pack(side="left", padx=(12, 0))
 
         panel = tk.Frame(root, bg=PANEL, padx=16, pady=16)
@@ -135,6 +135,10 @@ class App:
         self.root.protocol("WM_DELETE_WINDOW", self.close)
         self.root.after(250, self.drain_events)
         self.refresh()
+        # Opening the installed desktop app explicitly authorizes starting a
+        # loopback-only, read-only conversation bridge. No pairing code and no
+        # cloud sync; browser microphone/local-network grants remain separate.
+        self.root.after(350, self._start_voice_bridge)
 
     @staticmethod
     def _button(parent, label, command):
@@ -215,32 +219,32 @@ class App:
         self._work(lambda: make_simulated_media(self.tasks, item["id"], Path(folder)),
                    "Демонстрационный файл создан")
 
-    def toggle_bridge(self):
+    def _start_voice_bridge(self):
         if self.local_bridge:
-            self.local_bridge.stop()
-            self.local_bridge = None
-            self.bridge_button.configure(text="Подключить тестовый сайт")
-            self.status_var.set("Связь с тестовым сайтом остановлена.")
             return
         try:
-            bridge = LocalBridge(self.tasks)
+            bridge = LocalBridge(self.tasks, allow_voice=True)
             bridge.start()
         except OSError as error:
-            messagebox.showerror("Тестовая связь недоступна", str(error))
+            self.bridge_button.configure(text="Повторить подключение")
+            self.status_var.set("Локальное голосовое подключение недоступно: " + str(error))
             return
         self.local_bridge = bridge
-        self.root.clipboard_clear()
-        self.root.clipboard_append(bridge.token)
-        self.bridge_button.configure(text="Отключить тестовый сайт")
-        self.status_var.set("Локальная связь включена. Код подключения скопирован в буфер обмена.")
-        messagebox.showinfo(
-            "Тестовое подключение JARVIX NEW",
-            "Код подключения скопирован. Открой на ЭТОМ ЖЕ компьютере:\n"
-            "https://jarvis-new.deepsyq.pages.dev/jarvix-connect.html\n\n"
-            "Вставь код на странице и нажми «Подключить».\n"
-            "Передаются только описания и статусы тестовых задач.\n"
-            "Это не удалённая синхронизация и не AI-генерация."
+        self.bridge_button.configure(text="Отключить голосовую связь с сайтом")
+        self.status_var.set(
+            "Голосовая связь с тестовым сайтом включена автоматически. "
+            "Для ответов на вопросы нужна установленная локальная модель Ollama. "
+            "Ни один компьютерный инструмент без отдельного разрешения не запускается."
         )
+
+    def toggle_bridge(self):
+        if not self.local_bridge:
+            self._start_voice_bridge()
+            return
+        self.local_bridge.stop()
+        self.local_bridge = None
+        self.bridge_button.configure(text="Включить голосовую связь с сайтом")
+        self.status_var.set("Голосовая связь с тестовым сайтом отключена.")
 
     def start_voice(self):
         if getattr(sys, "frozen", False):
