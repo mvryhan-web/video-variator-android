@@ -1,3 +1,4 @@
+import {getTourV3Recording} from './jarvix-tour-v3-audio.js';
 /* JARVIX NEW — voice-only mode on the OWNER'S EXISTING sphere, TEST host only.
    No new page, code form, paid API or simulated model answer. */
 const HOST='jarvis-new.deepsyq.pages.dev';
@@ -13,7 +14,13 @@ const getLang=()=>{
  try{key=localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang')||navigator.language||'en';}catch{}
  return WORDS[String(key).slice(0,2).toLowerCase()]||WORDS.en;
 };
-let on=false,seq=0,rec=null,utter=null,request=null,pending=null;
+const OWNER_INTRO=Object.freeze({
+ ru:'Привет! Я JARVIX. Смотрите, что я умею.',
+ en:"Hi! I'm JARVIX. Let me show you what I can do.",
+ fr:'Salut ! Je suis JARVIX. Regardez ce que je sais faire.',
+ es:'¡Hola! Soy JARVIX. Mira lo que puedo hacer.'
+});
+let on=false,seq=0,rec=null,utter=null,request=null,pending=null,ownerClip=null,ownerClipDone=null;
 let turns=[],orb=null,status=null;
 const Recognition=()=>window.SpeechRecognition||window.webkitSpeechRecognition;
 function ui(stage,msg=''){
@@ -31,6 +38,8 @@ function stop(message=''){
  if(pending)clearTimeout(pending);
  if(rec){try{rec.onend=null;rec.onerror=null;rec.onresult=null;rec.abort();}catch{}rec=null;}
  if(utter){utter.onend=null;utter.onerror=null;utter=null;}
+ if(ownerClip){try{ownerClip.pause();ownerClip.currentTime=0;}catch{} ownerClip=null;}
+ if(ownerClipDone){const finish=ownerClipDone;ownerClipDone=null;finish(false);}
  try{window.speechSynthesis?.cancel();}catch{}
  if(request){request.abort();request=null;}
  ui('',message);
@@ -43,7 +52,35 @@ function voice(){
         options.find(v=>v.lang===language)||
         options.find(v=>v.lang.slice(0,2)===language.slice(0,2))||null;
 }
+async function playApprovedOwnerClip(text,id){
+ // Use ONLY the owner's approved, exact-match VoxCPM2 recording.
+ // An arbitrary LLaMA answer must never be replaced by a different recording.
+ const language=getLang().lang.slice(0,2);
+ let recording=null;
+ try{recording=await getTourV3Recording(String(text).trim(),language);}catch{}
+ if(!recording||!on||seq!==id)return false;
+ return await new Promise(resolve=>{
+  const audio=new Audio(recording);
+  ownerClip=audio;
+  let finished=false;
+  const finish=ok=>{
+   if(finished)return;
+   finished=true;
+   audio.onended=null;audio.onerror=null;
+   if(ownerClip===audio)ownerClip=null;
+   if(ownerClipDone===finish)ownerClipDone=null;
+   resolve(ok);
+  };
+  ownerClipDone=finish;
+  audio.onended=()=>finish(true);
+  audio.onerror=()=>finish(false);
+  ui('speaking',getLang().speak);
+  try{Promise.resolve(audio.play()).catch(()=>finish(false));}catch{finish(false);}
+ });
+}
 async function speak(text,id){
+ const ownerPlayed=await playApprovedOwnerClip(text,id);
+ if(ownerPlayed)return true;
  if(!on||seq!==id||!window.speechSynthesis)return false;
  return await new Promise(resolve=>{
   const u=new SpeechSynthesisUtterance(String(text).slice(0,4000));
@@ -123,7 +160,7 @@ async function start(){
   stream.getTracks().forEach(track=>track.stop());
  }catch{if(on&&seq===id)stop(getLang().deny);return;}
  if(!on||seq!==id)return;
- await speak(getLang().hello,id);
+ await speak(OWNER_INTRO[getLang().lang.slice(0,2)]||OWNER_INTRO.en,id);
  if(on&&seq===id)listen(id);
 }
 export function installJarvixNewVoice(){
