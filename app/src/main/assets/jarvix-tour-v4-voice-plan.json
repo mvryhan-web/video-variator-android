@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "jarvix-tour-v4-voice-plan/v1",
+  "engine": "VoxCPM2",
+  "approvedAudioOnly": true,
+  "direction": "Same verified JARVIX male voice. Calm, confident and unhurried; clean pauses before pointing, no exaggerated sales inflection. Never replace with browser/system TTS.",
+  "status": "SCRIPT_ONLY_NO_MP3_GENERATED",
+  "segments": [
+    {
+      "id": "tools-overview",
+      "stage": "Tools",
+      "ru": "В Everyday Tools собрано более двадцати полезных инструментов для повседневных задач. Сжимайте фотографии, работайте с PDF, обрезайте видео и звук, создавайте QR-коды. Доступные бесплатные функции можно использовать каждый день. Для расширенных возможностей предусмотрены тарифы.",
+      "en": "Everyday Tools brings together more than twenty useful tools for everyday tasks. Compress photos, work with PDFs, trim video and audio, and create QR codes. Free features are available for everyday use, while advanced capabilities are included in the plans.",
+      "fr": "Everyday Tools réunit plus de vingt outils pratiques. Compressez vos photos, travaillez sur vos PDF, découpez vos vidéos et audios et créez des codes QR. Certaines fonctions sont gratuites au quotidien, tandis que les fonctions avancées dépendent de votre forfait.",
+      "es": "Everyday Tools reúne más de veinte herramientas útiles. Comprime fotos, trabaja con PDF, recorta vídeo y audio y crea códigos QR. Las funciones gratuitas están disponibles para el día a día; las opciones avanzadas dependen del plan."
+    },
+    {
+      "id": "uniquifier-variants",
+      "stage": "Video Uniquifier",
+      "ru": "Выберите число вариантов видео: один, пять, десять или пятнадцать. Затем настройте режим обработки: Gentle, Balance или Dynamic.",
+      "en": "Choose how many video variations you want: one, five, ten, or fifteen. Then select Gentle, Balance, or Dynamic processing.",
+      "fr": "Choisissez le nombre de variantes vidéo : une, cinq, dix ou quinze. Puis sélectionnez Gentle, Balance ou Dynamic.",
+      "es": "Elige cuántas variaciones de vídeo quieres: una, cinco, diez o quince. Después selecciona Gentle, Balance o Dynamic."
+    },
+    {
+      "id": "uniquifier-quality",
+      "stage": "Video Uniquifier",
+      "ru": "Выберите вертикальный или горизонтальный формат и разрешение: 720p, 1080p или 4K. Доступные режимы зависят от вашего плана. Запускать обработку во время экскурсии мы не будем.",
+      "en": "Choose portrait or landscape and a resolution of 720p, 1080p, or 4K. Available options depend on your plan. We will not start processing during the tour.",
+      "fr": "Choisissez le format vertical ou horizontal et la résolution 720p, 1080p ou 4K. Les options disponibles dépendent de votre forfait. Aucun traitement ne sera lancé pendant la visite.",
+      "es": "Elige formato vertical u horizontal y resolución 720p, 1080p o 4K. Las opciones disponibles dependen de tu plan. No iniciaremos ningún procesamiento durante la visita."
+    },
+    {
+      "id": "canvas-edit",
+      "stage": "Canvas",
+      "ru": "В Canvas вы можете выбрать фотографию из галереи, увеличить изображение и настроить его цвет. Посмотрите, как меняются масштаб и насыщенность. Настройки примера мы вернём обратно.",
+      "en": "In Canvas, choose a photo from the gallery, zoom in, and adjust its colors. Watch the scale and saturation change. We will restore the original example settings.",
+      "fr": "Dans Canvas, choisissez une photo, agrandissez-la et ajustez ses couleurs. Regardez évoluer le zoom et la saturation. Nous rétablirons ensuite les réglages de l'exemple.",
+      "es": "En Canvas, elige una foto, amplíala y ajusta sus colores. Observa cómo cambian el zoom y la saturación. Después restauraremos los ajustes del ejemplo."
+    },
+    {
+      "id": "inspiration-clone",
+      "stage": "Inspiration",
+      "ru": "Выберите понравившуюся фотографию. Здесь вы можете изучить промпт, скопировать его или нажать Clone & Try, чтобы продолжить в JARVIX.",
+      "en": "Choose an image you like. Here you can explore its prompt, copy it, or select Clone & Try to continue in JARVIX.",
+      "fr": "Choisissez une image qui vous plaît. Vous pouvez consulter son prompt, le copier ou appuyer sur Clone & Try pour continuer dans JARVIX.",
+      "es": "Elige una imagen que te guste. Puedes ver su prompt, copiarlo o pulsar Clone & Try para continuar en JARVIX."
+    },
+    {
+      "id": "clone-arrival",
+      "stage": "JARVIX Chat",
+      "ru": "Здесь вы можете создать своё изображение или видео по понравившемуся примеру. Выберите нужный режим, дополните запрос и создавайте результат в своём стиле.",
+      "en": "Here you can make your own image or video using the example you liked. Choose a mode, refine the prompt, and create something in your own style.",
+      "fr": "Ici, vous pouvez créer votre propre image ou vidéo à partir de l'exemple choisi. Sélectionnez un mode, adaptez le prompt et créez dans votre style.",
+      "es": "Aquí puedes crear tu propia imagen o vídeo con el ejemplo elegido. Escoge un modo, adapta el prompt y crea algo a tu manera."
+    },
+    {
+      "id": "plans-available",
+      "stage": "Pricing",
+      "ru": "Планы и пакеты AI-кредитов доступны для выбора и покупки. Basic подходит для основных задач, Pro открывает больше возможностей, а Business рассчитан на более интенсивную работу.",
+      "en": "Plans and AI credit packages are available to choose and purchase. Basic covers essential tasks, Pro unlocks more possibilities, and Business is designed for higher-volume work.",
+      "fr": "Les forfaits et packs de crédits IA sont disponibles à l'achat. Basic couvre les besoins essentiels, Pro offre davantage de possibilités, et Business convient à une utilisation plus intensive.",
+      "es": "Los planes y paquetes de créditos de IA están disponibles para comprar. Basic cubre lo esencial, Pro ofrece más opciones y Business está pensado para un uso más intensivo."
+    },
+    {
+      "id": "final-upgrade",
+      "stage": "Home",
+      "ru": "Это была бесплатная демонстрация возможностей JARVIX. Вы увидели лишь часть того, что доступно в DEEPSYQ. С планами Basic, Pro и Business вы сможете подобрать инструменты и возможности под свои задачи — от первых проектов до регулярного создания контента. Выберите подходящий план и начните создавать больше.",
+      "en": "That was a free demonstration of JARVIX. You've seen only part of what DEEPSYQ can do. With Basic, Pro, and Business, you can choose the tools that fit your goals, from your first projects to regular content creation. Find your plan and create more.",
+      "fr": "Voilà pour cette démonstration gratuite de JARVIX. Vous n'avez découvert qu'une partie des possibilités de DEEPSYQ. Avec Basic, Pro et Business, choisissez les outils adaptés à vos projets, de vos premières créations à une production régulière. Choisissez votre offre et créez davantage.",
+      "es": "Esta fue una demostración gratuita de JARVIX. Solo has visto una parte de lo que ofrece DEEPSYQ. Con Basic, Pro y Business puedes elegir herramientas para tus proyectos, desde tus primeras creaciones hasta la producción habitual. Elige tu plan y crea más."
+    }
+  ]
+}
