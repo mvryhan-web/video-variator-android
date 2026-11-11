@@ -307,9 +307,21 @@ async function restoreResults(){
  }
  if(changed){await store.save(selected);if(conversation.id===selected.id){await historyList();render();}}
 }
+function localGreeting(message,language){
+ if((message.files||[]).length||message.action)return null;
+ const words=String(message.text||'').trim().toLowerCase().replace(/[,.!?¡¿…]+/g,' ').trim();
+ if(!/^(?:привет|хай|здравствуйте|здравствуй|салют|hello|hi|hey|bonjour|salut|hola)(?:\s+(?:привет|хай|hello|hi|hey))?$/u.test(words))return null;
+ return ({ru:'Привет! Чем помочь?',en:'Hi! How can I help?',fr:'Salut ! Comment puis-je t’aider ?',es:'¡Hola! ¿En qué puedo ayudarte?'})[language]||'Hi! How can I help?';
+}
 async function processMessage(message){
- message.status='processing';await save();render();
+ const greeting=localGreeting(message,getJarvixLanguage());
+ if(!greeting){message.status='processing';await save();render();}
  try{
+  if(greeting){
+   message.status='sent';
+   conversation.messages.push({id:makeId(),role:'assistant',text:greeting,createdAt:Date.now()});
+   await save();render();return;
+  }
   // Use the same allowlisted local tool router as the voice sphere.
   // Opening an existing page or preparing a Studio prompt costs 0 AI credits.
   const command=message.mode==='auto'&&!(message.files||[]).length?extractAction(message.text):null;
