@@ -1,0 +1,36 @@
+name: JARVIX New Windows and macOS offline compatibility
+on:
+  push:
+    branches: [jarvis-new]
+    paths:
+      - 'jarvis_new/**'
+      - 'tests/test_jarvis_new_*.py'
+      - '.github/workflows/jarvis-new-desktop.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  native-smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install only local-test media dependencies
+        run: python -m pip install --disable-pip-version-check Pillow==11.3.0 imageio-ffmpeg==0.6.0
+      - name: Python and native GUI source preflight (no display / microphone access)
+        run: |
+          python -m compileall -q jarvis_new
+          python -c "import tkinter; print('tkinter '+str(tkinter.TkVersion)+' available')"
+          python -c "import jarvis_new.desktop; print('Desktop module imported safely without a window')"
+      - name: Original upstream VoiceOS registry with new task tools
+        run: python -m unittest discover -s tests -p "test_jarvis_new_*.py" -v
+      - name: One photo, one image, one video and one music test file (zero API calls)
+        run: python -m jarvis_new.coordinator --smoke --workspace ".jarvis-new-native-smoke"
