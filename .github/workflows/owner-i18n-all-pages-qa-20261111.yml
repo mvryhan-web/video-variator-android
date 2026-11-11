@@ -1,0 +1,33 @@
+name: DEEPSYQ four-language page translations — browser QA
+on:
+  push:
+    branches: [owner-pricing-i18n-20261111]
+    paths:
+      - 'app/src/main/assets/i18n/**'
+permissions: {contents: read}
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm}
+      - name: Install Chromium for 4-language UI tests
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Verify generated dictionaries exist for every one of 34 pages
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          base=Path('app/src/main/assets')
+          for p in base.glob('*.html'):
+            d=json.loads((base/'i18n'/(p.name+'.json')).read_text(encoding='utf8'))
+            assert 'strings' in d
+          print('DEEPSYQ_34_PAGE_LOCALES_VERIFIED')
+          PY
+      - name: Check Russian, French, Spanish, English and real pricing calculations
+        run: npx playwright test tests/owner-deepsyq-i18n-33-pages.spec.mjs --project=chromium --reporter=list --retries=0
