@@ -49,4 +49,6 @@ jobs:
           git diff --cached --stat
           git diff --cached --quiet && exit 0
           git commit -m "feat(i18n): offline RU FR ES catalogs for all 33 pages and 404; additive locale loader only"
+          git fetch origin owner-pricing-i18n-20261111
+          git rebase origin/owner-pricing-i18n-20261111
           git push origin HEAD:owner-pricing-i18n-20261111
