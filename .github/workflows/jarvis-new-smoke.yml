@@ -30,6 +30,21 @@ jobs:
           python -m compileall -q jarvis_new
           python -m unittest discover -s tests -p 'test_jarvis_new_*.py' -v
           python -m jarvis_new.launch --check
+      - name: Install photo test dependency (no AI providers)
+        run: python -m pip install --disable-pip-version-check Pillow==11.3.0
+      - name: Run one small photo/image/video/music test with zero provider requests
+        run: |
+          command -v ffmpeg
+          python -m unittest discover -s tests -p 'test_jarvis_new_coordinator.py' -v
+          python -m jarvis_new.coordinator --smoke --workspace "$RUNNER_TEMP/jarvis-new-four"
+      - name: Save simulated outputs and real local photo-compression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-new-four-tiny-media-smoke
+          path: ${{ runner.temp }}/jarvis-new-four/
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Check if the existing provider secret is visible in this branch's GitHub Actions (no value printed)
         env:
           HAS_DASHSCOPE_KEY: ${{ secrets.DASHSCOPE_API_KEY != '' }}
