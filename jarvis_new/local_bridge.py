@@ -7,6 +7,10 @@ per-session bearer token is never stored, logged or sent to a third-party host.
 from __future__ import annotations
 
 import hmac
+import os
+from pathlib import Path
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import secrets
@@ -18,6 +22,8 @@ from urllib.parse import urlsplit, parse_qs
 ALLOWED_ORIGIN = "https://jarvis-new.deepsyq.pages.dev"
 MAX_BODY_BYTES = 8192
 ALLOWED_KINDS = frozenset(("image", "video", "music"))
+LOCAL_VOXCPM_TTS = "http://127.0.0.1:8765/tts"
+TTS_MAX_AUDIO_BYTES = 12 * 1024 * 1024
 
 
 class _Server(ThreadingHTTPServer):
@@ -199,6 +205,78 @@ class _Handler(BaseHTTPRequestHandler):
                 return self._reply(403, {"error": "Desktop owner declined pairing"}, cors=True)
         return self._reply(202, {"status": "pending"}, cors=True)
 
+    def _voice_speech(self):
+        """Speak via the existing owner VoxCPM2 service, never via cloud TTS.
+
+        Reads its pre-existing bearer token from the user's own machine;
+        never returns the token or forwards it to the test website.
+        """
+        if not self._voice_origin_allowed():
+            return
+        if self.headers.get("Content-Type", "").split(";", 1)[0].strip().lower() != "application/json":
+            return self._reply(415, {"error": "JSON required"}, cors=True)
+        try:
+            size = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            return self._reply(400, {"error": "Invalid request size"}, cors=True)
+        if not 0 < size <= MAX_BODY_BYTES:
+            return self._reply(413, {"error": "Invalid request size"}, cors=True)
+        try:
+            payload = json.loads(self.rfile.read(size).decode("utf-8"))
+            phrase = payload.get("text")
+            language = payload.get("language")
+            if (not isinstance(phrase, str) or not phrase.strip() or
+                    len(phrase) > 1200 or language not in ("ru", "en", "fr", "es")):
+                raise ValueError("Invalid voice request")
+        except (ValueError, TypeError, AttributeError, UnicodeError):
+            return self._reply(400, {"error": "Invalid voice request"}, cors=True)
+        with self.server.tts_lock:
+            now = time.monotonic()
+            while self.server.tts_calls and self.server.tts_calls[0] < now - 600:
+                self.server.tts_calls.popleft()
+            if len(self.server.tts_calls) >= 16:
+                return self._reply(429, {"error": "Local speech rate limit"}, cors=True)
+            self.server.tts_calls.append(now)
+        if not self.server.tts_busy.acquire(blocking=False):
+            return self._reply(429, {"error": "VoxCPM2 already synthesizing"}, cors=True)
+        try:
+            token_path = Path(os.environ.get("JARVIX_NEW_VOICE_TOKEN_PATH") or
+                              (Path.home() / "Jarvis" / "voice-token.txt"))
+            try:
+                token = token_path.read_text(encoding="utf-8").strip()
+            except (OSError, UnicodeError):
+                return self._reply(503, {"error": "Owner VoxCPM2 token unavailable"}, cors=True)
+            if not token or len(token) > 512 or "\n" in token or "\r" in token:
+                return self._reply(503, {"error": "Invalid owner VoxCPM2 token"}, cors=True)
+            body = json.dumps({"text": phrase.strip(), "language": language},
+                              ensure_ascii=False).encode("utf-8")
+            remote = Request(LOCAL_VOXCPM_TTS, data=body, method="POST",
+                             headers={"Content-Type": "application/json",
+                                      "Authorization": "Bearer " + token})
+            try:
+                # Long owner-machine inference on RTX 3060 can take time.
+                with urlopen(remote, timeout=210) as response:
+                    audio = response.read(TTS_MAX_AUDIO_BYTES + 1)
+            except (HTTPError, URLError, OSError, TimeoutError):
+                return self._reply(503, {"error": "Local VoxCPM2 unavailable"}, cors=True)
+            if (len(audio) > TTS_MAX_AUDIO_BYTES or len(audio) < 44 or
+                    audio[:4] != b"RIFF" or audio[8:12] != b"WAVE"):
+                return self._reply(502, {"error": "Invalid VoxCPM2 WAV response"}, cors=True)
+            self.send_response(200)
+            self.send_header("Access-Control-Allow-Origin", self.server.allowed_origin)
+            self.send_header("Vary", "Origin")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Content-Type", "audio/wav")
+            self.send_header("Content-Length", str(len(audio)))
+            self.end_headers()
+            try:
+                self.wfile.write(audio)
+            except (ConnectionResetError, BrokenPipeError):
+                pass
+        finally:
+            self.server.tts_busy.release()
+
     def do_GET(self):
         route = urlsplit(self.path).path
         if route == "/v1/pair/status":
@@ -225,6 +303,8 @@ class _Handler(BaseHTTPRequestHandler):
         return self._reply(404, {"error": "Unknown endpoint"}, cors=True)
 
     def do_POST(self):
+        if urlsplit(self.path).path == "/v1/voice/speech":
+            return self._voice_speech()
         if urlsplit(self.path).path == "/v1/pair/request":
             return self._pair_request()
         if urlsplit(self.path).path == "/v1/voice/chat":
@@ -277,6 +357,9 @@ class LocalBridge:
         server.voice_calls = deque()
         server.voice_lock = threading.Lock()
         server.voice_busy = threading.Lock()
+        server.tts_busy = threading.Lock()
+        server.tts_lock = threading.Lock()
+        server.tts_calls = deque()
         server.pair_lock = threading.Lock()
         server.pair_requests = {}
         self._server = server
