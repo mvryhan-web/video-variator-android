@@ -251,7 +251,13 @@ function cueV3(beat){
 }
 async function speakV3(text,current,complete,beat=null){
  try{
-  const voice=await getTourV3Recording(text,state?.language||'en');
+  // The very first welcome uses the original prerecorded Home narration
+  // (clip 01) from the first guided excursion. The other 18 stages retain
+  // their matching owner-recorded V3 beats and original spotlight timing.
+  const firstWelcome=state?.index===0 && (state?.beat||0)===0 && !beat?.action;
+  const voice=firstWelcome
+   ? tourPlan(state.language)[0].audio
+   : await getTourV3Recording(text,state?.language||'en');
   if(current!==turn||!state||state.phase!=='playing')return;
   let spoken=false,ended=false;
   const began=()=>{
