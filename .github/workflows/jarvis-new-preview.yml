@@ -2,7 +2,7 @@ name: Jarvix New test-only Cloudflare preview
 on:
   push:
     branches: [jarvis-new]
-    paths: ['app/src/main/assets/deepsyq-unified-platform-header.js', 'app/src/main/assets/deepsyq-mobile-shell.js', 'app/src/main/assets/jarvix-download.html', 'app/src/main/assets/jarvix-connect.html', 'app/src/main/assets/jarvix-connect.js', '.github/workflows/jarvis-new-preview.yml']
+    paths: ['app/src/main/assets/deepsyq-unified-platform-header.js', 'app/src/main/assets/deepsyq-mobile-shell.js', 'app/src/main/assets/jarvix-download.html', 'app/src/main/assets/jarvix-connect.html', 'app/src/main/assets/jarvix-connect.js', 'app/src/main/assets/jarvix-new.html', 'app/src/main/assets/jarvix-new.js', 'app/src/main/assets/jarvix-new-preview-entry.js', 'scripts/prepare_jarvix_new_test_preview.py', '.github/workflows/jarvis-new-preview.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -23,6 +23,10 @@ jobs:
           node --check app/src/main/assets/deepsyq-unified-platform-header.js
           node --check app/src/main/assets/deepsyq-mobile-shell.js
           node --check app/src/main/assets/jarvix-connect.js
+          node --check app/src/main/assets/jarvix-new.js
+          node --check app/src/main/assets/jarvix-new-preview-entry.js
+          python -m py_compile scripts/prepare_jarvix_new_test_preview.py
+          test -f app/src/main/assets/jarvix-new.html
           test -f app/src/main/assets/jarvix-download.html
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$CLOUDFLARE_ACCOUNT_ID"
@@ -32,16 +36,36 @@ jobs:
         run: |
           mkdir -p /tmp/jarvix-new-preview
           rsync -a --exclude='_worker.js' app/src/main/assets/ /tmp/jarvix-new-preview/
+          # Only the isolated TEST output is changed. The repo and production
+          # source HTML continue to use the original JARVIX.
+          python scripts/prepare_jarvix_new_test_preview.py /tmp/jarvix-new-preview
+          ! grep -q '<script type="module" src="jarvis-core.js"></script>' /tmp/jarvix-new-preview/index.html
+          grep -q 'jarvix-new-preview-entry.js' /tmp/jarvix-new-preview/index.html
+          test -f /tmp/jarvix-new-preview/jarvix-new.html
           cat >/tmp/jarvix-new-preview/_worker.js <<'JS'
+          const OLD_JARVIX_ROUTES = new Set(['/jarvix-chat.html', '/ai-agents.html', '/voice-agent-preview.html']);
           export default {
             async fetch(request, env) {
-              if (new URL(request.url).pathname.startsWith('/api/')) {
+              const url = new URL(request.url);
+              if (url.pathname.startsWith('/api/')) {
                 return new Response('JARVIX_NEW_PREVIEW_API_DISABLED', {status:503, headers:{'cache-control':'no-store'}});
               }
-              return env.ASSETS.fetch(request);
+              if (OLD_JARVIX_ROUTES.has(url.pathname)) {
+                const next = new URL('/jarvix-new.html', url.origin);
+                const mode = url.searchParams.get('mode');
+                if (['image', 'video', 'audio'].includes(mode)) next.searchParams.set('mode', mode);
+                return Response.redirect(next.href, 302);
+              }
+              const response = await env.ASSETS.fetch(request);
+              if (/\\.html$|\\/$/.test(url.pathname)) {
+                const headers = new Headers(response.headers);
+                headers.set('Cache-Control', 'no-store, must-revalidate');
+                return new Response(response.body, {status:response.status, headers});
+              }
+              return response;
             }
           };
           JS
-          printf 'User-agent: *\nDisallow: /\n' >/tmp/jarvix-new-preview/robots.txt
+          printf 'User-agent: *\\nDisallow: /\\n' >/tmp/jarvix-new-preview/robots.txt
       - name: Deploy ONLY to preview branch
         run: npx --yes wrangler@4.48.0 pages deploy /tmp/jarvix-new-preview --project-name deepsyq --branch jarvis-new --commit-hash "$GITHUB_SHA"
