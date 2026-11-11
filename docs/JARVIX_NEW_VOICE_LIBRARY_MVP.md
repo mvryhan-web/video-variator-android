@@ -1,3 +1,34 @@
+# JARVIX NEW Voice Library — current package 0.3 (2026-11-11)
+
+The owner can download `JARVIX_Voice_Library_0.3_392_MP3_R2.zip` in
+this ChatGPT conversation. The ZIP contains **392 SHA256-verified MP3**
+(200 legacy + 192 Tour V3), unapproved draft transcripts, 4 languages,
+the local desktop library and read-only API. It passed **16 offline tests**.
+The ZIP has been verified for archive integrity; this is still a Python
+project requiring Python 3 on Windows, not a native signed EXE.
+
+The new `CHECK_R2_WINDOWS.bat` is **READ ONLY**. With environment variables
+`CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN` having R2 read permission,
+it scans all prefixes and outputs actual Cloudflare R2 MP3 counts.
+A different S3 Object Read key + `R2_BUCKET` + optional boto3 are required
+to download *additional* R2 recordings into the local program; no R2 writes.
+
+The test-branch GitHub Action
+`.github/workflows/jarvis-new-r2-inventory.yml` has now been corrected
+to parse Cloudflare R2 `result: []` and `result_info.cursor`, not the
+previously incorrect `result.objects`. It also searches all folders and
+reports matches against existing repository manifest filenames. Execution
+and Cloudflare read permissions are NOT confirmed by the ChatGPT client.
+Neither R2 storage nor the full 1900 MP3 has been independently verified.
+
+The MP3 library provides audio only for previously reviewed matching
+recordings; it does NOT replace an LLM for novel factual answers. The
+existing test JARVIX sphere queries hosted recordings, then local owner's
+approved library, and finally local Ollama text. Paid model access is
+NOT active, and production DEEPSYQ / old JARVIX were not modified.
+
+---
+
 # JARVIX NEW — owner MP3 Voice Library MVP (TEST only, 2026-11-11)
 
 ## Delivered
