@@ -1,6 +1,12 @@
 name: JARVIX NEW - prepare Microsoft Store MSIX (review only)
 
 on:
+  # One-time automatic owner identity acceptance build on this workflow change.
+  # No publishing; only an unsigned MSIX artifact for Partner Center review.
+  push:
+    branches: [jarvis-new]
+    paths:
+      - '.github/workflows/jarvis-new-store-msix.yml'
   workflow_dispatch:
     inputs:
       partner_center_package_name:
@@ -25,9 +31,11 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 35
     env:
-      STORE_NAME: ${{ inputs.partner_center_package_name }}
-      STORE_PUBLISHER: ${{ inputs.partner_center_publisher }}
-      STORE_PUBLISHER_DISPLAY: ${{ inputs.partner_center_publisher_display }}
+      # Actual Partner Center product identity supplied by owner. These are
+      # public package fields, not login credentials or signing secrets.
+      STORE_NAME: ${{ github.event_name == 'push' && 'Deepsyq.JarixbyDeepsyq' || inputs.partner_center_package_name }}
+      STORE_PUBLISHER: ${{ github.event_name == 'push' && 'CN=7B5BC7EE-DA65-44E2-8CAC-D02C7C2CA333' || inputs.partner_center_publisher }}
+      STORE_PUBLISHER_DISPLAY: ${{ github.event_name == 'push' && 'Deepsyq' || inputs.partner_center_publisher_display }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
