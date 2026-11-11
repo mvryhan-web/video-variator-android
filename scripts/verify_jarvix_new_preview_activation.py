@@ -42,7 +42,7 @@ def main():
             expect(page.locator('#jarvix-new-preview-banner')).to_contain_text('JARVIX NEW')
             # Clicking banner behaves as a visible real user's entry.
             page.locator('#jarvix-new-preview-banner a').click()
-            page.wait_for_url(lambda url: url.path in ('/jarvix-new','/jarvix-new.html'),timeout=10000)
+            page.wait_for_url(lambda url: urlparse(str(url)).path in ('/jarvix-new','/jarvix-new.html'),timeout=10000)
             expect(page.locator('h1')).to_have_text('JARVIX NEW')
             expect(page.locator('#send')).to_be_disabled()
             page.locator('[data-mode="video"]').click()
