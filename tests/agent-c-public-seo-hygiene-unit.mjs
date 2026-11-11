@@ -24,11 +24,12 @@ test('only canonical public routes are in sitemap: no redirect, no noindex or pr
  for(const requiredPath of ['/deepsyq-vs-deepseek.html', '/free-tools.html', '/pricing.html']){
    assert.ok(urls.includes(origin+requiredPath), 'missing sitemap entry: '+requiredPath);
  }
- assert.match(protectedHome,/<meta name="robots" content="noindex,follow">/,'protected Home must remain noindex');
- assert.ok(!urls.includes(origin+'/'),'the noindex owner Home must not appear as an indexable sitemap root');
+ assert.match(protectedHome,/<meta name="robots" content="index,follow">/,'public Home must allow indexing');
+ assert.match(protectedHome,/<meta name="description"[^>]*JARVIX/);
+ assert.ok(urls.includes(origin+'/'),'include the canonical public Home in sitemap');
  assert.equal(new Set(urls).size,urls.length);
  for(const url of urls)assert.equal(new URL(url).origin,origin);
- assert.doesNotMatch(sitemap,/ai-apps\.html|ai-pricing\.html|product-video|deepsyq-admin|\/api\//i);
+ assert.doesNotMatch(sitemap,/ai-apps\.html|ai-pricing\.html|audio-studio\.html|avatar-studio\.html|ai-agents\.html|jarvix-chat\.html|product-video|deepsyq-admin|\/api\//i);
  assert.match(apps,/<meta name="robots" content="noindex,follow">/);
  assert.match(legacy,/<meta name="robots" content="noindex,follow">/);
  assert.match(legacy,/<link rel="canonical" href="pricing\.html">/);
