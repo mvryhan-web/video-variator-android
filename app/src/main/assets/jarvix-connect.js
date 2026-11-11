@@ -25,15 +25,40 @@ async function offlineReason(){
  }catch{}
  return tr().offline;
 }
+const pairingProblem={
+ ru:'Код не подходит. В настольном JARVIX NEW нажми «Скопировать код подключения» и вставь новый код: он меняется при каждом запуске приложения.',
+ en:'Incorrect pairing code. In the desktop JARVIX NEW app select Copy pairing code and paste the current code; it changes every launch.',
+ fr:'Code incorrect. Dans JARVIX NEW sur ordinateur, copiez le code de connexion actuel ; il change à chaque lancement.',
+ es:'Código incorrecto. En JARVIX NEW para ordenador, copia el código de conexión actual; cambia con cada inicio.'
+};
+async function checkLocalVoice(){
+ const btn=document.createElement('button');
+ btn.type='button';
+ btn.textContent=({ru:'Проверить связь с компьютером',en:'Check desktop connection',fr:'Vérifier la connexion locale',es:'Comprobar conexión local'})[el('lang').value]||'Check desktop connection';
+ el('connect').after(btn);
+ const info=document.createElement('p');info.className='status';info.setAttribute('role','status');btn.after(info);
+ btn.addEventListener('click',async()=>{
+  btn.disabled=true;
+  try{
+   const result=await fetch(ENDPOINT+'/v1/voice/status',{mode:'cors',targetAddressSpace:'loopback',cache:'no-store'});
+   if(!result.ok)throw Error('Local bridge error');
+   const data=await result.json();
+   info.textContent=({ru:'Связь с компьютером есть. '+(data.ready?'Локальная AI-модель найдена.':'Локальная модель пока не готова.')+' Для ввода заданий нужен актуальный код из приложения.',en:'Desktop bridge is available. Use the current pairing code from the app to access tasks.',fr:'La liaison locale fonctionne. Utilisez le code actuel de l’application pour accéder aux tâches.',es:'La conexión local funciona. Utiliza el código actual de la aplicación para acceder a las tareas.'})[el('lang').value]||'Desktop bridge available.';
+  }catch{
+   info.textContent=await offlineReason();
+  }finally{btn.disabled=false}
+ });
+}
 function translate(){for(const id of ['title','explain','tokenLabel','connect','jobTitle','jobExplain','kindLabel','promptLabel','submit','refresh','warning','back'])el(id).textContent=tr()[id];document.documentElement.lang=el('lang').value}
 el('lang').addEventListener('change',()=>{try{localStorage.setItem('deepsyq_home_language',el('lang').value)}catch{}translate()});
 translate();
+checkLocalVoice();
 let key='';
 async function api(path,method='GET',body=null){
  // Chrome 145+: explicit loopback target enables the browser's normal
  // local-device permission prompt for an HTTPS test site. Do not disable it.
  const res=await fetch(ENDPOINT+path,{method,mode:'cors',targetAddressSpace:'loopback',cache:'no-store',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
- const result=await res.json();if(!res.ok)throw Error(result.error||'Local bridge failed');return result;
+ const result=await res.json();if(!res.ok){const error=Error(result.error||'Local bridge failed');error.status=res.status;throw error;}return result;
 }
 async function refresh(){
  const [report,list]=await Promise.all([api('/v1/report'),api('/v1/tasks')]);
@@ -45,7 +70,7 @@ el('connect').addEventListener('click',async()=>{
  key=el('token').value.trim();if(!key){el('status').textContent=tr().offline;return}
  el('connect').disabled=true;
  try{await refresh();el('status').textContent=tr().connected;el('submit').disabled=false;el('refresh').disabled=false;el('token').value=''}
- catch{key='';el('status').textContent=await offlineReason();el('submit').disabled=true;el('refresh').disabled=true}
+ catch(error){key='';el('status').textContent=error?.status===401?(pairingProblem[el('lang').value]||pairingProblem.en):await offlineReason();el('submit').disabled=true;el('refresh').disabled=true}
  finally{el('connect').disabled=false}
 });
 el('refresh').addEventListener('click',()=>refresh().catch(async()=>{el('status').textContent=await offlineReason()}));
