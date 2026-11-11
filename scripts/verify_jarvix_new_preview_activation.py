@@ -47,6 +47,16 @@ def main():
         try:
             page=browser.new_page(viewport={'width':1440,'height':900})
             page.goto(ORIGIN+'/',wait_until='domcontentloaded',timeout=30000)
+            # Same dropdown must be accessible in the actual DEEPSYQ HEADER,
+            # not only inside JARVIX NEW's standalone agent chat.
+            header_download=page.locator('.ds-header-tools:visible').first
+            expect(header_download).to_be_visible(timeout=12000)
+            header_download.click()
+            expect(page.locator('#jv-download-popover')).to_be_visible(timeout=8000)
+            assert page.locator('#jv-download-popover a.jv-download-option').count()==2
+            page.keyboard.press('Escape')
+            expect(page.locator('#jv-download-popover')).to_have_count(0)
+            print('PASS: Main DEEPSYQ desktop header opens Windows/Mac dropdown.')
             expect(page.locator('#jarvix-new-preview-banner')).to_be_visible(timeout=12000)
             expect(page.locator('#jarvix-new-preview-banner')).to_contain_text('JARVIX NEW')
             # Clicking banner behaves as a visible real user's entry.
