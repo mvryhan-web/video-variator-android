@@ -1293,6 +1293,9 @@ export default {
       }
       const activeImage = sessionData.image;
 
+      // Ordinary chat uses Gemini directly; ground time-sensitive questions or explicit searches.
+      const needsWebSearch = !activeImage?.data && /(?:сегодня|сейчас|завтра|вчера|на этой неделе|последние новости|актуальн|свежие новости|погода|прогноз|курс валют|курс евро|курс доллара|найди|найдите|поищи|проверь|\b(?:today|right now|currently|tomorrow|yesterday|this week|latest|current|recent|weather|forecast|exchange rate|search|look up|verify|météo|actuellement|demain|hier|aujourd['’]hui|dernières nouvelles|cherche|vérifie|hoy|ahora|mañana|ayer|últimas noticias|pronóstico|busca|verifica)\b)/iu.test(message);
+
       let replyText = '';
       let providerUsed = 'Google Gemini';
 
@@ -1301,7 +1304,7 @@ export default {
 1. НИКОГДА не представляйся, не здоровайся шаблонно (никаких "Привет! 👋", "Hello, welcome to...", "Я Gemini", "Я искусственный интеллект"). Сразу давай прямой ответ на суть вопроса.
 2. Не называй себя по имени. Отвечай прямо, информативно и по-человечески.
 3. У тебя есть встроенное компьютерное зрение. Если к запросу прикреплено изображение или в контексте диалога есть фотография — внимательно анализируй её, описывай детали, отвечай на любые вопросы пользователя о том, что изображено на фото, распознавай объекты, текст, цвета, людей, композицию.
-4. У тебя есть доступ к поиску Google и актуальным данным в реальном времени. Если пользователь спрашивает погоду, факты, новости или события — отвечай конкретно и точно, используя актуальные данные. Никогда не говори "у меня нет доступа к данным в реальном времени" или "я языковая модель".
+4. Используй поиск Google для актуальных данных, если он доступен в этом запросе. Если пользователь спрашивает погоду, факты, новости или события — отвечай конкретно и точно, используя актуальные данные. Никогда не говори "у меня нет доступа к данным в реальном времени" или "я языковая модель".
 5. НИКОГДА не навязывай генерацию картинок, видео или студии DeepSyQ, если пользователь прямо сам об этом не попросил. Если спросили про погоду в Париже — расскажи про погоду в Париже, без рекламных вставок и призывов "покреативить".`;
 
       // Google Gemini API is the default conversational model for all chat modes
@@ -1337,7 +1340,7 @@ export default {
                 contents: [{ role: 'user', parts: userParts }],
                 generationConfig: { temperature: 0.7, maxOutputTokens: 1500 }
               };
-              if (!activeImage?.data) {
+              if (needsWebSearch) {
                 requestBody.tools = [{ googleSearch: {} }];
               }
 
