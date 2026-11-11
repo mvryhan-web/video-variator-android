@@ -2,6 +2,7 @@ import {disputeQuarantineSchema} from './generation-dispute-quarantine.js';
 import {claimPurchasedGeneration,checkPurchasedGenerationMargin} from './generation-purchased-proof.js';
 // Separate prepaid AI ledger. Existing subscription/trial credits are never read here.
 export const MAX_CREDITS = 1_000_000_000;
+export const MAX_PURCHASE_CREDITS = 12_000_000;
 function integer(value, name, max = MAX_CREDITS) {
   if (!Number.isSafeInteger(value) || value <= 0 || value > max) throw new Error(`INVALID_${name}`);
   return value;
@@ -101,7 +102,7 @@ export class GenerationWallet {
     return next;
   }
   async grant({userId,sessionId,paymentIntent,credits,amount,currency,settlement=null,allowHistoricalSubscriptionReplay=false}) {
-    identifier(sessionId); identifier(paymentIntent); integer(credits,'CREDITS',10_000_000); integer(amount,'AMOUNT',100_000_000);
+    identifier(sessionId); identifier(paymentIntent); integer(credits,'CREDITS',MAX_PURCHASE_CREDITS); integer(amount,'AMOUNT',100_000_000);
     if (!['eur','usd'].includes(currency)) throw new Error('INVALID_CURRENCY');
     const verified=settlement&&settlement.currency===currency&&
       Number.isSafeInteger(settlement.processorFeeAmount)&&settlement.processorFeeAmount>=0&&

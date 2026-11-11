@@ -1,18 +1,18 @@
 import {quarantineSignedDispute} from './generation-dispute-quarantine.js';
 import {createHash,createHmac,timingSafeEqual,randomUUID} from 'node:crypto';
-import {GenerationWallet} from './generation-wallet.js';
+import {GenerationWallet,MAX_PURCHASE_CREDITS} from './generation-wallet.js';
 import {grantPaidSubscriptionInvoice,publicSubscriptionCreditGrants} from './generation-subscription-credits.js';
 import {MODELS,validateGeneration} from './generation-provider.js';
 import {retrieveStripeNetRevenue,stripeCheckoutTaxAmount} from './generation-stripe-net-revenue.js';
 
 const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const positive = n => Number.isSafeInteger(n) && n>0 && n<=10_000_000;
+const positive = (n, max = 10_000_000) => Number.isSafeInteger(n) && n>0 && n<=max;
 export function billingCatalog(env={}) {
   try {
     const packs=JSON.parse(env.AI_CREDIT_PACKS_JSON||'[]'), rates=JSON.parse(env.AI_CREDIT_RATES_JSON||'[]');
     if (!Array.isArray(packs)||!Array.isArray(rates)||packs.length>10||rates.length>3) throw Error();
-    if (packs.some(p=>!/^[a-z0-9_-]{1,40}$/.test(p.sku)||!/^price_[A-Za-z0-9]+$/.test(p.priceId)||!positive(p.credits)||!positive(p.amount)||!['eur','usd'].includes(p.currency))) throw Error();
+    if (packs.some(p=>!/^[a-z0-9_-]{1,40}$/.test(p.sku)||!/^price_[A-Za-z0-9]+$/.test(p.priceId)||!positive(p.credits,MAX_PURCHASE_CREDITS)||!positive(p.amount)||!['eur','usd'].includes(p.currency))) throw Error();
     if (new Set(packs.map(p=>p.sku)).size!==packs.length||
         new Set(packs.map(p=>p.priceId)).size!==packs.length) throw Error();
     if (rates.some(r=>!MODELS[r.kind]||!positive(r.credits))||new Set(rates.map(r=>r.kind)).size!==rates.length) throw Error();
