@@ -50,7 +50,7 @@ def render_manifest(name: str, publisher: str, display: str,
     })
     props = ET.SubElement(root, f"{{{FOUNDATION}}}Properties")
     for key, value in (
-        ("DisplayName", "JARVIX NEW"),
+        ("DisplayName", "JARVIX by DEEPSYQ"),
         ("PublisherDisplayName", display),
         ("Description", "JARVIX NEW Desktop Coordinator"),
         ("Logo", r"Assets\StoreLogo.png"),
@@ -75,7 +75,7 @@ def render_manifest(name: str, publisher: str, display: str,
         f"{{{UAP10}}}TrustLevel": "mediumIL",
     })
     ET.SubElement(app, f"{{{UAP}}}VisualElements", {
-        "DisplayName": "JARVIX NEW",
+        "DisplayName": "JARVIX by DEEPSYQ",
         "Description": "DEEPSYQ desktop companion — test",
         "Square150x150Logo": r"Assets\Square150x150Logo.png",
         "Square44x44Logo": r"Assets\Square44x44Logo.png",
@@ -86,7 +86,7 @@ def render_manifest(name: str, publisher: str, display: str,
 
 def find_makeappx() -> Path:
     base = Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"))
-    locations = list((base / "Windows Kits" / "10" / "bin").glob(r"*\x64\makeappx.exe"))
+    locations = list((base / "Windows Kits" / "10" / "bin").glob("*/x64/makeappx.exe"))
     if not locations:
         raise RuntimeError("Windows SDK MakeAppx.exe is unavailable; cannot prepare a Store package")
     return sorted(locations)[-1]
