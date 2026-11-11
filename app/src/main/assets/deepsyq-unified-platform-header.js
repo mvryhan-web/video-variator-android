@@ -167,8 +167,13 @@ export function installUnifiedPlatformHeader() {
   tools.innerHTML = '<span class="ds-pod-icon" aria-hidden="true" style="margin-right:7px;display:inline-flex;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span><span class="ds-pod-text">' + dictionary().download + '</span>';
   left.append(tools);
 
-  // Center Orb
+  // Center Orb: in jarvis-new branch, sphere click always opens JARVIX NEW
   orb.classList.add('ds-pod-center-orb');
+  orb.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    location.assign('/jarvix-new.html');
+  }, true);
 
   // Right Pod: [⚡] AI Credits, [👑] Pricing, [RU ⌵] Language, [👤] Log in
   const right = document.createElement('div');
