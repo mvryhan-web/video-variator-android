@@ -24,3 +24,26 @@ test('owner-approved plan and checkout values not changed by locale integration'
  assert.match(src,/validPlanPrice/);assert.match(src,/validAiPack/);
  assert.match(src,/isValidCheckoutURL/);
 });
+
+test('all shared glossary rows contain translations in four languages',()=>{
+ const start=js.indexOf('const rows=')+'const rows='.length;
+ const end=js.indexOf(';\n const normalize=',start);
+ assert.ok(end>start,'localized glossary declaration not found');
+ const rows=JSON.parse(js.slice(start,end));
+ assert.ok(rows.length>=200,'a large glossary may have been accidentally removed');
+ const english=new Set();
+ for(const row of rows){
+   assert.equal(row.length,4);
+   for(const value of row)assert.ok(typeof value==='string'&&value.trim(),'missing language variant');
+   assert.ok(!english.has(row[0]),'duplicate English term: '+row[0]);
+   english.add(row[0]);
+ }
+});
+test('Spanish localization stays linked to Video Uniquifier and Everyday Tools',()=>{
+ const app=readFileSync(dir+'/app-v4.js','utf8');
+ const free=readFileSync(dir+'/free-tools.js','utf8');
+ assert.match(app,/translations\.es=/);
+ assert.match(app,/raw\.startsWith\('es'\)/);
+ assert.match(free,/dict\.es=/);
+ assert.match(free,/es:\['Texto → MP3/);
+});
