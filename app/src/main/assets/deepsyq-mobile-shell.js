@@ -76,10 +76,10 @@ function setupMobileShell() {
   header.querySelectorAll('form:has(input[type="search"])').forEach(el => el.remove());
 
   const words = {
-    en: ['All tools', 'Pricing', 'Log in', 'Take a Tour'],
-    ru: ['Все инструменты', 'Тарифы', 'Войти', 'Экскурсия'],
-    fr: ['Tous les outils', 'Tarifs', 'Connexion', 'Visite guidée'],
-    es: ['Herramientas', 'Precios', 'Acceder', 'Visita guiada']
+    en: ['All tools', '♛ Pricing', 'Log in', 'Take a Tour'],
+    ru: ['Все инструменты', '♛ Тарифы', 'Войти', 'Экскурсия'],
+    fr: ['Tous les outils', '♛ Tarifs', 'Connexion', 'Visite guidée'],
+    es: ['Herramientas', '♛ Precios', 'Acceder', 'Visita guiada']
   };
   const locale = () => {
     try {

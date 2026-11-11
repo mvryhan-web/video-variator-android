@@ -213,40 +213,26 @@ function renderPlans(config){
  // No technical/preview banner above the cards; status appears only after a user action.
  message('pricingStatus','');
 }
-const LIVE_STRIPE_LINKS={
- trial:'https://buy.stripe.com/9B6fZicoSbdCd3b3e62go04',
- basic:'https://buy.stripe.com/bJe8wQfB43La4wF15Y2go00',
- pro:'https://buy.stripe.com/cNi7sMex04Pe5AJ2a22go01',
- business:'https://buy.stripe.com/aFa9AUdsW0yY0gp9Cu2go02',
- lifetime:'https://buy.stripe.com/28EeVefB4gxWd3b9Cu2go03'
-};
 async function checkoutPlan(plan){
  if(!['trial','basic','pro','business','lifetime'].includes(plan)||planCheckoutPending)return;
  if(billingPeriod==='yearly'&&annualPlanKeys.has(plan)){
+  // A displayed annual discount must never silently buy a monthly subscription.
   if(!token())openAuth();
   else message('pricingStatus','Yearly plans are a pricing preview only; annual checkout is not available. No payment was taken.');
   return;
  }
-
- const fallbackUrl=LIVE_STRIPE_LINKS[plan];
+ 
+ const scope=paymentScope();
+ if(!scope.token){openAuth();return;}
+ if(!toolBillingConfigured){message('pricingStatus','Checkout is not yet available. No payment was taken.');return;}
  planCheckoutPending=true;message('pricingStatus','Opening secure checkout…');
  try{
   const d=await api('/api/billing/checkout',{method:'POST',body:JSON.stringify({plan})});
-  if(d?.url&&isValidCheckoutURL(d.url)){
-   location.assign(d.url);
-   return;
-  }
-  if(fallbackUrl&&isValidCheckoutURL(fallbackUrl)){
-   location.assign(fallbackUrl);
-   return;
-  }
- }catch(e){
-  if(fallbackUrl&&isValidCheckoutURL(fallbackUrl)){
-   location.assign(fallbackUrl);
-   return;
-  }
-  message('pricingStatus','Checkout could not be confirmed. Check your account and try again. No payment is confirmed by this page.');
- }finally{planCheckoutPending=false;}
+  if(!current(scope))return;
+  if(!isValidCheckoutURL(d.url))throw new Error('UNSAFE_CHECKOUT_URL');
+  location.assign(d.url);
+ }catch(e){if(current(scope))message('pricingStatus','Checkout could not be confirmed. Check your account and try again. No payment is confirmed by this page.');}
+ finally{planCheckoutPending=false;}
 }
 const creditOptions=[
  {credits:1000,bonus:200,price:10,image:'credit1000'},
@@ -270,12 +256,15 @@ function renderCredits(config){
   host.before(notice);
  }
  for(const p of creditOptions){
-  const serverPack=serverPacks.find(x=>x.credits===p.credits||x.baseCredits===p.credits||x.sku==='credits_'+p.credits);
+  const serverPack=serverPacks.find(x=>x.credits===p.credits);
   const amount=serverPack?money(serverPack.amount/100,serverPack.currency.toUpperCase()):money(p.price);
+  const valid=!!serverPack&&!!checkoutMode;
   const card=node('article','price-credit-card');
   card.append(img(p.image));
   const content=node('div','price-credit-content');
   card.setAttribute('aria-describedby','priceCreditDisclosure');
+  // The existing card artwork stays visible above and below the centered metrics.
+  // The base amount appears ONCE in its original top-left corner, above the inset.
   const info=node('div','price-credit-bonus price-credit-breakdown');
   for(const [label,number] of [
    ['Base',numeral.format(p.credits)],
@@ -292,31 +281,39 @@ function renderCredits(config){
   badge.append(node('span','price-credit-badge-sparkle','✦'),
    node('span','price-credit-badge-count',numeral.format(p.credits)));
   const cost=node('strong','price-credit-price',amount);
-  const button=node('button','price-credit-purchase',checkoutMode==='test'?'Stripe TEST checkout':'Purchase');
+  // Every visible AI-credit card opens the *existing* Deepsyq sign-in when logged out.
+  // Availability and real checkout remain strictly server-authoritative.
+  const button=node('button','price-credit-purchase',valid?(checkoutMode==='test'?'Stripe TEST checkout':'Purchase'):'Check availability');
   button.type='button';
   button.addEventListener('click',()=>{
-   const packToBuy=serverPack||{sku:'credits_'+p.credits,credits:p.credits+p.bonus,baseCredits:p.credits,bonusCredits:p.bonus,amount:p.price*100,currency:'usd'};
-   void checkoutCredit(packToBuy);
+   if(!token()){openAuth();return;}
+   if(!valid){
+    message('creditStatus',numeral.format(p.credits)+' AI credits are not available for checkout yet. No payment was taken.');
+    return;
+   }
+   void checkoutCredit(serverPack);
   });
   foot.append(cost,button);
+  // The upper-left badge restores the original credit count position.
+  // Keep the approved background art, card colors and checkout behavior intact.
   content.append(badge,info,foot);
   card.append(content);host.append(card);
  }
 }
 async function checkoutCredit(pack){
- if(creditCheckoutPending)return;
+ if(!validAiPack(pack)||creditCheckoutPending)return;
+ const scope=paymentScope();
+ if(!scope.token){openAuth();return;}
  const key=JSON.stringify([pack.sku,pack.credits,pack.amount,pack.currency]);
  if(!creditRequestIds.has(key))creditRequestIds.set(key,crypto.randomUUID());
  creditCheckoutPending=true;message('creditStatus','Opening secure Stripe checkout…');
  try{
   const d=await api('/api/ai-billing/checkout',{method:'POST',body:JSON.stringify({sku:pack.sku,requestId:creditRequestIds.get(key)})});
-  if(d?.url&&isValidCheckoutURL(d.url)){
-   location.assign(d.url);
-   return;
-  }
- }catch(e){
-  message('creditStatus',checkoutErrorMessage(e.message));
- }finally{creditCheckoutPending=false;}
+  if(!current(scope))return;
+  if(!isValidCheckoutURL(d.url))throw new Error('UNSAFE_CHECKOUT_URL');
+  location.assign(d.url);
+ }catch(e){if(current(scope))message('creditStatus',checkoutErrorMessage(e.message));}
+ finally{creditCheckoutPending=false;}
 }
 
 /* The same markup, localized auth-email.js form, and Google endpoint as Deepsyq Home.
@@ -379,7 +376,7 @@ window.addEventListener('load',()=>{if(!authModal.hidden)initGoogle();});
 const fallbackPlanConfig={
  billingConfigured:false,googleClientId:'',
  plans:{
-  basic:{price:9,limit:750},pro:{price:24,limit:2250},
+  trial:{price:0.99,limit:100},basic:{price:9,limit:750},pro:{price:24,limit:2250},
   business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}
  }
 };

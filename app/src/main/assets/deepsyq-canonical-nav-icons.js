@@ -16,7 +16,7 @@ const paths=Object.freeze({
  legacy:'<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 7h8M8 11h8M8 15h8"/>',
  history:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 4V2h8v2"/><rect x="9" y="9" width="6" height="7" rx="1"/>',
  inspiration:'<circle cx="12" cy="12" r="7"/><path d="m12 3 1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/>',
- pricing:'<path d="M12 2v20M17 7c-1.5-2-8-2-9 1-2 4 9 3 9 7-1 4-8 4-10 1"/>'
+ pricing:'<path d="m3 16 2-9 4.5 4.5L12 5l2.5 6.5L19 7l2 9z"/>'
 });
 export const iconKeys=Object.freeze(Object.keys(paths));
 export function createCanonicalIcon(key){
