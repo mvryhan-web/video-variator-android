@@ -11,6 +11,25 @@
  const originalText=new WeakMap(),originalAttrs=new WeakMap(),changed=new Set();
  const attrs=['title','placeholder','aria-label','aria-description','alt'];
  const excluded='script,style,pre,code,textarea,[contenteditable="true"],[data-no-translate],[translate="no"]';
+ const criticalPricing={
+  'Base':{ru:'Основные',fr:'Base',es:'Base'},
+  'Bonus':{ru:'Бонус',fr:'Bonus',es:'Bonus'},
+  'Total':{ru:'Итого',fr:'Total',es:'Total'},
+  'AI credits':{ru:'AI-кредиты',fr:'Crédits IA',es:'Créditos IA'},
+  'Purchase':{ru:'Купить',fr:'Acheter',es:'Comprar'},
+  'Check availability':{ru:'Проверить доступность',fr:'Vérifier la disponibilité',es:'Comprobar disponibilidad'},
+  'Choose Basic':{ru:'Выбрать Базовый',fr:'Choisir Essentiel',es:'Elegir Básico'},
+  'Choose Pro':{ru:'Выбрать Про',fr:'Choisir Pro',es:'Elegir Pro'},
+  'Choose Business':{ru:'Выбрать Бизнес',fr:'Choisir Entreprise',es:'Elegir Empresa'},
+  'Choose Lifetime':{ru:'Выбрать Навсегда',fr:'Choisir À vie',es:'Elegir De por vida'}
+ };
+ function numberDependent(key){
+  const credits=/^([\\d,.\\s]+) tool credits \\/ month$/.exec(key);
+  if(credits)return {ru:credits[1]+' кредитов инструментов / месяц',fr:credits[1]+' crédits d’outils / mois',es:credits[1]+' créditos de herramientas / mes'};
+  const missing=/^([\\d,.\\s]+) AI credits are not available for checkout yet\\. No payment was taken\\.$/.exec(key);
+  if(missing)return {ru:missing[1]+' AI-кредитов пока нельзя купить. Оплата не производилась.',fr:missing[1]+' crédits IA ne sont pas encore disponibles à l’achat. Aucun paiement n’a été effectué.',es:missing[1]+' créditos IA aún no están disponibles para comprar. No se ha realizado ningún pago.'};
+  return null;
+ }
  function language(){
    let name='';
    try{name=localStorage.getItem(localKey)||localStorage.getItem(altKey)||''}catch{}
@@ -18,7 +37,7 @@
    name=String(name).toLowerCase().slice(0,2);
    return langs.has(name)?name:'en';
  }
- function entry(key){return dictionary[key]||null}
+ function entry(key){return criticalPricing[key]||dictionary[key]||numberDependent(key)||null}
  function originalOf(text){
    const m=/^(\s*)([\s\S]*?)(\s*)$/.exec(text);
    return {leading:m?.[1]||'',key:(m?.[2]||'').replace(/\s+/g,' ').trim(),ending:m?.[3]||''};
