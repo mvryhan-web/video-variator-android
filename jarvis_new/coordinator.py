@@ -7,6 +7,7 @@ simulations. No paid calls, no browser session impersonation, no auto-deploy.
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -72,10 +73,17 @@ class Coordinator:
                 );
             """)
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self):
+        # sqlite3.Connection.__exit__ commits but DOES NOT close the connection.
+        # Windows locks the .db file until close(), breaking app restarts/tests.
         db = sqlite3.connect(str(self.database), timeout=10)
         db.row_factory = sqlite3.Row
-        return db
+        try:
+            with db:
+                yield db
+        finally:
+            db.close()
 
     def submit(self, kind: str, prompt: str, source: str | None = None) -> str:
         if kind not in KINDS:
