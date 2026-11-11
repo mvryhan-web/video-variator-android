@@ -25,16 +25,15 @@ jobs:
           test -f vendor/voiceos/llm/transports/openai_compatible.py
       - name: Compile vendored Python baseline (offline, no dependency install)
         run: python -m compileall -q vendor/voiceos
+      - name: Install only offline image and video test dependencies
+        run: python -m pip install --disable-pip-version-check Pillow==11.3.0 imageio-ffmpeg==0.6.0
       - name: Offline Jarvis New adapter tests
         run: |
           python -m compileall -q jarvis_new
           python -m unittest discover -s tests -p 'test_jarvis_new_*.py' -v
           python -m jarvis_new.launch --check
-      - name: Install photo test dependency (no AI providers)
-        run: python -m pip install --disable-pip-version-check Pillow==11.3.0
       - name: Run one small photo/image/video/music test with zero provider requests
         run: |
-          command -v ffmpeg
           python -m unittest discover -s tests -p 'test_jarvis_new_coordinator.py' -v
           python -m jarvis_new.coordinator --smoke --workspace "$RUNNER_TEMP/jarvis-new-four"
       - name: Save simulated outputs and real local photo-compression evidence
