@@ -2,7 +2,7 @@ name: Jarvix New test-only Cloudflare preview
 on:
   push:
     branches: [jarvis-new]
-    paths: ['app/src/main/assets/deepsyq-unified-platform-header.js', 'app/src/main/assets/deepsyq-mobile-shell.js', 'app/src/main/assets/jarvix-download.html', '.github/workflows/jarvis-new-preview.yml']
+    paths: ['app/src/main/assets/deepsyq-unified-platform-header.js', 'app/src/main/assets/deepsyq-mobile-shell.js', 'app/src/main/assets/jarvix-download.html', 'app/src/main/assets/jarvix-connect.html', 'app/src/main/assets/jarvix-connect.js', '.github/workflows/jarvis-new-preview.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -22,6 +22,7 @@ jobs:
         run: |
           node --check app/src/main/assets/deepsyq-unified-platform-header.js
           node --check app/src/main/assets/deepsyq-mobile-shell.js
+          node --check app/src/main/assets/jarvix-connect.js
           test -f app/src/main/assets/jarvix-download.html
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$CLOUDFLARE_ACCOUNT_ID"

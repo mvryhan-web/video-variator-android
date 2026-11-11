@@ -17,6 +17,7 @@ from tkinter import filedialog, messagebox, ttk
 
 from .coordinator import Coordinator, compress_one_photo, make_simulated_media
 from .voiceos_tools import owner_coordinator
+from .local_bridge import LocalBridge
 
 BACKGROUND = "#141922"
 PANEL = "#202734"
@@ -42,6 +43,7 @@ class App:
         self.tasks = coordinator or owner_coordinator()
         self.messages: Queue[tuple[str, str]] = Queue()
         self.voice_process: subprocess.Popen | None = None
+        self.local_bridge: LocalBridge | None = None
 
         self.style = ttk.Style()
         self.style.theme_use("clam")
@@ -69,6 +71,13 @@ class App:
         self._button(actions, "Сжать 1 фото", self.select_photo).pack(side="left", padx=(0, 8))
         self._button(actions, "Голосовой VoiceOS", self.start_voice).pack(side="left", padx=(0, 8))
         self._button(actions, "Демофайл", self.demo_selected).pack(side="left")
+
+        connection = tk.Frame(root, bg=BACKGROUND)
+        connection.pack(fill="x", padx=24, pady=(0, 10))
+        self.bridge_button = self._button(connection, "Подключить тестовый сайт", self.toggle_bridge)
+        self.bridge_button.pack(side="left")
+        tk.Label(connection, text="Только этот компьютер · Без облачной синхронизации",
+                 bg=BACKGROUND, fg=MUTED).pack(side="left", padx=(12, 0))
 
         panel = tk.Frame(root, bg=PANEL, padx=16, pady=16)
         panel.pack(fill="both", expand=True, padx=24, pady=(0, 16))
@@ -197,6 +206,33 @@ class App:
         self._work(lambda: make_simulated_media(self.tasks, item["id"], Path(folder)),
                    "Демонстрационный файл создан")
 
+    def toggle_bridge(self):
+        if self.local_bridge:
+            self.local_bridge.stop()
+            self.local_bridge = None
+            self.bridge_button.configure(text="Подключить тестовый сайт")
+            self.status_var.set("Связь с тестовым сайтом остановлена.")
+            return
+        try:
+            bridge = LocalBridge(self.tasks)
+            bridge.start()
+        except OSError as error:
+            messagebox.showerror("Тестовая связь недоступна", str(error))
+            return
+        self.local_bridge = bridge
+        self.root.clipboard_clear()
+        self.root.clipboard_append(bridge.token)
+        self.bridge_button.configure(text="Отключить тестовый сайт")
+        self.status_var.set("Локальная связь включена. Код подключения скопирован в буфер обмена.")
+        messagebox.showinfo(
+            "Тестовое подключение JARVIX NEW",
+            "Код подключения скопирован. Открой на ЭТОМ ЖЕ компьютере:\n"
+            "https://jarvis-new.deepsyq.pages.dev/jarvix-connect.html\n\n"
+            "Вставь код на странице и нажми «Подключить».\n"
+            "Передаются только описания и статусы тестовых задач.\n"
+            "Это не удалённая синхронизация и не AI-генерация."
+        )
+
     def start_voice(self):
         if getattr(sys, "frozen", False):
             messagebox.showinfo(
@@ -244,6 +280,9 @@ class App:
         self.root.after(250, self.drain_events)
 
     def close(self):
+        if self.local_bridge:
+            self.local_bridge.stop()
+            self.local_bridge = None
         # Child voice processes started by this window do not outlive its consent.
         if self.voice_process and self.voice_process.poll() is None:
             self.voice_process.terminate()
