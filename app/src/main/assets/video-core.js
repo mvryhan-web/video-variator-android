@@ -43,39 +43,81 @@
     return URL.createObjectURL(new Blob([await r.arrayBuffer()],{type}));
   }
 
+  // Restore video processing without changing the encoder or its recipes.
+  // Local vendor files are preferred. When a Pages deployment lacks them,
+  // use version-pinned public single-thread FFmpeg assets instead of failing.
+  const CDN_WRAPPER=[
+    'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/ffmpeg/0.12.6/umd/ffmpeg.min.js'
+  ];
+  const CDN_CORE='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
+  async function loadScript(url){
+    await new Promise((resolve,reject)=>{
+      const script=document.createElement('script');
+      script.src=url;script.onload=resolve;
+      script.onerror=()=>reject(new Error('FFmpeg wrapper unavailable: '+url));
+      document.head.append(script);
+    });
+    if(!window.FFmpegWASM?.FFmpeg)throw new Error('FFmpeg wrapper did not register');
+  }
+  async function ensureWrapper(){
+    // bootstrap.js may have tried the absent /vendor/ffmpeg/ffmpeg.js first.
+    // Its rejected promise is not a fatal processing failure.
+    try{if(window.vuRuntimeReady)await window.vuRuntimeReady;}catch(e){log('Local FFmpeg wrapper unavailable; trying a pinned fallback.');}
+    if(window.FFmpegWASM?.FFmpeg)return;
+    let last;
+    for(const url of [CORE_BASE+'/ffmpeg.js',...CDN_WRAPPER]){
+      try{await loadScript(url);return;}catch(e){last=e;log(e.message);}
+    }
+    throw new Error('Video engine download failed. Could not load the FFmpeg wrapper. '+(last?.message||''));
+  }
   async function ensureEngine(){
     if(state.loaded&&state.ffmpeg)return state.ffmpeg;
-    if(window.vuRuntimeReady)await window.vuRuntimeReady;
-    if(!window.FFmpegWASM?.FFmpeg){
-      await new Promise((resolve,reject)=>{
-        const script=document.createElement('script');script.src=CORE_BASE+'/ffmpeg.js';
-        script.onload=resolve;script.onerror=()=>reject(new Error('The video engine could not load. Please reopen the app and try again.'));
-        document.head.append(script);
-      });
-    }
     hooks.onEngine('loading');
-    const ffmpeg=new window.FFmpegWASM.FFmpeg();
-    ffmpeg.on('log',({message})=>log(message));
-    ffmpeg.on('progress',({progress})=>{if(state.running&&Number.isFinite(progress))state.progress=clamp(progress,0,1);});
-    try{
-      // Keep the class worker as a local blob for Android/WebView compatibility,
-      // but give that worker direct same-origin core URLs. Blob URLs created by
-      // the page are not reliably fetchable from a module worker on Android.
-      const classWorkerURL=await toBlobURL(CLASS_WORKER,'text/javascript');
-      const coreURL=`${CORE_BASE}/ffmpeg-core.js`;
-      const wasmURL=`${CORE_BASE}/ffmpeg-core.wasm`;
-      try{await ffmpeg.load({classWorkerURL,coreURL,wasmURL});}finally{URL.revokeObjectURL(classWorkerURL);}
-      state.ffmpeg=ffmpeg;state.loaded=true;hooks.onEngine('ready');
-      return ffmpeg;
-    }catch(e){
-      hooks.onEngine('error');
-      try{ffmpeg.terminate();}catch(_){ }
-      if(/simd|Simd128/i.test(String(e?.message||e))){
-        const ru=(navigator.language||'').startsWith('ru');
-        throw new Error(ru?'Для обработки обновите Android System WebView и Chrome, затем перезапустите приложение.':'Update Android System WebView and Chrome, then reopen the app to process video.');
+    await ensureWrapper();
+    const cdnCandidates=[
+      {label:'same-origin',core:CORE_BASE+'/ffmpeg-core.js',wasm:CORE_BASE+'/ffmpeg-core.wasm',remote:false},
+      {label:'pinned FFmpeg 0.12.6',core:CDN_CORE+'/ffmpeg-core.js',wasm:CDN_CORE+'/ffmpeg-core.wasm',remote:true}
+    ];
+    let last;
+    for(const candidate of cdnCandidates){
+      const objectURLs=[];
+      let ffmpeg=null;
+      try{
+        const worker=await toBlobURL(CLASS_WORKER,'text/javascript');
+        objectURLs.push(worker);
+        let coreURL=candidate.core,wasmURL=candidate.wasm;
+        if(candidate.remote){
+          // Fetching as same-origin blob URLs avoids cross-origin module worker
+          // restrictions. Downloads are public FFmpeg libraries, not user media.
+          coreURL=await toBlobURL(candidate.core,'text/javascript');
+          objectURLs.push(coreURL);
+          wasmURL=await toBlobURL(candidate.wasm,'application/wasm');
+          objectURLs.push(wasmURL);
+        }
+        ffmpeg=new window.FFmpegWASM.FFmpeg();
+        ffmpeg.on('log',({message})=>log(message));
+        ffmpeg.on('progress',({progress})=>{
+          if(state.running&&Number.isFinite(progress))state.progress=clamp(progress,0,1);
+        });
+        await ffmpeg.load({classWorkerURL:worker,coreURL,wasmURL});
+        state.ffmpeg=ffmpeg;state.loaded=true;hooks.onEngine('ready');
+        log('FFmpeg ready: '+candidate.label);
+        return ffmpeg;
+      }catch(e){
+        last=e;
+        log('FFmpeg '+candidate.label+' failed: '+(e?.message||e));
+        try{ffmpeg?.terminate();}catch(_){}
+      }finally{
+        objectURLs.forEach(url=>{try{URL.revokeObjectURL(url);}catch(_){}});
       }
-      throw new Error(`Could not start the local video engine. ${e?.message||e}`);
     }
+    hooks.onEngine('error');
+    if(/simd|Simd128/i.test(String(last?.message||last))){
+      const ru=(navigator.language||'').startsWith('ru');
+      throw new Error(ru?'Для обработки обновите Android System WebView и Chrome, затем перезапустите приложение.':'Update Android System WebView and Chrome, then reopen the app to process video.');
+    }
+    throw new Error('Video engine download failed. Both local and fallback FFmpeg could not start: '+(last?.message||last||'unknown error'));
   }
 
   function setFiles(list){
