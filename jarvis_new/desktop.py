@@ -140,6 +140,7 @@ class App:
         # loopback-only, read-only conversation bridge. No pairing code and no
         # cloud sync; browser microphone/local-network grants remain separate.
         self.root.after(350, self._start_voice_bridge)
+        self.root.after(650, self._check_pair_requests)
 
     @staticmethod
     def _button(parent, label, command):
@@ -237,6 +238,28 @@ class App:
             "Для ответов на вопросы нужна установленная локальная модель Ollama. "
             "Ни один компьютерный инструмент без отдельного разрешения не запускается."
         )
+
+    def _check_pair_requests(self):
+        """Only desktop owner's explicit Yes can release a privileged task token."""
+        bridge = self.local_bridge
+        if bridge is not None:
+            for request_id in bridge.pending_pair_requests():
+                self.root.lift()
+                allowed = messagebox.askyesno(
+                    "JARVIX NEW — подключение сайта",
+                    "На тестовом сайте JARVIX нажали «Подключить».\n\n"
+                    "Разрешить этому браузеру просматривать локальные задания и "
+                    "сохранять новые задания в журнал?\n\n"
+                    "Это НЕ даёт доступ к файлам, программам или платным AI.",
+                    parent=self.root,
+                )
+                if bridge.approve_pair_request(request_id, allowed):
+                    self.status_var.set(
+                        "Подключение к тестовому сайту подтверждено."
+                        if allowed else "Запрос подключения отклонён."
+                    )
+        if self.root.winfo_exists():
+            self.root.after(650, self._check_pair_requests)
 
     def copy_pairing_code(self):
         """Copy the active per-session token without exposing it in logs."""
