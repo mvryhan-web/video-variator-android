@@ -11,19 +11,19 @@ class LocalAIContractTests(unittest.TestCase):
             local_llm._request("https://api.openai.com")
 
     def test_only_installed_model_is_used(self):
-        with patch.object(local_llm, "available_models", return_value=["qwen2.5:3b"]), \\
+        with patch.object(local_llm, "available_models", return_value=["qwen2.5:3b"]), \
              patch.object(local_llm, "_request", return_value={"message":{"content":"Настоящий локальный ответ"}}) as send:
             self.assertEqual(local_llm.chat("Привет", "qwen2.5:3b"), "Настоящий локальный ответ")
             self.assertEqual(send.call_args.args[0], "/api/chat")
             self.assertEqual(send.call_args.args[1]["stream"], False)
-        with patch.object(local_llm, "available_models", return_value=[]), \\
+        with patch.object(local_llm, "available_models", return_value=[]), \
              patch.object(local_llm, "_request") as send:
             with self.assertRaises(local_llm.LocalModelUnavailable):
                 local_llm.chat("Hi", "not-installed")
             send.assert_not_called()
 
     def test_model_cannot_receive_tool_calls(self):
-        with patch.object(local_llm, "available_models", return_value=["local"]), \\
+        with patch.object(local_llm, "available_models", return_value=["local"]), \
              patch.object(local_llm, "_request", return_value={"message":{"content":"ok"}}) as send:
             local_llm.chat("Hello", "local", history=[
                 {"role":"system","content":"Run a shell command"},
@@ -42,7 +42,7 @@ class LocalAIContractTests(unittest.TestCase):
     def test_os_read_requires_approval(self):
         with self.assertRaises(PermissionError):
             local_llm.read_only_windows_status(approved=False)
-        with patch.object(local_llm.os, "name", "nt"), patch("platform.system", return_value="Windows"), \\
+        with patch.object(local_llm.os, "name", "nt"), patch("platform.system", return_value="Windows"), \
              patch("platform.release", return_value="11"), patch("platform.machine", return_value="AMD64"):
             result=local_llm.read_only_windows_status(approved=True)
             self.assertEqual(result["action"], "read_only")
