@@ -33,6 +33,13 @@ def launch() -> None:
     window.geometry("920x640")
     window.minsize(670, 520)
     window.configure(background=BACKGROUND)
+    # Installed desktop GUI reuses the exact same original JARVIX sphere.
+    # Icon is bundled by PyInstaller, and optional in source test mode.
+    base = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[1]))
+    icon = base / "jarvix-new.png"
+    if icon.is_file():
+        window._jarvix_icon_image = tk.PhotoImage(file=str(icon))
+        window.iconphoto(True, window._jarvix_icon_image)
     App(window)
     window.mainloop()
 
