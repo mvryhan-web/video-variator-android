@@ -57,7 +57,7 @@ jobs:
                 return Response.redirect(next.href, 302);
               }
               const response = await env.ASSETS.fetch(request);
-              if (/\\.html$|\\/$/.test(url.pathname)) {
+              if (url.pathname.endsWith('.html') || url.pathname.endsWith('/')) {
                 const headers = new Headers(response.headers);
                 headers.set('Cache-Control', 'no-store, must-revalidate');
                 return new Response(response.body, {status:response.status, headers});
