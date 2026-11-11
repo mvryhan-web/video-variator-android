@@ -291,7 +291,7 @@ export function instantOpen(url, acknowledgement = null) {
       const titleEl = document.getElementById('jWorkspaceTitle');
       if (titleEl) {
         const titleMap = {
-          'index.html': 'Video Uniquifier',
+          'video-uniquifier.html': 'Video Uniquifier',
           'free-tools.html': 'Everyday Tools',
           'free-tools.html#compress-photos': 'Compress Photos',
           'free-tools.html#compress-video': 'Compress Video',
@@ -709,7 +709,7 @@ export async function handleJarvisVoiceCommand(commandText) {
   }
 
   if (/(?:открой|перейди|запусти|open|launch|ouvre|abre)\s+(?:уникализатор|видеоуникализатор|uniquifier|vu)/i.test(lower)) {
-    instantOpen('index.html');
+    instantOpen('video-uniquifier.html');
     return;
   }
 
@@ -1292,7 +1292,7 @@ function announceJarvisVoiceState() {
   if (typeof window !== 'undefined')
     window.dispatchEvent(new CustomEvent('jarvix:voice-state', {detail:{active:isJarvisActive}}));
 }
-export function activateJarvisVoice({tourGreeting = false} = {}) {
+export function activateJarvisVoice() {
   unlockOwnerSpeech();
   isJarvisActive = true;
   keepListening = true;
@@ -1308,9 +1308,9 @@ export function activateJarvisVoice({tourGreeting = false} = {}) {
   resumeJarvisRecognition();
   resetSilenceTimer();
 
+  // Verified owner-recorded greeting upon click (never the tour introduction)
   const lang = getJarvixLanguage();
-  const greetings = tourGreeting ? TOUR_GREETING_TEXT : OWNER_GREETING_TEXT;
-  const listening = greetings[lang] || greetings.ru;
+  const listening = OWNER_GREETING_TEXT[lang] || OWNER_GREETING_TEXT.ru;
   speakJarvis(listening, () => {
     if(isJarvisActive && keepListening && !isTourActive()){
       resumeJarvisRecognition();resetSilenceTimer();updateJarvisState('listening');
@@ -1349,11 +1349,16 @@ export function deactivateJarvisVoice() {
   }
 }
 
-export function toggleJarvisVoice(options) {
-  if (isJarvisActive || isJarvisSpeaking || isJarvisListening || isTourActive()) {
+export function toggleJarvisVoice() {
+  if (isTourActive()) {
+    stopJarvixGuidedTour();
+    activateJarvisVoice();
+    return;
+  }
+  if (isJarvisActive || isJarvisSpeaking || isJarvisListening) {
     deactivateJarvisVoice();
   } else {
-    activateJarvisVoice(options);
+    activateJarvisVoice();
   }
 }
 
@@ -1398,7 +1403,7 @@ export function initJarvis() {
     const topBtn = getTopBtn();
     if (topBtn && !topBtn.__jarvisBound) {
       topBtn.__jarvisBound = true;
-      topBtn.onclick = () => toggleJarvisVoice({tourGreeting: /^\/(?:deepsyq(?:\.html)?|index\.html)?$/.test(location.pathname)});
+      topBtn.onclick = () => toggleJarvisVoice();
       if (isJarvisActive) {
         topBtn.classList.add('is-active');
         if (isJarvisListening) topBtn.classList.add('is-listening');

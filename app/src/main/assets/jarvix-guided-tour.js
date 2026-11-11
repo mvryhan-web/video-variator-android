@@ -1,5 +1,5 @@
 import {getJarvixLanguage,stopAllSpeech,pauseJarvisRecognition,updateJarvisState,suspendJarvisForTour} from './jarvis-core.js';
-import {speakOwnerSpeech,stopOwnerSpeech,unlockOwnerSpeech,TOUR_GREETING_TEXT,RUSSIAN_TOUR_GREETING_URL} from './jarvix-owner-speech.js';
+import {speakOwnerSpeech,stopOwnerSpeech,unlockOwnerSpeech,TOUR_GREETING_TEXT} from './jarvix-owner-speech.js';
 import {TOUR_KEY,tourAction,tourCues,cueAt,tourNavigationClip,planNarrationBeats,sectionNarrationBeats} from './jarvix-tour-plan.js';
 import {tourV3Plan as tourPlan} from './jarvix-tour-v3-script.js';
 import {getTourV3Recording} from './jarvix-tour-v3-audio.js';
@@ -174,32 +174,14 @@ function closeV3Dialogs(){
  }
  v3DialogsOpened.clear();tourSettingsOpened=false;
 }
-function studioTourMode(step){
- return step.title==='Video'?'video':step.title==='Audio'?'audio':null;
-}
-function enterStudioFromPlus(step,target,current){
- const mode=studioTourMode(step);
- if(!mode||location.pathname!==target.pathname||!location.pathname.endsWith('/generate-studio.html'))return false;
- const kind=mode==='audio'?'music':mode;
- const real=document.querySelector('.studio-nav [data-kind="'+kind+'"]');
- if(!real||real.disabled)return false;
- if(real.getAttribute('aria-pressed')==='true'){
-  if(location.search!==target.search)history.replaceState(null,'',target.href);
-  return false;
- }
- const active=()=>current===turn&&state?.phase==='playing';
- closeV3Dialogs();
- void showTourElement(real,active,1100).catch(()=>{}).then(()=>{
-  if(!active())return;
-  real.click();
-  if(real.getAttribute('aria-pressed')!=='true'){
-   blocked(current,'Studio mode could not be opened. Press Continue to retry.');
-   return;
-  }
-  history.replaceState(null,'',target.href);
-  void play();
- });
- return true;
+const homeMediaCards={Image:'.tile-image',Video:'.tile-video',Audio:'.tile-audio'};
+function homeMediaTourStep(step){
+ const card=homeMediaCards[step.title];
+ if(!card)return step;
+ const targets=[`#homeCreativeTools ${card},#homeQuickBar`,'#studioSettingsBtn','#studioSettingsBtn','#homeQuickSubmit'];
+ return {...step,url:'deepsyq.html',beats:step.beats.map((beat,index)=>({
+  ...beat,target:targets[index]||'#homeQuickBar',action:'focus'
+ }))};
 }
 async function cueV3(beat){
  const initial=turn;
@@ -233,7 +215,7 @@ async function speakV3(text,current,complete,beat=null){
   const v4=v4id?await getTourV4Recording(v4id,state.language):null;
   const narration=firstWelcome?TOUR_GREETING_TEXT[state.language]:v4?.text||text;
   let voice=firstWelcome
-   ? (state.language==='ru'?RUSSIAN_TOUR_GREETING_URL:step.audio)
+   ? (state.language==='ru'?step.audio+'?v=20261111-v4b':step.audio)
    : v4?.url||await getTourV3Recording(text,state?.language||'en');
   if(voice&&!voice.startsWith('/')&&!voice.startsWith('http'))voice='/'+voice;
   if(current!==turn||!state||state.phase!=='playing')return;
@@ -331,8 +313,6 @@ function isSamePage(p1,p2){
 }
 function playV3(step,target,current){
  if(!state||state.phase!=='playing')return;
- // Image opens the Studio. Video and Audio use its native mode controls.
- if(enterStudioFromPlus(step,target,current))return;
  if(!isSamePage(target.pathname,location.pathname)||target.search!==location.search){
   // Navigate FIRST: title MP3 must not announce a section on the previous page.
   closeV3Dialogs();
@@ -353,11 +333,6 @@ function playV3(step,target,current){
  }
  if(state.pendingRoute?.index===state.index){
   // Let the newly opened page settle before the next introduction.
-  if(target.pathname.endsWith('/generate-studio.html')&&target.searchParams.get('settings')==='1'){
-   // The legacy Studio route opens its settings hub on entry. Close it
-   // before the first tour beat so the composer and tour controls are usable.
-   document.getElementById('studioSettingsHub')?.close();
-  }
   state.pendingRoute=null;save();
   waitTimer=setTimeout(()=>{if(current===turn&&state?.phase==='playing')void play();},1150);
   return;
@@ -433,7 +408,7 @@ function playV3(step,target,current){
  },actualBeat);
 }
 async function play(){
- if(!state)return;clearAudio();activeFocus='';const current=turn,step=tourPlan(state.language)[state.index],target=new URL(step.url,location.href);render();
+ if(!state)return;clearAudio();activeFocus='';const current=turn,step=homeMediaTourStep(tourPlan(state.language)[state.index]),target=new URL(step.url,location.href);render();
  if(step.narration==='v3'){playV3(step,target,current);return;}
  if(target.pathname!==location.pathname||target.search!==location.search){
   if(state.phase==='paused')return;
