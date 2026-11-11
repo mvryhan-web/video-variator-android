@@ -1,0 +1,15 @@
+name: DEEPSYQ i18n — audit all page text before translations
+on:
+  push:
+    branches: [owner-pricing-i18n-20261111]
+    paths: ['.github/workflows/owner-i18n-catalog-audit-20261111.yml']
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Collect untranslated customer-facing strings on all 34 pages
+        run: python3 scripts/build-deepsyq-i18n-offline.py --collect-only
