@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>JARVIX NEW — тестовая версия | DEEPSYQ</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#0d121b;color:#f2f5fa}
+*{box-sizing:border-box}body{margin:0;min-height:100vh}a{color:inherit}
+header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #273141;padding:18px clamp(18px,5vw,64px)}
+header a{text-decoration:none;font-weight:650}main{max-width:880px;margin:6vh auto;padding:0 22px 70px}
+.kicker{letter-spacing:.16em;text-transform:uppercase;font-size:12px;color:#d8ac61}
+h1{font-size:clamp(31px,5vw,51px);letter-spacing:-.04em;margin:15px 0}p{line-height:1.65;color:#cad3dd}
+.installers{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:14px;margin:30px 0}
+article{background:#151d29;border:1px solid #354152;border-radius:15px;padding:23px}
+h2{font-size:20px;margin:0 0 6px}small{color:#b2becb}.download{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:#d4a352;color:#141619;border-radius:10px;font-weight:700;padding:13px 19px;margin-top:21px;min-height:45px}
+.download[aria-disabled="true"]{background:#38404a;color:#cbd0d5;pointer-events:none;cursor:not-allowed}
+.note{border-top:1px solid #34404e;margin-top:24px;padding-top:12px}
+.note strong{color:#f1d0a2}#status{font-size:14px;min-height:1.3em}
+footer{font-size:13px;color:#a6b2c1}footer a{color:#e9bc7d}
+select{background:#19222f;color:white;padding:7px;border:1px solid #5b6778;border-radius:7px}
+</style>
+</head>
+<body>
+<header><a href="deepsyq.html">DEEPSYQ</a><select id="language" aria-label="Language"><option value="ru">Русский</option><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select></header>
+<main>
+<div class="kicker">JARVIX NEW · TEST</div>
+<h1 id="title">Скачать JARVIX NEW</h1>
+<p id="description">Отдельное тестовое приложение DEEPSYQ для Windows и macOS. Сборки публикуются из ветки jarvis-new после автоматических проверок.</p>
+<div class="installers">
+<article><h2>Windows</h2><small>.exe · Windows 10/11</small><div><a class="download" id="windows" aria-disabled="true" tabindex="-1">Пока не опубликовано</a></div></article>
+<article><h2>macOS</h2><small>.dmg · macOS (тестовая сборка)</small><div><a class="download" id="macos" aria-disabled="true" tabindex="-1">Пока не опубликовано</a></div></article>
+</div>
+<p id="status" role="status" aria-live="polite">Проверяю, опубликованы ли установщики…</p>
+<div class="note">
+<p id="capabilities"><strong>Что можно проверить:</strong> локальный журнал задач, сжатие одной фотографии и отчёты. AI-изображение, видео, музыка и голосовой разговор пока не подтверждены в установщиках. Сайт и компьютер ещё не синхронизируются автоматически.</p>
+<p id="safety"><strong>Важно:</strong> это неподписанные тестовые сборки. Не отключайте системную защиту ради установки. Приложение не подключается к платным API и не меняет рабочий DEEPSYQ.</p>
+</div>
+<footer><a href="https://github.com/mvryhan-web/video-variator-android/releases" target="_blank" rel="noopener noreferrer" id="releases">Релизы GitHub</a> · <a href="https://github.com/mvryhan-web/video-variator-android/actions/workflows/jarvis-new-installers.yml" target="_blank" rel="noopener noreferrer" id="builds">Проверки и сборки</a></footer>
+</main>
+<script type="module">
+const translations={
+ ru:{title:'Скачать JARVIX NEW',description:'Отдельное тестовое приложение DEEPSYQ для Windows и macOS. Сборки публикуются из ветки jarvis-new после автоматических проверок.',pending:'Пока не опубликовано',ready:'Скачать установщик',checking:'Проверяю, опубликованы ли установщики…',found:'Тестовые сборки доступны для загрузки.',absent:'Проверенные установщики пока не опубликованы. Следите за сборками GitHub.',capabilities:'Что можно проверить: локальный журнал задач, сжатие одной фотографии и отчёты. AI-изображение, видео, музыка и голосовой разговор пока не подтверждены в установщиках. Сайт и компьютер ещё не синхронизируются автоматически.',safety:'Важно: это неподписанные тестовые сборки. Не отключайте системную защиту ради установки. Приложение не подключается к платным API и не меняет рабочий DEEPSYQ.',releases:'Релизы GitHub',builds:'Проверки и сборки'},
+ en:{title:'Download JARVIX NEW',description:'Separate DEEPSYQ test desktop app for Windows and macOS. Builds are published from jarvis-new after automated checks.',pending:'Not yet published',ready:'Download installer',checking:'Checking published installers…',found:'Test builds are available to download.',absent:'Verified installers have not been published yet. See GitHub builds.',capabilities:'Available tests: local task log, single-photo compression and task reports. AI image, video, music and live voice are not yet confirmed in these installers. Website and desktop do not sync automatically yet.',safety:'Important: unsigned test builds. Do not disable system security to install. The app makes no paid API requests and does not alter production DEEPSYQ.',releases:'GitHub releases',builds:'Checks and builds'},
+ fr:{title:'Télécharger JARVIX NEW',description:'Application de test DEEPSYQ pour Windows et macOS. Les versions sont publiées depuis jarvis-new après vérification.',pending:'Pas encore publié',ready:'Télécharger',checking:'Vérification des installateurs…',found:'Versions de test disponibles.',absent:'Aucun installateur vérifié publié pour le moment. Consultez GitHub.',capabilities:'Tests disponibles : journal de tâches local, compression d’une photo et rapports. La génération IA et la conversation vocale ne sont pas encore confirmées. Pas encore de synchronisation avec le site.',safety:'Important : versions de test non signées. Ne désactivez pas les protections du système. Aucun appel API payant ni changement du site de production.',releases:'Versions GitHub',builds:'Tests et compilations'},
+ es:{title:'Descargar JARVIX NEW',description:'Aplicación de prueba DEEPSYQ para Windows y macOS. Las versiones se publican desde jarvis-new tras las comprobaciones.',pending:'Aún no publicado',ready:'Descargar instalador',checking:'Comprobando instaladores…',found:'Versiones de prueba disponibles.',absent:'Todavía no hay instaladores verificados. Consulta las compilaciones de GitHub.',capabilities:'Pruebas disponibles: registro local de tareas, compresión de una foto e informes. No se ha confirmado la generación IA ni la voz en los instaladores. Aún no hay sincronización con la web.',safety:'Importante: versiones de prueba sin firma. No desactives la seguridad del sistema. Sin llamadas de pago ni cambios en producción.',releases:'Versiones en GitHub',builds:'Pruebas y compilaciones'}
+};
+const stored=()=>{try{return(localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang')||navigator.language||'en').slice(0,2).toLowerCase()}catch{return'en'}};
+const pick=()=>translations[document.getElementById('language').value]||translations.en;
+document.getElementById('language').value=translations[stored()]?stored():'en';
+let available={};
+function render(){
+ const t=pick();document.documentElement.lang=document.getElementById('language').value;
+ for(const id of ['title','description','capabilities','safety','releases','builds'])document.getElementById(id).textContent=t[id];
+ for(const platform of ['windows','macos']){const el=document.getElementById(platform);el.textContent=available[platform]?t.ready:t.pending;
+ if(available[platform]){el.href=available[platform];el.removeAttribute('aria-disabled');el.removeAttribute('tabindex');}else{el.removeAttribute('href');el.setAttribute('aria-disabled','true');el.setAttribute('tabindex','-1');}}
+ document.getElementById('status').textContent=available.windows||available.macos?t.found:t.absent;
+}
+document.getElementById('language').addEventListener('change',e=>{try{localStorage.setItem('deepsyq_home_language',e.target.value)}catch{}render()});
+(async()=>{try{
+ const response=await fetch('https://api.github.com/repos/mvryhan-web/video-variator-android/releases?per_page=30',{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
+ if(!response.ok)throw Error('release unavailable');
+ const releases=await response.json();
+ const latest=releases.find(r=>r.prerelease&&r.tag_name?.startsWith('jarvix-new-test-')&&r.assets?.some(a=>a.name==='Jarvix-New-Windows-Setup.exe')&&r.assets?.some(a=>a.name==='Jarvix-New-macOS.dmg'));
+ if(latest){for(const [platform,name] of [['windows','Jarvix-New-Windows-Setup.exe'],['macos','Jarvix-New-macOS.dmg']]){const item=latest.assets.find(a=>a.name===name);if(item){const u=new URL(item.browser_download_url);if(u.protocol==='https:'&&u.hostname==='github.com'&&u.pathname.startsWith('/mvryhan-web/video-variator-android/releases/download/'))available[platform]=u.href;}}}
+ }catch{available={}}render()})();
+document.getElementById('status').textContent=pick().checking;
+</script>
+</body>
+</html>

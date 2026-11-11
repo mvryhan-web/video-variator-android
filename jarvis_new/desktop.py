@@ -198,6 +198,14 @@ class App:
                    "Демонстрационный файл создан")
 
     def start_voice(self):
+        if getattr(sys, "frozen", False):
+            messagebox.showinfo(
+                "Голосовой режим — отдельная проверка",
+                "Тестовый установщик включает локальный координатор и обработку фото.\n"
+                "Голосовой движок VoiceOS, его модели и аудиозависимости в эту сборку не входят.\n"
+                "Для голосовых тестов пока используйте отдельный запуск из исходного кода."
+            )
+            return
         if self.voice_process and self.voice_process.poll() is None:
             self.status_var.set("VoiceOS уже запущен как отдельный локальный процесс.")
             return

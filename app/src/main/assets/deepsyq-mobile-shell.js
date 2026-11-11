@@ -76,10 +76,10 @@ function setupMobileShell() {
   header.querySelectorAll('form:has(input[type="search"])').forEach(el => el.remove());
 
   const words = {
-    en: ['All tools', 'Pricing', 'Log in', 'Take a Tour'],
-    ru: ['Все инструменты', 'Тарифы', 'Войти', 'Экскурсия'],
-    fr: ['Tous les outils', 'Tarifs', 'Connexion', 'Visite guidée'],
-    es: ['Herramientas', 'Precios', 'Acceder', 'Visita guiada']
+    en: ['Download JARVIX', 'Pricing', 'Log in', 'Take a Tour'],
+    ru: ['Скачать JARVIX', 'Тарифы', 'Войти', 'Экскурсия'],
+    fr: ['Télécharger JARVIX', 'Tarifs', 'Connexion', 'Visite guidée'],
+    es: ['Descargar JARVIX', 'Precios', 'Acceder', 'Visita guiada']
   };
   const locale = () => {
     try {
@@ -170,7 +170,7 @@ function setupMobileShell() {
   const link = (text, href, className) => {
     const el = document.createElement('a'); el.textContent = text; el.href = href; el.className = className; return el;
   };
-  const tools = link(copy()[0], 'free-tools.html', 'ds-header-tools');
+  const tools = link(copy()[0], 'jarvix-download.html', 'ds-header-tools');
   const tour = document.createElement('button');tour.type='button';tour.id='dsTakeTour';tour.textContent=copy()[3];tour.className='ds-header-tour';
   tour.addEventListener('click', async () => {tour.disabled=true;try{const guide=await import('./jarvix-guided-tour.js');guide.startJarvixGuidedTour();}catch{tour.textContent='Tour unavailable';}finally{tour.disabled=false;}});
   const desktopActions=document.createElement('div');desktopActions.className='ds-desktop-actions';desktopActions.append(tour);

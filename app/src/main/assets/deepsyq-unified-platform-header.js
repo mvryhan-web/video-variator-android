@@ -4,10 +4,10 @@
  * Right pod: [⚡] AI Credits, [👑] Pricing, [RU ⌵] Language, [👤] Log in
  */
 const labels = {
-  en: { credits: 'AI Credits', login: 'Log in', pricing: 'Pricing', tour: 'Tour', tools: 'Everyday Tools' },
-  ru: { credits: 'AI Credits', login: 'Войти', pricing: 'Тарифы', tour: 'Экскурсия', tools: 'Everyday Tools' },
-  fr: { credits: 'Crédits IA', login: 'Connexion', pricing: 'Tarifs', tour: 'Visite guidée', tools: 'Everyday Tools' },
-  es: { credits: 'Créditos IA', login: 'Acceder', pricing: 'Precios', tour: 'Visita guiada', tools: 'Everyday Tools' }
+  en: { credits: 'AI Credits', login: 'Log in', pricing: 'Pricing', tour: 'Tour', tools: 'Download JARVIX', download: 'Download JARVIX' },
+  ru: { credits: 'AI Credits', login: 'Войти', pricing: 'Тарифы', tour: 'Экскурсия', tools: 'Скачать JARVIX', download: 'Скачать JARVIX' },
+  fr: { credits: 'Crédits IA', login: 'Connexion', pricing: 'Tarifs', tour: 'Visite guidée', tools: 'Télécharger JARVIX', download: 'Télécharger JARVIX' },
+  es: { credits: 'Créditos IA', login: 'Acceder', pricing: 'Precios', tour: 'Visita guiada', tools: 'Descargar JARVIX', download: 'Descargar JARVIX' }
 };
 
 const locale = () => {
@@ -71,8 +71,11 @@ export function installUnifiedPlatformHeader() {
 
   // Ensure tools link exists
   if (!tools) {
-    tools = link('Everyday Tools', 'free-tools.html', 'ds-header-tools');
+    tools = link(dictionary().download, 'jarvix-download.html', 'ds-header-tools');
   }
+
+  // Jarvis New test branch only: reuse existing header slot, keep sidebar Tools intact.
+  if (tools.tagName === 'A') tools.href = 'jarvix-download.html';
 
   // Ensure pricing exists
   if (!pricing) {
@@ -161,7 +164,7 @@ export function installUnifiedPlatformHeader() {
   left.append(tour);
 
   tools.classList.add('ds-pod-btn', 'ds-pod-tools');
-  tools.innerHTML = '<span class="ds-pod-icon" aria-hidden="true" style="margin-right:7px;display:inline-flex;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span><span class="ds-pod-text">Everyday Tools</span>';
+  tools.innerHTML = '<span class="ds-pod-icon" aria-hidden="true" style="margin-right:7px;display:inline-flex;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span><span class="ds-pod-text">' + dictionary().download + '</span>';
   left.append(tools);
 
   // Center Orb
@@ -223,6 +226,8 @@ export function installUnifiedPlatformHeader() {
   window.addEventListener('deepsyq:lang', () => {
     const t = tour.querySelector('.ds-pod-text');
     if (t) t.textContent = dictionary().tour;
+    const d = tools.querySelector('.ds-pod-text');
+    if (d) d.textContent = dictionary().download;
     const p = pricing.querySelector('.ds-pod-text');
     if (p) p.textContent = dictionary().pricing;
     let tkn = '';
