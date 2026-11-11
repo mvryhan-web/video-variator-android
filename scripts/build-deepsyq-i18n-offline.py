@@ -186,24 +186,38 @@ def load_engines():
   argostranslate.package.install_from_path(pack.download())
  return argostranslate.translate
 
-def translate_keys(keys,translator):
- translated={}
+def _translate_language(task):
+ lang,keys=task
+ import argostranslate.translate
+ result={}
  started=time.time()
- for i,key in enumerate(sorted(keys)):
-  if key in CURATED:
-   vals=CURATED[key]
-  else:
-   values=[]
-   for lang in LANGS:
-    try:out=normalize(translator.translate(key,'en',lang))
-    except Exception as e:
-     raise RuntimeError('Translation failed for '+repr(key[:60])+' to '+lang) from e
-    if not out:raise RuntimeError('Empty translated string '+repr(key))
-    values.append(out)
-   vals=tuple(values)
-  translated[key]={lang:vals[j] for j,lang in enumerate(LANGS)}
+ for i,key in enumerate(keys):
+  if key in CURATED:continue
+  try:out=normalize(argostranslate.translate.translate(key,'en',lang))
+  except Exception as e:raise RuntimeError(f'{lang} translation failed: '+repr(key[:80])) from e
+  if not out:raise RuntimeError(f'{lang} empty translation: '+repr(key[:80]))
+  result[key]=out
   if i and i%200==0:
-   print('DEEPSYQ_I18N_PROGRESS',i,'/',len(keys),'seconds',round(time.time()-started,1),flush=True)
+   print('DEEPSYQ_I18N_PROGRESS',lang,i,'/',len(keys),'seconds',round(time.time()-started,1),flush=True)
+ return lang,result
+
+def translate_keys(keys,translator):
+ from concurrent.futures import ProcessPoolExecutor,as_completed
+ from multiprocessing import get_context
+ sorted_keys=sorted(keys)
+ translated={key:dict(zip(LANGS,CURATED[key])) for key in sorted_keys if key in CURATED}
+ print('DEEPSYQ_I18N_PARALLEL_LANGUAGES',len(sorted_keys),len(translated),'human-reviewed',flush=True)
+ # Three independent offline language models run in separate processes so one
+ # lengthy French/Spanish passage cannot block Russian translation.
+ with ProcessPoolExecutor(max_workers=3,mp_context=get_context('fork')) as pool:
+  futures=[pool.submit(_translate_language,(lang,sorted_keys)) for lang in LANGS]
+  for future in as_completed(futures):
+   lang,values=future.result()
+   for key,value in values.items():
+    translated.setdefault(key,{})[lang]=value
+   print('DEEPSYQ_I18N_LANGUAGE_READY',lang,len(values),flush=True)
+ assert len(translated)==len(keys)
+ assert all(set(v)==set(LANGS) for v in translated.values())
  return translated
 
 def main():
