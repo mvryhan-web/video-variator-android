@@ -3,10 +3,27 @@ import {speakOwnerSpeech,stopOwnerSpeech,unlockOwnerSpeech} from './jarvix-owner
 import {TOUR_KEY,tourAction,tourCues,cueAt,tourNavigationClip,planNarrationBeats,sectionNarrationBeats} from './jarvix-tour-plan.js';
 import {tourV3Plan as tourPlan} from './jarvix-tour-v3-script.js';
 import {getTourV3Recording} from './jarvix-tour-v3-audio.js';
+import {getTourV4Recording,v4BeatId} from './jarvix-tour-v4-audio.js';
 import {installTourFocus,showTourElement,performTourDemo,endTourFocus} from './jarvix-tour-choreography.js';
 let audio=null,turn=0,bar=null,state=null,navTimer=null,waitTimer=null,stepWaitKey=null,stepWaitStart=0,activeFocus='',tourSettingsOpened=false;
 let transcriptPromise=null,tourSpeaking=false,cueTimer=null;
 const pauseFrame=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function speakOptionalTourV4(id,current){
+ const approved=await getTourV4Recording(id,state?.language||'ru');
+ if(!approved||current!==turn||state?.phase!=='playing')return false;
+ caption(approved.text);
+ const player=new Audio(approved.url);audio=player;player.id='dsTourAudio';player.hidden=true;document.body.append(player);
+ let finished=false;
+ await new Promise(resolve=>{
+  let timeout=null;
+  const finish=()=>{if(finished)return;finished=true;clearTimeout(timeout);setTourSpeaking(false);player.pause();player.remove();if(audio===player)audio=null;resolve();};
+  player.onplaying=()=>{if(current===turn&&state?.phase==='playing')setTourSpeaking(true);};
+  player.onended=finish;player.onerror=finish;
+  timeout=setTimeout(finish,45000);
+  void player.play().catch(finish);
+ });
+ return current===turn&&state?.phase==='playing';
+}
 const clipTranscript=file=>{
  transcriptPromise ||= fetch('media/jarvix/clips/manifest.json',{signal:AbortSignal.timeout(5000)})
   .then(r=>r.ok?r.json():null).then(data=>new Map((data?.clips||[]).map(item=>[item.url.split('/').pop().split('?')[0],item.text]))).catch(()=>new Map());
@@ -276,9 +293,13 @@ async function speakV3(text,current,complete,beat=null){
   // (clip 01) from the first guided excursion. The other 18 stages retain
   // their matching owner-recorded V3 beats and original spotlight timing.
   const firstWelcome=state?.index===0 && (state?.beat||0)===0;
+  const step=tourPlan(state.language)[state.index];
+  const v4id=beat?v4BeatId(step?.title,state?.beat||0):null;
+  const v4=v4id?await getTourV4Recording(v4id,state.language):null;
+  const narration=v4?.text||text;
   const voice=firstWelcome
    ? tourPlan(state.language)[0].audio
-   : await getTourV3Recording(text,state?.language||'en');
+   : v4?.url||await getTourV3Recording(text,state?.language||'en');
   if(current!==turn||!state||state.phase!=='playing')return;
   let spoken=false,ended=false,cueWork=Promise.resolve();
   const began=()=>{
@@ -286,7 +307,7 @@ async function speakV3(text,current,complete,beat=null){
    setTourSpeaking(true);
    if(spoken)return;
    spoken=true;
-   caption(text); // Always display exactly the phrase the current recording is meant to say.
+   caption(narration); // Actual approved V4 line when recorded; otherwise matching V3.
    if(beat){
     const title=tourPlan(state.language)[state.index]?.title;
     const idx=state.beat||0;
@@ -396,9 +417,15 @@ function playV3(step,target,current){
     fr:'Cette visite gratuite de JARVIX est terminée. Découvrez Basic, Pro et Business pour choisir les outils adaptés à vos projets.',
     es:'Esta visita gratuita de JARVIX ha terminado. Descubre Basic, Pro y Business para elegir las herramientas para tus proyectos.'
    }[state.language];
-   caption(closing); // Await matching owner MP3 before presenting this as VOICE.
-   void showTourElement('#topPricing,[href="pricing.html"]',()=>current===turn&&state?.phase==='playing',2200)
-    .then(()=>{if(current===turn&&state?.phase==='playing')waitTimer=setTimeout(()=>advance(current),3000);});
+   void (async()=>{
+    const line=await getTourV4Recording('final-upgrade',state.language);
+    caption(line?.text||closing);
+    await showTourElement('#topPricing,[href="pricing.html"]',()=>current===turn&&state?.phase==='playing',2200);
+    if(current!==turn||state?.phase!=='playing')return;
+    const spoken=await speakOptionalTourV4('final-upgrade',current);
+    if(!spoken)await pauseFrame(4300); // Text only until matching VoxCPM2 file is delivered.
+    if(current===turn&&state?.phase==='playing')advance(current);
+   })().catch(()=>{if(current===turn&&state?.phase==='playing')advance(current);});
    return;
   }
   advance(current);return;
@@ -530,10 +557,9 @@ if(typeof window!=='undefined'){
     if(!active())return;
     await showTourElement('#jMessages',active,1700);
     if(!active())return;
-    // Voice for this NEW sentence must be supplied by the original owner
-    // VoxCPM2 voice pack; never play a different, misleading MP3.
-    caption(captionText);
-    await pauseFrame(3000);
+    const recorded=await speakOptionalTourV4('clone-arrival',turn);
+    if(!recorded){caption(captionText);await pauseFrame(3000);}
+    // No JARVIX Chat source modifications or chat actions.
     if(!active())return;
     state=tourAction(state,'ended');
     save();if(state)void play();else{clearAudio();render();}
