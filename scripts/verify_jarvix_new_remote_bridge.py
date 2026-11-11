@@ -35,11 +35,23 @@ def main() -> int:
                     # Simulate the test user's explicit Allow choice, not a
                     # disabled security feature or a fabricated certificate.
                     cdp = context.new_cdp_session(page)
+                    cdp_contexts = cdp.send("Target.getBrowserContexts").get("browserContextIds", [])
+                    if len(cdp_contexts) != 1:
+                        raise RuntimeError(
+                            "Cannot safely identify the isolated Chromium test context"
+                        )
                     cdp.send("Browser.grantPermissions", {
+                        "browserContextId": cdp_contexts[0],
                         "origin": ALLOWED_ORIGIN,
                         "permissions": ["loopbackNetwork"],
                     })
-                    print("Chrome loopback-network access explicitly granted for isolated test origin.")
+                    print("Chrome loopback-network access explicitly granted for the correct isolated context.")
+                    console_errors = []
+                    failed_requests = []
+                    page.on("console", lambda m: console_errors.append(m.text[:350])
+                            if m.type == "error" else None)
+                    page.on("requestfailed", lambda req: failed_requests.append(
+                        (req.url[:160], str(req.failure)[:220])))
                     response = page.goto(TEST_PAGE, wait_until="domcontentloaded", timeout=30000)
                     if response is None or response.status != 200:
                         raise RuntimeError("Real deployed Cloudflare JARVIX test page unavailable")
@@ -54,6 +66,16 @@ def main() -> int:
                         print("LIVE PREVIEW BLOCKER: Chrome could not reach loopback.")
                         print("This may require real user local-network consent on Chrome.")
                         print("Status shown:", page.locator("#status").inner_text())
+                        print("Actual browser origin:", page.evaluate("location.origin"))
+                        try:
+                            state = page.evaluate("""
+                                async () => (await navigator.permissions.query({name: 'loopback-network'})).state
+                            """)
+                            print("Chrome loopback permission state:", state)
+                        except Exception as e:
+                            print("Loopback permission check not available:", str(e)[:160])
+                        print("Network failures:", failed_requests[-5:])
+                        print("Browser console errors:", console_errors[-5:])
                         print("Do not disable browser safety protections to pass this test.")
                         raise
                     page.locator("#kind").select_option("image")
