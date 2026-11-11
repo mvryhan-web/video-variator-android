@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `f3c0f27635d0f0430a8a829610ae6788b5387406`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 121 | Named symbols: 413 | Checked relations: 77
+Source commit: `2a775399f509005957874b677485e66dbe897a00`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 121 | Named symbols: 414 | Checked relations: 77
 
 ## Topic finder (matching filenames)
 
@@ -150,7 +150,7 @@ replies (L2)
 
 ### `app/src/main/assets/jarvix-owner-speech.js`
 
-actionAudio (L6) · actionWords (L6) · OWNER_GREETING_TEXT (L31) · TOUR_GREETING_TEXT (L32)
+actionAudio (L6) · actionWords (L6) · OWNER_GREETING_TEXT (L31) · TOUR_GREETING_TEXT (L32) · RUSSIAN_TOUR_GREETING_URL (L33)
 
 ### `app/src/main/assets/jarvix-studio-page.js`
 
