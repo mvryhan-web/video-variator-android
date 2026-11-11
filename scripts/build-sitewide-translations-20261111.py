@@ -11,6 +11,7 @@ from html.parser import HTMLParser
 import json
 import os
 import re
+import sys
 from pathlib import Path
 from collections import Counter
 
@@ -148,11 +149,11 @@ def visible_strings():
                 known.add(normalized(value))
     for entries in manual.values():known.update(entries)
     return sorted(known,key=lambda x:(len(x),x)),per_page,len(js_files)
-def install_packages():
+def install_packages(lang):
     from argostranslate import package
     package.update_package_index()
     available=package.get_available_packages()
-    needed=[("en","ru"),("en","fr"),("en","es"),("ru","en")]
+    needed=[("en",lang)] + ([("ru","en")] if lang!="ru" else [])
     for src,dst in needed:
         installed=package.get_installed_packages()
         if any(p.from_code==src and p.to_code==dst for p in installed):continue
@@ -190,11 +191,12 @@ def main():
     print("EXTRACTED_SITE_TRANSLATABLE_TEXT",json.dumps({"htmlPages":len(counts),"jsFiles":js_count,"uniqueTexts":len(texts),"perPage":counts},ensure_ascii=False),flush=True)
     if len(texts)<500:raise RuntimeError("Insufficient site content captured")
     if len(texts)>12000:raise RuntimeError("Too many strings, safety review required")
-    install_packages()
-    for lang in LANGUAGES:make_catalog(lang,texts)
+    lang=sys.argv[1] if len(sys.argv)>1 else None
+    if lang not in LANGUAGES:raise RuntimeError('Run with one required language: ru, fr or es')
+    install_packages(lang)
+    make_catalog(lang,texts)
     (OUT/"coverage.json").write_text(json.dumps({"htmlPages":len(counts),"pageStrings":counts,"translationEntries":len(texts),"languages":LANGUAGES},ensure_ascii=False,indent=2)+"\n",encoding="utf8")
-    for lang in LANGUAGES:
-        f=OUT/f"catalog-{lang}.json"
-        assert f.stat().st_size>10000
+    f=OUT/f"catalog-{lang}.json"
+    assert f.stat().st_size>10000
 if __name__=="__main__":
     main()
