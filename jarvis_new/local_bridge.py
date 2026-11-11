@@ -13,7 +13,7 @@ import secrets
 import threading
 import time
 from collections import deque
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, parse_qs
 
 ALLOWED_ORIGIN = "https://jarvis-new.deepsyq.pages.dev"
 MAX_BODY_BYTES = 8192
@@ -157,8 +157,52 @@ class _Handler(BaseHTTPRequestHandler):
         finally:
             self.server.voice_busy.release()
 
+    def _pair_request(self):
+        # Never expose the privileged token until the actual desktop owner
+        # explicitly approves this one-time browser request.
+        if not self._origin_ok():
+            return self._reply(403, {"error": "Origin not permitted"})
+        if not self.server.voice_enabled:
+            return self._reply(403, {"error": "Desktop bridge not enabled"}, cors=True)
+        if self.headers.get("Content-Length", "0") not in ("", "0"):
+            return self._reply(400, {"error": "Empty request body required"}, cors=True)
+        now = time.monotonic()
+        with self.server.pair_lock:
+            expired = [key for key, row in self.server.pair_requests.items()
+                       if row["expires"] <= now]
+            for key in expired:
+                del self.server.pair_requests[key]
+            if len(self.server.pair_requests) >= 3:
+                return self._reply(429, {"error": "Too many pending requests"}, cors=True)
+            request_id = secrets.token_urlsafe(24)
+            self.server.pair_requests[request_id] = {"state": "pending", "expires": now + 120}
+        return self._reply(202, {"request_id": request_id, "expires_in": 120}, cors=True)
+
+    def _pair_status(self):
+        if not self._origin_ok():
+            return self._reply(403, {"error": "Origin not permitted"})
+        params = parse_qs(urlsplit(self.path).query)
+        values = params.get("id", [])
+        if len(values) != 1 or not (20 <= len(values[0]) <= 80):
+            return self._reply(400, {"error": "Invalid pairing request"}, cors=True)
+        with self.server.pair_lock:
+            row = self.server.pair_requests.get(values[0])
+            if row is None or row["expires"] <= time.monotonic():
+                self.server.pair_requests.pop(values[0], None)
+                return self._reply(404, {"error": "Pair request expired"}, cors=True)
+            state = row["state"]
+            if state == "approved":
+                del self.server.pair_requests[values[0]]
+                return self._reply(200, {"token": self.server.pairing_token}, cors=True)
+            if state == "denied":
+                del self.server.pair_requests[values[0]]
+                return self._reply(403, {"error": "Desktop owner declined pairing"}, cors=True)
+        return self._reply(202, {"status": "pending"}, cors=True)
+
     def do_GET(self):
         route = urlsplit(self.path).path
+        if route == "/v1/pair/status":
+            return self._pair_status()
         if route == "/v1/voice/status":
             if not self._voice_origin_allowed():
                 return
@@ -181,6 +225,8 @@ class _Handler(BaseHTTPRequestHandler):
         return self._reply(404, {"error": "Unknown endpoint"}, cors=True)
 
     def do_POST(self):
+        if urlsplit(self.path).path == "/v1/pair/request":
+            return self._pair_request()
         if urlsplit(self.path).path == "/v1/voice/chat":
             return self._voice_chat()
         if not self._authorized():
@@ -231,10 +277,36 @@ class LocalBridge:
         server.voice_calls = deque()
         server.voice_lock = threading.Lock()
         server.voice_busy = threading.Lock()
+        server.pair_lock = threading.Lock()
+        server.pair_requests = {}
         self._server = server
         self.port = server.server_address[1]
         self._thread = threading.Thread(target=server.serve_forever, daemon=True)
         self._thread.start()
+
+    def pending_pair_requests(self):
+        if self._server is None:
+            return []
+        with self._server.pair_lock:
+            now = time.monotonic()
+            pending = []
+            for request_id, row in list(self._server.pair_requests.items()):
+                if row["expires"] <= now:
+                    del self._server.pair_requests[request_id]
+                elif row["state"] == "pending":
+                    row["state"] = "prompting"
+                    pending.append(request_id)
+            return pending
+
+    def approve_pair_request(self, request_id, approved):
+        if self._server is None:
+            return False
+        with self._server.pair_lock:
+            row = self._server.pair_requests.get(request_id)
+            if row is None or row["expires"] <= time.monotonic() or row["state"] != "prompting":
+                return False
+            row["state"] = "approved" if approved else "denied"
+        return True
 
     def stop(self):
         if self._server is not None:
