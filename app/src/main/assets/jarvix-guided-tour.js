@@ -3,8 +3,10 @@ import {speakOwnerSpeech,stopOwnerSpeech,unlockOwnerSpeech} from './jarvix-owner
 import {TOUR_KEY,tourAction,tourCues,cueAt,tourNavigationClip,planNarrationBeats,sectionNarrationBeats} from './jarvix-tour-plan.js';
 import {tourV3Plan as tourPlan} from './jarvix-tour-v3-script.js';
 import {getTourV3Recording} from './jarvix-tour-v3-audio.js';
+import {installTourFocus,showTourElement,performTourDemo,endTourFocus} from './jarvix-tour-choreography.js';
 let audio=null,turn=0,bar=null,state=null,navTimer=null,waitTimer=null,stepWaitKey=null,stepWaitStart=0,activeFocus='',tourSettingsOpened=false;
 let transcriptPromise=null,tourSpeaking=false,cueTimer=null;
+const pauseFrame=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const clipTranscript=file=>{
  transcriptPromise ||= fetch('media/jarvix/clips/manifest.json',{signal:AbortSignal.timeout(5000)})
   .then(r=>r.ok?r.json():null).then(data=>new Map((data?.clips||[]).map(item=>[item.url.split('/').pop().split('?')[0],item.text]))).catch(()=>new Map());
@@ -22,7 +24,7 @@ function setTourSpeaking(active){
  // The original orb state, not only the Tour decoration, must be silent between clips.
  updateJarvisState(playing?'speaking':'idle');
 }
-function clearAudio(){turn++;clearTimeout(navTimer);clearTimeout(waitTimer);clearTimeout(cueTimer);setTourSpeaking(false);stopOwnerSpeech();if(audio){audio.onended=null;audio.onplay=null;audio.onplaying=null;audio.onwaiting=null;audio.onpause=null;audio.onerror=null;audio.ontimeupdate=null;audio.pause();audio.remove();audio=null;}}
+function clearAudio(){turn++;clearTimeout(navTimer);clearTimeout(waitTimer);clearTimeout(cueTimer);endTourFocus();setTourSpeaking(false);stopOwnerSpeech();if(audio){audio.onended=null;audio.onplay=null;audio.onplaying=null;audio.onwaiting=null;audio.onpause=null;audio.onerror=null;audio.ontimeupdate=null;audio.pause();audio.remove();audio=null;}}
 const navElements=()=>({sidebar:document.querySelector('#sidebar,#dsSiteSidebar,.shell>.sidebar'),toggle:document.querySelector('#menu,.ds-site-mobile-toggle,.vu-nav-toggle,#menuBtn')});
 function menuOpen(){return document.body.classList.contains('ds-mobile-drawer-open')||document.body.classList.contains('ds-site-nav-open')||document.body.classList.contains('menu-open')||document.body.classList.contains('vu-nav-open');}
 function showNavigation(url){
@@ -175,22 +177,31 @@ function enterStudioFromPlus(step,target,current){
  }
  closeV3Dialogs();
  spotlight({target:'#jPlus'});
- if(menu.hidden)plus.click();
- if(menu.hidden){blocked(current,'Studio menu unavailable');return true;}
- navTimer=setTimeout(()=>{
+ // Each gesture is deliberate: Plus remains highlighted, then the REAL
+ // menu stays open for a full second before the Video/Audio tile is selected.
+ void showTourElement(plus,()=>current===turn&&state?.phase==='playing',1100).then(async el=>{
+  if(!el||current!==turn||state?.phase!=='playing')return;
+  if(menu.hidden)plus.click();
+  if(menu.hidden){blocked(current,'Studio menu unavailable');return;}
+  await showTourElement(menu,()=>current===turn&&state?.phase==='playing',1250);
   if(current!==turn||state?.phase!=='playing')return;
-  spotlight({target:'#jPlusMenu [data-j-mode="'+mode+'"]'});
-  navTimer=setTimeout(()=>{
-   if(current!==turn||state?.phase!=='playing')return;
-   choice.click(); // Native Universal Hub selects existing Studio mode. No Generate/paid API.
-   if(real.getAttribute('aria-pressed')!=='true'){blocked(current,'Studio mode unavailable');return;}
-   if(location.search!==target.search)history.replaceState(null,'',target.href);
-   navTimer=setTimeout(()=>{if(current===turn&&state?.phase==='playing')void play();},120);
-  },180);
- },180);
+  await showTourElement(choice,()=>current===turn&&state?.phase==='playing',1350);
+  if(current!==turn||state?.phase!=='playing')return;
+  choice.click(); // Real Universal Hub selection; no Create, checkout or paid job.
+  if(real.getAttribute('aria-pressed')!=='true'){blocked(current,'Studio mode unavailable');return;}
+  if(location.search!==target.search)history.replaceState(null,'',target.href);
+  await showTourElement(real,()=>current===turn&&state?.phase==='playing',1250);
+  if(current===turn&&state?.phase==='playing')void play();
+ }).catch(()=>blocked(current,'Studio menu unavailable'));
  return true;
 }
-function cueV3(beat){
+async function cueV3(beat){
+ const initial=turn;
+ const canContinue=()=>initial===turn&&state?.phase==='playing';
+ installTourFocus();
+ const first=beat.action==='openModel'||beat.action==='openSettings'?'#studioSettingsToggle':beat.target;
+ await showTourElement(first,canContinue,1250);
+ if(!canContinue())return;
  const currentStep=state&&tourPlan(state.language)[state.index];
  if(currentStep&&studioTourMode(currentStep)){
   // Video and Audio use the REAL + menu and the REAL gear/X handlers.
@@ -212,7 +223,7 @@ function cueV3(beat){
    const started=turn;
    // A short, audio-relative cue exposes the highlighted gear before the
    // native child menu appears. For tiny QA clips it stays below their duration.
-   const delay=Math.min(170,Math.max(15,(Number(audio?.duration)||1)*125));
+   const delay=300;
    clearTimeout(cueTimer);cueTimer=setTimeout(()=>{
     if(started!==turn||state?.phase!=='playing'||!hub.open||!button)return;
     spotlight({target:'#'+button.id});
@@ -226,10 +237,12 @@ function cueV3(beat){
      spotlight({target:'#'+id});
     }
    },delay);
+   await pauseFrame(1600);
    return;
   }
   if(beat.action==='closeSettings')closeV3Dialogs();
   spotlight(beat);
+  await pauseFrame(1200);
   return;
  }
  // Keep the previously approved Image and all other sections unchanged.
@@ -248,6 +261,7 @@ function cueV3(beat){
  }else if(beat.action==='closeSettings')closeV3Dialogs();
  const shown=spotlight(beat);
  if(!shown&&beat.action==='openSettings')spotlight({target:'#studioSettingsToggle,#settingsButton'});
+ await pauseFrame(1400);
 }
 async function speakV3(text,current,complete,beat=null){
  try{
@@ -259,17 +273,42 @@ async function speakV3(text,current,complete,beat=null){
    ? tourPlan(state.language)[0].audio
    : await getTourV3Recording(text,state?.language||'en');
   if(current!==turn||!state||state.phase!=='playing')return;
-  let spoken=false,ended=false;
+  let spoken=false,ended=false,cueWork=Promise.resolve();
   const began=()=>{
    if(current!==turn||!state||state.phase!=='playing')return;
    setTourSpeaking(true);
    if(spoken)return;
    spoken=true;
-   if(beat)cueV3(beat);
+   if(beat){
+    const title=tourPlan(state.language)[state.index]?.title;
+    const idx=state.beat||0;
+    cueWork=(async()=>{
+     await cueV3(beat);
+     if(current!==turn||state?.phase!=='playing')return;
+     // The Clone handoff is a post-narration action so no MP3 is cut off
+     // when the existing Inspiration button changes the page.
+     if(!(title==='Inspiration'&&idx===1))
+      await performTourDemo(title,idx,()=>current===turn&&state?.phase==='playing');
+    })().catch(()=>{});
+   }
   };
   const done=()=>{
    if(ended||current!==turn||!state||state.phase!=='playing')return;
-   ended=true;setTourSpeaking(false);complete();
+   ended=true;setTourSpeaking(false);
+   void (async()=>{
+    await cueWork;
+    if(current!==turn||state?.phase!=='playing')return;
+    const step=tourPlan(state.language)[state.index];
+    if(step?.title==='Inspiration'&&(state.beat||0)===1){
+     await performTourDemo('Inspiration',1,()=>current===turn&&state?.phase==='playing',{
+      beforeClone:()=>{
+       if(current!==turn||state?.phase!=='playing')return false;
+       state.beat=2;state.cloneHandoff=true;save();return true;
+      }
+     });
+    }
+    if(current===turn&&state?.phase==='playing')complete();
+   })();
   };
   if(voice){
    audio=new Audio(voice);const clip=audio;clip.id='dsTourAudio';clip.hidden=true;document.body.append(clip);
