@@ -10,6 +10,9 @@ const T={LOAD:'LOAD',EXEC:'EXEC',FFPROBE:'FFPROBE',WRITE_FILE:'WRITE_FILE',READ_
 let ffmpeg;
 
 function freshURL(url){
+  // Blob URLs are exact object references. Appending a query can break lookup
+  // in browsers when the recovery loader supplies pinned cross-origin assets.
+  if(String(url).startsWith('blob:'))return String(url);
   const sep=String(url).includes('?')?'&':'?';
   return `${url}${sep}runtime=${RUNTIME_REV}`;
 }
