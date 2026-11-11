@@ -23,6 +23,8 @@ jobs:
           test -f vendor/voiceos/main.py
           test -f vendor/voiceos/LICENSE
           test -f vendor/voiceos/llm/transports/openai_compatible.py
+      - name: Compile vendored Python baseline (offline, no dependency install)
+        run: python -m compileall -q vendor/voiceos
       - name: Offline Jarvis New adapter tests
         run: |
           python -m compileall -q jarvis_new
