@@ -2,7 +2,7 @@ name: Jarvix New test installers
 on:
   push:
     branches: [jarvis-new]
-    paths: ['jarvis_new/**', 'scripts/jarvis_new_installer.iss', 'app/src/main/assets/jarvix-download.html', '.github/workflows/jarvis-new-installers.yml']
+    paths: ['jarvis_new/**', 'tests/test_jarvis_new_*.py', 'scripts/jarvis_new_installer.iss', 'app/src/main/assets/jarvix-download.html', '.github/workflows/jarvis-new-installers.yml']
   workflow_dispatch:
 permissions:
   contents: write
