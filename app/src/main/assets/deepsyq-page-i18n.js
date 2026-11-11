@@ -24,9 +24,9 @@
   'Choose Lifetime':{ru:'Выбрать Навсегда',fr:'Choisir À vie',es:'Elegir De por vida'}
  };
  function numberDependent(key){
-  const credits=/^([\\d,.\\s]+) tool credits \\/ month$/.exec(key);
+  const credits=/^([\d,.\s]+) tool credits \/ month$/.exec(key);
   if(credits)return {ru:credits[1]+' кредитов инструментов / месяц',fr:credits[1]+' crédits d’outils / mois',es:credits[1]+' créditos de herramientas / mes'};
-  const missing=/^([\\d,.\\s]+) AI credits are not available for checkout yet\\. No payment was taken\\.$/.exec(key);
+  const missing=/^([\d,.\s]+) AI credits are not available for checkout yet\. No payment was taken\.$/.exec(key);
   if(missing)return {ru:missing[1]+' AI-кредитов пока нельзя купить. Оплата не производилась.',fr:missing[1]+' crédits IA ne sont pas encore disponibles à l’achat. Aucun paiement n’a été effectué.',es:missing[1]+' créditos IA aún no están disponibles para comprar. No se ha realizado ningún pago.'};
   return null;
  }
