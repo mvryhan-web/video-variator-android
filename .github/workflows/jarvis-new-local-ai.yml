@@ -1,0 +1,30 @@
+name: JARVIX NEW local AI consent checks
+on:
+  push:
+    branches: [jarvis-new]
+    paths:
+      - 'jarvis_new/local_llm.py'
+      - 'jarvis_new/windows_speech.py'
+      - 'jarvis_new/desktop.py'
+      - 'tests/test_jarvis_new_local_ai.py'
+      - '.github/workflows/jarvis-new-local-ai.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contract:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile local AI and desktop
+        run: python -m compileall -q jarvis_new/local_llm.py jarvis_new/windows_speech.py jarvis_new/desktop.py tests/test_jarvis_new_local_ai.py
+      - name: Run hermetic consent and offline-only tests
+        run: python -m unittest discover -s tests -p test_jarvis_new_local_ai.py -v
