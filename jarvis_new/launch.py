@@ -39,8 +39,16 @@ def main(argv: list[str] | None = None) -> int:
         env.pop("OPENAI_API_KEY", None)
         env.pop("DASHSCOPE_API_KEY", None)
         env["LLM_PROVIDER"] = "local"
-    os.chdir(VENDOR)
-    os.execvpe(sys.executable, [sys.executable, "main.py", "--mode", args.mode], env)
+    # Keep the project root importable while the vendored voice engine runs.
+    # The runtime injects JARVIX task tools into VoiceOS's original registry.
+    env["PYTHONPATH"] = str(ROOT) + os.pathsep + env.get("PYTHONPATH", "")
+    os.execvpe(
+        sys.executable,
+        [sys.executable, "-m", "jarvis_new.voiceos_runtime",
+         "--mode", args.mode,
+         "--llm-provider", "api" if args.provider == "alibaba" else "local"],
+        env,
+    )
     return 0
 
 
