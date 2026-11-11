@@ -31,6 +31,9 @@ jobs:
           python -m py_compile scripts/prepare_jarvix_new_test_preview.py
           test -f app/src/main/assets/jarvix-new.html
           test -f app/src/main/assets/jarvix-download.html
+          grep -q 'owner-approved-1' app/src/main/assets/connect.html
+          grep -q 'approvedConnection' app/src/main/assets/jarvix-connect.js
+          grep -q 'jarvix-connect.js' scripts/jarvix_new_preview_worker.js
           test -n "$CLOUDFLARE_API_TOKEN"
           test -n "$CLOUDFLARE_ACCOUNT_ID"
           curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" -o /tmp/pages-project.json
