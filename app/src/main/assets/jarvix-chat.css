@@ -412,7 +412,8 @@ body:has(#homeQuickForm[data-jarvix-chat]){padding-bottom:calc(var(--jarvix-comp
 .j-mode-rail .j-active-mode[hidden]{display:none!important}
 .j-mode-rail .j-active-mode svg{width:17px;height:17px;color:#31e7ff}
 @media(max-width:760px){
- .jarvix-compose .j-plus-menu.j-hub-menu{gap:6px;padding:10px 8px 12px;max-height:min(300px,45dvh);border-radius:22px}
+ .jarvix-compose .j-composer-actions-left{position:static!important}
+ .jarvix-compose .j-plus-menu.j-hub-menu{left:0!important;right:0!important;margin:0 auto!important;width:100%!important;max-width:100%!important;gap:6px;padding:10px 8px 12px;max-height:min(300px,45dvh);border-radius:22px}
  .jarvix-compose .j-hub-menu .j-hub-tile{min-height:76px;padding:9px 2px;gap:7px;border-radius:13px}
  .jarvix-compose .j-hub-glyph{width:23px;height:23px;flex-basis:23px}
  .jarvix-compose .j-hub-glyph svg{width:23px;height:23px}
