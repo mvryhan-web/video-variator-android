@@ -1,0 +1,28 @@
+name: DEEPSYQ offline translation capability check
+on:
+  push:
+    branches: [owner-pricing-i18n-20261111]
+    paths: ['.github/workflows/owner-i18n-offline-engine-check-20261111.yml']
+permissions: {contents: read}
+jobs:
+  test-offline-translation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Install Argos Translate
+        run: |
+          python3 -m pip install --quiet argostranslate
+      - name: Check open-source language packs and produce three sample translations
+        run: |
+          python3 - <<'PY'
+          import argostranslate.package,argostranslate.translate
+          available=argostranslate.package.get_available_packages()
+          matches={l:next((p for p in available if p.from_code=='en' and p.to_code==l),None) for l in ('ru','fr','es')}
+          print('DEEPSYQ_OFFLINE_PACKS',[(l, bool(p)) for l,p in matches.items()],flush=True)
+          if not all(matches.values()):raise RuntimeError('Not all four languages are available for offline translation')
+          for lang,pack in matches.items():
+              print('DEEPSYQ_OFFLINE_DOWNLOADING',lang,flush=True)
+              argostranslate.package.install_from_path(pack.download())
+              text='Choose Basic. For everyday video variations and essential tools.'
+              print('DEEPSYQ_OFFLINE_TRANSLATED',lang,argostranslate.translate.translate(text,'en',lang),flush=True)
+          PY
