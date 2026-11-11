@@ -35,6 +35,7 @@ jobs:
       - name: Run one small photo/image/video/music test with zero provider requests
         run: |
           python -m unittest discover -s tests -p 'test_jarvis_new_coordinator.py' -v
+          python -m unittest discover -s tests -p 'test_jarvis_new_voiceos_tools.py' -v
           python -m jarvis_new.coordinator --smoke --workspace "$RUNNER_TEMP/jarvis-new-four"
       - name: Save simulated outputs and real local photo-compression evidence
         if: always()
