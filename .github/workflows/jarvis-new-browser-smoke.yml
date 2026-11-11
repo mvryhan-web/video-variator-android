@@ -66,5 +66,9 @@ jobs:
             grep -q 'JARVIX NEW' /tmp/jarvix-preview.html
           done
           echo 'PASS: Both JARVIX NEW test-site pages reachable'
+          curl --fail --location --silent --show-error --retry 2 --max-time 25 \
+            'https://jarvis-new.deepsyq.pages.dev/jarvix-connect.js' -o /tmp/jarvix-live-client.js
+          grep -q "targetAddressSpace:'loopback'" /tmp/jarvix-live-client.js
+          echo 'PASS: Live JARVIX client requests Chrome loopback access explicitly'
       - name: Ensure production application is never deployed during this test
         run: echo 'No Cloudflare deployment or production API access in this workflow.'
