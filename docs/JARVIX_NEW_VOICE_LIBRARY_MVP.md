@@ -1,3 +1,17 @@
+# Windows executable — tested portable package (2026-11-11)
+
+Successful Windows GitHub Actions build: https://github.com/mvryhan-web/video-variator-android/actions/runs/43093896024
+Source: jarvis_new/voice_library_desktop.py
+Tests: tests/test_jarvix_voice_library_desktop.py — 5/5 pass on Windows.
+Original 552 MP3 and Tour V3 draft transcript manifest are bundled.
+Windows users can extract ZIP and start JARVIX_Voice_Library/JARVIX_Voice_Library.exe without Python.
+Local HTTP API: 127.0.0.1:8770. Only manually confirmed Q&A MP3 may be served.
+Initial approved clip count: zero until the owner confirms text and matching question.
+No LLM billing, new audio synthesis, external provider access, R2 writes, or production changes.
+Executable is unsigned TEST-only. The real GUI has not been manually tested on owner's Windows computer.
+R2 bucket inventory still blocked by HTTP 403 without a dedicated permissioned read token.
+
+---
 # JARVIX NEW — 552 MP3 physical recovery and TEST deployment (2026-11-11)
 
 - From the GitHub tree of branch `jarvis-new`, verified **552 actual
