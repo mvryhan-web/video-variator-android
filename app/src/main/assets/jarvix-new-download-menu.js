@@ -120,7 +120,7 @@
       link.style.cssText='display:block;padding:12px 10px;margin-bottom:5px;border-radius:8px;background:#1c2b3b;color:#eaf3fb;text-decoration:none;font-size:14px;font-weight:650;';
       link.addEventListener('click',event=>{
         if (link.getAttribute('aria-disabled')==='true') event.preventDefault();
-        else closeMenu();
+        else setTimeout(closeMenu, 300);
       });
       options[kind]=link;popup.append(link);
     }
@@ -159,7 +159,7 @@
     if (popup && !event.target.closest?.('#jv-download-popover')) closeMenu();
   }, true);
   document.addEventListener('keydown',event=>{
-    if(event.key==='Escape' && popup) {event.preventDefault();closeMenu();anchor?.focus();}
+    if(event.key==='Escape' && popup) {event.preventDefault();const previous=anchor;closeMenu();previous?.focus();}
   });
   window.addEventListener('resize',position);
   window.addEventListener('scroll',position,true);
