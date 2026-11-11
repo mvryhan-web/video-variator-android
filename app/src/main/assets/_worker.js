@@ -374,17 +374,18 @@ export default {
 
     if (pathname === '/api/billing/checkout' && request.method === 'POST') {
       const user = await getAuthenticatedUser(request, env);
-      if (!user) return json({ error: 'AUTH_REQUIRED' }, 401);
-      const pub = buildPublicUser(user, env);
-      if (pub.isAdmin) return json({ error: 'ADMIN_ACCESS_ALREADY_UNLIMITED' }, 409);
-      if (pub.usage?.plan === 'lifetime' && pub.usage.active) return json({ error: 'LIFETIME_ALREADY_ACTIVE' }, 409);
       const body = await request.json().catch(() => ({}));
       const plan = String(body.plan || '');
       const baseLink = LIVE_SUBSCRIPTION_LINKS[plan];
       if (!baseLink) return json({ error: 'INVALID_OR_UNCONFIGURED_PLAN' }, 400);
       const linkUrl = new URL(baseLink);
-      linkUrl.searchParams.set('client_reference_id', user.id);
-      if (user.email) linkUrl.searchParams.set('prefilled_email', user.email);
+      if (user) {
+        const pub = buildPublicUser(user, env);
+        if (pub.isAdmin) return json({ error: 'ADMIN_ACCESS_ALREADY_UNLIMITED' }, 409);
+        if (pub.usage?.plan === 'lifetime' && pub.usage.active) return json({ error: 'LIFETIME_ALREADY_ACTIVE' }, 409);
+        linkUrl.searchParams.set('client_reference_id', user.id);
+        if (user.email) linkUrl.searchParams.set('prefilled_email', user.email);
+      }
       return json({ url: linkUrl.toString() });
     }
 
