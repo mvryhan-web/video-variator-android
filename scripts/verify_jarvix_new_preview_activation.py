@@ -89,6 +89,16 @@ def main():
             print('PASS: Header has two DIRECT Windows/Mac test build links.')
 
             mobile=browser.new_page(viewport={'width':390,'height':844})
+            mobile.goto(ORIGIN+'/',wait_until='domcontentloaded',timeout=20000)
+            mobile_tour=mobile.locator('.ds-mobile-control-right #dsTakeTour')
+            mobile_download=mobile.locator('.ds-mobile-control-right .ds-header-tools')
+            expect(mobile_tour).to_be_visible(timeout=12000)
+            expect(mobile_download).to_be_visible(timeout=12000)
+            assert mobile_download.evaluate("(node) => node.previousElementSibling?.id==='dsTakeTour'"), 'Download is not immediately beside Tour in the mobile header'
+            mobile_download.click()
+            expect(mobile.locator('#jv-download-popover')).to_be_visible(timeout=8000)
+            assert mobile.locator('#jv-download-popover a.jv-download-option').count()==2
+            print('PASS: Main DEEPSYQ mobile header shows Download JARVIX immediately beside Tour.')
             mobile.goto(ORIGIN+'/jarvix-new.html',wait_until='domcontentloaded',timeout=20000)
             mobile.locator('header a.back').click()
             expect(mobile.locator('#jv-download-popover')).to_be_visible(timeout=8000)
