@@ -61,6 +61,18 @@ function render(){
  const lang=state.language;const texts={ru:['Пауза','Продолжить','Стоп'],en:['Pause','Continue','Stop'],fr:['Pause','Continuer','Arrêter'],es:['Pausa','Continuar','Parar']}[lang]||['Pause','Continue','Stop'];
  if(!bar){bar=document.createElement('section');bar.className='ds-tour-controls';bar.setAttribute('aria-label','JARVIX tour controls');bar.innerHTML='<button type="button" data-tour="pause"></button><button type="button" data-tour="continue"></button><button type="button" data-tour="stop"></button>';bar.querySelector('[data-tour="pause"]').onclick=pauseJarvixGuidedTour;bar.querySelector('[data-tour="continue"]').onclick=continueJarvixGuidedTour;bar.querySelector('[data-tour="stop"]').onclick=stopJarvixGuidedTour;document.body.append(bar);}
  bar.setAttribute('aria-label',`JARVIX · ${tourPlan(lang)[state.index].title} · ${state.index+1}/${tourPlan(lang).length}${state.error?' · '+state.error:''}`);
+ // A paused tour used to look like it had silently stopped. Show the exact
+ // playback/navigation problem above the existing Pause/Continue controls.
+ let errorNotice=bar.querySelector('.ds-tour-error');
+ if(!errorNotice){
+  errorNotice=document.createElement('span');
+  errorNotice.className='ds-tour-error';
+  errorNotice.setAttribute('role','status');
+  errorNotice.style.cssText='position:absolute;bottom:calc(100% + 8px);left:0;right:0;max-width:min(92vw,430px);margin:auto;padding:8px 11px;border:1px solid #825d91;border-radius:10px;background:#15192d;color:#f5e7ff;font:500 12px/1.4 system-ui,sans-serif;text-align:center;white-space:normal;';
+  bar.append(errorNotice);
+ }
+ errorNotice.hidden=!state.error;
+ errorNotice.textContent=state.error||'';
  for(const [i,key]of ['pause','continue','stop'].entries()){const b=bar.querySelector(`[data-tour="${key}"]`);b.textContent=texts[i];b.title=state.error||texts[i];}
  bar.querySelector('[data-tour="pause"]').hidden=state.phase==='paused';bar.querySelector('[data-tour="continue"]').hidden=state.phase!=='paused';
  bar.dataset.error=state.error||'';document.getElementById('topJarvisBtn')?.classList.toggle('ds-tour-speaking',state.phase==='playing'&&tourSpeaking);
@@ -296,14 +308,24 @@ function playV3(step,target,current){
  if(!isSamePage(target.pathname,location.pathname)||target.search!==location.search){
   // Navigate FIRST: title MP3 must not announce a section on the previous page.
   closeV3Dialogs();
-  const link=showNavigation(step.url);
+  showNavigation(step.url);
+  // At most ONE full-page navigation for this stage. A stale route, redirect,
+  // or intercepted sidebar handler must not cause a reload loop.
+  if(state.pendingRoute?.index===state.index&&state.pendingRoute?.href===target.href){
+   blocked(current,'Tour page could not be opened. Press Continue to retry.');
+   return;
+  }
+  state.pendingRoute={index:state.index,href:target.href};
+  save();
   navTimer=setTimeout(()=>{
    if(current!==turn||!state||state.phase!=='playing')return;
-   if(link&&new URL(link.href).pathname===target.pathname&&new URL(link.href).search===target.search&&
-      new URL(link.href).hash===target.hash)link.click();
-   else location.assign(target.href);
+   try{location.assign(target.href);}catch{blocked(current,'Tour page could not be opened.');}
   },120);
   return;
+ }
+ if(state.pendingRoute?.index===state.index){
+  state.pendingRoute=null;
+  save();
  }
  closeNavigation();pauseJarvisRecognition();
  const index=Math.min(state.beat||0,step.beats.length);
@@ -314,10 +336,12 @@ function playV3(step,target,current){
   const key=location.pathname+location.search+':v3:nav:'+state.index;
   if(![...document.querySelectorAll(step.beats[0].target)].some(el=>el.getClientRects().length)){
    if(stepWaitKey!==key){stepWaitKey=key;stepWaitStart=Date.now();}
-   if(Date.now()-stepWaitStart<5000)
+   if(Date.now()-stepWaitStart<1800){
     waitTimer=setTimeout(()=>{if(current===turn&&state)void play();},150);
-   else blocked(current,'Tour section unavailable');
-   return;
+    return;
+   }
+   // The site's control may have been renamed. Keep the original recorded
+   // narration and continue on the existing page instead of stalling.
   }
   void speakV3(step.navText,current,()=>{
    if(current!==turn||!state||state.phase!=='playing')return;
@@ -325,18 +349,22 @@ function playV3(step,target,current){
   });
   return;
  }
+ let actualBeat=beat;
  if(!document.querySelector(beat.target)){
   const key=location.pathname+location.search+':v3:'+state.index+':'+index;
   if(stepWaitKey!==key){stepWaitKey=key;stepWaitStart=Date.now();}
-  if(Date.now()-stepWaitStart<5000){
+  if(Date.now()-stepWaitStart<1800){
    waitTimer=setTimeout(()=>{if(current===turn&&state)void play();},150);
-  }else blocked(current,'Tour control unavailable');
-  return;
+   return;
+  }
+  // Avoid clicking a nonexistent button or substituting a different action.
+  // A read-only spotlight on the existing page is safe and keeps the tour going.
+  actualBeat={...beat,target:document.querySelector('main')?'main':'body',action:'focus'};
  }
  void speakV3(beat.text,current,()=>{
   if(current!==turn||!state||state.phase!=='playing')return;
   state.beat=index+1;state.position=0;save();void play();
- },beat);
+ },actualBeat);
 }
 async function play(){
  if(!state)return;clearAudio();activeFocus='';const current=turn,step=tourPlan(state.language)[state.index],target=new URL(step.url,location.href);render();
@@ -396,7 +424,7 @@ export function startJarvixGuidedTour(){
  void play();
 }
 export function pauseJarvixGuidedTour(){if(!state)return;state={...tourAction(state,'pause'),position:audio?.currentTime||state.position||0};clearAudio();save();updateJarvisState('idle');render();}
-export function continueJarvixGuidedTour(){if(!state)return;unlockOwnerSpeech();state={...tourAction(state,'continue'),error:null};save();void play();}
+export function continueJarvixGuidedTour(){if(!state)return;unlockOwnerSpeech();state={...tourAction(state,'continue'),error:null,pendingRoute:null};save();void play();}
 export function stopJarvixGuidedTour(){closeV3Dialogs();clearAudio();state=null;save();stopAllSpeech();pauseJarvisRecognition();closeNavigation();activeFocus='';window.dispatchEvent(new Event('jarvix:tour-ended'));document.querySelectorAll('.jarvis-tour-spotlight').forEach(e=>e.classList.remove('jarvis-tour-spotlight'));updateJarvisState('idle');render();}
 export function resumeJarvixGuidedTour(){state=read();if(!state)return false;void play();return true;}
 if(typeof window!=='undefined'){
