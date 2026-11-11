@@ -75,3 +75,25 @@ Full task-history sync and tool-router bindings remain follow-up work.
 
 No WakoAI proprietary binaries or upstream real `.env` / GitHub workflows
 have been transferred.
+
+## Coordinator and real upstream VoiceOS tool registry — 2026-11-11
+The original VoiceOS source is untouched. The launch entrypoint now loads it
+with a **three-tool JARVIX registry extension**: accept task, read status,
+and report the owner's real journal state. Tasks are persisted in local SQLite.
+Queuing an image/video/music job does **not** create content or charge money.
+Computer file operations are never granted automatically to the model.
+
+The local photo-compression module operates on a user-selected file and
+writes to an explicitly selected destination, preserving the source. The
+mock image/video/music files are marked `SIMULATED`, verified as actual
+file formats, and *never* reported as AI generation.
+
+Run `python -m unittest discover -s tests -p 'test_jarvis_new_*.py' -v`
+after installing offline test deps. For a tiny independent smoke:
+`python -m jarvis_new.coordinator --smoke --workspace /path/to/private/test-folder`.
+No external requests are made in that command.
+
+Start the **upstream VoiceOS** CLI with the integrated JARVIX NEW task tools:
+`python -m jarvis_new.launch --provider local --mode cli`.
+Requires installing the upstream VoiceOS Python requirements and a supported
+local LLM. The startup has not yet been accepted on real Windows/macOS machines.
