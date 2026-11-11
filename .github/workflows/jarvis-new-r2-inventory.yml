@@ -37,6 +37,8 @@ jobs:
               return data
           index=fetch('/r2/buckets')
           buckets=[row['name'] for row in index.get('result',{}).get('buckets',[]) if row.get('name')]
+          if not buckets:
+              raise RuntimeError('No R2 buckets visible to token; this does not prove absence of audio')
           print('R2 buckets discovered:',len(buckets))
           # R2 REST List Objects returns result: ARRAY and result_info.cursor;
           # earlier code mistakenly treated result as {objects,cursor}, printing
@@ -67,7 +69,8 @@ jobs:
                   try:data=fetch(endpoint)
                   except RuntimeError as err:
                       print('R2 bucket',bucket,': inventory blocked:',str(err))
-                      exhausted=True
+                      # A permission failure must never look like a completed zero count.
+                      exhausted=False
                       break
                   objects=data.get('result')
                   if not isinstance(objects,list):
