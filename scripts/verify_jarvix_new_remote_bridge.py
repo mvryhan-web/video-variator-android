@@ -27,7 +27,19 @@ def main() -> int:
             with sync_playwright() as pw:
                 browser = pw.chromium.launch(headless=True)
                 try:
-                    page = browser.new_page(viewport={"width": 390, "height": 844})
+                    context = browser.new_context(viewport={"width": 390, "height": 844})
+                    # This emulates the actual user's *explicit* Allow click
+                    # in Chrome's local-network permission dialog. No security
+                    # flags are disabled and no system certificates installed.
+                    try:
+                        context.grant_permissions(["loopback-network"], origin=ALLOWED_ORIGIN)
+                        print("Chrome granular loopback permission granted by test user.")
+                    except Exception as granular_error:
+                        # Playwright releases may still expose only the older
+                        # combined LNA permission name for browser contexts.
+                        context.grant_permissions(["local-network-access"], origin=ALLOWED_ORIGIN)
+                        print("Chrome legacy LNA permission granted by test user.")
+                    page = context.new_page()
                     response = page.goto(TEST_PAGE, wait_until="domcontentloaded", timeout=30000)
                     if response is None or response.status != 200:
                         raise RuntimeError("Real deployed Cloudflare JARVIX test page unavailable")
