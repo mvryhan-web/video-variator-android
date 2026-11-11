@@ -16,8 +16,6 @@ class CoordinatorTests(unittest.TestCase):
         self.path = Path(self.tmp.name)
 
     def test_one_each_and_no_paid_requests(self):
-        if shutil.which("ffmpeg") is None:
-            self.skipTest("ffmpeg unavailable")
         from PIL import Image  # present in the offline CI test environment
         result = four_small_tests(self.path)
         self.assertEqual(result["provider_requests"], 0)
