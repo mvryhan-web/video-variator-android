@@ -233,7 +233,7 @@ async function speakV3(text,current,complete,beat=null){
   const v4=v4id?await getTourV4Recording(v4id,state.language):null;
   const narration=firstWelcome?TOUR_GREETING_TEXT[state.language]:v4?.text||text;
   let voice=firstWelcome
-   ? step.audio
+   ? (state.language==='ru'?step.audio+'?v=20261111-v4b':step.audio)
    : v4?.url||await getTourV3Recording(text,state?.language||'en');
   if(voice&&!voice.startsWith('/')&&!voice.startsWith('http'))voice='/'+voice;
   if(current!==turn||!state||state.phase!=='playing')return;
