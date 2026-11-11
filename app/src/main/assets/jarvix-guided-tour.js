@@ -475,6 +475,36 @@ export function resumeJarvixGuidedTour(){state=read();if(!state)return false;voi
 if(typeof window!=='undefined'){
  window.addEventListener('keydown',e=>{if(e.key==='Escape'&&isTourActive())stopJarvixGuidedTour();});
  window.addEventListener('pagehide',()=>{if(state){state.position=audio?.currentTime||0;save();audio?.pause();}});
- const resume=()=>{if(location.pathname.endsWith('/jarvix-chat.html')){if(read())stopJarvixGuidedTour();return;}if(read())resumeJarvixGuidedTour();};
+ const resume=()=>{
+  if(location.pathname.endsWith('/jarvix-chat.html')){
+   const checkpoint=read();
+   if(!checkpoint?.cloneHandoff){if(checkpoint)stopJarvixGuidedTour();return;}
+   // Only the explicit Inspiration Clone & Try handoff may temporarily
+   // show the guided overlay in JARVIX Chat. No chat handlers are changed.
+   state=checkpoint;state.cloneHandoff=false;save();render();
+   void (async()=>{
+    const active=()=>!!state&&state.phase==='playing'&&state.index===11;
+    const captionText={
+     ru:'Здесь вы можете создать собственное изображение или видео по понравившемуся примеру.',
+     en:'Here you can create your own image or video based on the example you liked.',
+     fr:'Vous pouvez créer ici une image ou une vidéo à partir de votre exemple préféré.',
+     es:'Aquí puedes crear tu propia imagen o vídeo a partir del ejemplo elegido.'
+    }[state.language]||'Create your own image or video here.';
+    await pauseFrame(650);
+    if(!active())return;
+    await showTourElement('#jMessages',active,1700);
+    if(!active())return;
+    // Voice for this NEW sentence must be supplied by the original owner
+    // VoxCPM2 voice pack; never play a different, misleading MP3.
+    caption(captionText);
+    await pauseFrame(3000);
+    if(!active())return;
+    state=tourAction(state,'ended');
+    save();if(state)void play();else{clearAudio();render();}
+   })().catch(()=>{if(state)blocked(turn,'Inspiration handoff unavailable');});
+   return;
+  }
+  if(read())resumeJarvixGuidedTour();
+ };
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',resume,{once:true});else queueMicrotask(resume);
 }
