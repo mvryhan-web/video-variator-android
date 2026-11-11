@@ -47,6 +47,7 @@ def main() -> int:
                     page = browser.new_page(viewport={"width": 1440, "height": 900})
                     response = page.goto(f"http://127.0.0.1:{WEB_PORT}/jarvix-connect.html", wait_until="load")
                     assert response and response.status == 200, "Test connection HTML did not load"
+                    page.locator("#lang").select_option("ru")
                     page.locator("#token").fill(bridge.token)
                     page.locator("#connect").click()
                     expect(page.locator("#status")).to_contain_text("Соединение подтверждено", timeout=10000)
@@ -67,6 +68,7 @@ def main() -> int:
                     # A wrong pairing code must not authorize browser actions.
                     bad = browser.new_page(viewport={"width": 390, "height": 844})
                     bad.goto(f"http://127.0.0.1:{WEB_PORT}/jarvix-connect.html", wait_until="load")
+                    bad.locator("#lang").select_option("ru")
                     bad.locator("#token").fill("invalid-token")
                     bad.locator("#connect").click()
                     expect(bad.locator("#status")).to_contain_text("Не удалось подключиться", timeout=10000)
