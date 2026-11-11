@@ -1,0 +1,61 @@
+name: JARVIX NEW - prepare Microsoft Store MSIX (review only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      partner_center_package_name:
+        description: Exact Package Identity Name from verified Microsoft Partner Center
+        required: true
+        type: string
+      partner_center_publisher:
+        description: Exact Publisher DN from Microsoft Partner Center (CN=...)
+        required: true
+        type: string
+      partner_center_publisher_display:
+        description: Verified display name used in Microsoft Partner Center
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  store-msix:
+    if: github.ref == 'refs/heads/jarvis-new'
+    runs-on: windows-latest
+    timeout-minutes: 35
+    env:
+      STORE_NAME: ${{ inputs.partner_center_package_name }}
+      STORE_PUBLISHER: ${{ inputs.partner_center_publisher }}
+      STORE_PUBLISHER_DISPLAY: ${{ inputs.partner_center_publisher_display }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install local packaging dependencies only
+        run: python -m pip install --disable-pip-version-check Pillow==11.3.0 imageio-ffmpeg==0.6.0 pyinstaller==6.16.0
+      - name: Check provider identity and manifest without creating or installing a package
+        shell: pwsh
+        run: |
+          python -m unittest discover -s tests -p "test_jarvis_new_store_package.py" -v
+          python scripts/jarvix_new_store_package.py --name "$env:STORE_NAME" --publisher "$env:STORE_PUBLISHER" --publisher-display "$env:STORE_PUBLISHER_DISPLAY" --manifest-only > $env:RUNNER_TEMP/jarvix-msix-manifest-preflight.xml
+          if($LASTEXITCODE -ne 0) { throw 'Invalid Microsoft Store identity' }
+      - name: Original JARVIX owner sphere for all Windows icons
+        run: python scripts/build_jarvix_new_icons.py
+      - name: Freeze JARVIX NEW desktop companion
+        run: python -m PyInstaller --noconfirm --clean --windowed --onedir --name JARVIX_NEW --collect-all imageio_ffmpeg --icon build/jarvix-new-icon/jarvix-new.ico --version-file scripts/jarvix_new_version_info.txt --add-data "build/jarvix-new-icon/jarvix-new.png:." jarvis_new/desktop_entry.py
+      - name: Generate unsigned Store submission MSIX, not intended for user download or sideload
+        shell: pwsh
+        run: |
+          python scripts/jarvix_new_store_package.py --name "$env:STORE_NAME" --publisher "$env:STORE_PUBLISHER" --publisher-display "$env:STORE_PUBLISHER_DISPLAY"
+          if($LASTEXITCODE -ne 0) { throw 'MSIX creation failed' }
+          if(-not (Test-Path dist/JARVIX_NEW-STORE-UNSIGNED.msix)) { throw 'MSIX missing' }
+          Write-Host "Created Store-only submission file. It is NOT a trusted installer."
+      - name: Preserve only for Microsoft Partner Center upload after review
+        uses: actions/upload-artifact@v4
+        with:
+          name: JARVIX_NEW_STORE_SUBMISSION_UNSIGNED_NOT_FOR_USER_INSTALL
+          path: dist/JARVIX_NEW-STORE-UNSIGNED.msix
+          if-no-files-found: error
+          retention-days: 7
