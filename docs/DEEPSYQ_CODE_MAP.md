@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `941e99bbe2dad8a065ebc2495778b0c128cbc5d4`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `9791beaaed2dae47672dfd6d70593e98fb8b04ae`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 120 | Named symbols: 410 | Checked relations: 77
 
 ## Topic finder (matching filenames)
@@ -122,7 +122,7 @@ inspiration.js (L1)
 
 ### `app/src/main/assets/jarvis-core.js`
 
-JARVIX_ONBOARDING (L80) · jarvixContext (L83) · cachedVoices (L90) · WORLD_CITIES (L319)
+JARVIX_ONBOARDING (L80) · jarvixContext (L83) · cachedVoices (L90) · WORLD_CITIES (L336)
 
 ### `app/src/main/assets/jarvix-action-plan.js`
 
