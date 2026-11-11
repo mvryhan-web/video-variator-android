@@ -60,6 +60,11 @@ jobs:
           if($LASTEXITCODE -ne 0) { throw 'MSIX creation failed' }
           if(-not (Test-Path dist/JARVIX_NEW-STORE-UNSIGNED.msix)) { throw 'MSIX missing' }
           Write-Host "Created Store-only submission file. It is NOT a trusted installer."
+      - name: Audit actual MSIX: archive CRC, Windows EXE, original logos and exact Partner Center identity
+        shell: pwsh
+        run: |
+          python scripts/verify_jarvix_new_msix.py dist/JARVIX_NEW-STORE-UNSIGNED.msix --name "$env:STORE_NAME" --publisher "$env:STORE_PUBLISHER" --publisher-display "$env:STORE_PUBLISHER_DISPLAY"
+          if($LASTEXITCODE -ne 0) { throw 'Real MSIX payload audit failed: DO NOT SUBMIT' }
       - name: Preserve only for Microsoft Partner Center upload after review
         uses: actions/upload-artifact@v4
         with:
