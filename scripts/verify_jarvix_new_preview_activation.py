@@ -42,7 +42,7 @@ def main():
     status, where, script = fetch('/jarvix-new-download-menu.js')
     assert status == 200 and 'Jarvix-New-Windows-Setup.exe' in script and 'Jarvix-New-macOS.dmg' in script
     status, where, _ = fetch('/jarvix-download.html')
-    assert status == 200 and urlparse(where).path in ('/', '/index', '/index.html') and 'download=jarvix' in where, where
+    assert status == 200 and urlparse(where).path in ('/', '/index', '/index.html', '/deepsyq', '/deepsyq.html') and 'download=jarvix' in where, where
     print('PASS 2: Standalone download page redirects to existing header dropdown.')
 
     # 3. Check JARVIX NEW page UI and elements
