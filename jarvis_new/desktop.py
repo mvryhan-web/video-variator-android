@@ -303,7 +303,7 @@ class App:
             if not popup.winfo_exists():
                 return
             log.configure(state="normal")
-            log.insert("end", who + ": " + message + "\\n\\n")
+            log.insert("end", who + ": " + message + "\n\n")
             log.see("end")
             log.configure(state="disabled")
 
