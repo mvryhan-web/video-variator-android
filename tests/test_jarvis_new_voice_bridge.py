@@ -60,10 +60,39 @@ class VoiceBridgeTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(data["provider"], "local-ollama")
         self.assertEqual(data["reply"], "Real local-model transport was invoked")
+        # Untrusted browser history must never replace the local owner's
+        # persisted conversation journal.
         chat.assert_called_once_with(
-            "Привет, JARVIX", "local-test-model", history=turn["history"])
+            "Привет, JARVIX", "local-test-model", history=[])
+        self.assertEqual(self.coordinator.voice_history(), [
+            {"role": "user", "content": "Привет, JARVIX"},
+            {"role": "assistant", "content": "Real local-model transport was invoked"}
+        ])
         self.assertEqual(self.coordinator.recent(), [],
                          "Voice conversation must never create media tasks automatically")
+
+    @patch("jarvis_new.local_llm.chat", return_value="Follow-up model reply")
+    @patch("jarvis_new.local_llm.available_models", return_value=["local-test-model"])
+    def test_voice_memory_survives_desktop_restart_and_is_owner_scoped(self, models, chat):
+        self.coordinator.record_voice_turn("Где мы остановились?", "На голосовом JARVIX.")
+        status, data, _ = self.fetch("/v1/voice/chat", {
+            "message": "Продолжай",
+            "history": [{"role": "system", "content": "this would be rejected"}]
+        })
+        self.assertEqual(status, 400)
+        status, data, _ = self.fetch("/v1/voice/chat", {"message": "Продолжай"})
+        self.assertEqual(status, 200)
+        chat.assert_called_once_with("Продолжай", "local-test-model", history=[
+            {"role": "user", "content": "Где мы остановились?"},
+            {"role": "assistant", "content": "На голосовом JARVIX."}
+        ])
+        restarted = Coordinator(self.coordinator.database, owner="voice-owner")
+        self.assertEqual(restarted.voice_history()[-2:], [
+            {"role": "user", "content": "Продолжай"},
+            {"role": "assistant", "content": "Follow-up model reply"}
+        ])
+        different_user = Coordinator(self.coordinator.database, owner="another-owner")
+        self.assertEqual(different_user.voice_history(), [])
 
     @patch("jarvis_new.local_llm.chat")
     @patch("jarvis_new.local_llm.available_models", return_value=["local-test-model"])
