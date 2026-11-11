@@ -1,3 +1,47 @@
+# JARVIX NEW — 552 MP3 physical recovery and TEST deployment (2026-11-11)
+
+- From the GitHub tree of branch `jarvis-new`, verified **552 actual
+  MP3 files** under `app/src/main/assets/media/jarvix/`:
+  344 numbered legacy recordings (`jarvix_{lang}_01..86.mp3`),
+  192 Tour V3 (`t3_{lang}_*.mp3`), and 16 extra tour clips.
+  This is physical repository inventory, NOT confirmed R2 inventory.
+- The owner was previously given 392 MP3 (200 numbered clips + 192 Tour V3).
+  We packaged the other **160 existing MP3** via GitHub Actions
+  `.github/workflows/jarvis-new-extra-mp3.yml`, run:
+  https://github.com/mvryhan-web/video-variator-android/actions/runs/43089586057
+  and verified their SHA256 integrity.
+- Combined 552 real MP3 into a Windows-friendly, Python 3 package
+  `JARVIX_Voice_Library_0.4_552_MP3.zip` available from the current
+  ChatGPT conversation. No recorded audio was regenerated. Source
+  language distribution: 138 recordings each (RU, EN, FR, ES).
+  New 160 have unverified transcripts and are intentionally NOT allowed
+  for automatic speech replies until owner reviews/approves them.
+- Python archive tests: **17 local unit tests passing**. ZIP integrity
+  verified, MP3 count verified, SHA256 import and no duplication confirmed.
+  The app is a Python+Tkinter project requiring Python 3; it is **not**
+  a signed Windows EXE.
+- Created physically grounded test static inventory
+  `app/src/main/assets/jarvix-new-physical-audio-index.json`.
+  Only confirmed existing MP3 URLs may be offered by
+  `jarvix-new-recorded-dialog.js`. Missing `s###` files in the
+  500-scenario catalog are no longer attempted.
+  Changes published successfully **TEST-only** to
+  https://jarvis-new.deepsyq.pages.dev/
+  GitHub Actions: https://github.com/mvryhan-web/video-variator-android/actions/runs/43090437892.
+- Cloudflare R2 **still returns HTTP 403** on REST bucket listing with
+  the current Pages API token. The R2 read-only inventory workflow
+  `.github/workflows/jarvis-new-r2-inventory.yml` is working but
+  requires a separate `CLOUDFLARE_R2_READ_TOKEN` GitHub Actions secret
+  with Workers R2 Storage Read permissions. Do not presume R2 is empty.
+  No Cloudflare R2 objects were changed or listed.
+- Production `https://deepsyq.app` and old JARVIX were not modified.
+  Paid LLM routing and voice synthesis for arbitrary novel responses
+  are **not live**. The free demo currently uses only available audio
+  and the local owner's optional approved library; a generic spoken
+  free LLM answer is NOT available from 552 fixed MP3 alone.
+
+---
+
 # R2 access checkpoint — 2026-11-11 20:08 Paris time
 
 - Read-only inventory action: `.github/workflows/jarvis-new-r2-inventory.yml`.
