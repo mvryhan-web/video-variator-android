@@ -6,7 +6,7 @@ on:
 permissions: {contents: write}
 concurrency:
   group: owner-deepsyq-i18n-build
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   build-all-page-locales:
     runs-on: ubuntu-latest
