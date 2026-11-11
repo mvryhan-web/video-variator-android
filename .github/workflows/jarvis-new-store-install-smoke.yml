@@ -44,6 +44,8 @@ jobs:
           $manifestPublisher=$env:STORE_PUBLISHER
           $certificate=$null
           $added=$null
+          $trustedRoot=$null
+          $trustedMachine=$null
           $package=$null
           try {
             # Development ONLY: not trusted by user PCs and never published.
@@ -51,7 +53,12 @@ jobs:
             if(-not $certificate) {throw 'Cannot create isolated CI development certificate'}
             $publicCert=Join-Path $env:RUNNER_TEMP 'jarvix-new-ci-only.cer'
             Export-Certificate -Cert $certificate -FilePath $publicCert | Out-Null
+            # Temporary trust ONLY inside disposable GitHub-hosted Windows VM.
+            # MSIX package deployment validates a trusted ROOT chain, not
+            # simply the CurrentUser TrustedPeople leaf certificate.
             $added=Import-Certificate -FilePath $publicCert -CertStoreLocation 'Cert:\CurrentUser\TrustedPeople'
+            $trustedRoot=Import-Certificate -FilePath $publicCert -CertStoreLocation 'Cert:\LocalMachine\Root'
+            $trustedMachine=Import-Certificate -FilePath $publicCert -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople'
             $sdkBase=Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\bin'
             $tools=Get-ChildItem -Path $sdkBase -Filter 'signtool.exe' -Recurse -File | Where-Object { $_.FullName -match '\\x64\\signtool.exe$' }
             $signtool=($tools | Sort-Object FullName -Descending | Select-Object -First 1).FullName
@@ -68,6 +75,12 @@ jobs:
           } finally {
             if($package) {
               Remove-AppxPackage -Package $package.PackageFullName -ErrorAction SilentlyContinue
+            }
+            if($trustedMachine -and $trustedMachine.Thumbprint) {
+              Remove-Item ("Cert:\LocalMachine\TrustedPeople\"+$trustedMachine.Thumbprint) -Force -ErrorAction SilentlyContinue
+            }
+            if($trustedRoot -and $trustedRoot.Thumbprint) {
+              Remove-Item ("Cert:\LocalMachine\Root\"+$trustedRoot.Thumbprint) -Force -ErrorAction SilentlyContinue
             }
             if($added -and $added.Thumbprint) {
               Remove-Item ("Cert:\CurrentUser\TrustedPeople\"+$added.Thumbprint) -Force -ErrorAction SilentlyContinue
