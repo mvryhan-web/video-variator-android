@@ -1,0 +1,43 @@
+name: JARVIX NEW voice-only bridge and browser syntax checks
+
+on:
+  push:
+    branches: [jarvis-new]
+    paths:
+      - 'jarvis_new/local_bridge.py'
+      - 'jarvis_new/desktop.py'
+      - 'jarvis_new/local_llm.py'
+      - 'app/src/main/assets/jarvix-new-voice.js'
+      - 'app/src/main/assets/jarvix-new-preview-entry.js'
+      - 'tests/test_jarvis_new_voice_bridge.py'
+      - '.github/workflows/jarvis-new-voice-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  no-cost-voice:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Python code and test-only voice frontend
+        run: |
+          python -m compileall -q jarvis_new/local_bridge.py jarvis_new/desktop.py jarvis_new/local_llm.py tests/test_jarvis_new_voice_bridge.py
+          node --check app/src/main/assets/jarvix-new-voice.js
+          node --check app/src/main/assets/jarvix-new-preview-entry.js
+      - name: Test no-code voice with mocked local model (no actual AI provider or network)
+        run: python -m unittest discover -s tests -p 'test_jarvis_new_voice_bridge.py' -v
+      - name: Regression: privileged desktop task endpoints still require random token
+        run: python -m unittest discover -s tests -p 'test_jarvis_new_local_bridge.py' -v
