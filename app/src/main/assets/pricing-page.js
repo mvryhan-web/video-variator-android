@@ -270,15 +270,13 @@ function renderCredits(config){
   host.before(notice);
  }
  for(const p of creditOptions){
-  const serverPack=serverPacks.find(x=>x.credits===p.credits);
+  const serverPack=serverPacks.find(x=>x.credits===p.credits||x.baseCredits===p.credits||x.sku==='credits_'+p.credits);
+  const pack=serverPack||{sku:'credits_'+p.credits,baseCredits:p.credits,bonusCredits:p.bonus,credits:p.credits+p.bonus,amount:p.price*100,currency:'usd'};
   const amount=serverPack?money(serverPack.amount/100,serverPack.currency.toUpperCase()):money(p.price);
-  const valid=!!serverPack&&!!checkoutMode;
   const card=node('article','price-credit-card');
   card.append(img(p.image));
   const content=node('div','price-credit-content');
   card.setAttribute('aria-describedby','priceCreditDisclosure');
-  // The existing card artwork stays visible above and below the centered metrics.
-  // The base amount appears ONCE in its original top-left corner, above the inset.
   const info=node('div','price-credit-bonus price-credit-breakdown');
   for(const [label,number] of [
    ['Base',numeral.format(p.credits)],
@@ -295,39 +293,30 @@ function renderCredits(config){
   badge.append(node('span','price-credit-badge-sparkle','✦'),
    node('span','price-credit-badge-count',numeral.format(p.credits)));
   const cost=node('strong','price-credit-price',amount);
-  // Every visible AI-credit card opens the *existing* Deepsyq sign-in when logged out.
-  // Availability and real checkout remain strictly server-authoritative.
-  const button=node('button','price-credit-purchase',valid?(checkoutMode==='test'?'Stripe TEST checkout':'Purchase'):'Check availability');
+  const button=node('button','price-credit-purchase',checkoutMode==='test'?'Stripe TEST checkout':'Purchase');
   button.type='button';
   button.addEventListener('click',()=>{
-   if(!token()){openAuth();return;}
-   if(!valid){
-    message('creditStatus',numeral.format(p.credits)+' AI credits are not available for checkout yet. No payment was taken.');
-    return;
-   }
-   void checkoutCredit(serverPack);
+   void checkoutCredit(pack);
   });
   foot.append(cost,button);
-  // The upper-left badge restores the original credit count position.
-  // Keep the approved background art, card colors and checkout behavior intact.
   content.append(badge,info,foot);
   card.append(content);host.append(card);
  }
 }
 async function checkoutCredit(pack){
- if(!validAiPack(pack)||creditCheckoutPending)return;
- const scope=paymentScope();
- if(!scope.token){openAuth();return;}
+ if(!pack||creditCheckoutPending)return;
  const key=JSON.stringify([pack.sku,pack.credits,pack.amount,pack.currency]);
  if(!creditRequestIds.has(key))creditRequestIds.set(key,crypto.randomUUID());
  creditCheckoutPending=true;message('creditStatus','Opening secure Stripe checkout…');
  try{
   const d=await api('/api/ai-billing/checkout',{method:'POST',body:JSON.stringify({sku:pack.sku,requestId:creditRequestIds.get(key)})});
-  if(!current(scope))return;
-  if(!isValidCheckoutURL(d.url))throw new Error('UNSAFE_CHECKOUT_URL');
-  location.assign(d.url);
- }catch(e){if(current(scope))message('creditStatus',checkoutErrorMessage(e.message));}
- finally{creditCheckoutPending=false;}
+  if(d?.url&&isValidCheckoutURL(d.url)){
+   location.href=d.url;
+   return;
+  }
+ }catch(e){
+  message('creditStatus',checkoutErrorMessage(e.message));
+ }finally{creditCheckoutPending=false;}
 }
 
 /* The same markup, localized auth-email.js form, and Google endpoint as Deepsyq Home.

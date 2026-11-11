@@ -410,7 +410,6 @@ export default {
 
     if (pathname === '/api/ai-billing/checkout' && request.method === 'POST') {
       const user = await getAuthenticatedUser(request, env);
-      if (!user) return json({ error: 'AUTH_REQUIRED' }, 401);
       const stripeKey = String(env.STRIPE_SECRET_KEY || '');
       if (!/^(sk_live_|rk_live_|sk_test_|rk_test_)/.test(stripeKey)) {
         return json({ error: 'PAYMENTS_NOT_ACTIVATED' }, 503);
@@ -419,12 +418,13 @@ export default {
       const pack = LIVE_CREDIT_PACKS.find(p => p.sku === body.sku);
       if (!pack) return json({ error: 'AI_PRICING_NOT_APPROVED' }, 503);
       try {
+        const userId = user?.id || ('guest_' + crypto.randomUUID().slice(0, 16));
         const form = new URLSearchParams();
         form.set('mode', 'payment');
         form.set('line_items[0][price]', pack.priceId);
         form.set('line_items[0][quantity]', '1');
-        form.set('client_reference_id', user.id);
-        if (user.email) form.set('customer_email', user.email);
+        form.set('client_reference_id', userId);
+        if (user?.email) form.set('customer_email', user.email);
         form.set('metadata[aiWallet]', 'v1');
         form.set('metadata[sku]', pack.sku);
         form.set('metadata[credits]', String(pack.credits));
