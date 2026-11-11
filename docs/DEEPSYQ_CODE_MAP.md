@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `ee214ff3a5bf71cfa2ae6848615ab68e40e2c15a`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 121 | Named symbols: 415 | Checked relations: 77
+Source commit: `e3e927cb77faf1d606f31e183f57e6cef1e28d3a`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 121 | Named symbols: 416 | Checked relations: 77
 
 ## Topic finder (matching filenames)
 
@@ -382,7 +382,7 @@ VIDEO_SUBMISSION_UNCERTAIN (L6)
 
 ### `server/generation-wallet.js`
 
-MAX_CREDITS (L4) · GenerationWallet (L13)
+MAX_CREDITS (L4) · MAX_PURCHASE_CREDITS (L5) · GenerationWallet (L14)
 
 ### `server/generation-worker.js`
 
