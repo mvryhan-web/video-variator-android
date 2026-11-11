@@ -44,7 +44,7 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
   active=null;
   display(false);
   current.resolve();
-  if(liveActive) setTimeout(() => resumeJarvisRecognition(), 200);
+  setTimeout(() => resumeJarvisRecognition(), 200);
  }
  function stop({abort=false}={}){
   const current=active;
@@ -104,7 +104,8 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
   const base=input.value, draft=createSpeechDraft(base);
   recognition.lang=({ru:'ru-RU',en:'en-US',fr:'fr-FR',es:'es-ES'})[language()]||'ru-RU';
   recognition.interimResults=true;
-  recognition.continuous=true;
+  const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  recognition.continuous=!isMobile;
   recognition.maxAlternatives=1;
 
   recognition.onstart=()=>{
