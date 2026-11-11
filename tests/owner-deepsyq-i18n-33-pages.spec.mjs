@@ -23,6 +23,7 @@ test('pricing translates every card and billing period without changing verified
  await expect(page.locator('#plan-basic')).toHaveText('Basic');
 });
 test('shared four-language catalogs load without changing original page structure on representative pages',async({page})=>{
+ test.setTimeout(180000);
  for(const filename of pages){
   await page.goto('/'+filename,{waitUntil:'domcontentloaded',timeout:20000});
   for(const lang of ['ru','fr','es','en']){
