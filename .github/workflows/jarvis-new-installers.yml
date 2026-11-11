@@ -117,7 +117,7 @@ jobs:
           (cd release && sha256sum Jarvix-New-Windows-Setup.exe Jarvix-New-macOS.dmg > SHA256SUMS.txt)
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: jarvix-new-test-${{ github.sha }}
+          tag_name: jarvix-new-signed-test-${{ github.sha }}
           target_commitish: ${{ github.sha }}
           name: JARVIX NEW test - ${{ github.sha }}
           prerelease: true
