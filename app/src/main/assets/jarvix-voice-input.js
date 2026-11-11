@@ -71,11 +71,13 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
   if(now-lastToggleTime<300)return;
   lastToggleTime=now;
 
-  // If live sphere was running in background, stop it cleanly and start dictation
+  // If live sphere was running, stop it cleanly and return to regular mic icon
   if(liveActive){
    if(active)void stop({abort:true});
    deactivateJarvisVoice();
    liveActive=false;
+   display(false);
+   return;
   }
 
   // If already dictating, second tap stops and keeps the text

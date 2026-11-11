@@ -266,6 +266,23 @@ export function speakJarvis(text, onComplete = null) {
 // 3. Instant Navigation Utility ("Сделано." — spoken strictly ONCE)
 export function instantOpen(url, acknowledgement = null) {
   if (typeof window !== 'undefined') {
+    // In-place mode switch when inside jarvix-chat.html
+    if (window.location.pathname.endsWith('/jarvix-chat.html')) {
+      try {
+        const parsed = new URL(url, window.location.href);
+        const targetMode = parsed.searchParams.get('studio') || parsed.searchParams.get('mode');
+        if (targetMode && ['image', 'video', 'audio'].includes(targetMode)) {
+          window.dispatchEvent(new CustomEvent('jarvix:mode', { detail: { mode: targetMode } }));
+          try { sessionStorage.setItem('jarvix_composer_mode', targetMode); } catch (_) {}
+          const modeBtn = document.querySelector(`[data-j-mode="${targetMode}"]`) || document.querySelector(`[data-j-drawer-mode="${targetMode}"]`);
+          if (modeBtn) modeBtn.click();
+          const navAck = acknowledgement || ({ru:'Открыл прямо здесь в чате.',en:'Opened right here in chat.',fr:'Ouvert ici.',es:'Abierto aquí.'}[getJarvixLanguage()] || 'Открыл');
+          speakJarvis(navAck);
+          return;
+        }
+      } catch (_) {}
+    }
+
     const workspaceFrame = document.getElementById('jWorkspaceFrame');
     const workspacePane = document.getElementById('jWorkspacePane');
     if (workspaceFrame && workspacePane) {
@@ -966,7 +983,8 @@ export function resumeJarvisRecognition() {
     const recognitionTurn = recognitionVersion;
 
     jarvisRecognition = new SpeechRec();
-    jarvisRecognition.continuous = true;
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    jarvisRecognition.continuous = !isMobile;
     jarvisRecognition.interimResults = true;
     const langCode = getJarvixLanguage();
     jarvisRecognition.lang = ({ru: 'ru-RU', fr: 'fr-FR', es: 'es-ES', en: 'en-US'})[langCode] || 'ru-RU';
@@ -1103,11 +1121,12 @@ export function resumeJarvisRecognition() {
       isJarvisListening = false;
       clearTimeout(speechTimeout);
       if (isJarvisActive && keepListening) {
+        const restartDelay = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? 150 : 400;
         setTimeout(() => {
           if (recognitionTurn === recognitionVersion && isJarvisActive && keepListening && !isJarvisSpeaking) {
             resumeJarvisRecognition();
           }
-        }, 1200);
+        }, restartDelay);
       } else {
         isJarvisListening = false;
       }
