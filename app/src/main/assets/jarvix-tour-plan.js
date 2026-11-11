@@ -19,7 +19,7 @@ export function tourPlan(language='en') {
  ...['trial','basic','pro','business','lifetime'].map(key=>[key,'pricing.html',null,`.price-plan.price-${key}`]),
  ['Home','deepsyq.html',60,'#homeQuickBar']
  ];
- return rows.map(([title,url,id,target])=>({title,url,target,...(id?{audio:`media/jarvix/clips/jarvix_${lang}_${String(id).padStart(2,'0')}.mp3`}:{narration:['trial','basic','pro','business','lifetime'].includes(title)?'plan':'section'})}));
+ return rows.map(([title,url,id,target])=>({title,url,target,...(id?{audio:`/media/jarvix/clips/jarvix_${lang}_${String(id).padStart(2,'0')}.mp3`}:{narration:['trial','basic','pro','business','lifetime'].includes(title)?'plan':'section'})}));
 }
 // Each spotlight is tied to the *actual recorded narration position*.
 // We never click Create, Generate, checkout, consent or upload controls in a tour.
@@ -48,7 +48,7 @@ export function tourNavigationClip(title,index,language='en') {
  const id=index===0?null:title==='Home'?13:
   ['Image','Video','Audio'].includes(title)?11:
   title==='Tools'?15:title==='Inspiration'?14:title==='Pricing'?12:9;
- return id===null?null:`media/jarvix/clips/jarvix_${lang}_${String(id).padStart(2,'0')}.mp3`;
+ return id===null?null:`/media/jarvix/clips/jarvix_${lang}_${String(id).padStart(2,'0')}.mp3`;
 }
 export function planNarrationBeats(card) {
  const conditional=/proposed|unavailable|not.*active|pending/i.test((card.price||'')+' '+(card.summary||''));

@@ -188,91 +188,30 @@ function enterStudioFromPlus(step,target,current){
   if(location.search!==target.search)history.replaceState(null,'',target.href);
   return false;
  }
- const plus=document.getElementById('jPlus');
- const menu=document.getElementById('jPlusMenu');
- const choice=menu?.querySelector('[data-j-mode="'+mode+'"]');
- if(!plus||!menu||!choice||!real){
-  const key='studio-plus:'+step.title;
-  if(stepWaitKey!==key){stepWaitKey=key;stepWaitStart=Date.now();}
-  if(Date.now()-stepWaitStart<5000)
-   waitTimer=setTimeout(()=>{if(current===turn&&state?.phase==='playing')void play();},150);
-  else blocked(current,'Studio menu unavailable');
+ if(real){
+  closeV3Dialogs();
+  void showTourElement(real,()=>current===turn&&state?.phase==='playing',1100).then(()=>{
+   if(current!==turn||state?.phase!=='playing')return;
+   real.click();
+   if(location.search!==target.search)history.replaceState(null,'',target.href);
+   if(current===turn&&state?.phase==='playing')void play();
+  }).catch(()=>{
+   real.click();
+   if(current===turn&&state?.phase==='playing')void play();
+  });
   return true;
  }
- closeV3Dialogs();
- spotlight({target:'#jPlus'});
- // Each gesture is deliberate: Plus remains highlighted, then the REAL
- // menu stays open for a full second before the Video/Audio tile is selected.
- void showTourElement(plus,()=>current===turn&&state?.phase==='playing',1100).then(async el=>{
-  if(!el||current!==turn||state?.phase!=='playing')return;
-  if(menu.hidden)plus.click();
-  if(menu.hidden){blocked(current,'Studio menu unavailable');return;}
-  await showTourElement(menu,()=>current===turn&&state?.phase==='playing',1250);
-  if(current!==turn||state?.phase!=='playing')return;
-  await showTourElement(choice,()=>current===turn&&state?.phase==='playing',1350);
-  if(current!==turn||state?.phase!=='playing')return;
-  choice.click(); // Real Universal Hub selection; no Create, checkout or paid job.
-  if(real.getAttribute('aria-pressed')!=='true'){blocked(current,'Studio mode unavailable');return;}
-  if(location.search!==target.search)history.replaceState(null,'',target.href);
-  await showTourElement(real,()=>current===turn&&state?.phase==='playing',1250);
-  if(current===turn&&state?.phase==='playing')void play();
- }).catch(()=>blocked(current,'Studio menu unavailable'));
- return true;
+ return false;
 }
 async function cueV3(beat){
  const initial=turn;
  const canContinue=()=>initial===turn&&state?.phase==='playing';
  installTourFocus();
- const first=beat.action==='openModel'||beat.action==='openSettings'?'#studioSettingsToggle':beat.target;
+ const first=beat.action==='openModel'?'#modelButton':beat.action==='openSettings'?'#settingsButton':beat.target;
  await showTourElement(first,canContinue,1250);
  if(!canContinue())return;
- const currentStep=state&&tourPlan(state.language)[state.index];
- if(currentStep&&studioTourMode(currentStep)){
-  // Video and Audio use the REAL + menu and the REAL gear/X handlers.
-  // Only one settings window is visible: the parent hub is temporarily
-  // invisible while a child popover is displayed, without changing Studio UI.
-  if(beat.action==='openModel'||beat.action==='openSettings'){
-   closeTourChild('modelDialog');closeTourChild('settingsDialog');
-   const hub=document.getElementById('studioSettingsHub'),gear=document.getElementById('studioSettingsToggle');
-   if(!hub||!gear){spotlight(beat);return;}
-   hub.style.removeProperty('visibility');
-   spotlight({target:'#studioSettingsToggle'});
-   if(!hub.open){
-    gear.click();
-    tourSettingsOpened=hub.open;
-    if(hub.open&&hub.matches(':modal')){hub.close();hub.show();}
-   }
-   const id=beat.action==='openModel'?'modelDialog':'settingsDialog';
-   const button=document.getElementById(beat.action==='openModel'?'modelButton':'settingsButton');
-   const started=turn;
-   // A short, audio-relative cue exposes the highlighted gear before the
-   // native child menu appears. For tiny QA clips it stays below their duration.
-   const delay=300;
-   clearTimeout(cueTimer);cueTimer=setTimeout(()=>{
-    if(started!==turn||state?.phase!=='playing'||!hub.open||!button)return;
-    spotlight({target:'#'+button.id});
-    button.click();
-    const panel=document.getElementById(id);
-    if(panel?.open){
-     v3DialogsOpened.add(id);
-     if(panel.matches(':modal')){panel.close();panel.show();}
-     // Prevent the parent and child from looking like stacked windows.
-     hub.style.visibility='hidden';
-     spotlight({target:'#'+id});
-    }
-   },delay);
-   await pauseFrame(1600);
-   return;
-  }
-  if(beat.action==='closeSettings')closeV3Dialogs();
-  spotlight(beat);
-  await pauseFrame(1200);
-  return;
- }
- // Keep the previously approved Image and all other sections unchanged.
  if(beat.action==='openModel'||beat.action==='openSettings'){
-  const hub=document.getElementById('studioSettingsHub');
-  if(hub&&!hub.open){hub.show();tourSettingsOpened=true;}
+  closeV3Dialogs();
   const name=beat.action==='openModel'?'modelButton':'settingsButton';
   const button=document.getElementById(name);
   const expected=beat.action==='openModel'?'modelDialog':'settingsDialog';
@@ -283,9 +222,8 @@ async function cueV3(beat){
    if(dialog?.open&&dialog.matches(':modal')){dialog.close();dialog.show();}
   }
  }else if(beat.action==='closeSettings')closeV3Dialogs();
- const shown=spotlight(beat);
- if(!shown&&beat.action==='openSettings')spotlight({target:'#studioSettingsToggle,#settingsButton'});
- await pauseFrame(1400);
+ spotlight(beat);
+ await pauseFrame(1200);
 }
 async function speakV3(text,current,complete,beat=null){
  try{
@@ -293,15 +231,18 @@ async function speakV3(text,current,complete,beat=null){
   // (clip 01) from the first guided excursion. The other 18 stages retain
   // their matching owner-recorded V3 beats and original spotlight timing.
   const firstWelcome=state?.index===0 && (state?.beat||0)===0;
+  const isFinalStep=state?.index===tourPlan(state.language).length-1;
   const step=tourPlan(state.language)[state.index];
-  const v4id=beat?v4BeatId(step?.title,state?.beat||0):null;
+  const v4id=firstWelcome ? null : isFinalStep ? 'final-upgrade' : (beat?v4BeatId(step?.title,state?.beat||0):null);
   const v4=v4id?await getTourV4Recording(v4id,state.language):null;
   const narration=v4?.text||text;
-  const voice=firstWelcome
-   ? tourPlan(state.language)[0].audio
+  let voice=firstWelcome
+   ? (step.audio?.startsWith('/') ? step.audio : '/' + step.audio)
    : v4?.url||await getTourV3Recording(text,state?.language||'en');
+  if(voice&&!voice.startsWith('/')&&!voice.startsWith('http'))voice='/'+voice;
   if(current!==turn||!state||state.phase!=='playing')return;
   let spoken=false,ended=false,cueWork=Promise.resolve();
+  let audioSafetyTimer=null;
   const began=()=>{
    if(current!==turn||!state||state.phase!=='playing')return;
    setTourSpeaking(true);
@@ -323,7 +264,7 @@ async function speakV3(text,current,complete,beat=null){
   };
   const done=()=>{
    if(ended||current!==turn||!state||state.phase!=='playing')return;
-   ended=true;setTourSpeaking(false);
+   ended=true;clearTimeout(audioSafetyTimer);setTourSpeaking(false);
    void (async()=>{
     await cueWork;
     if(current!==turn||state?.phase!=='playing')return;
@@ -340,6 +281,7 @@ async function speakV3(text,current,complete,beat=null){
     if(current===turn&&state?.phase==='playing')complete();
    })();
   };
+  audioSafetyTimer=setTimeout(done,35000);
   if(voice){
    audio=new Audio(voice);const clip=audio;clip.id='dsTourAudio';clip.hidden=true;document.body.append(clip);
    // Pause/Continue resumes the actual owner clip without replaying narration.

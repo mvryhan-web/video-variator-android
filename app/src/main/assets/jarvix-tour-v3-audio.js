@@ -6,7 +6,7 @@ const normalize = text => String(text||'').normalize('NFC').trim().replace(/\s+/
 const LANGUAGES = new Set(['ru','en','fr','es']);
 export async function getTourV3Recording(text,language) {
  if (!LANGUAGES.has(language)) return null;
- manifestPromise ||= fetch('media/jarvix/tour-v3/manifest.json',{signal:AbortSignal.timeout(4000)})
+ manifestPromise ||= fetch('/media/jarvix/tour-v3/manifest.json',{signal:AbortSignal.timeout(4000)})
   .then(async r=>r.ok?await r.json():null)
   .catch(()=>null);
  const manifest=await manifestPromise;
@@ -19,5 +19,5 @@ export async function getTourV3Recording(text,language) {
  const clip=manifest.clips?.find(c=>c.language===language&&normalize(c.text)===normalize(text));
  if(!clip || (manifest.previewApproved!==true&&clip.reviewed!==true) ||
     !/^t3_(ru|en|fr|es)_[a-f0-9]{12}\.mp3$/.test(clip.filename)) return null;
- return 'media/jarvix/tour-v3/'+clip.filename;
+ return '/media/jarvix/tour-v3/'+clip.filename;
 }
