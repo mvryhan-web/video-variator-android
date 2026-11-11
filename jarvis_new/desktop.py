@@ -85,6 +85,7 @@ class App:
         connection.pack(fill="x", padx=24, pady=(0, 10))
         self.bridge_button = self._button(connection, "Отключить голосовую связь с сайтом", self.toggle_bridge)
         self.bridge_button.pack(side="left")
+        self._button(connection, "Скопировать код подключения", self.copy_pairing_code).pack(side="left", padx=(8, 0))
         tk.Label(connection, text="Автоподключение после запуска · Только этот компьютер · Без доступа к файлам",
                  bg=BACKGROUND, fg=MUTED).pack(side="left", padx=(12, 0))
 
@@ -235,6 +236,21 @@ class App:
             "Голосовая связь с тестовым сайтом включена автоматически. "
             "Для ответов на вопросы нужна установленная локальная модель Ollama. "
             "Ни один компьютерный инструмент без отдельного разрешения не запускается."
+        )
+
+    def copy_pairing_code(self):
+        """Copy the active per-session token without exposing it in logs."""
+        if not self.local_bridge:
+            self._start_voice_bridge()
+        if not self.local_bridge:
+            messagebox.showerror("JARVIX NEW", "Локальная связь не включена. Проверь порт 8768.")
+            return
+        self.root.clipboard_clear()
+        self.root.clipboard_append(self.local_bridge.token)
+        self.root.update()
+        self.status_var.set(
+            "Текущий код скопирован. Открой https://jarvis-new.deepsyq.pages.dev/connect.html "
+            "на этом же компьютере и вставь код. После перезапуска JARVIX код изменится."
         )
 
     def toggle_bridge(self):
