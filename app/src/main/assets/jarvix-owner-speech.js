@@ -30,6 +30,7 @@ export function unlockOwnerSpeech() {
 }
 export const OWNER_GREETING_TEXT = Object.freeze({"ru":"Я Джарвис. Слушаю вас.","en":"I am Jarvis. How can I help?","fr":"Je suis Jarvis. Je vous écoute.","es":"Soy Jarvis. ¿En qué puedo ayudarte?"});
 export const TOUR_GREETING_TEXT = Object.freeze({"ru":"Привет! Я JARVIX. Смотрите, что я умею.","en":"Hi! I'm JARVIX. Let me show you what I can do.","fr":"Salut ! Je suis JARVIX. Regardez ce que je sais faire.","es":"¡Hola! Soy JARVIX. Mira lo que puedo hacer."});
+export const RUSSIAN_TOUR_GREETING_URL = '/media/jarvix/clips/jarvix_ru_01.mp3?v=20261111-v4b';
 let greetingsPromise = null;
 export function prepareOwnerGreetings() {
   // Do not wait for the large 500-scenario catalog before the first voice greeting.
@@ -64,7 +65,7 @@ export async function speakOwnerSpeech(text, language, hooks) {
     const greetingCached = greetingBlob(greetingData, text, language);
     let tourGreetingCached = null;
     if (!greetingCached && TOUR_GREETING_TEXT[language] === text.trim()) {
-      const verifiedTourUrl = await getTourV3Recording(text, language);
+      const verifiedTourUrl = language === 'ru' ? RUSSIAN_TOUR_GREETING_URL : await getTourV3Recording(text, language);
       if (verifiedTourUrl && turn === version) {
         const response = await fetch(verifiedTourUrl, {signal:controller.signal}).catch(() => null);
         if (response?.ok && (response.headers.get('content-type')||'').startsWith('audio/'))

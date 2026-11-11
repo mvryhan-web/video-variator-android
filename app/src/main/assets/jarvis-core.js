@@ -1292,7 +1292,7 @@ function announceJarvisVoiceState() {
   if (typeof window !== 'undefined')
     window.dispatchEvent(new CustomEvent('jarvix:voice-state', {detail:{active:isJarvisActive}}));
 }
-export function activateJarvisVoice() {
+export function activateJarvisVoice({tourGreeting = false} = {}) {
   unlockOwnerSpeech();
   isJarvisActive = true;
   keepListening = true;
@@ -1308,9 +1308,9 @@ export function activateJarvisVoice() {
   resumeJarvisRecognition();
   resetSilenceTimer();
 
-  // Verified owner-recorded greeting upon click (never the tour introduction)
   const lang = getJarvixLanguage();
-  const listening = OWNER_GREETING_TEXT[lang] || OWNER_GREETING_TEXT.ru;
+  const greetings = tourGreeting ? TOUR_GREETING_TEXT : OWNER_GREETING_TEXT;
+  const listening = greetings[lang] || greetings.ru;
   speakJarvis(listening, () => {
     if(isJarvisActive && keepListening && !isTourActive()){
       resumeJarvisRecognition();resetSilenceTimer();updateJarvisState('listening');
@@ -1349,11 +1349,11 @@ export function deactivateJarvisVoice() {
   }
 }
 
-export function toggleJarvisVoice() {
+export function toggleJarvisVoice(options) {
   if (isJarvisActive || isJarvisSpeaking || isJarvisListening || isTourActive()) {
     deactivateJarvisVoice();
   } else {
-    activateJarvisVoice();
+    activateJarvisVoice(options);
   }
 }
 
@@ -1398,7 +1398,7 @@ export function initJarvis() {
     const topBtn = getTopBtn();
     if (topBtn && !topBtn.__jarvisBound) {
       topBtn.__jarvisBound = true;
-      topBtn.onclick = () => toggleJarvisVoice();
+      topBtn.onclick = () => toggleJarvisVoice({tourGreeting: /^\/(?:deepsyq(?:\.html)?|index\.html)?$/.test(location.pathname)});
       if (isJarvisActive) {
         topBtn.classList.add('is-active');
         if (isJarvisListening) topBtn.classList.add('is-listening');

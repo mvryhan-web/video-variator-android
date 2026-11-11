@@ -1,5 +1,5 @@
 import {getJarvixLanguage,stopAllSpeech,pauseJarvisRecognition,updateJarvisState,suspendJarvisForTour} from './jarvis-core.js';
-import {speakOwnerSpeech,stopOwnerSpeech,unlockOwnerSpeech,TOUR_GREETING_TEXT} from './jarvix-owner-speech.js';
+import {speakOwnerSpeech,stopOwnerSpeech,unlockOwnerSpeech,TOUR_GREETING_TEXT,RUSSIAN_TOUR_GREETING_URL} from './jarvix-owner-speech.js';
 import {TOUR_KEY,tourAction,tourCues,cueAt,tourNavigationClip,planNarrationBeats,sectionNarrationBeats} from './jarvix-tour-plan.js';
 import {tourV3Plan as tourPlan} from './jarvix-tour-v3-script.js';
 import {getTourV3Recording} from './jarvix-tour-v3-audio.js';
@@ -233,7 +233,7 @@ async function speakV3(text,current,complete,beat=null){
   const v4=v4id?await getTourV4Recording(v4id,state.language):null;
   const narration=firstWelcome?TOUR_GREETING_TEXT[state.language]:v4?.text||text;
   let voice=firstWelcome
-   ? (state.language==='ru'?step.audio+'?v=20261111-v4b':step.audio)
+   ? (state.language==='ru'?RUSSIAN_TOUR_GREETING_URL:step.audio)
    : v4?.url||await getTourV3Recording(text,state?.language||'en');
   if(voice&&!voice.startsWith('/')&&!voice.startsWith('http'))voice='/'+voice;
   if(current!==turn||!state||state.phase!=='playing')return;
