@@ -1,0 +1,74 @@
+name: JARVIX NEW - one-time upstream VoiceOS vendor import
+# Isolated to the jarvis-new branch. Never deploys Cloudflare, publishes to MAIN,
+# touches existing JARVIX code, or performs paid API calls.
+on:
+  push:
+    branches: [jarvis-new]
+    paths: [.github/workflows/jarvis-new-vendor.yml]
+permissions:
+  contents: write
+jobs:
+  vendor:
+    if: github.ref == 'refs/heads/jarvis-new'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: jarvis-new
+          persist-credentials: true
+      - name: Download approved open-source VoiceOS revision (do not execute)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --quiet --no-checkout https://github.com/AjayRajan05/VoiceOS.git /tmp/voiceos-source
+          git -C /tmp/voiceos-source checkout --quiet 54ebf8e7c3e954eff455efd6a097d3d099d05729
+          test -f /tmp/voiceos-source/LICENSE
+          grep -q 'MIT License' /tmp/voiceos-source/LICENSE
+          mkdir -p vendor/voiceos
+          rsync -a \
+            --exclude='.git' --exclude='.github' \
+            --exclude='.env' --exclude='.env.local' --exclude='.env.production' \
+            --exclude='__pycache__' --exclude='*.pyc' --exclude='.venv' \
+            --exclude='*.pem' --exclude='*.p12' --exclude='*.pfx' \
+            /tmp/voiceos-source/ vendor/voiceos/
+          test -f vendor/voiceos/main.py
+          test -f vendor/voiceos/LICENSE
+          test -f vendor/voiceos/pyproject.toml
+          cat > vendor/voiceos/JARVIX_UPSTREAM.md <<'DOC'
+          # VoiceOS source baseline for JARVIX NEW
+
+          Original project: https://github.com/AjayRajan05/VoiceOS
+
+          Original commit: 54ebf8e7c3e954eff455efd6a097d3d099d05729
+
+          Original copyright and license: see LICENSE and NOTICE in this folder.
+
+          The code is intentionally vendored in isolation. No runtime integration,
+          connection to production, payments, or model requests is enabled here.
+
+          Excluded from the vendor snapshot: upstream Git history, CI workflows,
+          active environment files, Python caches, private keys and local venvs.
+
+          IMPORTANT: MIT covers source code of this project, not automatically
+          all downloaded models and third-party dependencies.
+          DOC
+          python - <<'PY'
+          import pathlib
+          p=pathlib.Path("vendor/voiceos")
+          n=sum(1 for f in p.rglob("*") if f.is_file())
+          assert n>500, f"Incomplete upstream import: {n} files"
+          print(f"VoiceOS source vendored in isolation: {n} files")
+          PY
+      - name: Commit only isolated vendor source
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add vendor/voiceos/
+          if git diff --cached --quiet; then
+            echo "Source already imported; no changes."
+          else
+            git commit -m "Jarvis New: vendor pinned MIT VoiceOS source (isolated, no deploy)"
+            git push origin HEAD:jarvis-new
+          fi
