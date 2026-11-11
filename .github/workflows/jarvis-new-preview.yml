@@ -2,7 +2,7 @@ name: Jarvix New test-only Cloudflare preview
 on:
   push:
     branches: [jarvis-new]
-    paths: ['app/src/main/assets/deepsyq-unified-platform-header.js', 'app/src/main/assets/deepsyq-mobile-shell.js', 'app/src/main/assets/jarvix-download.html', 'app/src/main/assets/jarvix-connect.html', 'app/src/main/assets/jarvix-connect.js', 'app/src/main/assets/jarvix-new.html', 'app/src/main/assets/jarvix-new.js', 'app/src/main/assets/jarvix-new-preview-entry.js', 'scripts/prepare_jarvix_new_test_preview.py', '.github/workflows/jarvis-new-preview.yml']
+    paths: ['app/src/main/assets/deepsyq-unified-platform-header.js', 'app/src/main/assets/deepsyq-mobile-shell.js', 'app/src/main/assets/jarvix-download.html', 'app/src/main/assets/jarvix-connect.html', 'app/src/main/assets/jarvix-connect.js', 'app/src/main/assets/jarvix-new.html', 'app/src/main/assets/jarvix-new.js', 'app/src/main/assets/jarvix-new-preview-entry.js', 'app/src/main/assets/jarvix-new-download-menu.js', 'scripts/prepare_jarvix_new_test_preview.py', '.github/workflows/jarvis-new-preview.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -25,6 +25,7 @@ jobs:
           node --check app/src/main/assets/jarvix-connect.js
           node --check app/src/main/assets/jarvix-new.js
           node --check app/src/main/assets/jarvix-new-preview-entry.js
+          node --check app/src/main/assets/jarvix-new-download-menu.js
           python -m py_compile scripts/prepare_jarvix_new_test_preview.py
           test -f app/src/main/assets/jarvix-new.html
           test -f app/src/main/assets/jarvix-download.html
@@ -42,6 +43,9 @@ jobs:
           ! grep -q '<script type="module" src="jarvis-core.js"></script>' /tmp/jarvix-new-preview/index.html
           grep -q 'jarvix-new-preview-entry.js' /tmp/jarvix-new-preview/index.html
           test -f /tmp/jarvix-new-preview/jarvix-new.html
+          grep -q 'jarvix-new-download-menu.js' /tmp/jarvix-new-preview/index.html
+          grep -q 'jarvix-new-download-menu.js' /tmp/jarvix-new-preview/jarvix-new.html
+          test ! -f /tmp/jarvix-new-preview/jarvix-download.html
           cat >/tmp/jarvix-new-preview/_worker.js <<'JS'
           const OLD_JARVIX_ROUTES = new Set(['/jarvix-chat.html', '/ai-agents.html', '/voice-agent-preview.html']);
           export default {
@@ -49,6 +53,9 @@ jobs:
               const url = new URL(request.url);
               if (url.pathname.startsWith('/api/')) {
                 return new Response('JARVIX_NEW_PREVIEW_API_DISABLED', {status:503, headers:{'cache-control':'no-store'}});
+              }
+              if (url.pathname === '/jarvix-download.html' || url.pathname === '/jarvix-download') {
+                return Response.redirect(new URL('/?download=jarvix', url.origin).href, 302);
               }
               if (OLD_JARVIX_ROUTES.has(url.pathname)) {
                 const next = new URL('/jarvix-new.html', url.origin);
