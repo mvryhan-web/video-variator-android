@@ -28,18 +28,18 @@ def main() -> int:
                 browser = pw.chromium.launch(headless=True)
                 try:
                     context = browser.new_context(viewport={"width": 390, "height": 844})
-                    # This emulates the actual user's *explicit* Allow click
-                    # in Chrome's local-network permission dialog. No security
-                    # flags are disabled and no system certificates installed.
-                    try:
-                        context.grant_permissions(["loopback-network"], origin=ALLOWED_ORIGIN)
-                        print("Chrome granular loopback permission granted by test user.")
-                    except Exception as granular_error:
-                        # Playwright releases may still expose only the older
-                        # combined LNA permission name for browser contexts.
-                        context.grant_permissions(["local-network-access"], origin=ALLOWED_ORIGIN)
-                        print("Chrome legacy LNA permission granted by test user.")
                     page = context.new_page()
+                    # Playwright 1.58's string mapping does NOT yet handle the
+                    # split Chrome 145 granular 'loopback-network' permission.
+                    # CDP exposes the official 'loopbackNetwork' PermissionType.
+                    # Simulate the test user's explicit Allow choice, not a
+                    # disabled security feature or a fabricated certificate.
+                    cdp = context.new_cdp_session(page)
+                    cdp.send("Browser.grantPermissions", {
+                        "origin": ALLOWED_ORIGIN,
+                        "permissions": ["loopbackNetwork"],
+                    })
+                    print("Chrome loopback-network access explicitly granted for isolated test origin.")
                     response = page.goto(TEST_PAGE, wait_until="domcontentloaded", timeout=30000)
                     if response is None or response.status != 200:
                         raise RuntimeError("Real deployed Cloudflare JARVIX test page unavailable")
