@@ -34,7 +34,9 @@ def main() -> int:
                     # CDP exposes the official 'loopbackNetwork' PermissionType.
                     # Simulate the test user's explicit Allow choice, not a
                     # disabled security feature or a fabricated certificate.
-                    cdp = context.new_cdp_session(page)
+                    # Browser-scope CDP is required for Target.getBrowserContexts;
+                    # a page-scope CDP session is intentionally denied access.
+                    cdp = browser.new_browser_cdp_session()
                     cdp_contexts = cdp.send("Target.getBrowserContexts").get("browserContextIds", [])
                     if len(cdp_contexts) != 1:
                         raise RuntimeError(
