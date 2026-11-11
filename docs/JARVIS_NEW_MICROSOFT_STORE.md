@@ -70,3 +70,36 @@ References:
 - https://learn.microsoft.com/en-us/windows/apps/distribute-through-store/how-to-distribute-your-win32-app-through-microsoft-store
 - https://learn.microsoft.com/en-us/windows/apps/publish/partner-center/open-a-developer-account
 - https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-manual-conversion
+
+## Existing Partner Center registration — received 2026-11-11
+
+Microsoft Store has already reserved this product. Use exactly the identity
+reported in Partner Center, not a generated or guessed DN:
+
+- Package/Identity/Name: `Deepsyq.JarixbyDeepsyq`
+- Package/Identity/Publisher: `CN=7B5BC7EE-DA65-44E2-8CAC-D02C7C2CA333`
+- Package/Properties/PublisherDisplayName: `Deepsyq`
+- PFN (as displayed by Partner Center): `Deepsyq.JarixbyDeepsyq_mxysa39f97fgr`
+- Store product ID: `9NWK3FR3G9BG`
+
+**IMPORTANT:** `Jarix` (without v) appears in the official package identity,
+while the visible application brand is `JARVIX by DEEPSYQ`. The internal
+package identity is deliberately preserved because changing it locally could
+break Microsoft Store association. If the owner wants a different internal
+package identity, it must first be changed/reserved in Partner Center.
+
+An MSIX prepared from these three Partner Center values may be uploaded to
+the already-reserved product under its package submission section. It is NOT
+itself signed or safe for sideloading on the user's PC.
+
+GitHub Actions for creating an MSIX are under:
+`https://github.com/mvryhan-web/video-variator-android/actions/workflows/jarvis-new-store-msix.yml`
+
+The artifact's inner file is `JARVIX_NEW-STORE-UNSIGNED.msix`.
+After Microsoft approves the app it re-signs the MSIX for trusted Store
+installation; Microsoft does NOT similarly re-sign raw EXE/MSI installer
+submissions. Store sign-off is not evidence that the voice/AI product is ready.
+
+For now **leave the Store listing in draft**. Check Windows functionality,
+mic/voice, product content, App Certification Kit and privacy information
+before submitting to public Store certification.
