@@ -245,7 +245,8 @@ function build(){
  // File selection, generation, queue, downloads and history remain independent.
  const queue=node('section','vu-panel vu-output');queue.innerHTML='<div class="vu-panel-head vu-output-head"><div><h3>Output queue</h3><p>Your generated variants will appear here.</p></div><button type="button" class="vu-queue-clear">Clear all</button></div>';
  const lines=node('div','vu-output-lines');queue.append(lines);
- for(let i=0;i<3;i++){const row=node('div','vu-output-row');row.innerHTML='<span class="vu-output-thumb"></span><b>Variant '+(i+1)+'</b><span class="vu-output-dash">–</span><span class="vu-progress-line"></span><span class="vu-output-dash">–</span><button type="button" disabled>⇩ &nbsp;Download</button>';row.querySelector('.vu-output-thumb').append(image(i%2?'queue2':'queue1'));lines.append(row);}
+ // The real queue is bound below after the original workspace is mounted.
+ // Do not draw fake progress rows or fake download buttons.
  const clear=queue.querySelector('.vu-queue-clear');
  clear.textContent='Reset workspace';
  clear.addEventListener('click',()=>{
@@ -263,6 +264,10 @@ function build(){
  });
  [$('progressCard'),$('resultsCard'),$('errorCard')].forEach(el=>{if(el)queue.append(el)});
  right.append(queue);
+ // Only this Video Uniquifier page reads actual FFmpeg job events.
+ void import('./video-uniquifier-output-queue.js')
+  .then(mod=>mod.bindVideoUniquifierQueue({queue,lines,clear}))
+  .catch(error=>console.error('[Video Uniquifier queue]',error));
  // Keep real history and download links in their original controls, not simulated results.
  const how=node('section','vu-how');
  how.innerHTML='<div class="vu-how-head"><h3>How it works</h3><button type="button" class="vu-history-button">◷ &nbsp; View video history &nbsp; →</button></div>';
@@ -277,9 +282,12 @@ function build(){
  how.append(steps);grid.after(how);how.querySelector('button').addEventListener('click',()=>$('dashboardView')?.closest('.main')?.querySelector('.sidebar button[data-view="history"]')?.click()||document.querySelector('.sidebar button[data-view="history"]')?.click());
  const origProgress=$('progressCard'),origResults=$('resultsCard');
  function refreshQueue(){
-  const busy=!!(origProgress&&!origProgress.hidden),done=!!(origResults&&!origResults.hidden);
+  const done=!!(origResults&&!origResults.hidden);
+  const failed=!!($('errorCard')&&!$('errorCard').hidden);
+  const busy=!!window.VideoVariatorCore?.state.running&&!done&&!failed;
   clear.disabled=busy;
-  lines.hidden=done;queue.classList.toggle('has-outputs',done||busy);
+  // Keep completed rows and their real Download buttons visible after success.
+  lines.hidden=false;queue.classList.toggle('has-outputs',done||busy);
  }
  if(origProgress)new MutationObserver(refreshQueue).observe(origProgress,{attributes:true,attributeFilter:['hidden']});
  if(origResults)new MutationObserver(refreshQueue).observe(origResults,{attributes:true,attributeFilter:['hidden']});
