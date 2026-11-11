@@ -74,3 +74,29 @@
 **Note on CI:** repo-wide legacy Owner design-lock and change-scope
 workflows currently fail in this isolated branch and are unrelated to
 the specific passing JARVIX NEW integration, MSIX and browser workflows.
+
+
+## Local-first AI milestone (11 Nov 2026, isolated branch only)
+
+- Added `jarvis_new/local_llm.py`: Ollama chat to **fixed loopback**
+  `127.0.0.1:11434` only, installed-model discovery, no remote fallback,
+  no model auto-install, no paid API, no LLM tool execution. This is real
+  local model inference **only when the user already has Ollama and a
+  compatible model running**; otherwise the UI reports unavailability.
+- Added `jarvis_new/windows_speech.py`: Windows System.Speech one-shot
+  dictation (12-second capture) and spoken reply via installed Windows voices.
+  Both require separate explicit button-click approval. Recognition quality
+  and available languages depend on Windows speech packs. No background
+  listening, audio uploads or bundled models.
+- Added **Локальный AI** desktop popup, model selector, text conversation,
+  opt-in microphone, opt-in TTS, and an explicitly consented read-only
+  Windows system/version/architecture lookup. No arbitrary OS commands.
+- Hermetic tests: `tests/test_jarvis_new_local_ai.py`; CI workflow:
+  `.github/workflows/jarvis-new-local-ai.yml`.
+  GitHub Actions: https://github.com/mvryhan-web/video-variator-android/actions/workflows/jarvis-new-local-ai.yml
+  (check the latest Windows/Linux run before claiming full green).
+- **Not yet proven**: end-to-end live speech with physical microphone and
+  installed language pack, real Ollama model output on Windows, full duplex,
+  integration of this popup into the packaged MSIX, or a cloud browser
+  conversation with the desktop. Tests mock model/speech calls, not real
+  AI or live hardware. Production and original JARVIX remain untouched.
