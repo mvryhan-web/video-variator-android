@@ -77,7 +77,13 @@ function render(){
  errorNotice.textContent=state.error||'';
  for(const [i,key]of ['pause','continue','stop'].entries()){const b=bar.querySelector(`[data-tour="${key}"]`);b.textContent=texts[i];b.title=state.error||texts[i];}
  bar.querySelector('[data-tour="pause"]').hidden=state.phase==='paused';bar.querySelector('[data-tour="continue"]').hidden=state.phase!=='paused';
- bar.dataset.error=state.error||'';document.getElementById('topJarvisBtn')?.classList.toggle('ds-tour-speaking',state.phase==='playing'&&tourSpeaking);
+ bar.dataset.error=state.error||'';
+ if(!bar.querySelector('.ds-tour-caption')){
+  const line=document.createElement('p');line.className='ds-tour-caption';line.setAttribute('aria-live','polite');
+  line.style.cssText='position:absolute;bottom:calc(100% + 8px);left:0;right:0;margin:auto;max-width:min(92vw,550px);padding:10px 12px;background:rgba(11,17,32,.94);border:1px solid rgba(245,181,81,.55);border-radius:10px;color:#fff;font:500 13px/1.5 system-ui,sans-serif;text-align:center;';
+  bar.append(line);
+ }
+ document.getElementById('topJarvisBtn')?.classList.toggle('ds-tour-speaking',state.phase==='playing'&&tourSpeaking);
 }
 function advance(current){if(current!==turn||!state||state.phase!=='playing')return;closeTourSettings();state=tourAction(state,'ended');save();if(state)void play();else{clearAudio();document.querySelectorAll('.jarvis-tour-spotlight,.ds-tour-drawer-target').forEach(e=>e.classList.remove('jarvis-tour-spotlight','ds-tour-drawer-target'));activeFocus='';updateJarvisState('idle');render();window.dispatchEvent(new Event('jarvix:tour-ended'));}}
 function blocked(current,message='Audio unavailable'){if(current!==turn||!state)return;setTourSpeaking(false);state={...state,phase:'paused',error:message};save();render();updateJarvisState('idle');}
@@ -374,7 +380,32 @@ function playV3(step,target,current){
  }
  closeNavigation();pauseJarvisRecognition();
  const index=Math.min(state.beat||0,step.beats.length);
- if(index===step.beats.length){closeV3Dialogs();advance(current);return;}
+ if(index===step.beats.length){
+  closeV3Dialogs();
+  // Do not play the obsolete Trial recording saying it is unavailable:
+  // the owner's current plans are active.
+  if(step.title==='Home'&&state.index===tourPlan(state.language).length-1){
+   const closing={
+    ru:'Это была бесплатная демонстрация JARVIX. Basic, Pro и Business помогут выбрать возможности под ваши задачи. Посмотрите тарифы и начните создавать больше.',
+    en:'This was a free JARVIX tour. Explore Basic, Pro and Business to find the right tools for your projects.',
+    fr:'Cette visite gratuite de JARVIX est terminée. Découvrez Basic, Pro et Business pour choisir les outils adaptés à vos projets.',
+    es:'Esta visita gratuita de JARVIX ha terminado. Descubre Basic, Pro y Business para elegir las herramientas para tus proyectos.'
+   }[state.language];
+   caption(closing); // Await matching owner MP3 before presenting this as VOICE.
+   void showTourElement('#topPricing,[href="pricing.html"]',()=>current===turn&&state?.phase==='playing',2200)
+    .then(()=>{if(current===turn&&state?.phase==='playing')waitTimer=setTimeout(()=>advance(current),3000);});
+   return;
+  }
+  advance(current);return;
+ }
+ if(step.title==='trial'){
+  // The old speech explicitly says Trial cannot be purchased, which is
+  // no longer true. Show the live card without playing a false statement.
+  caption({ru:'Trial — ознакомительный план. Актуальные условия смотрите на этой странице.',en:'Trial — introductory plan. See the current terms on this page.',fr:'Trial — offre de découverte. Consultez les conditions sur cette page.',es:'Trial — plan introductorio. Consulta las condiciones actuales en esta página.'}[state.language]);
+  void showTourElement('.price-plan.price-trial',()=>current===turn&&state?.phase==='playing',1600)
+   .then(()=>{if(current===turn&&state?.phase==='playing')advance(current);});
+  return;
+ }
  const beat=step.beats[index];
  // Destination title waits for visible content, then the beat matches its control.
  if(step.navText&&state.navAnnounced!==state.index){
