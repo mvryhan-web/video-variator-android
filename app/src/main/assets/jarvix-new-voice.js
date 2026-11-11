@@ -114,9 +114,12 @@ async function respond(message,id){
    turns.push({role:'user',content:message.slice(0,1200)},
               {role:'assistant',content:selected.text.slice(0,1200)});
    turns=turns.slice(-8);
-  } else ui('thinking',recordingsText().unavailable);
-  if(on&&seq===id)listen(id);
-  return;
+   listen(id);
+   return;
+  }
+  // The index may reference an MP3 that has not been uploaded.
+  // Continue with real local Ollama TEXT, not silence or unrelated speech.
+  ui('thinking',recordingsText().unavailable);
  }
  // Genuine Ollama still handles novel questions, but WITHOUT making up an
  // MP3 or speaking an unrelated pre-recorded answer.
