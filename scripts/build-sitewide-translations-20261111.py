@@ -98,7 +98,9 @@ def normalized(s):
     return re.sub(r"\s+"," ",html.unescape(s)).strip()
 def accepted(s, from_js=False):
     s=normalized(s)
-    if len(s)<2 or len(s)>220 or not WORD.search(s):return False
+    if len(s)<2 or len(s)>(110 if from_js else 2000) or not WORD.search(s):return False
+    if from_js and (len(s.split())>16 or re.search(r"[А-Яа-яЁё]",s)):return False
+    if from_js and len(s)>70 and s.count(" ")>10:return False
     if TAG_RE.search(s) or BAD_PATTERN.search(s):return False
     if any(sensitive in s for sensitive in UNSAFE_CLASSES):return False
     if s.count("{") or s.count("}") or s.count("$") or s.count("\\"):return False
