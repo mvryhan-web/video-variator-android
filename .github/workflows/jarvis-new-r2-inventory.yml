@@ -38,27 +38,65 @@ jobs:
           index=fetch('/r2/buckets')
           buckets=[row['name'] for row in index.get('result',{}).get('buckets',[]) if row.get('name')]
           print('R2 buckets discovered:',len(buckets))
-          # No object contents, credentials, or raw media are printed.
+          # R2 REST List Objects returns result: ARRAY and result_info.cursor;
+          # earlier code mistakenly treated result as {objects,cursor}, printing
+          # a misleading zero for a non-empty bucket. Search ALL key prefixes.
+          import re,collections,pathlib
+          from collections import Counter
+          basepath=pathlib.Path('app/src/main/assets/media/jarvix')
+          manifests=[basepath/'clips/manifest-500.json',basepath/'tour-v3/manifest.json']
+          expected=set()
+          for manifest in manifests:
+              if manifest.is_file():
+                  clips=json.loads(manifest.read_text(encoding='utf-8')).get('clips',[])
+                  expected.update(c.get('filename','') for c in clips if c.get('filename'))
+          # Local user's 200 legacy recordings are known in a different ZIP.
+          expected.update('jarvix_'+lang+'_'+str(i).zfill(2)+'.mp3'
+                          for lang in ('ru','en','fr','es') for i in range(1,51))
+          target=set()
           for bucket in buckets:
-              prefix='media/jarvix/'
-              total=mp3=0
+              total=mp3=voice_mp3=pages=0
               cursor=None
               seen=set()
-              for _ in range(500):
-                  params={'prefix':prefix,'per_page':'1000'}
+              endings=Counter()
+              exhausted=False
+              for _ in range(25):
+                  params={'per_page':'1000'}
                   if cursor:params['cursor']=cursor
                   endpoint='/r2/buckets/'+urllib.parse.quote(bucket,safe='')+'/objects?'+urllib.parse.urlencode(params)
                   try:data=fetch(endpoint)
-                  except RuntimeError:
-                      print('R2 bucket',bucket,': object count unavailable for current token')
+                  except RuntimeError as err:
+                      print('R2 bucket',bucket,': inventory blocked:',str(err))
+                      exhausted=True
                       break
-                  result=data.get('result') or {}
-                  objects=result.get('objects',[]) if isinstance(result,dict) else []
-                  total+=len(objects)
-                  mp3+=sum(1 for o in objects if str(o.get('key','')).lower().endswith('.mp3'))
-                  cursor=(result.get('cursor') if isinstance(result,dict) else None)
+                  objects=data.get('result')
+                  if not isinstance(objects,list):
+                      raise RuntimeError('Unexpected Cloudflare R2 List Objects shape')
+                  pages+=1;total+=len(objects)
+                  for obj in objects:
+                      key=str(obj.get('key',''))
+                      name=key.rsplit('/',1)[-1]
+                      if not key.lower().endswith('.mp3'):continue
+                      mp3+=1
+                      if re.search(r'jarvix|jarvis|voice|/clips/|/tour-v3/|^t3_',key,re.I):
+                          voice_mp3+=1
+                          target.add(name)
+                          endings[key.split('/',1)[0] if '/' in key else '(root)']+=1
+                  info=data.get('result_info') or {}
+                  if not info.get('is_truncated'):
+                      exhausted=True;break
+                  cursor=info.get('cursor')
                   if not cursor or cursor in seen:
-                      print('R2 bucket',bucket,': prefix media/jarvix/ objects=',total,'mp3=',mp3)
-                      break
+                      raise RuntimeError('R2 pagination truncated without new cursor')
+                  seen.add(cursor)
+              print('R2 bucket',bucket,'scanned=',total,'all_mp3=',mp3,
+                    'jarvix_related_mp3=',voice_mp3,'pages=',pages,
+                    'complete=',exhausted,'top_prefixes=',endings.most_common(8))
+              if not exhausted:
+                  print('WARNING: too many objects; inventory limited to first 25000 keys')
+          print('Recognised audio filenames in R2:',len(target & expected),
+                'of',len(expected),'expected names in Github manifests.')
+          print('Missing expected filenames in scanned R2:',len(expected-target))
+          # R2 ETags alone do NOT verify identical audio bytes or audio quality.
                   seen.add(cursor)
           PY
