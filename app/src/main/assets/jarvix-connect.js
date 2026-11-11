@@ -66,12 +66,59 @@ async function refresh(){
  el('jobs').replaceChildren();
  for(const job of list.tasks){const li=document.createElement('li');li.textContent=job.kind+' · '+job.status+' · '+job.prompt;el('jobs').append(li)}
 }
+const PAIR_MSG = {
+ ru:{waiting:'Соединение найдено. Подтверди запрос в окне JARVIX NEW на компьютере.',old:'Запущено старое приложение JARVIX NEW без подтверждения подключения. Установи обновлённую тестовую версию; LLaMA и её настройки менять не нужно.',denied:'Подключение отклонено в настольном JARVIX или запрос истёк. Нажми «Подключить», чтобы попробовать снова.',error:'Локальная связь есть, но подтверждение недоступно. Проверь, что на компьютере запущена обновлённая версия JARVIX NEW.',expired:'Время подтверждения истекло. Нажми «Подключить» ещё раз.'},
+ en:{waiting:'Connection found. Confirm the request in the desktop JARVIX NEW window.',old:'Your desktop JARVIX NEW does not support approval yet. Install the updated test build; keep Ollama unchanged.',denied:'Desktop approval was declined or expired. Click Connect to retry.',error:'Local connection is available, but desktop approval failed. Check that JARVIX NEW is updated.',expired:'Desktop approval timed out. Click Connect to retry.'},
+ fr:{waiting:'Connexion trouvée. Confirmez la demande dans JARVIX NEW sur ordinateur.',old:'L’application JARVIX NEW doit être mise à jour pour confirmer la connexion.',denied:'Connexion refusée ou expirée. Réessayez.',error:'Impossible de confirmer sur l’ordinateur. Vérifiez la version de JARVIX NEW.',expired:'Délai de confirmation dépassé. Réessayez.'},
+ es:{waiting:'Conexión encontrada. Confirma la solicitud en JARVIX NEW en el ordenador.',old:'Actualiza JARVIX NEW en el ordenador para habilitar la confirmación.',denied:'Solicitud rechazada o caducada. Vuelve a intentarlo.',error:'No se pudo confirmar la conexión. Comprueba la versión de JARVIX NEW.',expired:'Tiempo de confirmación agotado. Vuelve a intentarlo.'}
+};
+const pairMsg=()=>PAIR_MSG[el('lang').value]||PAIR_MSG.en;
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function approvedConnection(){
+ el('status').textContent=pairMsg().waiting;
+ const opts={mode:'cors',targetAddressSpace:'loopback',cache:'no-store'};
+ let requested;
+ try {requested=await fetch(ENDPOINT+'/v1/pair/request',{...opts,method:'POST'});}
+ catch {throw Error(pairMsg().error)}
+ if(requested.status===404)throw Error(pairMsg().old);
+ if(!requested.ok)throw Error(pairMsg().error);
+ const first=await requested.json();
+ if(typeof first.request_id!=='string'||!first.request_id)throw Error(pairMsg().error);
+ for(let attempt=0;attempt<60;attempt++){
+  await sleep(1500);
+  let res;
+  try {res=await fetch(ENDPOINT+'/v1/pair/status?id='+encodeURIComponent(first.request_id),opts);}
+  catch {throw Error(pairMsg().error)}
+  if(res.status===202)continue;
+  if(res.status===403||res.status===404)throw Error(pairMsg().denied);
+  if(!res.ok)throw Error(pairMsg().error);
+  const value=await res.json();
+  if(typeof value.token!=='string'||!value.token)throw Error(pairMsg().error);
+  key=value.token;
+  await refresh();
+  el('status').textContent=tr().connected;
+  el('submit').disabled=false;
+  el('refresh').disabled=false;
+  el('token').value='';
+  return;
+ }
+ throw Error(pairMsg().expired);
+}
 el('connect').addEventListener('click',async()=>{
- key=el('token').value.trim();if(!key){el('status').textContent=tr().offline;return}
+ key=el('token').value.trim();
  el('connect').disabled=true;
- try{await refresh();el('status').textContent=tr().connected;el('submit').disabled=false;el('refresh').disabled=false;el('token').value=''}
- catch(error){key='';el('status').textContent=error?.status===401?(pairingProblem[el('lang').value]||pairingProblem.en):await offlineReason();el('submit').disabled=true;el('refresh').disabled=true}
- finally{el('connect').disabled=false}
+ try{
+  if(key){
+   try{await refresh();el('status').textContent=tr().connected;el('submit').disabled=false;el('refresh').disabled=false;el('token').value='';return}
+   catch(error){if(error?.status!==401)throw error;key='';}
+  }
+  // The desktop user must approve every fallback. Never bypass task authorization.
+  await approvedConnection();
+ }catch(error){
+  key='';
+  el('status').textContent=error?.message&&Object.values(PAIR_MSG).some(row=>Object.values(row).includes(error.message))?error.message:await offlineReason();
+  el('submit').disabled=true;el('refresh').disabled=true;
+ }finally{el('connect').disabled=false}
 });
 el('refresh').addEventListener('click',()=>refresh().catch(async()=>{el('status').textContent=await offlineReason()}));
 el('submit').addEventListener('click',async()=>{
