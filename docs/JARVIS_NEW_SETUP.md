@@ -97,3 +97,67 @@ Start the **upstream VoiceOS** CLI with the integrated JARVIX NEW task tools:
 `python -m jarvis_new.launch --provider local --mode cli`.
 Requires installing the upstream VoiceOS Python requirements and a supported
 local LLM. The startup has not yet been accepted on real Windows/macOS machines.
+
+## Windows / macOS desktop companion (source first, 2026-11-11)
+
+There is now a **cross-platform Tkinter desktop companion**, not yet a signed
+standalone `.exe` / `.dmg`. It operates on the exact same local SQLite
+journal as `jarvix_new_accept_task`, `jarvix_new_task_status`, and
+`jarvix_new_task_report` registered into the original VoiceOS registry.
+
+**Windows test run**: clone/open `jarvis-new` and double click
+`RUN_JARVIX_NEW_WINDOWS.bat`. Uses a local venv under
+`%LOCALAPPDATA%\JARVIX_NEW\venv`; installs only Pillow + imageio-ffmpeg.
+
+**macOS test run**: clone/open `jarvis-new` and run
+`RUN_JARVIX_NEW_MAC.command`. Uses a local venv under
+`~/Library/Application Support/JARVIX_NEW/venv`. Requires Python 3.10+
+with Tkinter. On macOS Gatekeeper and microphone permissions remain OS-controlled.
+
+Optional, bigger voice-engine dependency installation: pass `voice` as
+the first command-line argument to the respective launch script. This is
+opt-in and may download large dependencies/models. It is NOT needed for
+the offline coordinator, local photo compression, task reports or simulated
+image/video/music file tests. The user must separately install and configure
+a compatible local LLM and speech models to exercise the full voice engine.
+
+The VoiceOS runtime preserves its upstream source untouched but extends
+its existing ToolRegistry at bootstrap. A deterministic action-first adapter
+can intake one image/video/music creation request and report factual queued,
+processing, completed, failed and simulated counts. No automatic provider calls.
+
+**IMPORTANT NOT YET DELIVERED**:
+- Real verified AI generation for image, video or music (media above are explicit simulations).
+- Guaranteed full audio conversation on physical Windows/macOS microphones.
+- Full hosted online task sync between desktop, website and mobile.
+- Portable production-ready signed Windows/macOS installers.
+- Integration with an automatically controlled Antigravity desktop or live AI provider.
+- A working live Alibaba Model Studio key in isolated GitHub Actions.
+
+## Provider safety and current reality
+
+Alibaba's current documentation distinguishes general shared DashScope endpoints
+from workspace-dedicated Singapore endpoints. Prefer the correct key's region
+and endpoint; a regional mismatch returns authorization errors.
+
+When using free Model Studio credits, the account's **Free Quota Only** mode
+must be verified on the provider side before any test. A self-declared Boolean
+in our code is not, by itself, evidence that this console setting is enabled.
+A provider-specific free quota is not an unlimited lifetime free service.
+
+Source: https://www.alibabacloud.com/help/en/model-studio/new-free-quota
+Base URLs: https://www.alibabacloud.com/help/en/model-studio/base-url
+
+## CI evidence (read-only and no paid calls)
+- Pinned source vendor import: GitHub Actions run 42988948936.
+- 17 passing offline coordinator and VoiceOS registry tests plus four media
+  pipeline artifacts: GitHub Actions run 42991252868.
+- Windows and macOS compatibility, 2026-11-11:
+  GitHub Actions run 42992599348 (both native-smoke jobs success).
+- Zero-cost Linux action-first and media smoke tests after the photo intent fix:
+  GitHub Actions run 42992599306 (success).
+
+These tests validate import, file formats, Python syntax, per-owner local task
+states and safe tool registration. They do not validate a physical microphone,
+real Cloudflare site integration, AI media quality, account credentials or
+provider billing.
