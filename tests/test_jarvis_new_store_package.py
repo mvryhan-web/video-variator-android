@@ -22,6 +22,22 @@ class StoreManifestTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             MODULE.render_manifest("Owner.JarvixNew", "CN=Foo\nHacked", "Company")
 
+    def test_real_partner_center_registration_values(self):
+        # Exact fields supplied by the Microsoft Partner Center account owner.
+        # The apparent Jarix/Jarvix spelling difference is deliberately
+        # preserved in the PACKAGE IDENTITY: never guess a correction.
+        name = "Deepsyq.JarixbyDeepsyq"
+        publisher = "CN=7B5BC7EE-DA65-44E2-8CAC-D02C7C2CA333"
+        display = "Deepsyq"
+        manifest = ET.fromstring(MODULE.render_manifest(name, publisher, display))
+        ns = {"f": MODULE.FOUNDATION}
+        identity = manifest.find("f:Identity", ns)
+        self.assertEqual(identity.attrib["Name"], name)
+        self.assertEqual(identity.attrib["Publisher"], publisher)
+        props = manifest.find("f:Properties", ns)
+        self.assertEqual(props.find("f:PublisherDisplayName", ns).text, display)
+        self.assertEqual(props.find("f:DisplayName", ns).text, "JARVIX by DEEPSYQ")
+
     def test_msix_manifest_matches_owner_identity(self):
         data = MODULE.render_manifest(
             "Owner.JarvixNew", "CN=Actual Verified Identity",
