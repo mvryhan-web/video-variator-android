@@ -1,0 +1,97 @@
+name: Owner DEEPSYQ 33-page offline RU FR ES translations
+on:
+  push:
+    branches: [owner-sitewide-i18n-20261111]
+    paths: ['.github/workflows/owner-sitewide-i18n-catalogs-20261111.yml']
+permissions:
+  contents: write
+concurrency:
+  group: owner-sitewide-locale-build-20261111
+  cancel-in-progress: false
+jobs:
+  catalog:
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ru, fr, es]
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      ARGOS_DEVICE_TYPE: cpu
+      ARGOS_CHUNK_TYPE: NONE
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Install offline build-time translation packages
+        run: |
+          python -m pip install --quiet argostranslate==1.10.0
+      - name: Build one fully local translation catalog
+        run: |
+          python scripts/build-sitewide-translations-20261111.py ${{ matrix.language }}
+      - name: Validate generated translation entries
+        run: |
+          python - <<'PY'
+          import json,os
+          lang=os.environ['LOCALE']
+          filename=f'app/src/main/assets/i18n/catalog-{lang}.json'
+          data=json.load(open(filename))
+          assert data['language']==lang
+          assert data['entryCount']>=500
+          assert len(data['entries'])==data['entryCount']
+          print('CATALOG_AUDIT',lang,data['entryCount'])
+          PY
+        env:
+          LOCALE: ${{ matrix.language }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deepsyq-locale-${{ matrix.language }}
+          path: |
+            app/src/main/assets/i18n/catalog-${{ matrix.language }}.json
+            app/src/main/assets/i18n/coverage.json
+          retention-days: 3
+  combine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: catalog
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: deepsyq-locale-*
+          merge-multiple: true
+          path: .
+      - name: Add i18n loader to every HTML entrypoint, no other markup changes
+        run: python scripts/connect-sitewide-i18n-20261111.py
+      - name: Check all 34 pages and three complete locale catalogs
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check app/src/main/assets/sitewide-i18n.js
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('app/src/main/assets')
+          html=list(root.glob('*.html'))
+          assert len(html)==34
+          for p in html:
+              assert p.read_text().count('sitewide-i18n.js?v=20261111')==1,p
+          for lang in ('ru','fr','es'):
+              p=root/'i18n'/f'catalog-{lang}.json'
+              data=json.loads(p.read_text())
+              assert data['entryCount']>=500
+          print('OWNER_LOCALE_34_PAGE_LINKS_VERIFIED')
+          PY
+      - name: Save catalogs and script references to the isolated owner branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "DEEPSYQ Localization Builder"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/assets/*.html app/src/main/assets/i18n/
+          git diff --cached --check
+          git commit -m "feat(i18n): link 34 pages and bundle offline ru/fr/es locale catalogs"
+          git push origin HEAD:owner-sitewide-i18n-20261111
