@@ -25,6 +25,12 @@ document.querySelectorAll('button[data-mode]').forEach(btn=>btn.addEventListener
  mode=btn.dataset.mode;
  document.querySelectorAll('button[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));
 }));
+const requestedMode=new URLSearchParams(location.search).get('mode');
+const normalizedMode=requestedMode==='audio'?'music':requestedMode;
+if(['image','video','music'].includes(normalizedMode)) {
+ const chosen=document.querySelector('button[data-mode="'+normalizedMode+'"]');
+ if(chosen)chosen.click();
+}
 el('pair').addEventListener('click',async()=>{
  const token=el('pairing').value.trim();if(!token){status('Вставь код подключения из приложения.');return;}
  key=token;el('pair').disabled=true;
