@@ -24,7 +24,7 @@ if (location.hostname === 'jarvis-new.deepsyq.pages.dev' || location.hostname.en
     banner.id = 'jarvix-new-preview-banner';
     banner.setAttribute('role', 'region');
     banner.setAttribute('aria-label', 'Новый JARVIX — тестовая версия');
-    banner.style.cssText='position:relative;z-index:20;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:13px;background:#0a1b2a;border-bottom:1px solid #aa8243;color:#f4eee5;padding:11px 16px;font:600 14px system-ui';
+    banner.style.cssText='position:relative;isolation:isolate;z-index:2147483000;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:13px;background:#0a1b2a;border-bottom:1px solid #aa8243;color:#f4eee5;padding:11px 16px;font:600 14px system-ui';
     const bold = document.createElement('strong');
     bold.textContent = 'JARVIX NEW — ТЕСТОВАЯ ВЕРСИЯ';
     const hint = document.createElement('span');
