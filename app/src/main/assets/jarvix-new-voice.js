@@ -139,8 +139,25 @@ async function respond(message,id){
    listen(id);
    return;
   }
-  // The index may reference an MP3 that has not been uploaded.
-  // Continue with real local Ollama TEXT, not silence or unrelated speech.
+  // A legacy catalog can list a file that has not been uploaded to TEST.
+  // In that case, try the owner's separately approved local MP3 collection.
+  if(selected.source!=='local-voice-library'){
+   const local=await ownerLibraryReply(message,lang);
+   if(!on||seq!==id)return;
+   if(local){
+    const localPlayed=await playOwnerRecording(local,id);
+    if(!on||seq!==id)return;
+    if(localPlayed){
+     turns.push({role:'user',content:message.slice(0,1200)},
+                {role:'assistant',content:local.text.slice(0,1200)});
+     turns=turns.slice(-8);
+     listen(id);
+     return;
+    }
+   }
+  }
+  // Neither recording could be played: continue with genuine local
+  // Ollama TEXT, never fake speech or an unrelated recorded reply.
   ui('thinking',recordingsText().unavailable);
  }
  // Genuine Ollama still handles novel questions, but WITHOUT making up an
