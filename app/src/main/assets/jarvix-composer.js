@@ -202,7 +202,7 @@ export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
   }
  });
  const voice=bindVoiceInput({mic,input,form,onError,onStatus:onError});
- form.addEventListener('submit',async e=>{e.preventDefault();await voice.stop();if(!input.value.trim()&&!files.length)return;await onSend({text:input.value.trim(),mode,files:[...files]});});
+ form.addEventListener('submit',async e=>{e.preventDefault();await voice.stop({abort:true});if(!input.value.trim()&&!files.length)return;await onSend({text:input.value.trim(),mode,files:[...files]});});
  input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();form.requestSubmit();}});
  input.addEventListener('input',()=>{
   if(!input.value.trim())input.style.height='';

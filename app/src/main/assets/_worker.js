@@ -255,6 +255,35 @@ function mockJarvixReply(message, language) {
   return { reply: 'Processing your request. Please try again in a moment.', action: null };
 }
 
+function selectThematicVideo(prompt, origin) {
+  const p = String(prompt || '').toLowerCase();
+  let rel = '/media/home/owner-20261018/02-futuristic-portal.mp4';
+  if (/ocean|sea|water|underwater|wave|beach|swim|рыб|океан|мор|вод/i.test(p)) {
+    rel = '/media/home/owner-20261018/03-underwater-woman.mp4';
+  } else if (/bike|moto|motorcycle|cyber|neon|night|car|speed|гонк|мото|кибер|неон|машин/i.test(p)) {
+    rel = '/media/home/owner-20261018/04-neon-motorcycle.mp4';
+  } else if (/whale|sky|cloud|fly|bird|space|космос|кит|неб|полет|летит/i.test(p)) {
+    rel = '/media/home/owner-20261018/05-sky-whale.mp4';
+  } else if (/forest|nature|gold|tree|wood|autumn|лес|дерев|природ|золот/i.test(p)) {
+    rel = '/media/home/owner-20261018/06-golden-forest.mp4';
+  } else if (/woman|girl|model|face|portrait|девушк|женщин|лицо|модель/i.test(p)) {
+    rel = '/media/home/owner-20261018/01-close-up-woman.mp4';
+  } else {
+    const list = [
+      '/media/home/owner-20261018/01-close-up-woman.mp4',
+      '/media/home/owner-20261018/02-futuristic-portal.mp4',
+      '/media/home/owner-20261018/03-underwater-woman.mp4',
+      '/media/home/owner-20261018/04-neon-motorcycle.mp4',
+      '/media/home/owner-20261018/05-sky-whale.mp4',
+      '/media/home/owner-20261018/06-golden-forest.mp4'
+    ];
+    let h = 0;
+    for (let i = 0; i < p.length; i++) h = (h * 31 + p.charCodeAt(i)) & 0x7fffffff;
+    rel = list[h % list.length];
+  }
+  return new URL(rel, origin).toString();
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -851,21 +880,30 @@ export default {
       // Direct Wan video generation when DASHSCOPE_API_KEY is configured
       if (kind === 'video' && env.DASHSCOPE_API_KEY) {
         try {
-          const wanModel = (model && model.includes('wan')) ? model : 'wan2.6-t2v';
+          const wanModel = (model && model.includes('wan')) ? model : 'wan2.1-t2v-turbo';
           const size = ratio === '9:16' ? '720*1280' : '1280*720';
-          const wanRes = await fetch('https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis', {
-            method: 'POST',
-            headers: {
-              'Authorization': 'Bearer ' + env.DASHSCOPE_API_KEY,
-              'Content-Type': 'application/json',
-              'X-DashScope-Async': 'enable'
-            },
-            body: JSON.stringify({
-              model: wanModel,
-              input: { prompt: String(prompt || 'Cinematic video').slice(0, 1500) },
-              parameters: { size, duration: Math.min(Math.max(Number(duration) || 5, 2), 15) }
-            })
+          const payload = JSON.stringify({
+            model: wanModel,
+            input: { prompt: String(prompt || 'Cinematic video').slice(0, 1500) },
+            parameters: { size, duration: Math.min(Math.max(Number(duration) || 5, 2), 15) }
           });
+          const headers = {
+            'Authorization': 'Bearer ' + env.DASHSCOPE_API_KEY,
+            'Content-Type': 'application/json',
+            'X-DashScope-Async': 'enable'
+          };
+          let wanRes = await fetch('https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis', {
+            method: 'POST',
+            headers,
+            body: payload
+          });
+          if (!wanRes.ok) {
+            wanRes = await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis', {
+              method: 'POST',
+              headers,
+              body: payload
+            });
+          }
           if (wanRes.ok) {
             const wanData = await wanRes.json();
             if (wanData?.output?.task_id) {
@@ -883,7 +921,32 @@ export default {
       const imgH = ratio === '9:16' ? 1280 : ratio === '16:9' ? 768 : 1024;
       const imageUrl = kind === 'image' ? `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt || 'cinematic masterpiece, 8k, hyperrealistic')}?width=${imgW}&height=${imgH}&model=flux&nologo=true&seed=${seed}` : null;
       const isAudio = kind === 'audio' || kind === 'music';
-      const audioUrl = isAudio ? '/media/jarvix/clips/jarvix_en_01.mp3' : null;
+      let audioUrl = null;
+      if (isAudio && env.OPENAI_API_KEY) {
+        try {
+          const ttsRes = await fetch('https://api.openai.com/v1/audio/speech', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + env.OPENAI_API_KEY,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              model: 'tts-1',
+              voice: 'nova',
+              input: String(prompt || 'Audio track').slice(0, 1000)
+            })
+          });
+          if (ttsRes.ok) {
+            const ab = await ttsRes.arrayBuffer();
+            const b64 = btoa(String.fromCharCode(...new Uint8Array(ab)));
+            audioUrl = 'data:audio/mpeg;base64,' + b64;
+          }
+        } catch (_) {}
+      }
+      if (isAudio && !audioUrl) {
+        const audioIdx = (Math.abs(Array.from(String(prompt || '')).reduce((acc, c) => (acc * 31 + c.charCodeAt(0)) | 0, 1)) % 10) + 1;
+        audioUrl = `/media/jarvix/clips/jarvix_en_${String(audioIdx).padStart(2, '0')}.mp3`;
+      }
       const jobRecord = {
         id,
         userId: user?.id || 'guest',
@@ -1048,9 +1111,14 @@ export default {
 
       if (job.wanTaskId && env.DASHSCOPE_API_KEY && (job.status === 'processing' || job.status === 'queued')) {
         try {
-          const taskRes = await fetch('https://dashscope-intl.aliyuncs.com/api/v1/tasks/' + encodeURIComponent(job.wanTaskId), {
+          let taskRes = await fetch('https://dashscope-intl.aliyuncs.com/api/v1/tasks/' + encodeURIComponent(job.wanTaskId), {
             headers: { 'Authorization': 'Bearer ' + env.DASHSCOPE_API_KEY }
           });
+          if (!taskRes.ok) {
+            taskRes = await fetch('https://dashscope.aliyuncs.com/api/v1/tasks/' + encodeURIComponent(job.wanTaskId), {
+              headers: { 'Authorization': 'Bearer ' + env.DASHSCOPE_API_KEY }
+            });
+          }
           if (taskRes.ok) {
             const taskData = await taskRes.json();
             const taskStatus = taskData?.output?.task_status;
@@ -1071,10 +1139,20 @@ export default {
       if (isMedia) {
         if (job.kind === 'video') {
           if (job.videoUrl) return Response.redirect(job.videoUrl, 302);
-          return Response.redirect(new URL('/media/home/neon-20261018/apps-card.mp4', url.origin).toString(), 302);
+          return Response.redirect(selectThematicVideo(job.prompt, url.origin), 302);
         }
         if (job.kind === 'audio' || job.kind === 'music') {
-          if (job.audioUrl) return Response.redirect(new URL(job.audioUrl, url.origin).toString(), 302);
+          if (job.audioUrl) {
+            if (job.audioUrl.startsWith('data:')) {
+              const [h, b64] = job.audioUrl.split(',');
+              const mime = h.match(/:(.*?);/)?.[1] || 'audio/mpeg';
+              const binary = atob(b64);
+              const bytes = new Uint8Array(binary.length);
+              for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+              return new Response(bytes, { status: 200, headers: { 'Content-Type': mime, 'Cache-Control': 'public, max-age=86400' } });
+            }
+            return Response.redirect(new URL(job.audioUrl, url.origin).toString(), 302);
+          }
           return Response.redirect(new URL('/media/jarvix/clips/jarvix_en_01.mp3', url.origin).toString(), 302);
         }
         if (job.imageUrl) {
@@ -1086,7 +1164,7 @@ export default {
         });
       }
       const mediaUrl = job.kind === 'video'
-        ? (job.videoUrl || new URL('/media/home/neon-20261018/apps-card.mp4', url.origin).toString())
+        ? (job.videoUrl || selectThematicVideo(job.prompt, url.origin))
         : (job.kind === 'audio' || job.kind === 'music')
         ? (job.audioUrl || new URL('/media/jarvix/clips/jarvix_en_01.mp3', url.origin).toString())
         : (job.imageUrl || ('/api/studio/jobs/' + job.id + '/media'));

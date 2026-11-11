@@ -334,13 +334,14 @@ async function processMessage(message){
   );
   const isExplicitGen = /^(?:сгенерируй|нарисуй|создай|сделай|запусти|generate|create|draw|make|render)(?=[^а-яёa-z0-9]|$)/iu.test(cleanedText);
   const isModification = /измен|сделай.*(ярче|темнее)|ещё/iu.test(rawText);
-  const shouldGenerateMedia = !isAdviceOrQuestion && (
+  const isModeSelected = ['image','video','audio'].includes(message.mode) && cleanedText.length > 2 && !/(?:^|[^a-zа-яё0-9])(как|дела|привет|хай|здравствуй|hello|hi)(?:[^a-zа-яё0-9]|$)/iu.test(cleanedText);
+  const shouldGenerateMedia = isModeSelected || (!isAdviceOrQuestion && (
    isExplicitGen ||
    isModification ||
    (message.action?.intent === 'GENERATE_MEDIA') ||
    (command?.intent === 'GENERATE_MEDIA' && !/(?:^|[^a-zа-яё0-9])(как|дела|привет|что)/iu.test(rawText)) ||
-   (['image','video','audio'].includes(message.mode) && cleanedText.length > 3 && !/(?:^|[^a-zа-яё0-9])(как|дела|привет|хай|кто)/iu.test(cleanedText) && isExplicitGen)
-  );
+   /(?:картинку?|фото|изображени[ея]|рисунок|видео|клип|ролик|музык[уа]|трек|песн[юя]|soundtrack|song|track)\b/iu.test(cleanedText)
+  ));
 
   if(!shouldGenerateMedia){
    // Text conversation / advice / question: dynamically switch header to Chat
