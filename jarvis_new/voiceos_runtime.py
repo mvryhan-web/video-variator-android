@@ -42,6 +42,22 @@ def main(argv: list[str] | None = None) -> int:
         return registry
 
     bootstrap.register_tools = register_with_jarvix
+
+    # Intercept only small, deterministic, safe task/report commands. VoiceOS
+    # remains responsible for every other conversational and tool request.
+    from core.orchestrator import Orchestrator
+    from jarvis_new.action_first import handle as handle_jarvix_action
+    original_process = Orchestrator.process_user_input
+
+    async def process_with_jarvix(self, user_input):
+        registry = getattr(self.tool_executor, "registry", None)
+        if registry is not None:
+            answer = await handle_jarvix_action(user_input, registry)
+            if answer is not None:
+                return answer
+        return await original_process(self, user_input)
+
+    Orchestrator.process_user_input = process_with_jarvix
     sys.argv = ["voiceos-main", "--mode", args.mode, "--llm-provider", args.llm_provider]
 
     from main import main as upstream_main
