@@ -257,6 +257,7 @@ async function selectTourMediaMode(mode,current){
  waitTimer=setTimeout(()=>{if(alive())blocked(current,'JARVIX Chat did not open');},6500);
 }
 // TOUR-ONLY RELEASE: approved native Chat Studio walkthrough; no other site assets change.
+// Verified scope: instant speech, stage-safe mode navigation, AI Apps resume, safe Inspiration clone.
 // Release pipeline: preserve native Studio actions and existing Cloudflare Worker.
 // The existing Settings button opens the real, same-origin Studio inside a
 // private iframe (home-studio-settings.js). Demonstrate its native controls;
