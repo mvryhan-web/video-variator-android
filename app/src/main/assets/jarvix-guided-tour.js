@@ -174,19 +174,69 @@ function closeV3Dialogs(){
  }
  v3DialogsOpened.clear();tourSettingsOpened=false;
 }
-const homeMediaCards={Image:'.tile-image',Video:'.tile-video',Audio:'.tile-audio'};
+const mediaTourModes={Image:'image',Video:'video',Audio:'audio'};
 function homeMediaTourStep(step){
- const card=homeMediaCards[step.title];
- if(!card)return step;
- const targets=[`#homeCreativeTools ${card},#homeQuickBar`,'#studioSettingsBtn','#studioSettingsBtn','#homeQuickSubmit'];
- return {...step,url:'deepsyq.html',beats:step.beats.map((beat,index)=>({
-  ...beat,target:targets[index]||'#homeQuickBar',action:'focus'
+ if(!mediaTourModes[step.title])return step;
+ // Image/Video/Audio share the ONE existing JARVIX Chat.
+ const targets=['#jInput','#jChatForm .j-settings-shortcut,#jActiveModeLabel',
+  '#jChatForm .j-settings-shortcut,#jActiveModeLabel','#jSend'];
+ return {...step,url:'jarvix-chat.html',beats:step.beats.map((beat,index)=>({
+  ...beat,target:targets[index]||'#jChatForm'
  }))};
+}
+// Native, paced gestures only. Home's real tile navigates to Chat once;
+// Chat's own tile switches the same conversation's mode in place.
+async function selectTourMediaMode(mode,current){
+ const alive=()=>current===turn&&state?.phase==='playing';
+ const plus=document.getElementById('jPlus'),menu=document.getElementById('jPlusMenu');
+ const choice=menu?.querySelector('[data-j-mode="'+mode+'"]');
+ if(!plus||!menu||!choice){blocked(current,'JARVIX mode menu unavailable');return;}
+ await showTourElement(plus,alive,1200);
+ if(!alive())return;
+ if(menu.hidden)plus.click();
+ await pauseFrame(200);
+ if(menu.hidden){blocked(current,'JARVIX mode menu did not open');return;}
+ await showTourElement(menu,alive,1150);
+ await showTourElement(choice,alive,1350);
+ if(!alive())return;
+ if(choice.disabled){blocked(current,'JARVIX mode unavailable');return;}
+ const isChat=location.pathname.endsWith('/jarvix-chat.html');
+ if(isChat){
+  choice.click(); // Native Chat mode handler; no new chat or paid generation.
+  await pauseFrame(350);
+  if(!alive())return;
+  const chosen=document.getElementById('jActiveModeLabel')?.dataset.mode;
+  if(chosen!==mode){blocked(current,'JARVIX mode was not activated');return;}
+  state.mediaSelectedStep=state.index;save();
+  await showTourElement('#jActiveModeLabel',alive,1150);
+  if(alive())void play();
+  return;
+ }
+ if(choice.tagName!=='A'||!choice.href){blocked(current,'JARVIX navigation unavailable');return;}
+ state.mediaSelectedStep=state.index;
+ state.pendingRoute={index:state.index,href:choice.href};
+ save();
+ choice.click(); // Existing Home -> JARVIX Chat anchor, clicked once.
+ waitTimer=setTimeout(()=>{if(alive())blocked(current,'JARVIX Chat did not open');},6500);
 }
 async function cueV3(beat){
  const initial=turn;
  const canContinue=()=>initial===turn&&state?.phase==='playing';
  installTourFocus();
+ const currentTitle=state&&tourPlan(state.language)[state.index]?.title;
+ if(mediaTourModes[currentTitle]&&location.pathname.endsWith('/jarvix-chat.html')){
+  // Legacy Studio model/settings buttons no longer exist on this page.
+  const focused=await showTourElement(beat.target,canContinue,1300);
+  if(!canContinue())return;
+  if(beat.action==='openModel'){
+   const settings=[...document.querySelectorAll('#jChatForm .j-settings-shortcut')]
+    .find(el=>el.getClientRects().length&&!el.disabled);
+   if(settings){settings.click();await pauseFrame(850);}
+  }
+  if(focused)spotlight({target:beat.target,action:'focus'});
+  await pauseFrame(1150);
+  return;
+ }
  const first=beat.action==='openModel'?'#modelButton':beat.action==='openSettings'?'#settingsButton':beat.target;
  await showTourElement(first,canContinue,1250);
  if(!canContinue())return;
@@ -313,7 +363,14 @@ function isSamePage(p1,p2){
 }
 function playV3(step,target,current){
  if(!state||state.phase!=='playing')return;
- if(!isSamePage(target.pathname,location.pathname)||target.search!==location.search){
+ const mode=mediaTourModes[step.title];
+ const isChat=location.pathname.endsWith('/jarvix-chat.html');
+ if(mode&&(!isChat||state.mediaSelectedStep!==state.index)){
+  void selectTourMediaMode(mode,current).catch(()=>blocked(current,'JARVIX mode transition failed'));
+  return;
+ }
+ // Chat mode changes never require a new page or search-query navigation.
+ if(!(mode&&isChat)&&(!isSamePage(target.pathname,location.pathname)||target.search!==location.search)){
   // Navigate FIRST: title MP3 must not announce a section on the previous page.
   closeV3Dialogs();
   showNavigation(step.url);
@@ -474,9 +531,13 @@ if(typeof window!=='undefined'){
  const resume=()=>{
   if(location.pathname.endsWith('/jarvix-chat.html')){
    const checkpoint=read();
+   if(checkpoint&&mediaTourModes[tourPlan(checkpoint.language)[checkpoint.index]?.title]){
+    // Continue Image, Video or Audio inside the existing JARVIX Chat.
+    resumeJarvixGuidedTour();return;
+   }
    if(!checkpoint?.cloneHandoff){if(checkpoint)stopJarvixGuidedTour();return;}
-   // Only the explicit Inspiration Clone & Try handoff may temporarily
-   // show the guided overlay in JARVIX Chat. No chat handlers are changed.
+   // Inspiration Clone & Try can hand off here as before.
+   // No chat handlers are changed.
    state=checkpoint;state.cloneHandoff=false;save();render();
    void (async()=>{
     const active=()=>!!state&&state.phase==='playing'&&state.index===11;
