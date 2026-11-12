@@ -1,8 +1,8 @@
-import {recordedExact,recordedReply} from './jarvix-new-recorded-dialog.js';
+import {recordedReply} from './jarvix-new-recorded-dialog.js';
+import {helloRecording,promptRecording,smalltalkReply} from './jarvix-new-smalltalk.js';
 /* JARVIX NEW — voice-only mode on the OWNER'S EXISTING sphere, TEST host only.
    No new page, code form, paid API or simulated model answer. */
 const HOST='jarvis-new.deepsyq.pages.dev';
-const API='http://127.0.0.1:8768/v1/voice/chat';
 const VOICE_LIBRARY='http://127.0.0.1:8770/v1/find';
 const PAID_ROUTE='/api/jarvix-new/paid/';
 let paidStatusOnce=null;
@@ -17,14 +17,8 @@ const getLang=()=>{
  try{key=localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang')||navigator.language||'en';}catch{}
  return WORDS[String(key).slice(0,2).toLowerCase()]||WORDS.en;
 };
-const OWNER_INTRO=Object.freeze({
- ru:'Привет! Я JARVIX. Смотрите, что я умею.',
- en:"Hi! I'm JARVIX. Let me show you what I can do.",
- fr:'Salut ! Je suis JARVIX. Regardez ce que je sais faire.',
- es:'¡Hola! Soy JARVIX. Mira lo que puedo hacer.'
-});
 let on=false,seq=0,rec=null,request=null,pending=null,ownerClip=null,ownerClipDone=null;
-let turns=[],orb=null,status=null;
+let turns=[],orb=null;
 const Recognition=()=>window.SpeechRecognition||window.webkitSpeechRecognition;
 function ui(stage,msg=''){
  if(orb){
@@ -32,9 +26,9 @@ function ui(stage,msg=''){
   orb.classList.remove('jv-new-voice-speaking','jv-new-voice-listening','jv-new-voice-thinking');
   if(on&&stage)orb.classList.add('jv-new-voice-'+stage);
   orb.setAttribute('aria-pressed',String(on));
-  orb.title=on?'JARVIX NEW · '+msg:'JARVIX NEW · голосовой разговор';
+  orb.title='JARVIX NEW';
+  orb.setAttribute('aria-label',on?(stage==='speaking'?'JARVIX отвечает голосом':stage==='listening'?'JARVIX слушает вас':'JARVIX обрабатывает запрос'):'Начать разговор с JARVIX');
  }
- if(status){status.textContent=msg;status.hidden=!msg;}
 }
 function stop(message=''){
  on=false;seq++;
@@ -54,7 +48,7 @@ async function playOwnerRecording(record,id){
   let finished=false;
   const finish=ok=>{
    if(finished)return;
-   finished=true;audio.onended=null;audio.onerror=null;
+   finished=true;audio.onended=null;audio.onerror=null;audio.ontimeupdate=null;
    if(ownerClip===audio)ownerClip=null;
    if(ownerClipDone===finish)ownerClipDone=null;
    if(record.temporaryBlob===true)try{URL.revokeObjectURL(record.audioUrl);}catch{}
@@ -63,19 +57,20 @@ async function playOwnerRecording(record,id){
   ownerClipDone=finish;
   audio.onended=()=>finish(true);
   audio.onerror=()=>finish(false);
+  // Older Tour V3 MP3 fallback: stop at the pause after "Я JARVIX",
+  // before any phrase about "Смотрите, что я умею".
+  if(Number.isFinite(record.stopAtSeconds)&&record.stopAtSeconds>0){
+   audio.ontimeupdate=()=>{
+    if(audio.currentTime>=record.stopAtSeconds){
+     audio.pause();finish(true);
+    }
+   };
+  }
   ui('speaking',getLang().speak);
   try{Promise.resolve(audio.play()).catch(()=>finish(false));}catch{finish(false);}
  });
 }
 const recordedLanguage=()=>getLang().lang.slice(0,2);
-const RECORDED_WORDS={
- ru:{missing:'Для этого вопроса нет подходящей готовой MP3-записи.',unavailable:'Не удалось воспроизвести найденную MP3-запись.',textOnly:'Новой записи для ответа LLaMA нет. Ответ текстом: ',noModel:'Подходящего MP3 нет и локальная модель сейчас не отвечает.'},
- en:{missing:'No matching prerecorded MP3 for that question.',unavailable:'The selected MP3 could not be played.',textOnly:'No prerecorded audio for this Ollama reply. Text: ',noModel:'No matching MP3 and no local model response.'},
- fr:{missing:'Aucun MP3 enregistré ne correspond à la question.',unavailable:'Impossible de lire le MP3 sélectionné.',textOnly:'Pas de MP3 pour cette réponse locale. Texte : ',noModel:'Aucun MP3 trouvé et le modèle local ne répond pas.'},
- es:{missing:'No hay un MP3 grabado adecuado para esta pregunta.',unavailable:'No se pudo reproducir el MP3 seleccionado.',textOnly:'No hay MP3 para esta respuesta local. Texto: ',noModel:'No se encontró MP3 y el modelo local no responde.'}
-};
-const recordingsText=()=>RECORDED_WORDS[recordedLanguage()]||RECORDED_WORDS.en;
-const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function listen(id){
  if(!on||seq!==id)return;
  const SR=Recognition();
@@ -170,115 +165,71 @@ async function paidVoiceReply(message,language,id){
   if(request===abort)request=null;
  }
 }
+async function playResponse(record,id,message){
+ if(!record||!on||seq!==id)return false;
+ const ok=await playOwnerRecording(record,id);
+ if(!ok||!on||seq!==id)return false;
+ turns.push({role:'user',content:message.slice(0,1200)},
+            {role:'assistant',content:String(record.text||'').slice(0,1200)});
+ turns=turns.slice(-8);
+ listen(id);
+ return true;
+}
 async function respond(message,id){
  if(!on||seq!==id)return;
- ui('thinking',getLang().think);
+ ui('thinking');
  const lang=recordedLanguage();
- // Paid access only if the owner later enables the TEST backend AND its
- // server independently confirms paid entitlement and budget.
+
+ // 1. Human conversation first — not a broken 500-scenario manifest.
+ // Matching existing V3 owner MP3 is instant and does not use local network.
+ const smalltalk=await smalltalkReply(message,lang).catch(()=>null);
+ if(!on||seq!==id)return;
+ if(await playResponse(smalltalk,id,message))return;
+ if(!on||seq!==id)return;
+
+ // 2. Future paid voice: remains OFF until owner enables server-side
+ // entitlement, real budget reserve and approved voice. Never fake it.
  const premium=await paidVoiceReply(message,lang,id);
  if(!on||seq!==id){
   if(premium?.temporaryBlob)URL.revokeObjectURL(premium.audioUrl);
   return;
  }
- if(premium){
-  const played=await playOwnerRecording(premium,id);
-  if(!on||seq!==id)return;
-  if(played){
-   turns.push({role:'user',content:message.slice(0,1200)},
-              {role:'assistant',content:premium.text.slice(0,1200)});
-   turns=turns.slice(-8);
-   listen(id);
-   return;
-  }
- }
- let selected=null;
- try{selected=await recordedReply(message,lang);}catch{}
- // Local owner-approved index can add phrases not present in static catalog.
- if(!selected)selected=await ownerLibraryReply(message,lang);
+ if(await playResponse(premium,id,message))return;
  if(!on||seq!==id)return;
- if(selected){
-  const success=await playOwnerRecording(selected,id);
-  if(!on||seq!==id)return;
-  if(success){
-   turns.push({role:'user',content:message.slice(0,1200)},
-              {role:'assistant',content:selected.text.slice(0,1200)});
-   turns=turns.slice(-8);
-   listen(id);
-   return;
-  }
-  // A legacy catalog can list a file that has not been uploaded to TEST.
-  // In that case, try the owner's separately approved local MP3 collection.
-  if(selected.source!=='local-voice-library'){
-   const local=await ownerLibraryReply(message,lang);
-   if(!on||seq!==id)return;
-   if(local){
-    const localPlayed=await playOwnerRecording(local,id);
-    if(!on||seq!==id)return;
-    if(localPlayed){
-     turns.push({role:'user',content:message.slice(0,1200)},
-                {role:'assistant',content:local.text.slice(0,1200)});
-     turns=turns.slice(-8);
-     listen(id);
-     return;
-    }
-   }
-  }
-  // Neither recording could be played: continue with genuine local
-  // Ollama TEXT, never fake speech or an unrelated recorded reply.
-  ui('thinking',recordingsText().unavailable);
- }
- // Genuine Ollama still handles novel questions, but WITHOUT making up an
- // MP3 or speaking an unrelated pre-recorded answer.
- const abort=new AbortController();request=abort;
- const limit=setTimeout(()=>abort.abort(),102000);
- try{
-  const result=await fetch(API,{method:'POST',mode:'cors',targetAddressSpace:'loopback',
-   cache:'no-store',signal:abort.signal,headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({message:message.slice(0,1200),history:turns.slice(-8)})});
-  if(!result.ok)throw Error('Local Ollama unavailable');
-  const data=await result.json();
-  if(!data||data.provider!=='local-ollama'||typeof data.reply!=='string'||!data.reply.trim())
-   throw Error('No real AI answer');
-  if(!on||seq!==id)return;
-  const answer=data.reply.trim();
-  turns.push({role:'user',content:message.slice(0,1200)},
-             {role:'assistant',content:answer.slice(0,1200)});
-  turns=turns.slice(-8);
-  const exact=await recordedExact(answer,lang).catch(()=>null);
-  if(!on||seq!==id)return;
-  if(exact) {
-   const ok=await playOwnerRecording(exact,id);
-   if(!ok&&on&&seq===id)ui('thinking',recordingsText().unavailable);
-  } else {
-   ui('thinking',recordingsText().textOnly+answer.slice(0,320));
-   await sleep(4200);
-  }
- }catch{
-  if(!on||seq!==id)return;
-  ui('thinking',recordingsText().noModel);
-  await sleep(2500);
- }finally{
-  clearTimeout(limit);
-  if(request===abort)request=null;
- }
+
+ // 3. Owner-approved local Windows recording, when paired and running.
+ const local=await ownerLibraryReply(message,lang);
+ if(!on||seq!==id)return;
+ if(await playResponse(local,id,message))return;
+ if(!on||seq!==id)return;
+
+ // 4. Other real, verified, existing MP3 from the tour/catalog.
+ const recorded=await recordedReply(message,lang).catch(()=>null);
+ if(!on||seq!==id)return;
+ if(await playResponse(recorded,id,message))return;
+ if(!on||seq!==id)return;
+
+ // 5. Graceful, spoken, genuine owner-voice conversational invitation.
+ // No fake "MP3 not found", no 102s Ollama wait, no dark status overlay.
+ const prompt=await promptRecording(lang).catch(()=>null);
+ if(!on||seq!==id)return;
+ if(await playResponse(prompt,id,message))return;
  if(on&&seq===id)listen(id);
 }
 async function start(){
  if(on){stop();return;}
- if(!Recognition()){ui('',getLang().unsupported);return;}
- if(!navigator.mediaDevices?.getUserMedia){ui('',getLang().deny);return;}
- on=true;const id=++seq;ui('listening',getLang().start);
+ if(!Recognition()){ui('error');return;}
+ if(!navigator.mediaDevices?.getUserMedia){ui('error');return;}
+ on=true;const id=++seq;ui('listening');
  try{
-  // This is the browser's normal, explicit mic permission. Never bypass it.
   const stream=await navigator.mediaDevices.getUserMedia({audio:{
    echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
   stream.getTracks().forEach(track=>track.stop());
- }catch{if(on&&seq===id)stop(getLang().deny);return;}
+ }catch{if(on&&seq===id)stop();return;}
  if(!on||seq!==id)return;
- const intro=await recordedExact(OWNER_INTRO[recordedLanguage()]||OWNER_INTRO.en,recordedLanguage()).catch(()=>null);
- if(intro){const ok=await playOwnerRecording(intro,id);if(!ok&&on&&seq===id)ui('',recordingsText().unavailable);}
- else if(on&&seq===id)ui('',recordingsText().missing);
+ const intro=await helloRecording(recordedLanguage()).catch(()=>null);
+ if(!on||seq!==id)return;
+ if(intro)await playOwnerRecording(intro,id);
  if(on&&seq===id)listen(id);
 }
 export function installJarvixNewVoice(){
@@ -286,15 +237,19 @@ export function installJarvixNewVoice(){
  window.__jarvixVoiceReady=true;
  orb=document.getElementById('topJarvisBtn');
  const style=document.createElement('style');style.id='jv-new-voice-style';
- style.textContent='@keyframes jvVoiceGlow{0%,100%{filter:drop-shadow(0 0 8px #31dfdf)}50%{filter:drop-shadow(0 0 27px #e9a85a) drop-shadow(0 0 12px #b35ec5)}}'+
-  '#topJarvisBtn.jv-new-voice-active .jarvis-mini-orb{animation:jvVoiceGlow 1.2s ease-in-out infinite!important}'+
-  '#topJarvisBtn.jv-new-voice-speaking .jarvis-mini-orb{animation-duration:.55s!important}'+
-  '@media(prefers-reduced-motion:reduce){#topJarvisBtn.jv-new-voice-active .jarvis-mini-orb{animation:none!important;outline:2px solid #51bbc8}}';
+ style.textContent=[
+ '@keyframes jvListen{0%,100%{filter:hue-rotate(-18deg) drop-shadow(0 0 9px #34dce1)}50%{filter:hue-rotate(10deg) drop-shadow(0 0 20px #4effe6)}}',
+ '@keyframes jvThink{0%,100%{filter:drop-shadow(0 0 7px #f2a949)}50%{filter:drop-shadow(0 0 24px #f9d27a)}}',
+ '@keyframes jvSpeak{0%,100%{filter:drop-shadow(0 0 9px #ce58d4)}50%{filter:drop-shadow(0 0 29px #ff9f41) drop-shadow(0 0 10px #bc6bfc)}}',
+ '#topJarvisBtn.jv-new-voice-listening .jarvis-mini-orb{animation:jvListen 1.8s ease-in-out infinite!important}',
+ '#topJarvisBtn.jv-new-voice-thinking .jarvis-mini-orb{animation:jvThink .95s ease-in-out infinite!important}',
+ '#topJarvisBtn.jv-new-voice-speaking .jarvis-mini-orb{animation:jvSpeak .5s ease-in-out infinite!important}',
+ '@media(prefers-reduced-motion:reduce){#topJarvisBtn.jv-new-voice-active .jarvis-mini-orb{animation:none!important}}'
+ ].join('');
  document.head.append(style);
- status=document.createElement('div');status.id='jv-new-live-voice-status';status.hidden=true;
- status.setAttribute('role','status');status.setAttribute('aria-live','polite');
- status.style.cssText='position:fixed;left:50%;bottom:calc(15px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:2147483300;max-width:min(95vw,450px);max-height:32vh;overflow:hidden;overflow-wrap:anywhere;padding:8px 14px;background:#101d2ce8;color:#dbeef4;border:1px solid #5c7581;border-radius:18px;text-align:center;pointer-events:none;font:600 13px/1.4 system-ui,sans-serif';
- document.body.append(status);
+ // Remove old bottom error/status captions, including those left by an
+ // earlier TEST version. The sphere alone indicates the conversation state.
+ document.getElementById('jv-new-live-voice-status')?.remove();
  if(orb){
   orb.title='JARVIX NEW · голосовое общение';
   orb.setAttribute('aria-label','Начать или остановить голосовой разговор с JARVIX NEW');
