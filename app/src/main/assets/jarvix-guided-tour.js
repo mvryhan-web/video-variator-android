@@ -501,9 +501,16 @@ function playV3(step,target,current){
   }
   state.pendingRoute={index:state.index,href:target.href};
   save();
+  // AI Apps is the hand-off boundary after the already-approved Audio demo.
+  // A route-only marker lets the destination restore THIS stage if a browser
+  // clears sessionStorage during a cross-document or canonical-host redirect.
+  // No URL changes at all for Home/Image/Video/Audio or subsequent stages.
+  const destination=step.title==='AI Apps'
+   ? new URL(target.href):null;
+  if(destination)destination.hash='jarvix-tour-resume-'+state.language;
   navTimer=setTimeout(()=>{
    if(current!==turn||!state||state.phase!=='playing')return;
-   try{location.assign(target.href);}catch{blocked(current,'Tour page could not be opened.');}
+   try{location.assign(destination?.href||target.href);}catch{blocked(current,'Tour page could not be opened.');}
   },120);
   return;
  }
@@ -684,6 +691,20 @@ if(typeof window!=='undefined'){
     save();if(state)void play();else{clearAudio();render();}
    })().catch(()=>{if(state)blocked(turn,'Inspiration handoff unavailable');});
    return;
+  }
+  // AI Apps entry only: recover from a lost cross-page session checkpoint.
+  // The explicit tour marker is never added for a regular visitor.
+  if(location.pathname.endsWith('/ai-apps.html')&&!read()){
+   const marker=/^#jarvix-tour-resume-(ru|en|fr|es)$/.exec(location.hash);
+   if(marker){
+    state={index:4,language:marker[1],phase:'playing',beat:0,
+     navAnnounced:3,position:0,narrationPart:0,narrationStep:null};
+    save();
+    // Avoid retaining a replayable marker on refresh/back.
+    try{history.replaceState(history.state,'',location.pathname+location.search);}catch{}
+    void play();
+    return;
+   }
   }
   if(read())resumeJarvixGuidedTour();
  };
