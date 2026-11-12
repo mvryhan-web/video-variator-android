@@ -39,6 +39,7 @@ HASH_REUSE_RELEASE_SETS = (
     frozenset({"smart-reminders.html", "mobile-utility.html"}),
     frozenset({"design-gallery.html", "telegram-free-mini.html"}),
     frozenset({"audio-studio.html", "avatar-studio.html"}),
+    frozenset({"jarvix.html"}),
 )
 
 def allowed_hash_reuse(paths):
