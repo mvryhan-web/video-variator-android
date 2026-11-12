@@ -1,3 +1,5 @@
+import {handleJarvixPaid} from './jarvix-new-paid-gateway.js';
+
 /* JARVIX NEW TEST ONLY — static Pages Worker.
  * Never proxy to production, Gemini, Alibaba, or invent AI answers.
  * The visible sphere talks to the user's local Ollama on loopback
@@ -22,8 +24,12 @@ export default {
       // No autoplay mic: browser requires a real click on the sphere.
       return Response.redirect(new URL('/', url.origin).href, 302);
     }
-    // No hosted provider secrets or hard-coded canned answer can ever
-    // reach the preview. Local AI is a separate loopback-only app.
+    // Optional server-side paid gateway: disabled unless the owner configures
+    // explicit TEST-only flags and private credentials.
+    if (url.pathname.startsWith('/api/jarvix-new/paid/')) {
+      return await handleJarvixPaid(request, env);
+    }
+    // Free TEST remains local AI + owner's already approved MP3.
     if (url.pathname.startsWith('/api/')) {
       return new Response(JSON.stringify({error:'JARVIX_NEW_TEST_ONLY_LOCAL_AI'}), {
         status:503,
