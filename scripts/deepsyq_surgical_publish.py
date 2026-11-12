@@ -485,15 +485,34 @@ def main():
                     insist(actual == candidate, "NEW_DEPLOYMENT_ASSET_DIFFERS")
                     insist(script == worker, "NEW_DEPLOYMENT_WORKER_CHANGED")
                     new_settings = cloudflare.worker_settings(script)
-                    if new_settings != settings:
+                    def semantically_ordered(x):
+                        result = dict(x)
+                        bs = result.get("bindings")
+                        if isinstance(bs, list):
+                            result["bindings"] = sorted(bs, key=lambda v: json.dumps(v, sort_keys=True))
+                        return result
+                    if semantically_ordered(new_settings) != semantically_ordered(settings):
                         diff_keys = sorted(key for key in set(settings) | set(new_settings)
                                            if settings.get(key) != new_settings.get(key))
                         def names_types(x):
                             bs = x.get("bindings") if isinstance(x,dict) else None
                             if not isinstance(bs,list): return []
                             return sorted(str(b.get("name","")) + ":" + str(b.get("type","")) for b in bs if isinstance(b,dict))
+                        def field_changes(before, after):
+                            bs = before.get("bindings") if isinstance(before,dict) else None
+                            cs = after.get("bindings") if isinstance(after,dict) else None
+                            if not isinstance(bs,list) or not isinstance(cs,list):return ["unknown"]
+                            out=[]
+                            bb={str(v.get("name")):v for v in bs if isinstance(v,dict)}
+                            cc={str(v.get("name")):v for v in cs if isinstance(v,dict)}
+                            for name in sorted(set(bb)|set(cc)):
+                                left,right=bb.get(name,{}),cc.get(name,{})
+                                fields=sorted(k for k in set(left)|set(right) if left.get(k)!=right.get(k))
+                                if fields:out.append({"name":name,"changed_fields":fields})
+                            return out
                         print("WORKER_CHANGED_FIELD_NAMES", json.dumps(diff_keys))
                         print("WORKER_BINDINGS_SHAPE_MATCH", names_types(settings) == names_types(new_settings))
+                        print("WORKER_BINDING_CHANGED_FIELD_NAMES_ONLY", json.dumps(field_changes(settings,new_settings)))
                         raise Blocked("NEW_DEPLOYMENT_BINDINGS_CHANGED")
                     break
                 time.sleep(3)
