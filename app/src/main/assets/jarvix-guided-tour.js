@@ -4,10 +4,25 @@ import {TOUR_KEY,tourAction,tourCues,cueAt,tourNavigationClip,planNarrationBeats
 import {tourV3Plan as tourPlan} from './jarvix-tour-v3-script.js';
 import {getTourV3Recording} from './jarvix-tour-v3-audio.js';
 import {getTourV4Recording,v4BeatId} from './jarvix-tour-v4-audio.js';
-import {installTourFocus,showTourElement,performTourDemo,endTourFocus} from './jarvix-tour-choreography.js';
+import {installTourFocus,performTourDemo,endTourFocus} from './jarvix-tour-choreography.js';
 let audio=null,turn=0,bar=null,state=null,navTimer=null,waitTimer=null,stepWaitKey=null,stepWaitStart=0,activeFocus='',tourSettingsOpened=false;
 let transcriptPromise=null,tourSpeaking=false,cueTimer=null,narrationTimer=null,tourStudioSettingsOwned=false;
 const pauseFrame=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+// Tour-only pacing: a gesture should be visible but never force one or more
+// seconds of dead air before the next native control is clicked.
+async function showTourElement(target,alive,ms=350){
+ if(!alive())return null;
+ const el=typeof target==='string'
+  ? [...document.querySelectorAll(target)].find(node=>node.isConnected&&!node.hidden&&node.getClientRects().length)
+  : target;
+ if(!el||!el.isConnected||el.hidden||!el.getClientRects().length)return null;
+ installTourFocus();
+ document.querySelectorAll('.ds-tour-focus-pulse').forEach(node=>node.classList.remove('ds-tour-focus-pulse'));
+ el.classList.add('ds-tour-focus-pulse');
+ try{el.scrollIntoView({block:'nearest',behavior:'instant'});}catch{}
+ await pauseFrame(Math.min(550,Math.max(180,ms*.31)));
+ return alive()&&el.isConnected?el:null;
+}
 async function speakOptionalTourV4(id,current){
  const approved=await getTourV4Recording(id,state?.language||'ru');
  if(!approved||current!==turn||state?.phase!=='playing')return false;
@@ -119,10 +134,10 @@ function speakNavigation(step,target,current){
    if(current!==turn||!state||state.phase!=='playing')return;
    if(link&&new URL(link.href).pathname===target.pathname&&new URL(link.href).search===target.search)link.click();
    else location.assign(target.href);
-  },350);
+  },125);
  };
- if(!file){navTimer=setTimeout(navigate,1100);return;}
- audio=new Audio(file);clip=audio;clip.id='dsTourAudio';clip.hidden=true;document.body.append(clip);
+ if(!file){navTimer=setTimeout(navigate,200);return;}
+ audio=new Audio(file);clip=audio;clip.id='dsTourAudio';clip.hidden=true;clip.playbackRate=1.10;clip.preload='auto';document.body.append(clip);
  clip.onloadedmetadata=()=>{if(state?.position)clip.currentTime=Math.min(state.position,Math.max(0,(clip.duration||0)-.1));};
  clip.onplay=()=>{pauseJarvisRecognition();updateJarvisState('speaking');};
  clip.onended=navigate;clip.onerror=()=>blocked(current,'Navigation voice unavailable');
@@ -204,7 +219,7 @@ async function selectTourMediaMode(mode,current){
  const isChat=location.pathname.endsWith('/jarvix-chat.html');
  if(isChat){
   choice.click(); // Native Chat mode handler; no new chat or paid generation.
-  await pauseFrame(350);
+  await pauseFrame(160);
   if(!alive())return;
   const chosen=document.getElementById('jActiveModeLabel')?.dataset.mode;
   if(chosen!==mode){blocked(current,'JARVIX mode was not activated');return;}
@@ -262,7 +277,7 @@ async function tourShowInsideStudio(selector,alive,ms=700){
  doc.querySelectorAll('.ds-tour-focus-pulse').forEach(e=>e.classList.remove('ds-tour-focus-pulse'));
  el.classList.add('ds-tour-focus-pulse');
  try{el.scrollIntoView({block:'nearest',behavior:'instant'});}catch{}
- await pauseFrame(Math.max(250,Math.min(850,ms)));
+ await pauseFrame(Math.max(150,Math.min(390,ms*.45)));
  if(!alive()){el.classList.remove('ds-tour-focus-pulse');return null;}
  return el;
 }
@@ -369,7 +384,7 @@ async function cueV3(beat){
   }
  }else if(beat.action==='closeSettings')closeV3Dialogs();
  spotlight(beat);
- await pauseFrame(1200);
+ await pauseFrame(150);
 }
 async function speakV3(text,current,complete,beat=null){
  try{
@@ -421,7 +436,7 @@ async function speakV3(text,current,complete,beat=null){
     }
     // A short transition after an already-finished recording; the focus
     // itself stays visible long enough during the corresponding spoken beat.
-    await pauseFrame(220);
+    await pauseFrame(45);
     if(current===turn&&state?.phase==='playing')complete();
    })();
   };
@@ -431,13 +446,13 @@ async function speakV3(text,current,complete,beat=null){
    if(!spoken){
     began();
     setTourSpeaking(false);
-    cueWork=Promise.all([cueWork,pauseFrame(2200)]);
+    cueWork=Promise.all([cueWork,pauseFrame(450)]);
    }
    done();
   };
-  narrationTimer=setTimeout(showWithoutAudio,35000);
+  narrationTimer=setTimeout(showWithoutAudio,14000);
   if(voice){
-   audio=new Audio(voice);const clip=audio;clip.id='dsTourAudio';clip.hidden=true;document.body.append(clip);
+   audio=new Audio(voice);const clip=audio;clip.id='dsTourAudio';clip.hidden=true;clip.preload='auto';clip.playbackRate=1.10;document.body.append(clip);
    // Pause/Continue resumes the actual owner clip without replaying narration.
    clip.onloadedmetadata=()=>{
     if(current!==turn||!state)return;
@@ -480,6 +495,16 @@ function isSamePage(p1,p2){
 }
 function playV3(step,target,current){
  if(!state||state.phase!=='playing')return;
+ // On any page, the owner's first click must produce the JARVIX greeting
+ // immediately, before redirecting to Home. The greeting is never repeated.
+ if(state.index===0&&(state.beat||0)===0&&!isSamePage(target.pathname,location.pathname)){
+  const greeting=step.beats[0];
+  void speakV3(greeting.text,current,()=>{
+   if(current!==turn||state?.phase!=='playing')return;
+   state.beat=1;state.position=0;save();void play();
+  });
+  return;
+ }
  const mode=mediaTourModes[step.title];
  const isChat=location.pathname.endsWith('/jarvix-chat.html');
  if(mode&&(!isChat||state.mediaSelectedStep!==state.index||
@@ -518,7 +543,7 @@ function playV3(step,target,current){
  if(state.pendingRoute?.index===state.index){
   // Let the newly opened page settle before the next introduction.
   state.pendingRoute=null;save();
-  waitTimer=setTimeout(()=>{if(current===turn&&state?.phase==='playing')void play();},1150);
+  waitTimer=setTimeout(()=>{if(current===turn&&state?.phase==='playing')void play();},160);
   return;
  }
  closeNavigation();pauseJarvisRecognition();
