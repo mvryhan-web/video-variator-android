@@ -2,7 +2,7 @@ name: Jarvix New test-only Cloudflare preview
 on:
   push:
     branches: [jarvis-new]
-    paths: ['app/src/main/assets/deepsyq-unified-platform-header.js', 'app/src/main/assets/deepsyq-mobile-shell.js', 'app/src/main/assets/jarvix-download.html', 'app/src/main/assets/jarvix-connect.html', 'app/src/main/assets/connect.html', 'app/src/main/assets/jarvix-connect.js', 'app/src/main/assets/jarvix-new.html', 'app/src/main/assets/jarvix-new.js', 'app/src/main/assets/jarvix-new-preview-entry.js', 'app/src/main/assets/jarvix-new-voice.js', 'scripts/jarvix_new_paid_gateway.js', 'tests/jarvix_new_paid_gateway.test.mjs', 'app/src/main/assets/jarvix-new-recorded-dialog.js', 'app/src/main/assets/jarvix-new-smalltalk.js', 'app/src/main/assets/media/jarvix/conversation/**', 'tests/jarvix_new_smalltalk.test.mjs', 'app/src/main/assets/jarvix-new-physical-audio-index.json', 'app/src/main/assets/jarvix-new-download-menu.js', 'scripts/prepare_jarvix_new_test_preview.py', 'scripts/jarvix_new_preview_worker.js', '.github/workflows/jarvis-new-preview.yml']
+    paths: ['app/src/main/assets/deepsyq-unified-platform-header.js', 'app/src/main/assets/deepsyq-mobile-shell.js', 'app/src/main/assets/jarvix-download.html', 'app/src/main/assets/jarvix-connect.html', 'app/src/main/assets/connect.html', 'app/src/main/assets/jarvix-connect.js', 'app/src/main/assets/jarvix-new.html', 'app/src/main/assets/jarvix-new.js', 'app/src/main/assets/jarvix-new-preview-entry.js', 'app/src/main/assets/jarvix-new-voice.js', 'scripts/jarvix_new_paid_gateway.js', 'tests/jarvix_new_paid_gateway.test.mjs', 'app/src/main/assets/jarvix-new-recorded-dialog.js', 'app/src/main/assets/jarvix-new-smalltalk.js', 'app/src/main/assets/media/jarvix/conversation/**', 'tests/jarvix_new_smalltalk.test.mjs', 'tests/jarvix_new_mobile_voice.test.mjs', 'app/src/main/assets/jarvix-new-physical-audio-index.json', 'app/src/main/assets/jarvix-new-download-menu.js', 'scripts/prepare_jarvix_new_test_preview.py', 'scripts/jarvix_new_preview_worker.js', '.github/workflows/jarvis-new-preview.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -29,6 +29,7 @@ jobs:
           node --check app/src/main/assets/jarvix-new-recorded-dialog.js
           node --check app/src/main/assets/jarvix-new-smalltalk.js
           node --test tests/jarvix_new_smalltalk.test.mjs
+          node --test tests/jarvix_new_mobile_voice.test.mjs
           python -c "import json; d=json.load(open('app/src/main/assets/jarvix-new-physical-audio-index.json')); assert d['schema']=='jarvix-new-physical-audio-index/v1' and d['count']==len(d['paths'])==552 and len(set(d['paths']))==552"
           node --check app/src/main/assets/jarvix-new-download-menu.js
           node --check scripts/jarvix_new_preview_worker.js
@@ -57,6 +58,7 @@ jobs:
           grep -q 'jarvix-new-download-menu.js' /tmp/jarvix-new-preview/index.html
           grep -q 'installJarvixNewVoice' /tmp/jarvix-new-preview/jarvix-new-preview-entry.js
           test -s /tmp/jarvix-new-preview/jarvix-new-voice.js
+          grep -q 'jv-new-mic-chip' /tmp/jarvix-new-preview/jarvix-new-voice.js
           test -s /tmp/jarvix-new-preview/jarvix-new-recorded-dialog.js
           test -s /tmp/jarvix-new-preview/jarvix-new-smalltalk.js
           # Source-derived short greetings must physically exist on TEST
