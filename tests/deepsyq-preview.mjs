@@ -30,8 +30,10 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
   const canvas=await fetch(base+'/canvas.html');
   assert.equal(canvas.status,200);
   const canvasHtml=await canvas.text();
-  assert.match(canvasHtml,/id="quickCreatePrompt"/);
-  assert.match(canvasHtml,/id="quickCreateFiles"/);
+  assert.match(canvasHtml,/id="canvasWorkspace"/);
+  assert.match(canvasHtml,/id="cwImageMode"/);
+  assert.match(canvasHtml,/id="cwVideoMode"/);
+  assert.doesNotMatch(canvasHtml,/id="quickCreatePrompt"|id="quickCreateFiles"/);
   // Owner removed the visual banner; endpoint isolation remains enforced below.
   assert.doesNotMatch(html,/deepsyq-preview-notice|Deepsyq design preview · Work in progress/);
   assert.match(html,/<body class="home-neon">/);
