@@ -178,7 +178,7 @@ const mediaTourModes={Image:'image',Video:'video',Audio:'audio'};
 function homeMediaTourStep(step){
  if(!mediaTourModes[step.title])return step;
  // Image/Video/Audio share the ONE existing JARVIX Chat.
- const targets=['#jInput','#jChatForm .j-settings-shortcut,#jActiveModeLabel',
+ const targets=['#jInput','#jActiveModeLabel',
   '#jChatForm .j-settings-shortcut,#jActiveModeLabel','#jSend'];
  return {...step,url:'jarvix-chat.html',beats:step.beats.map((beat,index)=>({
   ...beat,target:targets[index]||'#jChatForm'
@@ -228,16 +228,10 @@ async function cueV3(beat){
   // Legacy Studio model/settings buttons no longer exist on this page.
   const focused=await showTourElement(beat.target,canContinue,1300);
   if(!canContinue())return;
-  const settings=[...document.querySelectorAll('#jChatForm .j-settings-shortcut')]
-   .find(el=>el.getClientRects().length&&!el.disabled);
-  if(beat.action==='openModel'&&settings?.getAttribute('aria-expanded')!=='true'){
-   settings?.click();
-   await pauseFrame(850);
-  }else if(beat.action==='closeSettings'&&settings?.getAttribute('aria-expanded')==='true'){
-   settings.click(); // Close only the settings pane this tour opened.
-  }
+  // The settings popover is not part of this walkthrough: highlight the
+  // current mode and controls, but NEVER click or open Studio Settings.
   if(focused)spotlight({target:beat.target,action:'focus'});
-  await pauseFrame(1150);
+  await pauseFrame(450);
   return;
  }
  const first=beat.action==='openModel'?'#modelButton':beat.action==='openSettings'?'#settingsButton':beat.target;
@@ -307,7 +301,9 @@ async function speakV3(text,current,complete,beat=null){
       }
      });
     }
-    await pauseFrame(600);
+    // A short transition after an already-finished recording; the focus
+    // itself stays visible long enough during the corresponding spoken beat.
+    await pauseFrame(220);
     if(current===turn&&state?.phase==='playing')complete();
    })();
   };
@@ -413,13 +409,19 @@ function playV3(step,target,current){
     es:'Esta visita gratuita de JARVIX ha terminado. Descubre Basic, Pro y Business para elegir las herramientas para tus proyectos.'
    }[state.language];
    void (async()=>{
+    const alive=()=>current===turn&&state?.phase==='playing';
     const line=await getTourV4Recording('final-upgrade',state.language);
+    if(!alive())return;
     caption(line?.text||closing);
-    await showTourElement('#topPricing,[href="pricing.html"]',()=>current===turn&&state?.phase==='playing',2200);
-    if(current!==turn||state?.phase!=='playing')return;
+    // Spotlight and voice now run together rather than making the listener
+    // wait 2.2 seconds before a second closing recording starts.
+    const focus=showTourElement('#topPricing,[href="pricing.html"]',alive,1100);
+    await pauseFrame(120);
+    if(!alive())return;
     const spoken=await speakOptionalTourV4('final-upgrade',current);
-    if(!spoken)await pauseFrame(4300); // Text only until matching VoxCPM2 file is delivered.
-    if(current===turn&&state?.phase==='playing')advance(current);
+    await focus;
+    if(!spoken&&alive())await pauseFrame(1300);
+    if(alive())advance(current);
    })().catch(()=>{if(current===turn&&state?.phase==='playing')advance(current);});
    return;
   }
