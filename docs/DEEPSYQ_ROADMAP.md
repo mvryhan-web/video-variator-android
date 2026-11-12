@@ -7,7 +7,8 @@
 | Пакет | Scope | Результат / критерий готовности |
 | --- | --- | --- |
 | SEO-AUDIT-01 — ЗАВЕРШЕНО / LIVE_VERIFIED | `ai-apps.html`, `canvas.html`, `free-tools.html`, `sitemap.xml` | H1 для AI Apps, Open Graph для трёх страниц и достоверные `lastmod` для трёх адресов. Публикация Cloudflare `6043a4ed-2112-4f35-b118-7e670b645953`, исходный SHA `092e2f2fa4886a8d3e5f0fd94d1f0c8799a9ae93`, [CI success #43269776224](https://github.com/mvryhan-web/video-variator-android/actions/runs/43269776224). Все остальные 1244 актива и Worker/bindings сохранены. Это **не** подтверждение индексации Google. |
-| SEO-AUDIT-02 — В РАБОТЕ | `compare-ai.html`, `simple-background-remover.html`, `teleprompter.html` | Точечно добавить недостающие корректные Open Graph и карточки ссылок; убрать неподтверждённые маркетинговые обещания в метаданных, если есть. Подтверждать LIVE_VERIFIED **только** при результате `PUBLISHED_VERIFIED` с неизменными остальными файлами и Worker. |
+| SEO-AUDIT-02 — ЗАВЕРШЕНО / LIVE_VERIFIED | `compare-ai.html`, `simple-background-remover.html`, `teleprompter.html` | Уже опубликовано: Cloudflare `26df404a-8189-42e1-ba94-a16cf4a36c36`; [CI #43271126119](https://github.com/mvryhan-web/video-variator-android/actions/runs/43271126119) `success`; 1245 других активов и Worker сохранены. Не переделывать. |
+| SEO-AUDIT-03 — ЗАВЕРШЕНО / LIVE_VERIFIED | `photo-collage.html` | Добавлены только отсутствовавшие OG метаданные и `twitter:card=summary`. Cloudflare `85a32b96-7766-4f96-8660-8ff45ae91f0c`; [CI #43272943061](https://github.com/mvryhan-web/video-variator-android/actions/runs/43272943061) `success`; 1247 других активов, Worker и bindings сохранены. Не переделывать. |
 
 **Контроль:** фиксировать точный diff, тесты, SHA, Cloudflare deployment, оставшиеся проверки. Не запускать платные тесты. Подтверждение PageSpeed, индексирования Google, AI-провайдеров и Stripe не входит в эти два SEO-пакета.
 
