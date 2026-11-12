@@ -154,6 +154,7 @@ async function paidTurn(request,env,cfg){
  catch{return fail('BILLING_UNAVAILABLE',503);}
  if(!reservation)return fail('CREDIT_OR_BUDGET_LIMIT',402);
  let captured=false;
+ let captureStarted=false;
  try{
   const model=cfg.models[ent.plan];
   const messages=[
@@ -187,6 +188,9 @@ async function paidTurn(request,env,cfg){
         (bytes[0]===255&&(bytes[1]&224)===224)))
    return fail('OWNER_VOICE_INVALID_AUDIO',502);
 
+  // An uncertain capture must be reconciled by the billing service using
+  // the idempotency key. Do NOT issue a blind release after capture starts.
+  captureStarted=true;
   const confirmation=await billingAction(cfg,'capture',ent,receiptId,reservation.reservationId);
   if(!confirmation)return fail('BILLING_CAPTURE_UNCONFIRMED',503);
   captured=true;
@@ -200,7 +204,7 @@ async function paidTurn(request,env,cfg){
  finally{
   // Never declare the user charged here; actual reserve/capture/release
   // MUST be durable and idempotent in the billing service.
-  if(!captured)try{
+  if(!captured&&!captureStarted)try{
    await billingAction(cfg,'release',ent,receiptId,reservation.reservationId);
   }catch{}
  }
