@@ -44,14 +44,14 @@ test('Tour resumes at AI Apps and advances to Canvas without paid generation',as
    });
    try{
     await page.goto('http://127.0.0.1:32744/ai-apps.html',{waitUntil:'domcontentloaded'});
-    await page.evaluate(k=>sessionStorage.setItem(k,JSON.stringify({
+    await page.evaluate(({key:k,scenario})=>sessionStorage.setItem(k,JSON.stringify({
       index:4,language:'ru',phase:'playing',
       navAnnounced:scenario==='already-on-ai-apps'?4:3,
       beat:0,position:0,
       ...(scenario==='fresh-cross-page-handoff'?{
         pendingRoute:{index:4,href:'http://127.0.0.1:32744/ai-apps.html'}
       }:{})
-    })),key);
+    })),{key,scenario});
     await page.reload({waitUntil:'domcontentloaded'});
     try{await page.waitForURL(/\/canvas\.html(?:\?|#|$)/,{timeout:22000});}
     catch{
