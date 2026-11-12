@@ -42,6 +42,15 @@
 
 ---
 
+## 2026-11-12 — CI-CATALOG-01: семь устаревших публичных тестов заменены, Node и preview зелёные
+
+- **ЗАКРЫТО / SOURCE_CI_VERIFIED:** шесть тестов публичного Inspiration и один тест AI Apps перестали ожидать устаревший SQL-источник вместо существующих owner manifest-каталогов. Сохранены проверки доступа, прав, валидации и приватных owner CRUD; отдельно обновлены два старых утверждения об удалённом Canvas Quick Create и имени PWA. Изменены только файлы `tests/generation-inspiration-unit.mjs`, `tests/generation-templates-unit.mjs`, `tests/deepsyq-preview.mjs`.
+- **Подтверждено:** [общая регрессия #43283974423](https://github.com/mvryhan-web/video-variator-android/actions/runs/43283974423) — 136/136 модульных Node тестов и preview unit step `success`; [отдельная проверка preview #43283974690](https://github.com/mvryhan-web/video-variator-android/actions/runs/43283974690) — `completed/success`. Полный браузерный Playwright этап ещё не подтверждён финальным статусом.
+- **Производственный сайт не трогали:** Cloudflare Worker, HTML, тарифы, модели, медиа, Studio, Checkout остались прежними; это **GitHub CI публикация**, не новый Cloudflare deployment.
+- **Отдельно открыто:** итог Playwright, owner design-lock mismatch и коммерческие права на некоторые manifest коллекции (`productionPublicationApproved:false`). Не использовать успех тестов как разрешение на коммерческую публикацию медиа и не менять эти флаги самовольно.
+
+---
+
 ## OWNER D17 — ACTIVE ROADMAP TERMINOLOGY AND WAVES (2026-10-20)
 
 **CURRENT RULE — READ THIS BEFORE THE HISTORICAL BLOCK HEADINGS BELOW.** The owner renamed the eight platform workstreams: **F1=Block 1 Compare AI/Smart; F2=Block 2 User Agent; F3=Block 3 Inspiration; F4=Block 4 Studio/My Workspace; F5=Block 5 Product Watcher; F6=Block 6 Voice Agent; F7=Block 7 Pricing/Credits/Stripe; F8=Block 8 Virtual Pet.** `Block N` in this roadmap and existing Issues/PRs means `FN`. This is a naming change, **not** eight new implementations. Original source TXT specifications, requirement numbers, existing PRs and completed work remain untouched.
