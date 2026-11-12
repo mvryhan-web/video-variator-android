@@ -530,7 +530,7 @@ export default {
         mode,
         livePaymentsEnabled: enabled&&isLiveKey,
         unit: 'AI credits',
-        subscriptionCredits: { basic: 500, pro: 1500, business: 6000 },
+        subscriptionCredits: { basic: 750, pro: 2250, business: 15000 },
         packs: LIVE_CREDIT_PACKS.map(({ priceId, ...p }) => p),
         rates: [{ kind: 'image', credits: 5 }, { kind: 'video', credits: 20 }, { kind: 'music', credits: 10 }],
         revision: 'cf-edge-live-v2',
