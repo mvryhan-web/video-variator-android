@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
 import {validateTemplate,installGenerationTemplates} from '../server/generation-templates.js';
+import {readFileSync} from 'node:fs';
 
 test('template validation enforces data-driven schema and safe fields',()=>{
  const t=validateTemplate({title:'Product photo',slug:'product-photo',category:'ecommerce',generationType:'image',promptTemplate:'Create a clean product image of {{product_name}}',defaultModel:'gemini-3.1-flash-image',requiredInputTypes:['image','product_name'],defaultSettings:{ratio:'1:1'},rightsBasis:'owned',rightsNote:'Original Deepsyq-created prompt, no third-party media',active:true,featured:false,sortOrder:20});
@@ -62,8 +63,20 @@ test('public template API exposes active templates and owner can create one',asy
  const app=express();app.use(express.json());installGenerationTemplates(app,{pool,env,auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();}});
  const server=app.listen(0);await new Promise(r=>server.once('listening',r));const base=`http://127.0.0.1:${server.address().port}`;
  try{
-  let r=await fetch(base+'/api/templates?featured=true');assert.equal(r.status,200);let d=await r.json();assert.equal(d.items.length,1);assert.equal(d.items[0].slug,'photo-ad');assert.equal(Object.hasOwn(d.items[0],'rightsNote'),false);
-  r=await fetch(base+'/api/templates/photo-ad');assert.equal(r.status,200);d=await r.json();assert.equal(d.template.slug,'photo-ad');assert.equal(Object.hasOwn(d.template,'rightsNote'),false);
+  // The public AI Apps catalog is the existing curated creative50 manifest;
+  // the owner-only create/update flows remain database backed below.
+  const creative=JSON.parse(readFileSync(new URL('../app/src/main/assets/media/creative/creative50-20261021/manifest.json',import.meta.url),'utf8'));
+  const expected=creative.items.filter(x=>x.placement==='apps'&&x.active&&!x.previewUrl?.includes('logo'));
+  assert.ok(expected.length>=1);
+  let r=await fetch(base+'/api/templates?featured=true');assert.equal(r.status,200);let d=await r.json();
+  assert.deepEqual(d.items.map(x=>x.slug),expected.map(x=>x.id));
+  assert.ok(d.items.every(x=>x.active&&x.featured&&x.generationType==='image'));
+  assert.ok(d.items.every(x=>!Object.hasOwn(x,'rightsNote')&&!Object.hasOwn(x,'rightsBasis')));
+  const chosen=expected[0].id;
+  r=await fetch(base+'/api/templates/'+encodeURIComponent(chosen));assert.equal(r.status,200);d=await r.json();
+  assert.equal(d.template.slug,chosen);
+  assert.equal(d.template.promptTemplate,expected[0].prompt);
+  assert.equal(Object.hasOwn(d.template,'rightsNote'),false);
   r=await fetch(base+'/api/studio/admin/templates',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'Unverified offer',slug:'unverified-offer',category:'ads',generationType:'image',promptTemplate:'An original design',active:true,featured:false})});
   assert.equal(r.status,400);assert.equal((await r.json()).error,'TEMPLATE_RIGHTS_REQUIRED');
   r=await fetch(base+'/api/studio/admin/templates',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'Missing Name',slug:'missing-name',category:'ads',generationType:'image',promptTemplate:'Original photo without a name variable',requiredInputTypes:['product_name'],rightsBasis:'owned',rightsNote:'Original prompt evidence',active:true})});
