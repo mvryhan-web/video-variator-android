@@ -104,3 +104,12 @@
 
 - Рабочий выпуск `ed154471`, коммит `630052a`. В гостевой сессии проверены три действия: отправка «Привет» в JARVIX, «Объединить PDF» в Everyday Tools и Use Template в AI Apps. Все три открыли диалог входа на текущей странице. Проверено наличие выпуска на deepsyq.app. Завершение входа под новым аккаунтом отдельно не проверялось.
 - На рабочей главной опубликован и проверен заголовок `DEEPSYQ — AI Video, Image and Creative Tools`.
+
+## 12 ноября — SEO-AUDIT-01: четыре точечные SEO-правки, подтверждённая публикация
+
+- `ai-apps.html`: H1 c прежним размером текста, Open Graph title/description/type/url и Twitter Card.
+- `canvas.html` и `free-tools.html`: добавлены недостающие Open Graph title/description/type; функциональность и макет сохранены.
+- `sitemap.xml`: `lastmod=2026-11-12` только для этих трёх фактически изменённых страниц.
+- GitHub HEAD релиза `092e2f2fa4886a8d3e5f0fd94d1f0c8799a9ae93`; [Actions #43269776224](https://github.com/mvryhan-web/video-variator-android/actions/runs/43269776224) `success`; Cloudflare `6043a4ed-2112-4f35-b118-7e670b645953`, `PUBLISHED_VERIFIED`. Четыре файла обновлены; 1244 других актива, Worker и bindings сохранены. Данных об индексации Google и результатах ранжирования нет.
+- Следующий пакет **SEO-AUDIT-02**: `compare-ai.html`, `simple-background-remover.html`, `teleprompter.html`. До подтверждения нового выпуска статус **В РАБОТЕ**.
+
