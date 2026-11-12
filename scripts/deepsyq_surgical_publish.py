@@ -220,10 +220,22 @@ class Cloudflare:
                                       "metadata": {"contentType": "application/javascript"},
                                       "value": base64.b64encode(raw).decode("ascii")}]).json()
             insist(upload.get("success") is True, "Cloudflare tour asset upload failed")
-        after = self.call("POST", API + "/pages/assets/check-missing",
-                          headers=jwt_headers, json={"hashes": [key]}).json()
-        insist(after.get("success") is True and after.get("result") == [],
-               "Tour asset not confirmed in Pages asset store")
+        registered = self.call("POST", API + "/pages/assets/upsert-hashes",
+                               headers=jwt_headers, json={"hashes": [key]}).json()
+        insist(registered.get("success") is True,
+               "Cloudflare tour asset hash registration failed")
+        confirmed = False
+        for attempt in range(8):
+            after = self.call("POST", API + "/pages/assets/check-missing",
+                              headers=jwt_headers, json={"hashes": [key]}).json()
+            insist(after.get("success") is True and
+                   isinstance(after.get("result"), list),
+                   "Cloudflare tour asset verification malformed")
+            if after["result"] == []:
+                confirmed = True
+                break
+            time.sleep(1)
+        insist(confirmed, "Tour asset not confirmed in Pages asset store")
 
         worker_response = self.call("GET", API + "/accounts/" + self.account +
                                     "/workers/scripts/" + quote(worker, safe=""))
