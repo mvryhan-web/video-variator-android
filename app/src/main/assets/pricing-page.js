@@ -82,8 +82,7 @@ const planned=[
   benefits:[...verifiedQuality.business,...sharedAccess,...monthlyDetails]},
  {key:'lifetime',name:'Lifetime',suffix:'one time',label:'Choose Lifetime',summary:'One-time access to the included tools',
   benefits:[...verifiedQuality.lifetime,
-   ['∞','20 free Everyday Tools'],
-   ['∞','Camera and Teleprompter access'],
+   ['∞','22 free Everyday Tools, including Camera and Teleprompter'],
    ['∞','Canvas workspace access'],
    ['∞','AI Apps templates and Inspiration gallery'],
    ['✓','One-time purchase: no monthly plan renewal']]}
