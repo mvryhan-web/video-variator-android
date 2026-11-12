@@ -46,7 +46,7 @@ function fixture({recognition=true,meter=false}={}){
   }
   class AudioContextMock{
     createAnalyser(){return {fftSize:512,getByteTimeDomainData(samples){
-      for(let i=0;i<samples.length;i++)samples[i]=i%2?148:108;
+      for(let i=0;i<samples.length;i++)samples[i]=i%2?136:120;
     }};}
     createMediaStreamSource(){return {connect(){}};}
     resume(){return Promise.resolve();}
