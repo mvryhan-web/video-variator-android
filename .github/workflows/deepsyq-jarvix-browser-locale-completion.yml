@@ -79,3 +79,26 @@ jobs:
             --commit "$GITHUB_SHA"
       - name: Verify newly published JARVIX public page in real browser
         run: node tests/jarvix-public-locale-browser-smoke.mjs https://deepsyq.app
+  production-verify-only:
+    if: >-
+      github.ref == 'refs/heads/deepsyq-platform' &&
+      github.event_name == 'push' &&
+      github.event.head_commit.message == 'verify(DEEPSYQ i18n): validate live JARVIX language switching without redeploy'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install existing browser test dependencies
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Read-only browser checks on the published production page
+        run: |
+          node --check tests/jarvix-public-locale-browser-smoke.mjs
+          node tests/jarvix-public-locale-browser-smoke.mjs https://deepsyq.app
