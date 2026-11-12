@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `bcfc2df24ac8318b94971f4179759cca054766ec`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `43ed95009ab254b943afa81b80e180ce38b43a75`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 121 | Named symbols: 416 | Checked relations: 77
 
 ## Topic finder (matching filenames)
@@ -198,7 +198,7 @@ lang (L2) · dict (L3)
 
 ### `app/src/main/assets/pricing-page.js`
 
-art (L10) · numeral (L37) · verifiedQuality (L59) · sharedAccess (L65) · monthlyDetails (L73) · planned (L74) · annualPlanKeys (L89) · creditRequestIds (L114) · planTrack (L122) · planPrev (L123) · planNext (L123) · planPosition (L123) · LIVE_STRIPE_LINKS (L216) · creditOptions (L251) · authModal (L324) · fallbackPlanConfig (L379)
+art (L10) · numeral (L37) · verifiedQuality (L59) · sharedAccess (L65) · monthlyDetails (L73) · planned (L74) · annualPlanKeys (L93) · creditRequestIds (L118) · planTrack (L126) · planPrev (L127) · planNext (L127) · planPosition (L127) · LIVE_STRIPE_LINKS (L221) · creditOptions (L256) · authModal (L329) · fallbackPlanConfig (L384)
 
 ### `app/src/main/assets/pricing-wallet.js`
 
