@@ -46,6 +46,7 @@ const getLang=()=>{
  return WORDS[String(key).slice(0,2).toLowerCase()]||WORDS.en;
 };
 let on=false,seq=0,rec=null,request=null,pending=null,ownerClip=null,ownerClipDone=null;
+const RESUME_KEY='jarvix-new:resume-listening';
 const CONVERSATION_MEMORY='jarvix-new:conversation:v1';
 function cleanTurns(saved){
  if(!Array.isArray(saved))return [];
@@ -554,7 +555,6 @@ async function respond(message,id){
  const destination=extra||(action?.intent==='NAVIGATE'
   ? (action.target==='uniquifier'?'video-uniquifier.html':action.url) : null);
  if(destination){
-  stop();
   location.assign(new URL(destination,location.origin+'/'));
   return;
  }
@@ -702,6 +702,22 @@ export function installJarvixNewVoice(){
   event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
   orb=target;positionMicChip();void start();
  },true);
- window.addEventListener('pagehide',()=>stop());
+ const resumeAfterNavigation=()=>{
+  if(on)return;
+  try{
+   const expires=Number(sessionStorage.getItem(RESUME_KEY));
+   sessionStorage.removeItem(RESUME_KEY);
+   if(expires>Date.now())void start();
+  }catch{}
+ };
+ window.addEventListener('pagehide',()=>{
+  try{
+   if(on)sessionStorage.setItem(RESUME_KEY,String(Date.now()+15000));
+   else sessionStorage.removeItem(RESUME_KEY);
+  }catch{}
+  stop();
+ });
+ window.addEventListener('pageshow',resumeAfterNavigation);
+ resumeAfterNavigation();
  window.__jarvixNewVoiceStop=()=>stop();
 }

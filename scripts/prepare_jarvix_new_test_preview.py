@@ -46,10 +46,15 @@ for path in root.glob('*.html'):
     html = path.read_text(encoding='utf-8')
     if '</body>' not in html:
         continue
+    original_html = html
+    # Continue the same voice session on public TEST destinations.
+    if path.name not in ('404.html', 'deepsyq-admin.html', 'product-watcher-admin.html') and injection not in html:
+        html = html.replace('</body>', injection + '</body>', 1)
     if menu_src not in html:
         html = html.replace('</body>', menu_src + '</body>', 1)
-        path.write_text(html, encoding='utf-8')
         count += 1
+    if html != original_html:
+        path.write_text(html, encoding='utf-8')
 if count < 3:
     raise RuntimeError('Too few TEST HTML pages received JARVIX dropdown')
 print(f'TEST-ONLY: attached shared header download menu to {count} HTML pages.')
