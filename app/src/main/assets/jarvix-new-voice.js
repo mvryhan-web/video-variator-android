@@ -4,6 +4,21 @@ import {helloRecording,smalltalkReply,smalltalkTextReply} from './jarvix-new-sma
 /* JARVIX NEW — voice-only mode on the OWNER'S EXISTING sphere, TEST host only.
    No new page, code form, paid API or simulated model answer. */
 const HOST='jarvis-new.deepsyq.pages.dev';
+const EXTRA_NAVIGATION = [
+ ['ai-pricing.html', /(?:ai\s*credits?|(?:ai|ии)[-\s]*кредит|кредит[а-яё]*\s*(?:ai|ии))/iu],
+ ['design-gallery.html', /(?:галере[яюи]|design gallery)/iu],
+ ['contact.html', /(?:контакт|поддержк|contact|support)/iu],
+ ['cookie.html', /(?:cookie|куки)/iu],
+ ['terms.html', /(?:услови|terms)/iu],
+ ['refund.html', /(?:возврат|refund)/iu],
+ ['connect.html', /(?:подключени[ея]|connect jarvix)/iu],
+ ['jarvix-download.html', /(?:скачать|загрузк|download)/iu],
+ ['telegram-free-mini.html', /(?:телеграм|telegram)/iu],
+ ['deepsyq-vs-deepseek.html', /(?:deepseek|дипсик|дипсик и deepsyq)/iu],
+ ['mobile-utility.html?tool=pdf-merge', /(?:объедин[а-яё]*\s*(?:pdf|пдф)|merge pdf)/iu],
+ ['mobile-utility.html?tool=pdf-split', /(?:раздел[а-яё]*\s*(?:pdf|пдф)|split pdf)/iu]
+];
+const NAVIGATION_COMMAND = /(?:^|\s)(?:открой|перейди|запусти|открыть|open|go to|navigate to|ouvre|abre|affiche|покажи|show)(?:\s|$)/iu;
 const VOICE_LIBRARY='http://127.0.0.1:8770/v1/find';
 const PAID_ROUTE='/api/jarvix-new/paid/';
 let paidStatusOnce=null;
@@ -479,9 +494,12 @@ async function respond(message,id){
  ui('thinking');
  const lang=recordedLanguage();
  setTranscript(message,true);
- const action=extractAction(message.replace(/\bcanva\b/giu,'Canvas'));
- if(action?.intent==='NAVIGATE'){
-  const destination=action.target==='uniquifier'?'video-uniquifier.html':action.url;
+ const extra=NAVIGATION_COMMAND.test(message)
+  ? EXTRA_NAVIGATION.find(([,pattern])=>pattern.test(message))?.[0] : null;
+ const action=extra?null:extractAction(message.replace(/\bcanva\b/giu,'Canvas'));
+ const destination=extra||(action?.intent==='NAVIGATE'
+  ? (action.target==='uniquifier'?'video-uniquifier.html':action.url) : null);
+ if(destination){
   stop();
   location.assign(new URL(destination,location.origin+'/'));
   return;
