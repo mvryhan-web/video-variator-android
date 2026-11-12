@@ -88,6 +88,7 @@ test('JARVIX completes all 19 sections through AI Apps, Canvas and Pricing, no p
    await page.locator('#dsTakeTour').waitFor({state:'visible',timeout:15000});
    await page.locator('#dsTakeTour').click();
    let last='not started',furthest=-1,finished=false;
+   let lastStep=-1,lastBeat=-1,lastProgress=Date.now();
    const deadline=Date.now()+215000;
    while(Date.now()<deadline){
     let s=null;
@@ -98,7 +99,12 @@ test('JARVIX completes all 19 sections through AI Apps, Canvas and Pricing, no p
       console.log('TOUR_REACHED',s.index,page.url());
      }
      furthest=Math.max(furthest,s.index);
+     if(s.index!==lastStep||s.beat!==lastBeat){
+      lastStep=s.index;lastBeat=s.beat;lastProgress=Date.now();
+      console.log('TOUR_BEAT',s.index,s.beat,page.url());
+     }
      last='step '+s.index+' beat '+s.beat+' phase '+s.phase+' error '+String(s.error||'')+' url '+page.url();
+     if(Date.now()-lastProgress>23000)throw new Error('Tour stalled more than 23s at '+last+' errors '+JSON.stringify(errors.slice(-8)));
      if(s.phase==='paused'){
       const dom=await page.evaluate(()=>({
        title:document.title,ready:document.readyState,
