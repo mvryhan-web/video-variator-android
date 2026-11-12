@@ -56,6 +56,22 @@ async function api(path,options={}){
  if(!response.ok)throw new Error(body.error||'PRICING_UNAVAILABLE');
  return body;
 }
+function currentPricingLanguage(){
+ try{return window.DeepsyqI18n?.language||localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang')||document.documentElement.lang;}
+ catch{return document.documentElement.lang;}
+}
+function trialCreditLabel(limit,language){
+ const suffix={
+  ru:'кредитов на пробный период',en:'tool credits for the trial',
+  fr:'crédits outils pour la période d’essai',es:'créditos de herramientas para el período de prueba'
+ };
+ return numeral.format(limit)+' '+(suffix[language]||suffix.en);
+}
+window.addEventListener('deepsyq:lang',event=>{
+ for(const label of document.querySelectorAll('[data-trial-credits]')){
+  label.textContent=trialCreditLabel(Number(label.dataset.trialCredits),event.detail?.lang);
+ }
+});
 const verifiedQuality={
  basic:[['▣','750 tool credits / month'],['⊞','Up to 5 variants'],['⚙','Gentle mode'],['▣','720p quality'],['✓','Included Basic tools']],
  pro:[['▣','2,250 tool credits / month'],['⊞','Up to 10 variants'],['⚙','Gentle + Balance modes'],['▣','1080p quality'],['✓','Included Pro tools']],
@@ -175,17 +191,12 @@ function renderPlans(config){
   price.append(node('strong','',p.proposed?'$0.99':verified?(annualPreview?annualMoney(yearly.monthly):money(amount,currency)):'Price unavailable'));
   price.append(node('small','',p.proposed?'proposed · one time':annualPreview?'/ month · billed yearly':p.suffix));
   const annualNote=annualPreview?node('p','price-annual-note',annualMoney(yearly.yearly)+' / year · estimate only; yearly checkout not available'):null;
-  const summary=node('p','price-plan-summary',p.summary);
   const button=node('button','price-plan-action',p.proposed?'Check Trial availability':p.label);
   // The user can choose a configured plan to sign in even on a no-billing preview.
   // Trial remains disabled until owner-approved terms are actually configured.
   button.type='button';button.disabled=!p.proposed&&!verified;
   if(!p.proposed&&!verified)button.textContent='Price unavailable';
   button.addEventListener('click',()=>void checkoutPlan(p.key));
-  const facts=node('div','price-plan-facts');
-  const verifiedLimit=validToolLimit(currentPlan);
-  facts.append(node('strong','',p.proposed?'Proposed introduction':p.key==='lifetime'?'Included lifetime tools':verifiedLimit===null?'Tool allowance not verified':numeral.format(verifiedLimit)+(p.key==='trial'?' tool credits for the trial':' tool credits / month')));
-  facts.append(node('span','',p.proposed?'Credit quantity, duration and checkout still require approval.':'AI generation is billed separately through the verified AI wallet.'));
   const caption=node('p','price-feature-caption','Plan features');
   const list=node('ul','price-features');
   const benefitRows=p.proposed?p.benefits:p.benefits.map(([icon,copy],index)=>{
@@ -198,12 +209,22 @@ function renderPlans(config){
   for(const [icon,copy] of benefitRows){
    const li=node('li');
    const sym=node('span','price-feature-icon'+(icon==='✓'?' is-included':icon==='✕'?' is-excluded':icon==='ⓘ'?' is-info':''),icon);sym.setAttribute('aria-hidden','true');
-   li.append(sym,node('span','',copy));list.append(li);
+   const label=node('span','',copy);
+   if(p.key==='trial'&&list.childElementCount===0){
+    const limit=validToolLimit(currentPlan);
+    if(limit!==null){
+     label.dataset.noTranslate='';
+     label.dataset.trialCredits=String(limit);
+     label.textContent=trialCreditLabel(limit,currentPricingLanguage());
+    }
+   }
+   li.append(sym,label);list.append(li);
   }
   const note=node('p','price-plan-note',p.proposed?'$0.99 Trial: price and included credits are NOT active yet.':p.key==='lifetime'?'ⓘ Lifetime does not include unlimited paid AI generation; purchase AI credits separately.':!verified?'The server has not supplied a verified price.':'');
   body.append(heading,price);
   if(annualNote)body.append(annualNote);
-  body.append(summary,button,facts,caption,list,note);
+  if(p.key==='trial')body.append(node('p','price-plan-summary',p.summary));
+  body.append(button,caption,list,note);
   item.setAttribute('aria-labelledby',heading.id);
   item.append(picture,body);host.append(item);
  }
