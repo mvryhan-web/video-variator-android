@@ -167,3 +167,43 @@ test('rejects oversized messages and invalid lang without allocating budget',asy
   assert.equal(m.calls.filter(x=>x.action).length,0);
  }finally{m.restore();}
 });
+
+test('CosyVoice renders the model answer through the configured workspace before capture',async()=>{
+ const m=mock();
+ const fallback=global.fetch;
+ const env={...cfg(),JARVIX_COSYVOICE_WORKSPACE_ID:'ws-fixture',
+  JARVIX_COSYVOICE_API_KEY:'server_test_cosy_key',
+  JARVIX_COSYVOICE_VOICE_ID:'cosyvoice-v3-plus-jarvixtest-fixture'};
+ delete env.JARVIX_OWNER_VOICE_RENDER_URL;
+ delete env.JARVIX_OWNER_VOICE_API_KEY;
+ const sent=[];
+ try{
+  global.fetch=async(url,options)=>{
+   if(!String(url).includes('maas.aliyuncs.com'))return fallback(url,options);
+   assert.equal(options.headers.Upgrade,'websocket');
+   assert.equal(options.headers.Authorization,'Bearer '+env.JARVIX_COSYVOICE_API_KEY);
+   assert.ok(m.calls.some(c=>c.action==='reserve'));
+   assert.ok(!m.calls.some(c=>c.action==='capture'));
+   const ws=new EventTarget();
+   ws.accept=()=>{};ws.close=()=>{};
+   ws.send=raw=>{
+    const msg=JSON.parse(raw);
+    sent.push(msg);
+    const emit=data=>ws.dispatchEvent(new MessageEvent('message',{data}));
+    const event=name=>JSON.stringify({header:{event:name,task_id:msg.header.task_id}});
+    if(msg.header.action==='run-task')queueMicrotask(()=>emit(event('task-started')));
+    if(msg.header.action==='finish-task')queueMicrotask(()=>{
+     const bytes=new Uint8Array(1400);bytes.set([73,68,51]);
+     emit(bytes.buffer);emit(event('task-finished'));
+    });
+   };
+   return {webSocket:ws};
+  };
+  const response=await handleJarvixPaid(post(input()),env);
+  assert.equal(response.status,200);
+  assert.equal((await response.json()).audioMime,'audio/mpeg');
+  assert.equal(sent[0].payload.parameters.voice,env.JARVIX_COSYVOICE_VOICE_ID);
+  assert.equal(sent[1].payload.input.text,'Привет! Я JARVIX.');
+  assert.ok(m.calls.some(c=>c.action==='capture'));
+ }finally{m.restore();}
+});

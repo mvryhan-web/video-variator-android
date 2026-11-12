@@ -43,7 +43,12 @@ function config(env){
  const verify=serverURL(env?.JARVIX_ENTITLEMENT_VERIFY_URL);
  const billing=serverURL(env?.JARVIX_BILLING_RESERVATION_URL);
  const voice=serverURL(env?.JARVIX_OWNER_VOICE_RENDER_URL);
- const voiceId=String(env?.JARVIX_OWNER_VOICE_ID||'');
+ const workspace=String(env?.JARVIX_COSYVOICE_WORKSPACE_ID||'');
+ const cosyKey=String(env?.JARVIX_COSYVOICE_API_KEY||'');
+ const cosyVoiceId=String(env?.JARVIX_COSYVOICE_VOICE_ID||'');
+ const cosy=/^ws-[a-z0-9]+$/.test(workspace)&&cosyKey.length>=12&&
+  /^cosyvoice-v3-plus-[A-Za-z0-9-]{4,70}$/.test(cosyVoiceId);
+ const voiceId=cosy?cosyVoiceId:String(env?.JARVIX_OWNER_VOICE_ID||'');
  const apiKey=String(env?.JARVIX_MODEL_API_KEY||'');
  const entitlementKey=String(env?.JARVIX_ENTITLEMENT_SERVICE_KEY||'');
  const billingKey=String(env?.JARVIX_BILLING_SERVICE_KEY||'');
@@ -56,15 +61,70 @@ function config(env){
  const validModel=m=>/^[A-Za-z0-9_.:/-]{2,120}$/.test(m);
  const validId=/^[A-Za-z0-9_-]{4,90}$/.test(voiceId);
  return {
-  provider,verify,billing,voice,voiceId,apiKey,entitlementKey,billingKey,voiceKey,
+  provider,verify,billing,voice,voiceId,apiKey,entitlementKey,billingKey,voiceKey,cosy,workspace,cosyKey,
   models:{basic,pro,business},
   budget,maxTokens,
-  ready:!!(provider&&verify&&billing&&voice&&validId &&
-    apiKey.length>=12&&entitlementKey.length>=12&&billingKey.length>=12&&voiceKey.length>=12&&
+  ready:!!(provider&&verify&&billing&&(cosy||(voice&&voiceKey.length>=12))&&validId &&
+    apiKey.length>=12&&entitlementKey.length>=12&&billingKey.length>=12&&
     [basic,pro,business].every(validModel) &&
     Number.isSafeInteger(budget)&&budget>=1&&budget<=1000&&
     Number.isInteger(maxTokens)&&maxTokens>=16&&maxTokens<=512)
  };
+}
+async function renderCosyVoice(cfg,text){
+ const url='https://'+cfg.workspace+'.ap-southeast-1.maas.aliyuncs.com/api-ws/v1/inference';
+ const response=await fetch(url,{redirect:'error',signal:AbortSignal.timeout(8000),
+  headers:{Upgrade:'websocket',Authorization:'Bearer '+cfg.cosyKey}});
+ const socket=response.webSocket;
+ if(!socket)throw Error('CosyVoice upgrade failed');
+ const taskId=crypto.randomUUID().replace(/-/g,'');
+ const chunks=[];
+ let size=0,started=false;
+ return new Promise((resolve,reject)=>{
+  const timer=setTimeout(()=>finish(Error('CosyVoice timed out')),15000);
+  const finish=(error)=>{
+   clearTimeout(timer);
+   socket.removeEventListener('message',onMessage);
+   socket.removeEventListener('close',onFailure);
+   socket.removeEventListener('error',onFailure);
+   try{socket.close(1000);}catch{}
+   if(error){reject(error);return;}
+   const bytes=new Uint8Array(size);
+   let offset=0;
+   for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}
+   resolve(new Response(bytes,{headers:{'content-type':'audio/mpeg','x-jarvix-voice-id':cfg.voiceId}}));
+  };
+  const send=(action,payload)=>socket.send(JSON.stringify({
+   header:{action,task_id:taskId,streaming:'duplex'},payload
+  }));
+  const onFailure=()=>finish(Error('CosyVoice connection closed'));
+  const onMessage=({data})=>{
+   try{
+    if(data instanceof ArrayBuffer){
+     size+=data.byteLength;
+     if(size>MAX_AUDIO_BYTES){finish(Error('CosyVoice response too large'));return;}
+     chunks.push(new Uint8Array(data));return;
+    }
+    const header=JSON.parse(data).header;
+    if(header?.task_id!==taskId)return;
+    if(header.event==='task-started'&&!started){
+     started=true;
+     send('continue-task',{input:{text}});
+     send('finish-task',{input:{}});
+    }else if(header.event==='task-finished'&&started)finish();
+    else if(header.event==='task-failed')finish(Error('CosyVoice synthesis failed'));
+   }catch(error){finish(error);}
+  };
+  socket.addEventListener('message',onMessage);
+  socket.addEventListener('close',onFailure);
+  socket.addEventListener('error',onFailure);
+  try{
+   socket.binaryType='arraybuffer';
+   socket.accept();
+   send('run-task',{task_group:'audio',task:'tts',function:'SpeechSynthesizer',model:'cosyvoice-v3-plus',
+    parameters:{text_type:'PlainText',voice:cfg.voiceId,format:'mp3',sample_rate:24000},input:{}});
+  }catch(error){finish(error);}
+ });
 }
 function bearer(request){
  const auth=request.headers.get('authorization')||'';
@@ -173,7 +233,7 @@ async function paidTurn(request,env,cfg){
    return fail('MODEL_UNAVAILABLE_OR_INVALID',502);
 
   // Fail closed: JARVIX must NOT silently change into a generic voice.
-  const speech=await externalPost(cfg.voice,cfg.voiceKey,
+  const speech=cfg.cosy?await renderCosyVoice(cfg,answer.trim()):await externalPost(cfg.voice,cfg.voiceKey,
    {text:answer.trim(),language:payload.language,
     voiceId:cfg.voiceId,format:'mp3',sampleRate:48000},
    {timeout:20000});
