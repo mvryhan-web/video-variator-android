@@ -34,7 +34,23 @@ const getLang=()=>{
  return WORDS[String(key).slice(0,2).toLowerCase()]||WORDS.en;
 };
 let on=false,seq=0,rec=null,request=null,pending=null,ownerClip=null,ownerClipDone=null;
-let turns=[],orb=null,micChip=null,micStage='idle',micFailures=0;
+const CONVERSATION_MEMORY='jarvix-new:conversation:v1';
+function loadTurns(){
+ if(location.hostname!==HOST)return [];
+ try{
+  const saved=JSON.parse(sessionStorage.getItem(CONVERSATION_MEMORY)||'[]');
+  if(!Array.isArray(saved))return [];
+  return saved.slice(-8).filter(turn=>turn&&
+   (turn.role==='user'||turn.role==='assistant')&&typeof turn.content==='string')
+   .map(({role,content})=>({role,content:content.slice(0,1200)}));
+ }catch{return [];}
+}
+let turns=loadTurns(),orb=null,micChip=null,micStage='idle',micFailures=0;
+function rememberTurn(message,reply){
+ turns=[...turns,{role:'user',content:message.slice(0,1200)},
+  {role:'assistant',content:String(reply||'').slice(0,1200)}].slice(-8);
+ try{sessionStorage.setItem(CONVERSATION_MEMORY,JSON.stringify(turns));}catch{}
+}
 let transcriptWrap=null,transcriptText=null,transcriptReply=null,heardText='',heardIsFinal=false,botReplyText='';
 let micPulseRms=0,recognizedPulseTimer=null;
 let monitorStream=null,monitorContext=null,monitorAnalyser=null,monitorTimer=null,monitorSamples=null;
@@ -483,9 +499,7 @@ async function playResponse(record,id,message){
  if(!record||!on||seq!==id)return false;
  const ok=await playOwnerRecording(record,id);
  if(!ok||!on||seq!==id)return false;
- turns.push({role:'user',content:message.slice(0,1200)},
-            {role:'assistant',content:String(record.text||'').slice(0,1200)});
- turns=turns.slice(-8);
+ rememberTurn(message,record.text);
  listen(id);
  return true;
 }
@@ -548,9 +562,7 @@ async function respond(message,id){
  ui('missing');
  if(prepared?.text){
   // The reply is never printed: only the user's own words are shown.
-  turns.push({role:'user',content:message.slice(0,1200)},
-             {role:'assistant',content:prepared.text.slice(0,1200)});
-  turns=turns.slice(-8);
+  rememberTurn(message,prepared.text);
  }
  const delay=prepared?.text?3800:1400;
  pending=setTimeout(()=>{pending=null;if(on&&seq===id)listen(id);},delay);
