@@ -1,5 +1,5 @@
 import {recordedReply} from './jarvix-new-recorded-dialog.js';
-import {helloRecording,smalltalkReply} from './jarvix-new-smalltalk.js';
+import {helloRecording,smalltalkReply,smalltalkTextReply} from './jarvix-new-smalltalk.js';
 /* JARVIX NEW — voice-only mode on the OWNER'S EXISTING sphere, TEST host only.
    No new page, code form, paid API or simulated model answer. */
 const HOST='jarvis-new.deepsyq.pages.dev';
@@ -19,7 +19,7 @@ const getLang=()=>{
 };
 let on=false,seq=0,rec=null,request=null,pending=null,ownerClip=null,ownerClipDone=null;
 let turns=[],orb=null,micChip=null,micStage='idle',micFailures=0;
-let transcriptWrap=null,transcriptText=null,meterFill=null,heardText='',heardIsFinal=false;
+let transcriptWrap=null,transcriptText=null,transcriptReply=null,meterFill=null,heardText='',heardIsFinal=false,botReplyText='';
 let monitorStream=null,monitorContext=null,monitorAnalyser=null,monitorTimer=null,monitorSamples=null;
 const Recognition=()=>window.SpeechRecognition||window.webkitSpeechRecognition;
 const MICROPHONE_STATES={
@@ -52,6 +52,11 @@ function positionMicChip(){
 function setTranscript(text='',final=false){
  heardText=String(text||'').trim().slice(0,400);
  heardIsFinal=!!final;
+ if(!heardText)botReplyText='';
+ renderTranscript();
+}
+function showTextResponse(text){
+ botReplyText=String(text||'').trim().slice(0,400);
  renderTranscript();
 }
 function renderTranscript(){
@@ -69,6 +74,10 @@ function renderTranscript(){
  }[lang]||'Speak now';
  transcriptText.textContent=heardText||((micStage==='listening'||micStage==='starting')?hint:'');
  transcriptText.dataset.actual=heardText?'true':'false';
+ if(transcriptReply){
+  transcriptReply.hidden=!botReplyText;
+  transcriptReply.textContent=botReplyText?'JARVIX: '+botReplyText:'';
+ }
  transcriptWrap.dataset.stage=micStage;
  transcriptWrap.dataset.final=heardIsFinal?'true':'false';
  positionMicChip();
@@ -411,12 +420,19 @@ async function respond(message,id){
  if(await playResponse(recorded,id,message))return;
  if(!on||seq!==id)return;
 
- // No recorded answer exists yet. Never repeat the generic "tell me
- // what you want to create" after EVERY unrelated question.
- // Keep the microphone live for the next phrase; show an honest state.
+ // No approved voice MP3 exists for this question. For known everyday
+ // replies, show a meaningful prepared answer as TEXT, never simulate audio.
+ const prepared=await smalltalkTextReply(message,lang).catch(()=>null);
  if(!on||seq!==id)return;
  ui('missing');
- pending=setTimeout(()=>{pending=null;if(on&&seq===id)listen(id);},1200);
+ if(prepared?.text){
+  showTextResponse(prepared.text);
+  turns.push({role:'user',content:message.slice(0,1200)},
+             {role:'assistant',content:prepared.text.slice(0,1200)});
+  turns=turns.slice(-8);
+ }
+ const delay=prepared?.text?3800:1400;
+ pending=setTimeout(()=>{pending=null;if(on&&seq===id)listen(id);},delay);
 }
 async function start(){
  if(on){stop();return;}
@@ -458,6 +474,8 @@ export function installJarvixNewVoice(){
  '#jv-new-transcript[hidden]{display:none!important}',
  '#jv-new-transcript-text[data-actual="true"]{font-weight:700;font-size:16px;line-height:1.45;color:#fff}',
  '#jv-new-transcript-text[data-actual="false"]{font-size:12px;color:#9eb4be}',
+ '#jv-new-transcript-reply{white-space:pre-wrap;border-top:1px solid #385464;margin-top:7px;padding-top:7px;color:#f7d6a4;font-size:13px;font-weight:600;line-height:1.45}',
+ '#jv-new-transcript-reply[hidden]{display:none!important}',
  '#jv-new-transcript[data-stage="listening"]{border-color:#29c6ba}',
  '#jv-new-transcript[data-final="true"]{border-color:#ddaa68}',
  '#jv-new-audio-meter{height:3px;border-radius:4px;background:#284a55;margin:8px auto 0;overflow:hidden;width:74%}',
@@ -488,6 +506,9 @@ export function installJarvixNewVoice(){
  transcriptWrap.setAttribute('aria-live','polite');
  transcriptText=document.createElement('div');
  transcriptText.id='jv-new-transcript-text';
+ transcriptReply=document.createElement('div');
+ transcriptReply.id='jv-new-transcript-reply';
+ transcriptReply.hidden=true;
  const level=document.createElement('div');
  level.id='jv-new-audio-meter';
  level.setAttribute('aria-hidden','true');
@@ -495,6 +516,7 @@ export function installJarvixNewVoice(){
  meterFill.id='jv-new-audio-fill';
  level.appendChild(meterFill);
  transcriptWrap.appendChild(transcriptText);
+ transcriptWrap.appendChild(transcriptReply);
  transcriptWrap.appendChild(level);
  document.body.appendChild(transcriptWrap);
  window.addEventListener('resize',positionMicChip,{passive:true});
