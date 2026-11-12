@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-function fixture({recognition=true,meter=false}={}){
+function fixture({recognition=true,meter=false,smalltalkAudio=true}={}){
   const source=fs.readFileSync('app/src/main/assets/jarvix-new-voice.js','utf8')
     .replace(/^import .*?;\s*$/gm,'')
     .replace('export function installJarvixNewVoice(){','function installJarvixNewVoice(){');
@@ -66,7 +66,10 @@ function fixture({recognition=true,meter=false}={}){
     setTimeout,clearTimeout,setInterval,clearInterval,queueMicrotask,
     recordedReply:async()=>null,ownerLibraryReply:undefined,
     helloRecording:async()=>({audioUrl:'/media/jarvix/conversation/hello_ru.mp3',text:'Привет! Я JARVIX.'}),
-    smalltalkReply:async(message)=>{lastSpeech=message;return {audioUrl:'/media/jarvix/conversation/smalltalk_ru.mp3',text:'Спасибо!'};}
+    smalltalkReply:async(message)=>{lastSpeech=message;return smalltalkAudio?
+      {audioUrl:'/media/jarvix/conversation/smalltalk_ru.mp3',text:'Спасибо!'}:null;},
+    smalltalkTextReply:async(message)=>message==='Как дела?'?
+      {text:'Всё хорошо, спасибо! А у тебя?',source:'prepared-conversation-text-only'}:null,
   };
   vm.runInNewContext(source+'\nthis.__exports={installJarvixNewVoice,stop};',context,{timeout:3000});
   context.__exports.installJarvixNewVoice();
@@ -200,5 +203,24 @@ test('real microphone audio samples drive local meter, meter stops on end',async
     assert.match(meter.style.transform,/^scaleX\(0\./);
     f.stop();
     assert.equal(meter.style.transform,'scaleX(.05)');
+  }finally{f.stop();}
+});
+
+test('recognized "Как дела?" receives honest visible TEXT response when voice MP3 is not yet created',async()=>{
+  const f=fixture({smalltalkAudio:false});
+  try{
+    f.clickSphere();await f.flush();
+    const recognizer=f.recognizers.at(-1);
+    recognizer.emit('Как',false);
+    const transcript=f.elements.find(x=>x.id==='jv-new-transcript-text');
+    assert.equal(transcript.textContent,'Как');
+    recognizer.emit('Как дела?',true);
+    await f.flush();
+    const bot=f.elements.find(x=>x.id==='jv-new-transcript-reply');
+    assert.ok(bot);
+    assert.equal(bot.hidden,false);
+    assert.equal(bot.textContent,'JARVIX: Всё хорошо, спасибо! А у тебя?');
+    assert.equal(f.played.length,1,'No fabricated spoken MP3 for missing response');
+    assert.equal(transcript.textContent,'Как дела?');
   }finally{f.stop();}
 });
