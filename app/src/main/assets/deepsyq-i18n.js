@@ -109,6 +109,7 @@
  });
  const start=()=>{
    scan(document.documentElement);
+   document.documentElement.lang=language==='en'?'en-US':language;
    observer.observe(document.documentElement,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:ATTRS});
  };
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
