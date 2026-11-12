@@ -211,6 +211,53 @@ function getWallet(userId) {
   return edgeWallets.get(userId);
 }
 
+const WAN_IMAGE_MODEL='wan2.1-t2i-turbo';
+const WAN_IMAGE_API='https://dashscope-intl.aliyuncs.com/api/v1';
+const WAN_IMAGE_SIZES={
+  '1:1':'1024*1024','16:9':'1280*720','9:16':'720*1280',
+  '3:2':'1152*768','2:3':'768*1152','4:3':'1024*768',
+  '3:4':'768*1024','4:5':'896*1120','21:9':'1344*576'
+};
+const wanImageRecordKey=id=>'studio/wan-image/'+id+'.json';
+
+function wanImageResultUrl(value){
+  try{
+    const url=new URL(value);
+    return url.protocol==='https:'&&!url.username&&!url.password&&!url.port&&
+      /^(?:[a-z0-9-]+\.)?oss-[a-z0-9-]+\.aliyuncs\.com$/.test(url.hostname)?url.href:null;
+  }catch{return null;}
+}
+
+async function submitWanImage(env,job,ratio){
+  const response=await fetch(WAN_IMAGE_API+'/services/aigc/text2image/image-synthesis',{
+    method:'POST',redirect:'manual',
+    headers:{Authorization:'Bearer '+String(env.DASHSCOPE_API_KEY).trim(),'Content-Type':'application/json','X-DashScope-Async':'enable'},
+    body:JSON.stringify({model:WAN_IMAGE_MODEL,input:{prompt:job.prompt},parameters:{size:WAN_IMAGE_SIZES[ratio],n:1}})
+  });
+  const data=await response.json().catch(()=>null);
+  if(!response.ok)return data?.code==='AllocationQuota.FreeTierOnly'?'WAN_FREE_QUOTA_EXHAUSTED':'WAN_IMAGE_PROVIDER_UNAVAILABLE';
+  const taskId=data?.output?.task_id;
+  if(typeof taskId!=='string'||!/^[a-zA-Z0-9_-]{8,100}$/.test(taskId))return 'WAN_IMAGE_PROVIDER_UNAVAILABLE';
+  job.wanTaskId=taskId;
+  await env.R2_BUCKET.put(wanImageRecordKey(job.id),JSON.stringify(job));
+  return null;
+}
+
+async function refreshWanImage(env,job){
+  if(job.status!=='processing')return;
+  const response=await fetch(WAN_IMAGE_API+'/tasks/'+encodeURIComponent(job.wanTaskId),{
+    redirect:'manual',headers:{Authorization:'Bearer '+String(env.DASHSCOPE_API_KEY).trim()}
+  });
+  if(!response.ok)return;
+  const output=(await response.json()).output;
+  if(output?.task_status==='RUNNING'){job.progress=60;return;}
+  if(!['SUCCEEDED','FAILED','CANCELED','UNKNOWN'].includes(output?.task_status))return;
+  job.imageUrl=output.task_status==='SUCCEEDED'?wanImageResultUrl(output.results?.[0]?.url):null;
+  job.status=job.imageUrl?'ready':'failed';
+  job.progress=job.imageUrl?100:0;
+  await env.R2_BUCKET.put(wanImageRecordKey(job.id),JSON.stringify(job));
+}
+
 function createSvgImage(prompt, ratio = '1:1') {
   let width = 1024, height = 1024;
   if (ratio === '16:9') { width = 1280; height = 720; }
@@ -744,6 +791,14 @@ export default {
       return { ...m, enabled: false };
     });
 
+    if(env.DASHSCOPE_API_KEY&&env.R2_BUCKET){
+      freeStudioModels.unshift({
+        id:WAN_IMAGE_MODEL,label:'Wan 2.1 Turbo',kind:'image',provider:'Alibaba Cloud',
+        adapter:true,enabled:true,ratios:Object.keys(WAN_IMAGE_SIZES),references:0,
+        description:'Generate one image from a text prompt with the Alibaba Cloud Singapore free quota.'
+      });
+    }
+
     if (pathname === '/api/studio/config') {
       return json({
         enabled: true,
@@ -823,6 +878,10 @@ export default {
       const user = await getAuthenticatedUser(request, env);
       const body = await request.json().catch(() => ({}));
       const { kind = 'image', model, prompt = 'Cosmic nebula', ratio = '1:1', duration = 5 } = body;
+      const useWanImage=kind==='image'&&(model===WAN_IMAGE_MODEL||(!model&&env.DASHSCOPE_API_KEY&&env.R2_BUCKET));
+      if(useWanImage&&(!env.DASHSCOPE_API_KEY||!env.R2_BUCKET))return json({error:'WAN_IMAGE_NOT_CONFIGURED'},503);
+      if(useWanImage&&(!Object.hasOwn(WAN_IMAGE_SIZES,ratio)||typeof prompt!=='string'||!prompt.trim()||
+         Number(body.quantity??1)!==1||body.references?.length))return json({error:'WAN_IMAGE_INVALID_INPUT'},400);
       const clientIp = request.headers.get('cf-connecting-ip') || 'anon';
       const clientKey = user?.id || clientIp;
       const usage = getDailyUsage(clientKey);
@@ -868,6 +927,21 @@ export default {
         if (kind === 'video') usage.video++;
         else if (kind === 'image') usage.photo++;
         else if (kind === 'audio' || kind === 'music') usage.music++;
+      }
+
+      if(useWanImage){
+        const id='job_image_wan_'+crypto.randomUUID().replace(/-/g,'');
+        const job={id,userId:user?.id||'guest',kind:'image',model:WAN_IMAGE_MODEL,provider:'Alibaba Cloud',
+          prompt:prompt.trim().slice(0,500),title:prompt.trim().slice(0,60),status:'processing',progress:10,
+          created_at:new Date().toISOString(),mime:'image/png'};
+        let error;
+        try{error=await submitWanImage(env,job,ratio);}catch{error='WAN_IMAGE_PROVIDER_UNAVAILABLE';}
+        if(error){
+          if(!isPaid)usage.photo--;
+          return json({error},error==='WAN_FREE_QUOTA_EXHAUSTED'?429:503);
+        }
+        studioJobs.set(id,job);
+        return json({ok:true,id,jobId:id,status:job.status,progress:job.progress});
       }
 
       const safeKind = (kind === 'audio' || kind === 'music') ? 'music' : (kind === 'video' ? 'video' : 'image');
@@ -1083,6 +1157,42 @@ export default {
     if (jobMatch) {
       const id = jobMatch[1];
       const isMedia = Boolean(jobMatch[2]);
+      if(id.startsWith('job_image_wan_')){
+        if(!env.R2_BUCKET||!env.DASHSCOPE_API_KEY)return json({error:'WAN_IMAGE_NOT_CONFIGURED'},503);
+        let job;
+        try{
+          const record=await env.R2_BUCKET.get(wanImageRecordKey(id));
+          job=record?await record.json():null;
+        }catch{return json({error:'WAN_IMAGE_STORAGE_UNAVAILABLE'},503);}
+        if(!job)return json({error:'NOT_FOUND'},404);
+        if(job.userId!=='guest'&&(await getAuthenticatedUser(request,env))?.id!==job.userId)
+          return json({error:'NOT_FOUND'},404);
+        if(request.method==='DELETE'){
+          await env.R2_BUCKET.delete(wanImageRecordKey(id));
+          studioJobs.delete(id);
+          return json({ok:true});
+        }
+        try{await refreshWanImage(env,job);}catch{return json({error:'WAN_IMAGE_PROVIDER_UNAVAILABLE'},503);}
+        studioJobs.set(id,job);
+        if(isMedia){
+          if(!job.imageUrl)return json({error:'WAN_IMAGE_NOT_READY'},409);
+          let result=await fetch(job.imageUrl,{redirect:'manual'}).catch(()=>null);
+          if(result&&[301,302,303,307,308].includes(result.status)){
+            const target=wanImageResultUrl(result.headers.get('Location'));
+            result=target?await fetch(target,{redirect:'manual'}).catch(()=>null):null;
+          }
+          if(!result?.ok)return json({error:'WAN_IMAGE_RESULT_UNAVAILABLE'},502);
+          const bytes=new Uint8Array(await result.arrayBuffer());
+          const type=bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71?'image/png':
+            bytes[0]===255&&bytes[1]===216&&bytes[2]===255?'image/jpeg':
+            String.fromCharCode(...bytes.subarray(0,4))==='RIFF'&&String.fromCharCode(...bytes.subarray(8,12))==='WEBP'?'image/webp':null;
+          if(!type||bytes.length>20*1024*1024)return json({error:'WAN_IMAGE_RESULT_INVALID'},502);
+          return new Response(bytes,{headers:{'Content-Type':type,'Cache-Control':'private, no-store'}});
+        }
+        return json({ok:true,id,kind:'image',model:job.model,provider:job.provider,status:job.status,
+          progress:job.progress,prompt:job.prompt,mime:job.mime,createdAt:job.created_at,
+          mediaUrl:job.imageUrl?'/api/studio/jobs/'+id+'/media':null});
+      }
       let job = studioJobs.get(id);
       if (!job) {
         const parts = id.split('_');
