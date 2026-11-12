@@ -1,0 +1,45 @@
+name: JARVIX NEW actual 2000 missing audio audit (READ ONLY)
+on:
+  workflow_dispatch:
+  push:
+    branches: [jarvis-new]
+    paths:
+      - 'scripts/audit_jarvix_missing_2000.py'
+      - '.github/workflows/jarvis-new-missing-2000-audit.yml'
+permissions:
+  contents: read
+jobs:
+  audit:
+    if: github.ref == 'refs/heads/jarvis-new'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check script, compare actual files, export full text list
+        run: |
+          python -m py_compile scripts/audit_jarvix_missing_2000.py
+          python scripts/audit_jarvix_missing_2000.py --output artifacts/voice-audit
+          python - <<'PY'
+          import csv,json,pathlib
+          root=pathlib.Path('artifacts/voice-audit')
+          with (root/'jarvix_expected_2000.csv').open(encoding='utf-8-sig') as f:
+              records=list(csv.DictReader(f))
+          with (root/'jarvix_missing_from_scanned.csv').open(encoding='utf-8-sig') as f:
+              missing=list(csv.DictReader(f))
+          meta=json.loads((root/'README.json').read_text())
+          assert len(records)==2000 and len({r['filename'] for r in records})==2000
+          assert meta['master_total']==2000
+          assert len(missing)==meta['missing_from_scanned_locations']
+          assert all(r['status'] == 'MISSING_FROM_SCANNED_LOCATIONS' for r in missing)
+          assert not meta['r2_objects_actually_scanned']
+          print('AUDIT PASSED',meta)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: JARVIX-NEW-MISSING-2000-TEXT-QUEUE-READ-ONLY
+          path: artifacts/voice-audit/*
+          if-no-files-found: error
+          retention-days: 14
