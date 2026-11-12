@@ -6,7 +6,7 @@ import {getTourV3Recording} from './jarvix-tour-v3-audio.js';
 import {getTourV4Recording,v4BeatId} from './jarvix-tour-v4-audio.js';
 import {installTourFocus,showTourElement,performTourDemo,endTourFocus} from './jarvix-tour-choreography.js';
 let audio=null,turn=0,bar=null,state=null,navTimer=null,waitTimer=null,stepWaitKey=null,stepWaitStart=0,activeFocus='',tourSettingsOpened=false;
-let transcriptPromise=null,tourSpeaking=false,cueTimer=null,narrationTimer=null;
+let transcriptPromise=null,tourSpeaking=false,cueTimer=null,narrationTimer=null,tourStudioSettingsOwned=false;
 const pauseFrame=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function speakOptionalTourV4(id,current){
  const approved=await getTourV4Recording(id,state?.language||'ru');
@@ -164,6 +164,7 @@ function closeTourChild(id){
  if(wasOpen)document.getElementById('studioSettingsHub')?.style.removeProperty('visibility');
 }
 function closeV3Dialogs(){
+ tourCloseStudioSettings();
  for(const id of ['modelDialog','settingsDialog'])closeTourChild(id);
  for(const id of [...v3DialogsOpened])closeTourChild(id);
  const hub=document.getElementById('studioSettingsHub');
@@ -178,8 +179,8 @@ const mediaTourModes={Image:'image',Video:'video',Audio:'audio'};
 function homeMediaTourStep(step){
  if(!mediaTourModes[step.title])return step;
  // Image/Video/Audio share the ONE existing JARVIX Chat.
- const targets=['#jInput','#jActiveModeLabel',
-  '#jChatForm .j-settings-shortcut,#jActiveModeLabel','#jSend'];
+ const targets=['#jInput','#jChatForm .j-settings-shortcut',
+  '#jChatForm .j-settings-shortcut','#jSend'];
  return {...step,url:'jarvix-chat.html',beats:step.beats.map((beat,index)=>({
   ...beat,target:targets[index]||'#jChatForm'
  }))};
@@ -219,19 +220,127 @@ async function selectTourMediaMode(mode,current){
  choice.click(); // Existing Home -> JARVIX Chat anchor, clicked once.
  waitTimer=setTimeout(()=>{if(alive())blocked(current,'JARVIX Chat did not open');},6500);
 }
+// The existing Settings button opens the real, same-origin Studio inside a
+// private iframe (home-studio-settings.js). Demonstrate its native controls;
+// never create a second settings UI or change model/provider/user selections.
+function tourStudioDocument(){
+ const frame=document.getElementById('homeStudioSettingsFrame');
+ if(!frame?.isConnected)return null;
+ try{
+  if(frame.contentWindow?.location.origin!==location.origin)return null;
+  return frame.contentDocument||null;
+ }catch{return null;}
+}
+async function tourWaitStudio(alive,ms=8500){
+ const loops=Math.ceil(ms/125);
+ for(let n=0;n<loops&&alive();n++){
+  const host=document.getElementById('homeStudioSettingsHost'),doc=tourStudioDocument();
+  if(host?.dataset.ready==='true'&&host.style.display!=='none'&&
+     host.style.visibility!=='hidden'&&doc?.getElementById('studioSettingsHub')?.open)
+   return doc;
+  await pauseFrame(125);
+ }
+ return null;
+}
+function tourStudioFocusStyle(doc){
+ if(doc.getElementById('jarvixTourStudioFocusStyle'))return;
+ const style=doc.createElement('style');
+ style.id='jarvixTourStudioFocusStyle';
+ style.textContent='.ds-tour-focus-pulse{outline:3px solid #ffba52!important;outline-offset:4px!important;box-shadow:0 0 0 4px #e4a14a55,0 0 25px #ffb84b88!important;animation:none!important;position:relative;z-index:10050}';
+ doc.head.append(style);
+}
+async function tourShowInsideStudio(selector,alive,ms=1200){
+ const doc=tourStudioDocument();
+ if(!doc||!alive())return null;
+ tourStudioFocusStyle(doc);
+ const el=[...doc.querySelectorAll(selector)].find(e=>e.isConnected&&!e.hidden&&e.getClientRects().length);
+ if(!el)return null;
+ doc.querySelectorAll('.ds-tour-focus-pulse').forEach(e=>e.classList.remove('ds-tour-focus-pulse'));
+ return showTourElement(el,alive,ms);
+}
+function tourCloseChildStudioDialog(id){
+ const doc=tourStudioDocument(),dialog=doc?.getElementById(id);
+ if(!dialog?.open)return;
+ const close=dialog.querySelector('[data-close="'+id+'"],.dialog-head [data-close]');
+ try{close?.click();}catch{}
+ if(dialog.open)try{dialog.close();}catch{}
+ doc.querySelectorAll('.ds-tour-focus-pulse').forEach(e=>e.classList.remove('ds-tour-focus-pulse'));
+}
+function tourCloseStudioSettings(){
+ if(!tourStudioSettingsOwned)return;
+ tourCloseChildStudioDialog('modelDialog');
+ tourCloseChildStudioDialog('settingsDialog');
+ const doc=tourStudioDocument(),hub=doc?.getElementById('studioSettingsHub');
+ if(hub?.open){
+  const close=hub.querySelector(':scope > button[aria-label],:scope > button:nth-child(2)');
+  try{close?.click();}catch{}
+  if(hub.open)try{hub.close();}catch{}
+ }
+ tourStudioSettingsOwned=false;
+}
+async function tourDemonstrateRealStudio(beat,alive,current){
+ const gear=[...document.querySelectorAll('#jChatForm .j-settings-shortcut,#studioSettingsBtn')]
+  .find(el=>el.isConnected&&!el.disabled&&el.getClientRects().length);
+ if(!gear){blocked(current,'Studio Settings button unavailable');return;}
+ if(beat.action==='openModel'){
+  if(!await showTourElement(gear,alive,1150))return;
+  if(!alive())return;
+  if(gear.getAttribute('aria-expanded')!=='true'){
+   gear.click();tourStudioSettingsOwned=true;
+  }
+  const doc=await tourWaitStudio(alive);
+  if(!doc){blocked(current,'Studio Settings did not open');return;}
+  await tourShowInsideStudio('#studioSettingsHub',alive,850);
+  const model=await tourShowInsideStudio('#modelButton',alive,1150);
+  if(!model||!alive()){blocked(current,'Studio model selector unavailable');return;}
+  model.click();
+  for(let n=0;n<24&&alive()&&!doc.getElementById('modelDialog')?.open;n++)await pauseFrame(120);
+  if(!doc.getElementById('modelDialog')?.open){blocked(current,'Studio model list did not open');return;}
+  await tourShowInsideStudio('#modelDialog',alive,950);
+  // Highlight a real available model without selecting a different model.
+  await tourShowInsideStudio('#modelChoices .model-card[aria-pressed="true"],#modelChoices .model-card:not([disabled])',alive,1250);
+ }else if(beat.action==='openSettings'){
+  const doc=await tourWaitStudio(alive,3800);
+  if(!doc){blocked(current,'Studio Settings unavailable');return;}
+  tourCloseChildStudioDialog('modelDialog');
+  await pauseFrame(180);
+  const settings=await tourShowInsideStudio('#settingsButton',alive,1050);
+  if(!settings||!alive()){blocked(current,'Studio parameters button unavailable');return;}
+  settings.click();
+  for(let n=0;n<24&&alive()&&!doc.getElementById('settingsDialog')?.open;n++)await pauseFrame(120);
+  if(!doc.getElementById('settingsDialog')?.open){blocked(current,'Studio parameters did not open');return;}
+  await tourShowInsideStudio('#settingsDialog',alive,950);
+  const mode=mediaTourModes[tourPlan(state.language)[state.index]?.title];
+  const selectors=mode==='image'
+   ? '#ratioChoices button[aria-pressed="true"],#imageResolution+ .composer-setting-choices button[aria-pressed="true"]'
+   : mode==='video'
+   ? '#ratioChoices button[aria-pressed="true"],#videoResolution+ .composer-setting-choices button[aria-pressed="true"]'
+   : '#musicMode,#musicOptions,#settingsDialog label';
+  await tourShowInsideStudio(selectors,alive,1150);
+ }else if(beat.action==='closeSettings'){
+  const doc=tourStudioDocument();
+  if(doc?.getElementById('settingsDialog')?.open){
+   const exit=await tourShowInsideStudio('#settingsDialog [data-close]',alive,850);
+   if(!alive())return;
+   if(exit)exit.click();
+   tourCloseChildStudioDialog('settingsDialog');
+  }
+  const close=await tourShowInsideStudio('#studioSettingsHub > button[aria-label],#studioSettingsHub > button:nth-child(2)',alive,1100);
+  if(!alive())return;
+  if(close)close.click();
+  tourCloseStudioSettings();
+  await showTourElement('#jSend',alive,1150); // Informational only; never click Generate/Send.
+ }else{
+  await showTourElement(beat.target,alive,1250);
+ }
+}
 async function cueV3(beat){
  const initial=turn;
  const canContinue=()=>initial===turn&&state?.phase==='playing';
  installTourFocus();
  const currentTitle=state&&tourPlan(state.language)[state.index]?.title;
  if(mediaTourModes[currentTitle]&&location.pathname.endsWith('/jarvix-chat.html')){
-  // Legacy Studio model/settings buttons no longer exist on this page.
-  const focused=await showTourElement(beat.target,canContinue,1300);
-  if(!canContinue())return;
-  // The settings popover is not part of this walkthrough: highlight the
-  // current mode and controls, but NEVER click or open Studio Settings.
-  if(focused)spotlight({target:beat.target,action:'focus'});
-  await pauseFrame(450);
+  await tourDemonstrateRealStudio(beat,canContinue,initial);
   return;
  }
  const first=beat.action==='openModel'?'#modelButton':beat.action==='openSettings'?'#settingsButton':beat.target;
