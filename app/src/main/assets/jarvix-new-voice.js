@@ -22,6 +22,7 @@ let turns=[],orb=null,micChip=null,micStage='idle',micFailures=0;
 let transcriptWrap=null,transcriptText=null,transcriptReply=null,heardText='',heardIsFinal=false,botReplyText='';
 let micPulseRms=0;
 let monitorStream=null,monitorContext=null,monitorAnalyser=null,monitorTimer=null,monitorSamples=null;
+let ownerWebSource=null,playbackAbort=null;
 const Recognition=()=>window.SpeechRecognition||window.webkitSpeechRecognition;
 const MICROPHONE_STATES={
  ru:{starting:'Включаю микрофон…',listening:'Слушаю вас',thinking:'Обрабатываю…',
@@ -178,6 +179,8 @@ function stop(){
  on=false;seq++;
  cancelRecognition();
  if(ownerClip){try{ownerClip.pause();ownerClip.currentTime=0;}catch{}ownerClip=null;}
+ if(ownerWebSource){try{ownerWebSource.stop();}catch{}ownerWebSource=null;}
+ if(playbackAbort){try{playbackAbort.abort();}catch{}playbackAbort=null;}
  if(ownerClipDone){const finish=ownerClipDone;ownerClipDone=null;finish(false);}
  if(request){try{request.abort();}catch{}request=null;}
  micFailures=0;
@@ -190,6 +193,8 @@ function resumeMicrophone(){
  if(micStage==='listening')return;
  ensureAudioContextFromGesture();
  if(ownerClip){try{ownerClip.pause();ownerClip.currentTime=0;}catch{}ownerClip=null;}
+ if(ownerWebSource){try{ownerWebSource.stop();}catch{}ownerWebSource=null;}
+ if(playbackAbort){try{playbackAbort.abort();}catch{}playbackAbort=null;}
  if(ownerClipDone){const finish=ownerClipDone;ownerClipDone=null;finish(false);}
  if(request){try{request.abort();}catch{}request=null;}
  cancelRecognition();
@@ -199,6 +204,49 @@ function resumeMicrophone(){
  // requires this direct user gesture after audio playback.
  listen(seq);
 }
+async function playOwnerUsingUnlockedAudio(record,id){
+ // Reuse original MP3 if mobile browser rejects HTMLMediaElement.play().
+ // This is decoding, NOT synthetic voice generation.
+ const ctx=monitorContext;
+ if(!ctx||typeof ctx.decodeAudioData!=='function'||
+    typeof ctx.createBufferSource!=='function'||ctx.state!=='running')return false;
+ const controller=new AbortController();
+ playbackAbort=controller;
+ const cutoff=setTimeout(()=>controller.abort(),7000);
+ try{
+  const response=await fetch(record.audioUrl,{signal:controller.signal,cache:'no-store',mode:'cors'});
+  if(!response.ok||Number(response.headers.get('content-length')||0)>8_000_000)return false;
+  const bytes=await response.arrayBuffer();
+  if(bytes.byteLength<1000||bytes.byteLength>8_000_000)return false;
+  const pcm=await ctx.decodeAudioData(bytes);
+  if(!on||seq!==id||ctx.state!=='running')return false;
+  return await new Promise(resolve=>{
+   let node,done=false;
+   const finish=ok=>{
+    if(done)return;done=true;
+    if(node)node.onended=null;
+    if(ownerWebSource===node)ownerWebSource=null;
+    if(ownerClipDone===finish)ownerClipDone=null;
+    resolve(ok);
+   };
+   try{
+    node=ctx.createBufferSource();
+    ownerWebSource=node;
+    ownerClipDone=finish;
+    node.buffer=pcm;
+    node.connect(ctx.destination);
+    node.onended=()=>finish(true);
+    if(Number.isFinite(record.stopAtSeconds)&&record.stopAtSeconds>0)
+     node.start(0,0,Math.min(record.stopAtSeconds,pcm.duration));
+    else node.start(0);
+   }catch{finish(false);}
+  });
+ }catch{return false;}
+ finally{
+  clearTimeout(cutoff);
+  if(playbackAbort===controller)playbackAbort=null;
+ }
+}
 async function playOwnerRecording(record,id){
  if(!record?.audioUrl||!on||seq!==id)return false;
  return new Promise(resolve=>{
@@ -206,13 +254,18 @@ async function playOwnerRecording(record,id){
   const audio=new Audio(record.audioUrl);
   ownerClip=audio;
   let finished=false;
-  const finish=ok=>{
+  const finish=(ok,blocked=false)=>{
    if(finished)return;
    finished=true;audio.onended=null;audio.onerror=null;audio.ontimeupdate=null;
    if(ownerClip===audio)ownerClip=null;
    if(ownerClipDone===finish)ownerClipDone=null;
-   if(record.temporaryBlob===true)try{URL.revokeObjectURL(record.audioUrl);}catch{}
-   resolve(ok);
+   const settle=value=>{
+    if(record.temporaryBlob===true)try{URL.revokeObjectURL(record.audioUrl);}catch{}
+    resolve(value);
+   };
+   if(blocked&&on&&seq===id)
+    void playOwnerUsingUnlockedAudio(record,id).then(settle,()=>settle(false));
+   else settle(ok);
   };
   ownerClipDone=finish;
   audio.onended=()=>finish(true);
@@ -227,7 +280,7 @@ async function playOwnerRecording(record,id){
    };
   }
   ui('speaking',getLang().speak);
-  try{Promise.resolve(audio.play()).catch(()=>finish(false));}catch{finish(false);}
+  try{Promise.resolve(audio.play()).catch(()=>finish(false,true));}catch{finish(false,true);}
  });
 }
 const recordedLanguage=()=>getLang().lang.slice(0,2);
