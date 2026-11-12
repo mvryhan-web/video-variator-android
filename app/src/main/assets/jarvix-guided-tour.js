@@ -747,18 +747,23 @@ if(typeof window!=='undefined'){
    })().catch(()=>{if(state)blocked(turn,'Inspiration handoff unavailable');});
    return;
   }
-  // AI Apps entry only: recover from a lost cross-page session checkpoint.
-  // The explicit tour marker is never added for a regular visitor.
-  if(location.pathname.endsWith('/ai-apps.html')&&!read()){
+  // AI Apps handoff is the authority if its explicit, tour-only marker exists.
+  // In real cross-page navigation the browser may retain an earlier Image/Audio
+  // checkpoint even though AI Apps has loaded. The old condition "!read()"
+  // missed exactly this case and the guide hung at the wrong stage forever.
+  if(location.pathname.endsWith('/ai-apps.html')){
    const marker=/^#jarvix-tour-resume-(ru|en|fr|es)$/.exec(location.hash);
    if(marker){
-    state={index:4,language:marker[1],phase:'playing',beat:0,
-     navAnnounced:3,position:0,narrationPart:0,narrationStep:null};
-    save();
-    // Avoid retaining a replayable marker on refresh/back.
+    const checkpoint=read();
+    if(!checkpoint||checkpoint.index<4){
+     state={index:4,language:marker[1],phase:'playing',beat:0,
+      navAnnounced:3,position:0,narrationPart:0,narrationStep:null};
+     save();
+    }
+    // Strip the navigation token once the destination owns the checkpoint.
     try{history.replaceState(history.state,'',location.pathname+location.search);}catch{}
-    void play();
-    return;
+    if(state){void play();return;}
+    if(read()){resumeJarvixGuidedTour();return;}
    }
   }
   if(read())resumeJarvixGuidedTour();
