@@ -220,8 +220,8 @@ class Cloudflare:
         retrieved in a Cloudflare-supported worker upload format.
         """
         approved = {"jarvix-guided-tour.js", "jarvix-tour-choreography.js"}
-        insist(set(assets) and (set(assets).issubset(approved) or set(assets) == {"app-v4.js"}),
-               "Only explicit JARVIX Tour or Video Uniquifier quality assets can use manifest reuse")
+        insist(set(assets) and set(assets).issubset(approved),
+               "Only explicit JARVIX Tour assets can use manifest reuse")
         keyed = {digest(raw, rel): (rel, raw) for rel, raw in assets.items()}
         insist(len(keyed) == len(assets), "Tour content hash collision")
         for key, (rel, _) in keyed.items():
@@ -455,8 +455,7 @@ def main():
                 live, paths, origin, work)
             direct_manifest = False
         except Blocked as error:
-            insist((set(paths) == {"jarvix-guided-tour.js", "jarvix-tour-choreography.js"} or
-                    set(paths) == {"app-v4.js"}) and
+            insist(set(paths) == {"jarvix-guided-tour.js", "jarvix-tour-choreography.js"} and
                    str(error).startswith("Could not reproduce unchanged LIVE asset bytes:"),
                    str(error))
             expected_bytes = {rel: (ROOT / rel).read_bytes() for rel in paths}
