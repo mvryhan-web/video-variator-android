@@ -19,6 +19,8 @@ const getLang=()=>{
 };
 let on=false,seq=0,rec=null,request=null,pending=null,ownerClip=null,ownerClipDone=null;
 let turns=[],orb=null,micChip=null,micStage='idle',micFailures=0;
+let transcriptWrap=null,transcriptText=null,meterFill=null,heardText='',heardIsFinal=false;
+let monitorStream=null,monitorContext=null,monitorAnalyser=null,monitorTimer=null,monitorSamples=null;
 const Recognition=()=>window.SpeechRecognition||window.webkitSpeechRecognition;
 const MICROPHONE_STATES={
  ru:{starting:'Включаю микрофон…',listening:'Слушаю вас',thinking:'Обрабатываю…',
@@ -42,6 +44,80 @@ function positionMicChip(){
  const y=Math.max(38,Math.min(innerHeight-38,rect.bottom+7));
  micChip.style.left=x+'px';
  micChip.style.top=y+'px';
+ if(transcriptWrap){
+  transcriptWrap.style.left=x+'px';
+  transcriptWrap.style.top=Math.min(innerHeight-84,y+(micChip.offsetHeight||35)+7)+'px';
+ }
+}
+function setTranscript(text='',final=false){
+ heardText=String(text||'').trim().slice(0,400);
+ heardIsFinal=!!final;
+ renderTranscript();
+}
+function renderTranscript(){
+ if(!transcriptWrap||!transcriptText)return;
+ const active=on&&(micStage==='listening'||micStage==='starting'||
+   micStage==='thinking'||micStage==='speaking'||micStage==='missing'||micStage==='ready');
+ transcriptWrap.hidden=!active;
+ if(!active)return;
+ const lang=recordedLanguage();
+ const hint={
+  ru:'Скажите что-нибудь — здесь появятся распознанные слова',
+  en:'Speak now — recognized words will appear here',
+  fr:'Parlez — les mots reconnus apparaîtront ici',
+  es:'Habla — aquí aparecerán las palabras reconocidas'
+ }[lang]||'Speak now';
+ transcriptText.textContent=heardText||((micStage==='listening'||micStage==='starting')?hint:'');
+ transcriptText.dataset.actual=heardText?'true':'false';
+ transcriptWrap.dataset.stage=micStage;
+ transcriptWrap.dataset.final=heardIsFinal?'true':'false';
+ positionMicChip();
+}
+// The sound level is read from the local microphone stream. No raw audio
+// is uploaded by this meter. Browser speech recognition is separate.
+function stopMicMonitor(){
+ if(monitorTimer!==null){clearInterval(monitorTimer);monitorTimer=null;}
+ if(monitorStream){
+  try{monitorStream.getTracks().forEach(track=>track.stop());}catch{}
+  monitorStream=null;
+ }
+ try{monitorContext?.close?.();}catch{}
+ monitorContext=null;monitorAnalyser=null;monitorSamples=null;
+ if(meterFill)meterFill.style.transform='scaleX(.05)';
+}
+function startMicMonitor(stream){
+ stopMicMonitor();
+ monitorStream=stream;
+ const Ctx=window.AudioContext||window.webkitAudioContext;
+ if(!Ctx)return;
+ try{
+  monitorContext=new Ctx();
+  const source=monitorContext.createMediaStreamSource(stream);
+  monitorAnalyser=monitorContext.createAnalyser();
+  monitorAnalyser.fftSize=512;
+  source.connect(monitorAnalyser); // NOT connected to speakers.
+  monitorSamples=new Uint8Array(monitorAnalyser.fftSize);
+  Promise.resolve(monitorContext.resume?.()).catch(()=>{});
+  monitorTimer=setInterval(()=>{
+   if(!on||micStage!=='listening'||!monitorAnalyser||!meterFill){
+    if(meterFill)meterFill.style.transform='scaleX(.05)';
+    return;
+   }
+   monitorAnalyser.getByteTimeDomainData(monitorSamples);
+   let sum=0;
+   for(const value of monitorSamples){
+    const centered=(value-128)/128;
+    sum+=centered*centered;
+   }
+   const rms=Math.sqrt(sum/monitorSamples.length);
+   // Visible response is actual microphone amplitude, not fake animation.
+   const level=Math.max(.05,Math.min(1,rms*10));
+   meterFill.style.transform='scaleX('+level.toFixed(2)+')';
+  },120);
+ }catch{
+  try{monitorContext?.close?.();}catch{}
+  monitorContext=null;monitorAnalyser=null;monitorSamples=null;
+ }
 }
 function ui(stage='idle'){
  micStage=stage;
@@ -66,6 +142,7 @@ function ui(stage='idle'){
    positionMicChip();
   }
  }
+ renderTranscript();
 }
 function cancelRecognition(){
  if(pending){clearTimeout(pending);pending=null;}
@@ -81,6 +158,8 @@ function stop(){
  if(ownerClipDone){const finish=ownerClipDone;ownerClipDone=null;finish(false);}
  if(request){try{request.abort();}catch{}request=null;}
  micFailures=0;
+ stopMicMonitor();
+ setTranscript('');
  ui('idle');
 }
 function resumeMicrophone(){
@@ -91,6 +170,7 @@ function resumeMicrophone(){
  if(request){try{request.abort();}catch{}request=null;}
  cancelRecognition();
  micFailures=0;
+ setTranscript('');
  // Called synchronously from a REAL touch/click: mobile recognition often
  // requires this direct user gesture after audio playback.
  listen(seq);
@@ -144,6 +224,7 @@ function listen(id){
   if(rec===r)rec=null;
   if(interim.trim().length>=2){
    processed=true;
+   setTranscript(interim.trim(),true);
    void respond(interim.trim(),id);
    return;
   }
@@ -156,25 +237,35 @@ function listen(id){
  };
  r.onstart=()=>{
   if(!on||seq!==id||rec!==r)return;
-  micFailures=0;
-  ui('listening'); // Native mic should now be active, not merely requested.
+  ui('listening'); // Native recognition onstart, not just mic permission.
  };
  r.onspeechstart=()=>{if(on&&seq===id&&rec===r)ui('listening');};
  r.onresult=event=>{
   if(!on||seq!==id||processed||rec!==r)return;
   const results=Array.from(event.results||[]);
-  for(let i=results.length-1;i>=0;i--){
-   const phrase=results[i]?.[0]?.transcript?.trim();
+  const pieces=[];
+  let hasFinal=false;
+  let allFinal=true;
+  for(const result of results){
+   const phrase=result?.[0]?.transcript?.trim();
    if(!phrase)continue;
-   interim=phrase;
-   if(!results[i].isFinal)continue;
-   processed=true;
-   r.onend=null;
-   try{r.stop();}catch{}
-   if(rec===r)rec=null;
-   void respond(phrase,id);
-   return;
+   pieces.push(phrase);
+   if(result.isFinal)hasFinal=true;
+   else allFinal=false;
   }
+  const combined=pieces.join(' ').replace(/\s+/g,' ').trim();
+  if(!combined)return;
+  interim=combined;
+  micFailures=0; // Actual recognized words, not merely recognition startup.
+  // Show exactly the live partial transcript received from the browser.
+  // It may arrive word by word, or in longer chunks depending on the phone.
+  setTranscript(combined,hasFinal&&allFinal);
+  if(!hasFinal||!allFinal)return;
+  processed=true;
+  r.onend=null;
+  try{r.stop();}catch{}
+  if(rec===r)rec=null;
+  void respond(combined,id);
  };
  r.onerror=event=>{
   if(!on||seq!==id||processed||rec!==r)return;
@@ -193,6 +284,7 @@ function listen(id){
   if(!on||seq!==id||processed||rec!==r)return;
   if(interim.trim().length>=2){
    processed=true;rec=null;
+   setTranscript(interim.trim(),true);
    void respond(interim.trim(),id);
    return;
   }
@@ -287,6 +379,7 @@ async function respond(message,id){
  if(!on||seq!==id)return;
  ui('thinking');
  const lang=recordedLanguage();
+ setTranscript(message,true);
 
  // 1. Human conversation first — not a broken 500-scenario manifest.
  // Matching existing V3 owner MP3 is instant and does not use local network.
@@ -328,11 +421,12 @@ async function start(){
  if(on){stop();return;}
  if(!Recognition()){on=true;ui('unsupported');return;}
  if(!navigator.mediaDevices?.getUserMedia){on=true;ui('error');return;}
- on=true;const id=++seq;ui('starting');
+ on=true;const id=++seq;setTranscript('');ui('starting');
  try{
   const stream=await navigator.mediaDevices.getUserMedia({audio:{
    echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-  stream.getTracks().forEach(track=>track.stop());
+  if(!on||seq!==id){stream.getTracks().forEach(track=>track.stop());return;}
+  startMicMonitor(stream);
  }catch{if(on&&seq===id)ui('error');return;}
  if(!on||seq!==id)return;
  const intro=await helloRecording(recordedLanguage()).catch(()=>null);
@@ -358,7 +452,16 @@ export function installJarvixNewVoice(){
  '#jv-new-mic-chip[data-state="listening"]{border-color:#4dffe1;box-shadow:0 0 12px #24c7b980}',
  '#jv-new-mic-chip[data-state="speaking"]{border-color:#d790f4;box-shadow:0 0 12px #a85fe688}',
  '#jv-new-mic-chip[data-state="error"],#jv-new-mic-chip[data-state="unsupported"]{border-color:#f2a960;color:#ffda9f}',
- '#jv-new-mic-chip:disabled{opacity:.9;cursor:default}'
+ '#jv-new-mic-chip:disabled{opacity:.9;cursor:default}',
+ '#jv-new-transcript{position:fixed;z-index:2147482000;transform:translateX(-50%);width:min(312px,calc(100vw - 24px));padding:10px 12px 9px;background:#0c1828f5;border:1px solid #3c6e7b;border-radius:12px;color:#f7fafd;box-shadow:0 10px 26px #07111e77;pointer-events:none;text-align:center;font:500 14px/1.5 system-ui,sans-serif;overflow-wrap:anywhere}',
+ '#jv-new-transcript[hidden]{display:none!important}',
+ '#jv-new-transcript-text[data-actual="true"]{font-weight:700;font-size:16px;line-height:1.45;color:#fff}',
+ '#jv-new-transcript-text[data-actual="false"]{font-size:12px;color:#9eb4be}',
+ '#jv-new-transcript[data-stage="listening"]{border-color:#29c6ba}',
+ '#jv-new-transcript[data-final="true"]{border-color:#ddaa68}',
+ '#jv-new-audio-meter{height:3px;border-radius:4px;background:#284a55;margin:8px auto 0;overflow:hidden;width:74%}',
+ '#jv-new-audio-fill{display:block;background:linear-gradient(90deg,#28b8a2,#63f2cf);height:100%;width:100%;transform:scaleX(.05);transform-origin:left;transition:transform 90ms linear}',
+ '@media(prefers-reduced-motion:reduce){#jv-new-audio-fill{transition:none!important}}'
  ].join('');
  document.head.append(style);
  // Remove old bottom error/status captions, including those left by an
@@ -376,6 +479,23 @@ export function installJarvixNewVoice(){
   resumeMicrophone();
  });
  document.body.appendChild(micChip);
+ document.getElementById('jv-new-transcript')?.remove();
+ transcriptWrap=document.createElement('div');
+ transcriptWrap.id='jv-new-transcript';
+ transcriptWrap.hidden=true;
+ transcriptWrap.setAttribute('role','status');
+ transcriptWrap.setAttribute('aria-live','polite');
+ transcriptText=document.createElement('div');
+ transcriptText.id='jv-new-transcript-text';
+ const level=document.createElement('div');
+ level.id='jv-new-audio-meter';
+ level.setAttribute('aria-hidden','true');
+ meterFill=document.createElement('span');
+ meterFill.id='jv-new-audio-fill';
+ level.appendChild(meterFill);
+ transcriptWrap.appendChild(transcriptText);
+ transcriptWrap.appendChild(level);
+ document.body.appendChild(transcriptWrap);
  window.addEventListener('resize',positionMicChip,{passive:true});
  window.addEventListener('scroll',positionMicChip,{passive:true});
  if(orb){
