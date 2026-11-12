@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import {extractAction} from '../app/src/main/assets/jarvix-action-plan.js';
 
 function fixture({recognition=true,meter=false,smalltalkAudio=true,rejectAudio=false,silent=false,bridge=false}={}){
   const source=fs.readFileSync('app/src/main/assets/jarvix-new-voice.js','utf8')
@@ -84,6 +85,7 @@ function fixture({recognition=true,meter=false,smalltalkAudio=true,rejectAudio=f
     },
     setTimeout,clearTimeout,setInterval,clearInterval,queueMicrotask,
     recordedReply:async()=>null,ownerLibraryReply:undefined,
+    extractAction,
     helloRecording:async()=>({audioUrl:'/media/jarvix/conversation/hello_ru.mp3',text:'Привет! Я JARVIX.'}),
     smalltalkReply:async(message)=>{lastSpeech=message;return smalltalkAudio?
       {audioUrl:'/media/jarvix/conversation/smalltalk_ru.mp3',text:'Спасибо!'}:null;},
@@ -134,7 +136,7 @@ test('when mobile browser does not deliver final result, end event processes int
     r.emit('Привет Джарвис',false);
     r.onend();
     await f.flush();
-    assert.equal(f.speech,'Привет Джарвис');
+    assert.ok(f.played.includes('/media/jarvix/tour-v3/t3_ru_5c4572bce29c.mp3'));
     assert.ok(f.recognizers.length>=2);
   }finally{f.stop();}
 });
@@ -264,7 +266,7 @@ test('original recorded voice plays using user-unlocked Web Audio when mobile Au
     const recognition=f.recognizers.at(-1);
     recognition.emit('Привет',true);
     await f.flush();
-    assert.equal(f.played[0],'/media/jarvix/conversation/smalltalk_ru.mp3');
+    assert.equal(f.played[0],'/media/jarvix/tour-v3/t3_ru_5c4572bce29c.mp3');
     assert.equal(f.webAudioPlayCount,1,'Owner-recorded reply uses Web Audio when Audio.play is blocked');
   }finally{f.stop();}
 });
