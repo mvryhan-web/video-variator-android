@@ -272,6 +272,36 @@ function wanImageResultUrl(value){
   }catch{return null;}
 }
 
+const qwenTtsEndpoint = 'https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation';
+
+async function synthesizeQwenSpeech({ apiKey, text, fetcher = fetch }) {
+  if (!apiKey || typeof text !== 'string' || !text.trim() || text.length > 600) {
+    throw new Error('QWEN_TTS_INVALID_REQUEST');
+  }
+  const response = await fetcher(qwenTtsEndpoint, {
+    method: 'POST',
+    redirect: 'error',
+    signal: AbortSignal.timeout(25000),
+    headers: { Authorization: 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'qwen3-tts-flash',
+      input: { text: text.trim(), voice: 'Cherry', language_type: 'Auto' }
+    })
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok || data?.code) {
+    throw new Error(data?.code === 'AllocationQuota.FreeTierOnly'
+      ? 'QWEN_TTS_FREE_QUOTA_EXHAUSTED' : 'QWEN_TTS_PROVIDER_UNAVAILABLE');
+  }
+  const audioUrl = data?.output?.audio?.url;
+  const url = typeof audioUrl === 'string' ? new URL(audioUrl) : null;
+  if (!url || url.protocol !== 'https:' || url.username || url.password || url.port ||
+      !/^(?:[a-z0-9-]+\.)?oss-[a-z0-9-]+\.aliyuncs\.com$/.test(url.hostname)) {
+    throw new Error('QWEN_TTS_INVALID_AUDIO_URL');
+  }
+  return url.href;
+}
+
 async function submitWanImage(env,job,ratio){
   const video=job.kind==='video';
   const path=video?'/services/aigc/video-generation/video-synthesis':'/services/aigc/text2image/image-synthesis';
@@ -1434,6 +1464,31 @@ export default {
         configured: enabled, languages: ['ru', 'en', 'fr', 'es'],
         engine: ready ? 'VoxCPM2' : null
       });
+    }
+
+    if (pathname === '/api/studio/voice/qwen3-tts-flash' && request.method === 'POST') {
+      const user = await getAuthenticatedUser(request, env);
+      if (!user) return json({ error: 'AUTH_REQUIRED' }, 401);
+      if (!isOwnerEmail(user.email, env)) return json({ error: 'OWNER_REQUIRED' }, 403);
+      if (!env.DASHSCOPE_API_KEY) return json({ error: 'QWEN_TTS_NOT_CONFIGURED' }, 503);
+      const body = await request.json().catch(() => null);
+      if (typeof body?.text !== 'string' || !body.text.trim() || body.text.length > 600) {
+        return json({ error: 'QWEN_TTS_INVALID_REQUEST' }, 400);
+      }
+      try {
+        const url = await synthesizeQwenSpeech({ apiKey: env.DASHSCOPE_API_KEY, text: body.text });
+        const result = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(15000) });
+        if (!result.ok) throw Error('QWEN_TTS_AUDIO_UNAVAILABLE');
+        const wav = await result.arrayBuffer();
+        const header = new TextDecoder().decode(wav.slice(0, 12));
+        if (!header.startsWith('RIFF') || !header.endsWith('WAVE') || wav.byteLength > 8 * 1024 * 1024) {
+          throw Error('QWEN_TTS_INVALID_AUDIO');
+        }
+        return new Response(wav, { headers: { 'Content-Type': 'audio/wav', 'Cache-Control': 'private, no-store' } });
+      } catch (error) {
+        if (error.message === 'QWEN_TTS_FREE_QUOTA_EXHAUSTED') return json({ error: error.message }, 429);
+        return json({ error: 'QWEN_TTS_PROVIDER_UNAVAILABLE' }, 502);
+      }
     }
 
     if (pathname === '/api/jarvix/tts' && request.method === 'POST') {
