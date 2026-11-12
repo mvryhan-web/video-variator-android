@@ -171,4 +171,29 @@ export async function smalltalkReply(question,language='ru'){
  // Let the caller check the other approved catalog or show mic status.
  return null;
 }
+// Until the owner records the 25×4 short responses, the corresponding
+// answer is shown as TEXT ONLY. Never pretend an MP3 or TTS exists.
+let textTargetsPromise;
+export async function smalltalkTextReply(question,language='ru'){
+ const lang=LANGUAGE.has(language)?language:'ru';
+ const kind=classify(question,lang);
+ if(!kind)return null;
+ const safe=new Set(['wellbeing','activity','hearing','thanks','farewell','identity']);
+ if(!safe.has(kind))return null;
+ if(!textTargetsPromise)textTargetsPromise=fetch(
+  FOLDER+'casual-25x4-targets.json',{cache:'no-store'})
+  .then(async response=>{
+   if(!response.ok)throw Error('Conversation phrases unavailable');
+   const j=await response.json();
+   if(j.schema!=='jarvix-new-casual-25x4/v1'||
+     j.countScenarios!==25||!Array.isArray(j.scenarios))return [];
+   return j.scenarios;
+  }).catch(()=>[]);
+ const scenarios=await textTargetsPromise;
+ const target=scenarios.find(x=>x.id===kind);
+ const text=target?.phrases?.[lang];
+ return typeof text==='string'&&text.trim()?{
+  text:text.trim(),source:'prepared-conversation-text-only',language:lang
+ }:null;
+}
 export {classify as classifySmalltalk};
