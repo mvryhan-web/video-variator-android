@@ -52,10 +52,10 @@ jobs:
           New-Item -ItemType Directory -Force 'release' | Out-Null
           Compress-Archive -Path 'dist/JARVIX_Voice_Library' -DestinationPath 'release/JARVIX_Voice_Library_0.6_552_MP3_Blocks_Windows_TEST.zip' -CompressionLevel Optimal
           if (-not (Test-Path 'release/JARVIX_Voice_Library_0.6_552_MP3_Blocks_Windows_TEST.zip')) { throw 'ZIP missing' }
-          Get-FileHash 'release/JARVIX_Voice_Library_552_Windows_Portable_TEST.zip' -Algorithm SHA256 | Format-List
+          Get-FileHash 'release/JARVIX_Voice_Library_0.6_552_MP3_Blocks_Windows_TEST.zip' -Algorithm SHA256 | Format-List
       - uses: actions/upload-artifact@v4
         with:
-          name: JARVIX-Voice-Library-552-Windows-TEST-Unsigned
-          path: release/JARVIX_Voice_Library_552_Windows_Portable_TEST.zip
+          name: JARVIX-Voice-Library-0.6-552-Windows-TEST-Unsigned
+          path: release/JARVIX_Voice_Library_0.6_552_MP3_Blocks_Windows_TEST.zip
           if-no-files-found: error
           retention-days: 14
