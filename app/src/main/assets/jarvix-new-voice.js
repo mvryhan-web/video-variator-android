@@ -4,6 +4,8 @@ import {recordedExact,recordedReply} from './jarvix-new-recorded-dialog.js';
 const HOST='jarvis-new.deepsyq.pages.dev';
 const API='http://127.0.0.1:8768/v1/voice/chat';
 const VOICE_LIBRARY='http://127.0.0.1:8770/v1/find';
+const PAID_ROUTE='/api/jarvix-new/paid/';
+let paidStatusOnce=null;
 const WORDS={
 ru:{lang:'ru-RU',hello:'Привет! Я JARVIX. Слушаю тебя.',listen:'Слушаю…',think:'Думаю…',speak:'Отвечаю…',start:'Подключаю микрофон…',deny:'Разреши микрофон в настройках браузера.',unsupported:'Голосовое распознавание здесь недоступно. Открой Chrome или Edge.',offline:'Я тебя слышу, но локальная модель ещё не подключена. Запусти JARVIX и Ollama на компьютере, затем нажми на сферу снова.'},
 en:{lang:'en-US',hello:"Hi! I'm JARVIX. I'm listening.",listen:'Listening…',think:'Thinking…',speak:'Speaking…',start:'Connecting microphone…',deny:'Allow microphone access in browser settings.',unsupported:'Speech recognition is unavailable here. Try Chrome or Edge.',offline:'I hear you, but the local AI is not connected. Start JARVIX and Ollama on your computer, then press the sphere again.'},
@@ -55,6 +57,7 @@ async function playOwnerRecording(record,id){
    finished=true;audio.onended=null;audio.onerror=null;
    if(ownerClip===audio)ownerClip=null;
    if(ownerClipDone===finish)ownerClipDone=null;
+   if(record.temporaryBlob===true)try{URL.revokeObjectURL(record.audioUrl);}catch{}
    resolve(ok);
   };
   ownerClipDone=finish;
@@ -120,10 +123,75 @@ async function ownerLibraryReply(question,language){
   return {id:data.id,text:data.text,audioUrl:expected,source:'local-voice-library'};
  }catch{return null;}finally{clearTimeout(timeout);}
 }
+async function paidModeReady(){
+ // No provider calls at all for anonymous users or when the owner feature is OFF.
+ if(paidStatusOnce===null)paidStatusOnce=fetch(PAID_ROUTE+'status',
+   {method:'GET',cache:'no-store'})
+   .then(async r=>r.ok && (await r.json())?.enabled===true)
+   .catch(()=>false);
+ return paidStatusOnce;
+}
+async function paidVoiceReply(message,language,id){
+ let token='';
+ try{token=localStorage.getItem('vv_token')||'';}catch{}
+ if(!/^[A-Za-z0-9._~-]{20,4096}$/.test(token))return null;
+ if(!(await paidModeReady())||!on||seq!==id)return null;
+ const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),65000);
+ request=abort;
+ try{
+  // TEST backend verifies the session and active paid tier; never trust
+  // a plan selected in the browser, localStorage or payload.
+  const headers={Authorization:'Bearer '+token};
+  const access=await fetch(PAID_ROUTE+'access',{headers,signal:abort.signal,cache:'no-store'});
+  if(!access.ok||!(await access.json())?.allowed)return null;
+  if(!on||seq!==id)return null;
+  const response=await fetch(PAID_ROUTE+'turn',{
+   method:'POST',cache:'no-store',signal:abort.signal,
+   headers:{...headers,'Content-Type':'application/json'},
+   body:JSON.stringify({message:message.slice(0,1200),language,
+    history:turns.slice(-6).map(({role,content})=>({role,content:content.slice(0,1200)}))})
+  });
+  if(!response.ok)return null;
+  const reply=await response.json();
+  if(reply?.ok!==true||reply.voice!=='jarvix-owner'||reply.audioMime!=='audio/mpeg'||
+     typeof reply.text!=='string'||!reply.text.trim()||
+     typeof reply.audioBase64!=='string'||reply.audioBase64.length<1334||
+     reply.audioBase64.length>2700000)return null;
+  const raw=atob(reply.audioBase64);
+  if(raw.length<1000||raw.length>2000000)return null;
+  const bytes=Uint8Array.from(raw,c=>c.charCodeAt(0));
+  if(!(bytes[0]===73&&bytes[1]===68&&bytes[2]===51) &&
+     !(bytes[0]===255&&(bytes[1]&224)===224))return null;
+  if(!on||seq!==id)return null;
+  const url=URL.createObjectURL(new Blob([bytes],{type:'audio/mpeg'}));
+  return {text:reply.text,audioUrl:url,source:'paid-jarvix-owner-voice',temporaryBlob:true};
+ }catch{return null;}finally{
+  clearTimeout(timer);
+  if(request===abort)request=null;
+ }
+}
 async function respond(message,id){
  if(!on||seq!==id)return;
  ui('thinking',getLang().think);
  const lang=recordedLanguage();
+ // Paid access only if the owner later enables the TEST backend AND its
+ // server independently confirms paid entitlement and budget.
+ const premium=await paidVoiceReply(message,lang,id);
+ if(!on||seq!==id){
+  if(premium?.temporaryBlob)URL.revokeObjectURL(premium.audioUrl);
+  return;
+ }
+ if(premium){
+  const played=await playOwnerRecording(premium,id);
+  if(!on||seq!==id)return;
+  if(played){
+   turns.push({role:'user',content:message.slice(0,1200)},
+              {role:'assistant',content:premium.text.slice(0,1200)});
+   turns=turns.slice(-8);
+   listen(id);
+   return;
+  }
+ }
  let selected=null;
  try{selected=await recordedReply(message,lang);}catch{}
  // Local owner-approved index can add phrases not present in static catalog.
