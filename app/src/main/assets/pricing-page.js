@@ -60,7 +60,7 @@ const verifiedQuality={
  basic:[['▣','750 tool credits / month'],['⊞','Up to 5 variants'],['⚙','Gentle mode'],['▣','720p quality'],['✓','Included Basic tools']],
  pro:[['▣','2,250 tool credits / month'],['⊞','Up to 10 variants'],['⚙','Gentle + Balance modes'],['▣','1080p quality'],['✓','Included Pro tools']],
  business:[['▣','15,000 tool credits / month'],['⊞','Up to 15 variants'],['⚙','Gentle, Balance + Dynamic'],['▣','4K quality'],['✓','Included Business tools']],
- lifetime:[['▣','Tool credits: see current terms'],['⊞','Up to 15 variants'],['⚙','Gentle, Balance + Dynamic'],['▣','Up to 4K quality'],['✓','Included Lifetime Tools']]
+ lifetime:[['▣','Tool credits: see current terms'],['⊞','Up to 15 variants'],['⚙','Gentle, Balance + Dynamic'],['▣','Up to 4K quality'],['∞','Video Uniquifier access for life']]
 };
 const sharedAccess=[
  ['✓','Video Uniquifier and tools included in this plan'],
@@ -73,7 +73,7 @@ const sharedAccess=[
 const monthlyDetails=[['✓','Monthly subscription; manage in your account']];
 const planned=[
  {key:'trial',name:'Trial',suffix:'one time',label:'Start Trial',summary:'3-day trial pass for DeepSyQ tools',
-  benefits:[['✓','3-day trial pass for DeepSyQ tools'],['✓','100 tool processing credits included'],['✓','One-time payment: no automatic renewal'],['✓','Explore the Canvas workspace; paid AI requires credits'],['✓','Watermark-free exports during trial'],['✓','One account for your plan, credits and history']],proposed:false},
+  benefits:[['▣','100 tool credits for the trial'],['✓','3-day trial pass for DeepSyQ tools'],['✓','One-time payment: no automatic renewal'],['✓','Explore the Canvas workspace; paid AI requires credits'],['✓','Watermark-free exports during trial'],['✓','One account for your plan, credits and history']],proposed:false},
  {key:'basic',name:'Basic',suffix:'/ month',label:'Choose Basic',summary:'For everyday video variations and essential tools',
   benefits:[...verifiedQuality.basic,...sharedAccess,...monthlyDetails]},
  {key:'pro',name:'Pro',suffix:'/ month',label:'Choose Pro',summary:'For regular creators needing higher quality and more variants',
@@ -81,7 +81,11 @@ const planned=[
  {key:'business',name:'Business',suffix:'/ month',label:'Choose Business',summary:'For larger video workloads and all supported variation modes',
   benefits:[...verifiedQuality.business,...sharedAccess,...monthlyDetails]},
  {key:'lifetime',name:'Lifetime',suffix:'one time',label:'Choose Lifetime',summary:'One-time access to the included tools',
-  benefits:[...verifiedQuality.lifetime,...sharedAccess,['✓','One-time purchase: no monthly plan renewal']]}
+  benefits:[...verifiedQuality.lifetime,
+   ['∞','22 free Everyday Tools, including Camera and Teleprompter'],
+   ['∞','Canvas workspace access'],
+   ['∞','AI Apps templates and Inspiration gallery'],
+   ['✓','One-time purchase: no monthly plan renewal']]}
 ];
 let planCheckoutPending=false,creditCheckoutPending=false;
 let toolBillingConfigured=false,googleAuthClientId='',googleInitialized=false,authReturnFocus=null;
@@ -180,7 +184,7 @@ function renderPlans(config){
   button.addEventListener('click',()=>void checkoutPlan(p.key));
   const facts=node('div','price-plan-facts');
   const verifiedLimit=validToolLimit(currentPlan);
-  facts.append(node('strong','',p.proposed?'Proposed introduction':p.key==='lifetime'?'Included lifetime tools':verifiedLimit===null?'Tool allowance not verified':numeral.format(verifiedLimit)+' tool credits / month'));
+  facts.append(node('strong','',p.proposed?'Proposed introduction':p.key==='lifetime'?'Included lifetime tools':verifiedLimit===null?'Tool allowance not verified':numeral.format(verifiedLimit)+(p.key==='trial'?' tool credits for the trial':' tool credits / month')));
   facts.append(node('span','',p.proposed?'Credit quantity, duration and checkout still require approval.':'AI generation is billed separately through the verified AI wallet.'));
   const caption=node('p','price-feature-caption','Plan features');
   const list=node('ul','price-features');
@@ -188,6 +192,7 @@ function renderPlans(config){
    if(index!==0)return[icon,copy];
    const limit=validToolLimit(currentPlan);
    if(p.key==='lifetime')return[icon,'Tool credits: see current terms'];
+   if(p.key==='trial')return[icon,limit===null?'Tool allowance unavailable':numeral.format(limit)+' tool credits for the trial'];
    return[icon,limit===null?'Tool allowance unavailable':numeral.format(limit)+' tool credits / month'];
   });
   for(const [icon,copy] of benefitRows){
