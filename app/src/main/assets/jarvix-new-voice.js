@@ -416,6 +416,45 @@ async function ownerLibraryReply(question,language){
   return {id:data.id,text:data.text,audioUrl:expected,source:'local-voice-library'};
  }catch{return null;}finally{clearTimeout(timeout);}
 }
+const BRIDGE_CHAT='http://127.0.0.1:8768/v1/voice/chat';
+async function bridgeReply(message,id){
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),45000);
+  request=controller;
+  try{
+   const response=await fetch(BRIDGE_CHAT,{
+    method:'POST',mode:'cors',targetAddressSpace:'loopback',cache:'no-store',
+    signal:controller.signal,headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({message:message.slice(0,1200),
+     history:turns.slice(-6).map(({role,content})=>({role,content:content.slice(0,1200)}))})
+   });
+   if(!response.ok)return null;
+   const data=await response.json();
+   const text=typeof data?.reply==='string'?data.reply.trim().slice(0,600):'';
+   return text?{text}:null;
+  }catch{return null;}finally{
+   clearTimeout(timeout);
+   if(request===controller)request=null;
+  }
+}
+function speakText(text,id){
+  return new Promise(resolve=>{
+   const synth=window.speechSynthesis;
+   if(!synth||typeof SpeechSynthesisUtterance==='undefined'||!on||seq!==id)return resolve(false);
+   let done=false;
+   const utterance=new SpeechSynthesisUtterance(text);
+   utterance.lang=getLang().lang;
+   const finish=ok=>{
+    if(done)return;done=true;
+    ownerClipDone=null;
+    resolve(ok);
+   };
+   ownerClipDone=()=>{try{synth.cancel();}catch{}finish(false);};
+   utterance.onend=()=>finish(true);
+   utterance.onerror=()=>finish(false);
+   ui('speaking');
+   try{synth.cancel();synth.speak(utterance);}catch{finish(false);}
+  });
+}
 async function paidModeReady(){
  // No provider calls at all for anonymous users or when the owner feature is OFF.
  if(paidStatusOnce===null)paidStatusOnce=fetch(PAID_ROUTE+'status',
@@ -508,6 +547,21 @@ async function respond(message,id){
  if(await playResponse(recorded,id,message))return;
  if(!on||seq!==id)return;
 
+ // 5. Local desktop bridge -> local Ollama model; the reply is spoken with
+ // the system voice. Loopback only, no paid provider.
+ const bridge=await bridgeReply(message,id);
+ if(!on||seq!==id)return;
+ if(bridge?.text){
+  showTextResponse(bridge.text);
+  const spoken=await speakText(bridge.text,id);
+  if(!on||seq!==id)return;
+  turns.push({role:'user',content:message.slice(0,1200)},
+             {role:'assistant',content:bridge.text.slice(0,1200)});
+  turns=turns.slice(-8);
+  if(spoken)listen(id);else ui('ready');
+  return;
+ }
+
  // No approved voice MP3 exists for this question. For known everyday
  // replies, show a meaningful prepared answer as TEXT, never simulate audio.
  const prepared=await smalltalkTextReply(message,lang).catch(()=>null);
@@ -535,9 +589,8 @@ async function start(){
   startMicMonitor(stream);
  }catch{if(on&&seq===id)ui('error');return;}
  if(!on||seq!==id)return;
- const intro=await helloRecording(recordedLanguage()).catch(()=>null);
- if(!on||seq!==id)return;
- if(intro)await playOwnerRecording(intro,id);
+ // No blocking greeting: recognition starts immediately so the first
+ // words are not lost and "I'm listening" is not repeated on each click.
  if(on&&seq===id)listen(id);
 }
 export function installJarvixNewVoice(){
@@ -557,6 +610,8 @@ export function installJarvixNewVoice(){
  '#jv-new-mic-chip[hidden]{display:none!important}',
  '#jv-new-mic-chip[data-state="listening"]{border-color:#4dffe1;box-shadow:0 0 12px #24c7b980}',
  '#jv-new-mic-chip[data-state="speaking"]{border-color:#d790f4;box-shadow:0 0 12px #a85fe688}',
+  '@keyframes jvBars{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}',
+  '#jv-new-mic-chip[data-state="speaking"]::after{content:"";display:inline-block;width:21px;height:14px;margin-left:8px;background:linear-gradient(90deg,#d790f4 0 3px,transparent 3px 6px,#ff9f41 6px 9px,transparent 9px 12px,#d790f4 12px 15px,transparent 15px 18px,#ff9f41 18px 21px);animation:jvBars .6s ease-in-out infinite;transform-origin:center bottom}',
  '#jv-new-mic-chip[data-state="error"],#jv-new-mic-chip[data-state="unsupported"]{border-color:#f2a960;color:#ffda9f}',
  '#jv-new-mic-chip:disabled{opacity:.9;cursor:default}',
  '#jv-new-transcript{position:fixed;z-index:2147482000;transform:translateX(-50%);width:min(290px,calc(100vw - 24px));padding:0 2px;background:transparent;border:none;border-radius:0;color:#fff;text-shadow:0 2px 7px #0a1429,0 0 9px #071126;box-shadow:none;pointer-events:none;text-align:center;font:600 15px/1.45 system-ui,sans-serif;overflow-wrap:anywhere}',
