@@ -142,3 +142,14 @@
 - **GitHub:** commit HTML `26bd3ba4b02e3051f2821b6f90fced53038b21d6`, SHA релиза `55c75f3bca5c0d8880660b1758d63dd7da26fa04`, [Actions #43273756880](https://github.com/mvryhan-web/video-variator-android/actions/runs/43273756880) — `completed/success`, `SEO_AUDIT_BATCH_4_METADATA_PASS`.
 - **Cloudflare:** `PUBLISHED_VERIFIED`, deployment `88c68355-f36c-4098-81f1-a1389ec05e5b` (предыдущий `85a32b96-7766-4f96-8660-8ff45ae91f0c`), заменён только `/generate-studio.html`; остальные **1247** файлов, Worker и bindings сохранены.
 - **Осталось за рамками:** фактическая индексация Google, внешнее распространение ссылок и реальное выполнение AI-генераций этим выпуском не проверялись. Снова менять завершённый Creative Studio SEO-пункт без подтверждённой новой ошибки запрещено.
+
+
+## 12 ноября — SEO-AUDIT-05: Smart Reminders и Mobile Utility — LIVE_VERIFIED
+
+- Перед началом сверены предыдущие задачи `SEO-AUDIT-01`—`SEO-AUDIT-04` и опубликованные версии. Завершённые страницы **не переделывались**.
+- Два самостоятельных незавершённых пункта: у `smart-reminders.html` и `mobile-utility.html` уже были `title`, `description`, `canonical` и H1, но отсутствовали Open Graph и `twitter:card`.
+- Точечное дополнение: только `og:title`, `og:description`, `og:type=website`, `og:url`, `twitter:card=summary`. Описания не обещают неподтверждённые возможности. `<body>`, скрипты, кнопки, уведомления и обработка файлов не менялись.
+- Исходные коммиты: `adba2961b137d0b2c86584a8c7158edc4eb9fb77` и `903b6b7e0c24ee4a42dff89170d87f5804ec6ab2`. Release HEAD: `6ad8dd78e701bb604f5757160d7e59a25a4439f8`.
+- [Actions #43274249710](https://github.com/mvryhan-web/video-variator-android/actions/runs/43274249710) `success`; `SEO_AUDIT_BATCH_5_METADATA_PASS`; модульные проверки издателя пройдены.
+- Cloudflare `PUBLISHED_VERIFIED`, deployment `4b1f9f23-d228-4d13-8a8b-a01c811702f5`, предыдущий `88c68355-f36c-4098-81f1-a1389ec05e5b`; опубликованы только `/smart-reminders.html` и `/mobile-utility.html`. **1246 других файлов и Worker/bindings сохранены.**
+- **Остаётся открытым отдельно:** фактическая индексация Google, реальные уведомления разных платформ, интеграции с AI и платежами. Этот SEO-выпуск не доказывает их работоспособность. Не повторять законченные изменения без нового доказанного дефекта.
