@@ -16,7 +16,7 @@ function stripeReader(key,fetcher){
   };
 }
 
-export function createEdgeCreditFulfillment({databaseUrl,stripeKey,packs,fetcher=fetch}){
+export function createEdgeCreditFulfillment({databaseUrl,stripeKey,packs,trialPriceId,fetcher=fetch}){
   const live=/^(sk|rk)_live_/.test(stripeKey||'');
   if(!live&&!/^(sk|rk)_test_/.test(stripeKey||''))throw Error('STRIPE_KEY_NOT_CONFIGURED');
   const db=new URL(databaseUrl);
@@ -74,6 +74,35 @@ export function createEdgeCreditFulfillment({databaseUrl,stripeKey,packs,fetcher
     return true;
   }
 
+  async function trial(userId){
+    const [row]=await sql(`SELECT session_id, extract(epoch FROM paid_at + interval '72 hours') * 1000 AS expires_ms,
+      (now() < paid_at + interval '72 hours')::int AS active
+      FROM public.vv_edge_trial WHERE user_id=$1 AND livemode=$2`,[userId,live]);
+    return row ? {active:Number(row.active)===1,expiresAt:Number(row.expires_ms)} : null;
+  }
+
+  async function grantTrial(event){
+    const object=event.data?.object;
+    if(object?.payment_status!=='paid')return;
+    const session=await stripe.checkout.sessions.retrieve(object.id,{expand:['line_items','payment_intent.latest_charge']});
+    const payment=session.payment_intent;
+    const charge=payment?.latest_charge;
+    const items=session.line_items;
+    const userId=session.client_reference_id;
+    if(!/^price_[A-Za-z0-9]+$/.test(trialPriceId||'')||session.id!==object.id||session.livemode!==live||
+       session.mode!=='payment'||session.status!=='complete'||session.payment_status!=='paid'||
+       session.metadata?.deepsyqTrial!=='v1'||!userId||userId.startsWith('guest_')||session.metadata.userId!==userId||
+       session.currency!=='usd'||session.amount_total!==99||items?.has_more||items?.data?.length!==1||
+       items.data[0].price?.id!==trialPriceId||items.data[0].quantity!==1||
+       payment?.status!=='succeeded'||payment.amount_received!==99||payment.currency!=='usd'||payment.livemode!==live||
+       !/^pi_[A-Za-z0-9]+$/.test(payment.id)||charge?.paid!==true||charge.captured!==true||charge.amount_refunded!==0||
+       !Number.isSafeInteger(charge.created)||charge.created<=0||charge.created>Math.floor(Date.now()/1000))
+      throw Error('TRIAL_RECEIPT_MISMATCH');
+    await sql(`INSERT INTO public.vv_edge_trial(user_id,livemode,session_id,payment_intent,paid_at)
+      VALUES($1,$2,$3,$4,to_timestamp($5)) ON CONFLICT (user_id,livemode) DO NOTHING`,
+      [userId,live,session.id,payment.id,charge.created]);
+  }
+
   async function balance(userId){
     const [row]=await sql('SELECT available,reserved,debt FROM public.vv_ai_wallet WHERE user_id=$1',[userId]);
     return {available:Number(row?.available||0),reserved:Number(row?.reserved||0),debt:Number(row?.debt||0)};
@@ -96,5 +125,5 @@ export function createEdgeCreditFulfillment({databaseUrl,stripeKey,packs,fetcher
     if(Number(row?.ready)!==1)throw Error('WALLET_MIGRATION_REQUIRED');
   }
 
-  return {grant,refund,balance,history,assertReady};
+  return {grant,refund,balance,history,assertReady,trial,grantTrial};
 }

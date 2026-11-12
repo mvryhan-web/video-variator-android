@@ -211,7 +211,7 @@ function edgeCreditPacks(env){
 }
 
 function edgeCreditWallet(env){
-  return createEdgeCreditFulfillment({databaseUrl:env.DATABASE_URL,stripeKey:env.STRIPE_SECRET_KEY,packs:edgeCreditPacks(env)});
+  return createEdgeCreditFulfillment({databaseUrl:env.DATABASE_URL,stripeKey:env.STRIPE_SECRET_KEY,packs:edgeCreditPacks(env),trialPriceId:env.STRIPE_PRICE_TRIAL});
 }
 
 function getWallet(userId) {
@@ -417,6 +417,38 @@ export default {
       const plan = String(body.plan || '');
       if(!Object.hasOwn(LIVE_SUBSCRIPTION_LINKS,plan))return json({error:'INVALID_OR_UNCONFIGURED_PLAN'},400);
       const production=url.hostname==='deepsyq.app';
+      if(plan==='trial'){
+        if(!user)return json({error:'AUTH_REQUIRED'},401);
+        const stripeKey=String(env.STRIPE_SECRET_KEY||'');
+        const mode=production?/^(sk|rk)_live_/:/^(sk|rk)_test_/;
+        const priceId=String(env.STRIPE_PRICE_TRIAL||'');
+        if(env.DEEPSYQ_TRIAL_ACCESS_ENABLED!=='true'||!mode.test(stripeKey)||!/^price_[A-Za-z0-9]+$/.test(priceId)||!env.STRIPE_WEBHOOK_SECRET)
+          return json({error:'TRIAL_CHECKOUT_NOT_CONFIGURED'},503);
+        try{
+          if(await edgeCreditWallet(env).trial(user.id))return json({error:'TRIAL_ALREADY_USED'},409);
+          const headers={Authorization:'Bearer '+stripeKey};
+          const priceResponse=await fetch('https://api.stripe.com/v1/prices/'+priceId,{headers,redirect:'error'});
+          const price=await priceResponse.json();
+          if(!priceResponse.ok||price.id!==priceId||price.livemode!==production||price.active!==true||
+             price.type!=='one_time'||price.currency!=='usd'||price.unit_amount!==99)
+            return json({error:'TRIAL_PRICE_NOT_APPROVED'},503);
+          const form=new URLSearchParams({
+            mode:'payment','line_items[0][price]':priceId,'line_items[0][quantity]':'1',
+            client_reference_id:user.id,'metadata[userId]':user.id,'metadata[deepsyqTrial]':'v1',
+            success_url:url.origin+'/pricing.html?trial_checkout=returned',cancel_url:url.origin+'/pricing.html#trial'
+          });
+          const response=await fetch('https://api.stripe.com/v1/checkout/sessions',{
+            method:'POST',redirect:'error',headers:{...headers,'Content-Type':'application/x-www-form-urlencoded',
+              'Idempotency-Key':'deepsyq-trial-'+user.id+'-'+Math.floor(Date.now()/1800000)},body:form
+          });
+          const session=await response.json();
+          if(!response.ok||session.livemode!==production||!/^https:\/\/checkout\.stripe\.com\//.test(session.url||''))
+            return json({error:'TRIAL_CHECKOUT_UNAVAILABLE'},503);
+          return json({url:session.url});
+        }catch{
+          return json({error:'TRIAL_CHECKOUT_UNAVAILABLE'},503);
+        }
+      }
       const baseLink=production?LIVE_SUBSCRIPTION_LINKS[plan]:env['STRIPE_TEST_LINK_'+plan.toUpperCase()];
       if(!production&&(!/^(sk|rk)_test_/.test(String(env.STRIPE_SECRET_KEY||''))||
          !/^https:\/\/buy\.stripe\.com\/test_[A-Za-z0-9]+$/.test(baseLink||''))){
@@ -536,6 +568,15 @@ export default {
       catch { return json({error:'INVALID_WEBHOOK_EVENT'},400); }
       if(event.livemode!==(url.hostname==='deepsyq.app'))return json({error:'STRIPE_EVENT_MODE_MISMATCH'},400);
       const stripeObject=event.data?.object;
+      if(stripeObject?.metadata?.deepsyqTrial==='v1'&&
+         ['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type)){
+        try{
+          await edgeCreditWallet(env).grantTrial(event);
+          return json({received:true});
+        }catch{
+          return json({error:'TRIAL_SETTLEMENT_RETRY_REQUIRED'},503);
+        }
+      }
       if(stripeObject?.metadata?.aiWallet==='v1'&&
          ['checkout.session.completed','checkout.session.async_payment_succeeded','charge.refunded'].includes(event.type)){
         try{
@@ -853,6 +894,16 @@ export default {
       const clientKey = user?.id || clientIp;
       const usage = getDailyUsage(clientKey);
       const isPaid = user && (user.plan === 'basic' || user.plan === 'pro' || user.plan === 'business' || isOwnerEmail(user.email, env));
+
+      if(env.DEEPSYQ_TRIAL_ACCESS_ENABLED==='true'&&!isPaid&&user?.plan!=='lifetime'){
+        let trial;
+        try{trial=user?await edgeCreditWallet(env).trial(user.id):null;}
+        catch{return json({error:'TRIAL_ACCESS_UNAVAILABLE'},503);}
+        if(!trial?.active)return json({
+          error:trial?'TRIAL_EXPIRED':'GENERATION_ACCESS_REQUIRED',
+          upgradeUrl:'/pricing.html',creditsUrl:'/pricing.html#credits'
+        },403);
+      }
 
       if (!isPaid) {
         if (kind === 'video' && usage.video >= 2) {
