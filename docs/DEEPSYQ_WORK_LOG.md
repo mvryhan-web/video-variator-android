@@ -153,3 +153,13 @@
 - [Actions #43274249710](https://github.com/mvryhan-web/video-variator-android/actions/runs/43274249710) `success`; `SEO_AUDIT_BATCH_5_METADATA_PASS`; модульные проверки издателя пройдены.
 - Cloudflare `PUBLISHED_VERIFIED`, deployment `4b1f9f23-d228-4d13-8a8b-a01c811702f5`, предыдущий `88c68355-f36c-4098-81f1-a1389ec05e5b`; опубликованы только `/smart-reminders.html` и `/mobile-utility.html`. **1246 других файлов и Worker/bindings сохранены.**
 - **Остаётся открытым отдельно:** фактическая индексация Google, реальные уведомления разных платформ, интеграции с AI и платежами. Этот SEO-выпуск не доказывает их работоспособность. Не повторять законченные изменения без нового доказанного дефекта.
+
+
+## 12 ноября — SEO-AUDIT-06: Design Gallery и Telegram Preview — LIVE_VERIFIED; законченные задачи не изменялись
+
+- **Проверка журнала:** задачи SEO-AUDIT-01—05 имеют подтверждённые публикации и в данном выпуске не редактировались. `ai-privacy.html` сохраняет намеренное `noindex,follow`; его SEO и приватность не менялись.
+- **Незавершённое:** в `design-gallery.html` и `telegram-free-mini.html` присутствовали `title`, `description`, `canonical`, H1, но отсутствовали `og:title`, `og:description`, `og:type`, `og:url` и `twitter:card`.
+- **Доделано точечно:** в `<head>` двух существующих страниц добавлены только указанные метатеги. `og:type=website`, `twitter:card=summary` (без выдуманной обложки). Тексты ограничены реально описанными концепциями дизайна и Telegram preview, без заявления о работе неподключённых AI-провайдеров. Вся разметка после `</head>`, кнопки, стили и скрипты остались прежними.
+- **GitHub:** правки HTML `6c2f33cb4e77ebe573bada4e6a83d2bdf48750c5`, `01c112ddb802672c662fda9846ed4c9c3cea9734`; SHA release `49956408ef15d40fc60f9d9bd923d4385d92cec2`. [Actions #43274823549](https://github.com/mvryhan-web/video-variator-android/actions/runs/43274823549): подтверждённые `SEO_AUDIT_BATCH_6_METADATA_PASS` и `PUBLISHED_VERIFIED`; шаг публикации `success`.
+- **Cloudflare:** выпуск `0d06599d-3f51-42cb-a244-84fb855e2540`, предыдущий `4b1f9f23-d228-4d13-8a8b-a01c811702f5`. Заменены **ровно** `/design-gallery.html` и `/telegram-free-mini.html`; остальные **1246** файлов, Cloudflare Worker и bindings сохранены.
+- **Не проверялось:** индексация Google, фактический предпросмотр на сторонних соцплатформах, биллинг и реальная работа AI-моделей. SEO-AUDIT-06 считать завершённым только в пределах этих двух метатегов; без нового подтверждённого дефекта его не переделывать.
