@@ -212,6 +212,7 @@ function listen(id){
  const SR=Recognition();
  if(!SR){ui('unsupported');return;}
  cancelRecognition();
+ setTranscript(''); // New microphone turn: show new words, not last answer.
  const r=new SR();rec=r;
  r.lang=getLang().lang;
  r.interimResults=true;
