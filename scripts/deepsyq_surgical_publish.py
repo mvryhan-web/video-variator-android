@@ -193,6 +193,22 @@ class Cloudflare:
                              headers={"Cache-Control": "no-cache"})
         return response.status_code
 
+    def restore_baseline(self, baseline_id, baseline_files, deployed_id):
+        """Roll back only our own deployment; never overwrite another publisher."""
+        prefix = "/accounts/" + self.account + "/pages/projects/" + PROJECT
+        current = self.json(prefix).get("canonical_deployment", {}).get("id")
+        insist(current == deployed_id,
+               "Concurrent deployment detected; automatic rollback intentionally skipped")
+        self.call("POST", API + prefix + "/deployments/" + baseline_id + "/rollback")
+        for _ in range(18):
+            now = self.json(prefix).get("canonical_deployment", {}).get("id")
+            files = self.json(prefix + "/deployments/" + now).get("files") if now else None
+            if files == baseline_files:
+                print("BASELINE_ROLLBACK_VERIFIED", now)
+                return
+            time.sleep(2)
+        raise Blocked("AUTOMATIC_ROLLBACK_NOT_CONFIRMED")
+
     def tour_manifest_deploy(self, candidate, raw, sha, worker, origin):
         """Single-asset Pages upload: unchanged routes reuse canonical LIVE hashes.
 
@@ -455,23 +471,40 @@ def main():
         insist(current_id == live_id and current_worker == worker,
                "Concurrent production update detected; no deploy")
         if direct_manifest:
-            cloudflare.tour_manifest_deploy(candidate, expected_bytes[paths[0]], sha, worker, origin)
+            deployed_id = cloudflare.tour_manifest_deploy(candidate, expected_bytes[paths[0]], sha, worker, origin)
         else:
             run_wrangle(stage, sha)
-        # Do not claim success until new production, worker and all asset hashes agree.
+            deployed_id = None
+        # New production is rolled back automatically if any safety check fails.
         newest = None
-        for _ in range(12):
-            now, actual, _, script, _ = cloudflare.read_live()
-            if now != live_id:
-                newest = now
-                insist(actual == candidate,
-                       "NEW_DEPLOYMENT_ASSET_DIFFERS; urgent rollback/investigation")
-                insist(script == worker, "NEW_DEPLOYMENT_WORKER_CHANGED")
-                insist(cloudflare.worker_settings(script) == settings,
-                       "NEW_DEPLOYMENT_BINDINGS_CHANGED")
-                break
-            time.sleep(3)
-        insist(newest, "DEPLOYMENT_NOT_CONFIRMED_ON_MAIN")
+        try:
+            for _ in range(12):
+                now, actual, _, script, _ = cloudflare.read_live()
+                if now != live_id:
+                    newest = now
+                    insist(actual == candidate, "NEW_DEPLOYMENT_ASSET_DIFFERS")
+                    insist(script == worker, "NEW_DEPLOYMENT_WORKER_CHANGED")
+                    new_settings = cloudflare.worker_settings(script)
+                    if new_settings != settings:
+                        diff_keys = sorted(key for key in set(settings) | set(new_settings)
+                                           if settings.get(key) != new_settings.get(key))
+                        def names_types(x):
+                            bs = x.get("bindings") if isinstance(x,dict) else None
+                            if not isinstance(bs,list): return []
+                            return sorted(str(b.get("name","")) + ":" + str(b.get("type","")) for b in bs if isinstance(b,dict))
+                        print("WORKER_CHANGED_FIELD_NAMES", json.dumps(diff_keys))
+                        print("WORKER_BINDINGS_SHAPE_MATCH", names_types(settings) == names_types(new_settings))
+                        raise Blocked("NEW_DEPLOYMENT_BINDINGS_CHANGED")
+                    break
+                time.sleep(3)
+            insist(newest, "DEPLOYMENT_NOT_CONFIRMED_ON_MAIN")
+        except (Blocked, Exception):
+            current, _, _, _, _ = cloudflare.read_live()
+            if newest and current == newest:
+                cloudflare.restore_baseline(live_id, live, newest)
+            elif deployed_id and current == deployed_id:
+                cloudflare.restore_baseline(live_id, live, deployed_id)
+            raise
         cloudflare.endpoint_status("/api/config")
         for rel, raw in expected_bytes.items():
             if "/" + rel not in changed:
