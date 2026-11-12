@@ -15,7 +15,7 @@ export async function showTourElement(selector,alive,ms=1300){
  for(const n of document.querySelectorAll('.ds-tour-focus-pulse'))n.classList.remove('ds-tour-focus-pulse');
  el.classList.add('ds-tour-focus-pulse');
  try{el.scrollIntoView({block:'nearest',behavior:'smooth'});}catch{}
- await sleep(Math.max(1000,ms));
+ await sleep(Math.max(170,Math.min(420,Math.round(ms*.27))));
  if(!alive())return null;
  return el;
 }
@@ -39,7 +39,7 @@ async function tourSelectValues(id,values,alive){
   // Native choice, not a simulated Generate/checkout action. May be rejected
   // by existing subscription gates; do not override disabled controls.
   changeSelect(el,value);
-  await sleep(1000);
+  await sleep(250);
  }
  if(alive()&&el.isConnected)changeSelect(el,original);
 }
@@ -76,7 +76,7 @@ async function demoCanvas(index,alive){
    if(visible(sat)&&!sat.disabled){
     const val=sat.value;
     await showTourElement(sat,alive,1200);
-    if(alive()){sat.value='135';sat.dispatchEvent(new Event('input',{bubbles:true}));await sleep(1400);}
+    if(alive()){sat.value='135';sat.dispatchEvent(new Event('input',{bubbles:true}));await sleep(350);}
     if(alive()){sat.value=val;sat.dispatchEvent(new Event('input',{bubbles:true}));}
    }
   }
@@ -91,7 +91,7 @@ async function tourChooseVisible(selector,alive){
  await showTourElement(el,alive,1300);
  if(!alive())return false;
  el.click();
- await sleep(1050);
+ await sleep(260);
  return alive();
 }
 async function tourRestoreSelect(id,initial,selector){
@@ -114,7 +114,7 @@ async function demoUniquifier(index,alive){
    await showTourElement(select,alive,1350);
    if(!alive())break;
    changeSelect(select,value);
-   await sleep(1100);
+   await sleep(270);
   }
   if(alive()&&initial)changeSelect(select,initial);
  }
