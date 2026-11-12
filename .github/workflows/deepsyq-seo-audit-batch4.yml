@@ -1,0 +1,81 @@
+name: DEEPSYQ SEO audit batch 4 - Creative Studio only
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/deepsyq-seo-audit-batch4.yml'
+      - 'app/src/main/assets/generate-studio.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  creative-studio-meta:
+    if: >-
+      github.ref == 'refs/heads/deepsyq-platform' &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.head_commit.message == 'release(DEEPSYQ SEO): publish Creative Studio metadata only')
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify uploader and Creative Studio SEO markup
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/deepsyq_surgical_publish.py
+          python -m unittest discover -s tests -p 'test_deepsyq_surgical_publish.py' -v
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from importlib.util import spec_from_file_location,module_from_spec
+          spec=spec_from_file_location('surgical','scripts/deepsyq_surgical_publish.py')
+          mod=module_from_spec(spec);spec.loader.exec_module(mod)
+          assert mod.allowed_hash_reuse(['generate-studio.html'])
+          assert not mod.allowed_hash_reuse(['generate-studio.html','photo-collage.html'])
+          class Check(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.meta={}
+                  self.canonicals=[]
+                  self.h1=0
+              def handle_starttag(self,tag,attrs):
+                  d=dict(attrs)
+                  if tag=='meta':
+                      k=d.get('property') or d.get('name')
+                      if k:self.meta.setdefault(k,[]).append(d.get('content',''))
+                  if tag=='link' and d.get('rel')=='canonical':
+                      self.canonicals.append(d.get('href'))
+                  if tag=='h1':self.h1+=1
+          src=Path('app/src/main/assets/generate-studio.html').read_text('utf8')
+          c=Check();c.feed(src)
+          assert c.h1==1,c.h1
+          assert c.canonicals==['https://deepsyq.app/generate-studio.html'],c.canonicals
+          for key in ('description','og:title','og:description','og:type','og:url','twitter:card'):
+              assert len(c.meta.get(key,[]))==1,(key,c.meta.get(key))
+          assert c.meta['og:url'][0]==c.canonicals[0]
+          assert c.meta['og:type'][0]=='website'
+          assert c.meta['twitter:card'][0]=='summary'
+          assert 'generate-studio.js?v=2.4' in src
+          assert 'studio-composer-popovers.js?v=20261106-persistent' in src
+          print('SEO_AUDIT_BATCH_4_METADATA_PASS')
+          PY
+      - name: Install surgical uploader dependencies
+        run: python -m pip install --disable-pip-version-check "requests==2.32.3" "blake3==1.0.8"
+      - name: Publish and verify ONLY Creative Studio HTML
+        run: |
+          python scripts/deepsyq_surgical_publish.py \
+            --mode publish \
+            --files generate-studio.html \
+            --commit "$GITHUB_SHA"
