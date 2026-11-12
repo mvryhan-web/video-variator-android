@@ -20,7 +20,7 @@ const getLang=()=>{
 let on=false,seq=0,rec=null,request=null,pending=null,ownerClip=null,ownerClipDone=null;
 let turns=[],orb=null,micChip=null,micStage='idle',micFailures=0;
 let transcriptWrap=null,transcriptText=null,transcriptReply=null,heardText='',heardIsFinal=false,botReplyText='';
-let micPulseRms=0;
+let micPulseRms=0,recognizedPulseTimer=null;
 let monitorStream=null,monitorContext=null,monitorAnalyser=null,monitorTimer=null,monitorSamples=null;
 let ownerWebSource=null,playbackAbort=null;
 const Recognition=()=>window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -98,9 +98,28 @@ function ensureAudioContextFromGesture(){
   return monitorContext;
  }catch{return null;}
 }
+// When a mobile browser cannot expose WebAudio microphone samples,
+// pulse on a REAL partial recognition result instead. Never pulse merely
+// because "listening" is shown or because a timer elapsed.
+function pulseOnRecognizedWords(){
+ if(monitorAnalyser&&monitorContext?.state==='running')return;
+ if(recognizedPulseTimer!==null){
+  clearTimeout(recognizedPulseTimer);recognizedPulseTimer=null;
+ }
+ micPulseRms=.055;
+ updateSphereFromMicrophone(.1);
+ recognizedPulseTimer=setTimeout(()=>{
+  recognizedPulseTimer=null;micPulseRms=0;
+  updateSphereFromMicrophone(0);
+ },180);
+}
 // The sound level is read from the local microphone stream. No raw audio
 // is uploaded by this meter. Browser speech recognition is separate.
 function stopMicMonitor(){
+ if(recognizedPulseTimer!==null){
+  clearTimeout(recognizedPulseTimer);recognizedPulseTimer=null;
+ }
+ micPulseRms=0;
  if(monitorTimer!==null){clearInterval(monitorTimer);monitorTimer=null;}
  if(monitorStream){
   try{monitorStream.getTracks().forEach(track=>track.stop());}catch{}
@@ -338,6 +357,7 @@ function listen(id){
   // Show exactly the live partial transcript received from the browser.
   // It may arrive word by word, or in longer chunks depending on the phone.
   setTranscript(combined,hasFinal&&allFinal);
+  pulseOnRecognizedWords();
   if(!hasFinal||!allFinal)return;
   processed=true;
   r.onend=null;
