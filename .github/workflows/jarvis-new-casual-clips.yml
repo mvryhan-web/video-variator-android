@@ -1,0 +1,48 @@
+name: JARVIX NEW short owner-voice conversation MP3 (TEST ONLY)
+on:
+  push:
+    branches: [jarvis-new]
+    paths:
+      - 'scripts/prepare_jarvix_casual_clips.py'
+      - '.github/workflows/jarvis-new-casual-clips.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    if: github.ref == 'refs/heads/jarvis-new'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Derive 8 short original-voice clips; source clips remain untouched
+        run: |
+          python scripts/prepare_jarvix_casual_clips.py
+          python - <<'PY'
+          import json,subprocess,pathlib
+          p=pathlib.Path('app/src/main/assets/media/jarvix/conversation')
+          data=json.loads((p/'manifest.json').read_text())
+          assert data['clipCount']==len(data['clips'])==8
+          for c in data['clips']:
+            file=p/c['filename']
+            assert file.is_file() and file.stat().st_size>=2500
+            subprocess.run(['ffmpeg','-v','error','-xerror','-i',str(file),'-f','null','-'],
+              check=True,timeout=10)
+          print('8 MP3 decoded cleanly, 4 languages, no generation cost.')
+          PY
+      - name: Commit ONLY new TEST conversation MP3 to jarvis-new
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/assets/media/jarvix/conversation/
+          if git diff --cached --quiet; then
+            echo 'All clips already match the current checked-in originals'
+          else
+            git commit -m "assets(jarvis-new): 8 short original voice excerpts for casual chat TEST"
+            git push origin HEAD:jarvis-new
+          fi
