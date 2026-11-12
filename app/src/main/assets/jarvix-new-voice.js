@@ -19,6 +19,18 @@ const EXTRA_NAVIGATION = [
  ['mobile-utility.html?tool=pdf-split', /(?:раздел[а-яё]*\s*(?:pdf|пдф)|split pdf)/iu]
 ];
 const NAVIGATION_COMMAND = /(?:^|\s)(?:открой|перейди|запусти|открыть|open|go to|navigate to|ouvre|abre|affiche|покажи|show)(?:\s|$)/iu;
+const SITE_ANSWERS_RU = [
+ [/(?:canvas|canva|канва|холст)/iu,"Собирайте идеи из текста и фотографий.",
+  "/media/jarvix/tour-v3/t3_ru_cc451dff495e.mp3"],
+ [/(?:ai\s*apps?|шаблон|приложени)/iu,"Каталог творческих шаблонов.",
+  "/media/jarvix/tour-v3/t3_ru_17ad4c84e62d.mp3"],
+ [/(?:everyday\s*tools|инструмент|утилит)/iu,"Сжатие фото и видео, обработка звука, PDF, коллажи и удаление фона.",
+  "/media/jarvix/tour-v3/t3_ru_76c07a8f82b9.mp3"],
+ [/(?:uniquifier|уникализатор)/iu,"Создавайте варианты собственного видео.",
+  "/media/jarvix/tour-v3/t3_ru_eb5198a625f8.mp3"],
+ [/(?:inspiration|вдохновени)/iu,"Идеи для новых проектов.",
+  "/media/jarvix/tour-v3/t3_ru_70e7f65e6a88.mp3"]
+];
 const VOICE_LIBRARY='http://127.0.0.1:8770/v1/find';
 const PAID_ROUTE='/api/jarvix-new/paid/';
 let paidStatusOnce=null;
@@ -35,21 +47,49 @@ const getLang=()=>{
 };
 let on=false,seq=0,rec=null,request=null,pending=null,ownerClip=null,ownerClipDone=null;
 const CONVERSATION_MEMORY='jarvix-new:conversation:v1';
-function loadTurns(){
- if(location.hostname!==HOST)return [];
+function cleanTurns(saved){
+ if(!Array.isArray(saved))return [];
+ return saved.slice(-8).filter(turn=>turn&&
+  (turn.role==='user'||turn.role==='assistant')&&typeof turn.content==='string')
+  .map(({role,content})=>({role,content:content.slice(0,1200)}));
+}
+function loadMemory(){
+ if(location.hostname!==HOST)return {turns:[],updatedAt:0};
  try{
   const saved=JSON.parse(sessionStorage.getItem(CONVERSATION_MEMORY)||'[]');
-  if(!Array.isArray(saved))return [];
-  return saved.slice(-8).filter(turn=>turn&&
-   (turn.role==='user'||turn.role==='assistant')&&typeof turn.content==='string')
-   .map(({role,content})=>({role,content:content.slice(0,1200)}));
- }catch{return [];}
+  return {turns:cleanTurns(Array.isArray(saved)?saved:saved?.turns),
+   updatedAt:Number.isFinite(saved?.updatedAt)?saved.updatedAt:0};
+ }catch{return {turns:[],updatedAt:0};}
 }
-let turns=loadTurns(),orb=null,micChip=null,micStage='idle',micFailures=0;
+const restoredMemory=loadMemory();
+let turns=restoredMemory.turns,orb=null,micChip=null,micStage='idle',micFailures=0;
+let memoryChannel=null,memoryUpdatedAt=restoredMemory.updatedAt;
+function saveMemory(){
+ try{sessionStorage.setItem(CONVERSATION_MEMORY,JSON.stringify({turns,updatedAt:memoryUpdatedAt}));}catch{}
+}
+function syncConversation(){
+ if(typeof BroadcastChannel!=='function')return;
+ try{
+  memoryChannel=new BroadcastChannel(CONVERSATION_MEMORY);
+  memoryChannel.onmessage=({data})=>{
+   if(data?.type==='request'&&turns.length){
+    memoryChannel.postMessage({type:'history',turns,updatedAt:memoryUpdatedAt});
+   }else if(data?.type==='history'&&Number.isFinite(data.updatedAt)&&
+            (data.updatedAt>memoryUpdatedAt||(!turns.length&&data.updatedAt===memoryUpdatedAt))){
+    turns=cleanTurns(data.turns);
+    memoryUpdatedAt=data.updatedAt;
+    saveMemory();
+   }
+  };
+  memoryChannel.postMessage({type:'request'});
+ }catch{memoryChannel=null;}
+}
 function rememberTurn(message,reply){
  turns=[...turns,{role:'user',content:message.slice(0,1200)},
   {role:'assistant',content:String(reply||'').slice(0,1200)}].slice(-8);
- try{sessionStorage.setItem(CONVERSATION_MEMORY,JSON.stringify(turns));}catch{}
+ memoryUpdatedAt=Math.max(Date.now(),memoryUpdatedAt+1);
+ saveMemory();
+ try{memoryChannel?.postMessage({type:'history',turns,updatedAt:memoryUpdatedAt});}catch{}
 }
 let transcriptWrap=null,transcriptText=null,transcriptReply=null,heardText='',heardIsFinal=false,botReplyText='';
 let micPulseRms=0,recognizedPulseTimer=null;
@@ -528,6 +568,11 @@ async function respond(message,id){
 
  // 1. Human conversation first — not a broken 500-scenario manifest.
  // Matching existing V3 owner MP3 is instant and does not use local network.
+ if(lang==='ru'&&/^\s*(?:что|как|зачем|для чего|расскажи|объясни)(?:[\s,.!?]|$)/iu.test(message)){
+  const answer=SITE_ANSWERS_RU.find(([topic])=>topic.test(message));
+  if(answer&&await playResponse({text:answer[1],audioUrl:answer[2],source:'deepsyq-tour'},id,message))return;
+  if(!on||seq!==id)return;
+ }
  const smalltalk=await smalltalkReply(message,lang).catch(()=>null);
  if(!on||seq!==id)return;
  if(await playResponse(smalltalk,id,message))return;
@@ -587,6 +632,7 @@ async function start(){
 export function installJarvixNewVoice(){
  if(location.hostname!==HOST||window.__jarvixVoiceReady)return;
  window.__jarvixVoiceReady=true;
+ syncConversation();
  orb=document.getElementById('topJarvisBtn');
  const style=document.createElement('style');style.id='jv-new-voice-style';
  style.textContent=[
