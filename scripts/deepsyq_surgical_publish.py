@@ -181,11 +181,14 @@ class Cloudflare:
         insist(isinstance(settings, dict), "Cannot verify original Worker settings")
         return settings
 
-    def live_asset(self, path):
-        # Do not persist any credential or user content; publicly accessible assets only.
+    def live_asset(self, path, stamp="1"):
+        # Use a unique deployment-specific query during post-publish checks so
+        # cached responses from the previous deployment cannot appear current.
+        insist(re.fullmatch(r"[A-Za-z0-9_-]{1,128}", str(stamp)) is not None,
+               "Invalid asset verification stamp")
         return self.call("GET", DOMAIN + quote(path, safe="/") +
-                         "?deepsyq_surgical_baseline=1",
-                         headers={"Cache-Control": "no-cache"}).content
+                         "?deepsyq_surgical_baseline=" + str(stamp),
+                         headers={"Cache-Control": "no-cache", "Accept-Encoding": "identity"}).content
 
     def endpoint_status(self, path):
         response = self.call("GET", DOMAIN + path +
@@ -541,17 +544,28 @@ def main():
             elif deployed_id and current == deployed_id:
                 cloudflare.restore_baseline(live_id, live, deployed_id)
             raise
-        cloudflare.endpoint_status("/api/config")
-        for rel, raw in expected_bytes.items():
-            if "/" + rel not in changed:
-                continue
-            # Non-HTML resources have exact public byte representation; dynamic
-            # HTML may be served via the existing Worker and can be normalized.
-            content = cloudflare.live_asset("/" + rel)
-            if rel.endswith((".js", ".css", ".json", ".svg")):
-                insist(content == raw, "PUBLISHED_FILE_BYTES_DIFFER: " + rel)
-            else:
-                insist(len(content) > 0, "Published page not accessible: " + rel)
+        try:
+            cloudflare.endpoint_status("/api/config")
+            for rel, raw in expected_bytes.items():
+                if "/" + rel not in changed:
+                    continue
+                matched = False
+                for attempt in range(10):
+                    content = cloudflare.live_asset("/" + rel,
+                        newest.replace("-", "") + "-" + str(attempt))
+                    if rel.endswith((".js", ".css", ".json", ".svg")):
+                        matched = content == raw
+                    else:
+                        matched = len(content) > 0
+                    if matched:
+                        break
+                    time.sleep(2)
+                insist(matched, "PUBLISHED_FILE_BYTES_DIFFER: " + rel)
+        except Exception:
+            current, _, _, _, _ = cloudflare.read_live()
+            if current == newest:
+                cloudflare.restore_baseline(live_id, live, newest)
+            raise
         print(json.dumps({"status": "PUBLISHED_VERIFIED", "deployment": newest,
                           "previous": live_id, "files": sorted(changed),
                           "all_other_assets_unchanged": True,
