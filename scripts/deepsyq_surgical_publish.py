@@ -100,6 +100,24 @@ def checked_git(*args):
     insist(cmd.returncode == 0, "Git source inspection failed: " + " ".join(args[:3]))
     return cmd.stdout.strip()
 
+def verified_historical_asset(rel, expected_hash):
+    """Recover only bytes independently proven identical to the LIVE asset hash.
+
+    A Pages Worker or custom-domain HTML transformation can prevent retrieving
+    original bytes over HTTP. Search existing Git blobs for an exact content-
+    address match instead. Never substitute a merely similar historical file.
+    """
+    path = "app/src/main/assets/" + rel
+    history = subprocess.run(["git", "log", "--all", "--format=%H", "--", path],
+                             text=True, capture_output=True)
+    insist(history.returncode == 0, "Could not verify historical asset: " + rel)
+    for commit in dict.fromkeys(history.stdout.splitlines()[:300]):
+        blob = subprocess.run(["git", "show", commit + ":" + path], capture_output=True)
+        if (blob.returncode == 0 and len(blob.stdout) <= MAX_FILE_BYTES
+                and digest(blob.stdout, rel) == expected_hash):
+            return blob.stdout
+    return None
+
 def sha256(buf):
     return hashlib.sha256(buf).hexdigest()
 
@@ -210,7 +228,9 @@ def build_candidate(live, paths, production_commit, work):
             continue
         # Only trust Cloudflare-served bytes when their hash matches the LIVE manifest.
         raw = cloudflare.live_asset("/" + rel)
-        insist(digest(raw, rel) == live[key],
+        if digest(raw, rel) != live[key]:
+            raw = verified_historical_asset(rel, live[key])
+        insist(raw is not None and digest(raw, rel) == live[key],
                "Could not reproduce unchanged LIVE asset bytes: " + rel)
         dst.parent.mkdir(parents=True, exist_ok=True)
         dst.write_bytes(raw)
