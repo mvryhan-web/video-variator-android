@@ -166,9 +166,9 @@ export async function smalltalkReply(question,language='ru'){
   const [name,text]=EXISTING[lang][kind];
   return recorded({id:name,text,url:'/media/jarvix/tour-v3/'+name,purpose:kind});
  }
- // New approved human-recorded smalltalk (how are you / listening / thanks)
- // can be added when the local VoxCPM2 batch actually produces real MP3.
- // Until then, use the real, neutral prompt instead of "MP3 not found".
- return promptRecording(lang);
+ // Never answer "How are you?" with "Tell me what you want to create".
+ // Missing human-approved smalltalk recordings are not fictional voice.
+ // Let the caller check the other approved catalog or show mic status.
+ return null;
 }
 export {classify as classifySmalltalk};
