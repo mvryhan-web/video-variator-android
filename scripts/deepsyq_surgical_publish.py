@@ -209,41 +209,47 @@ class Cloudflare:
             time.sleep(2)
         raise Blocked("AUTOMATIC_ROLLBACK_NOT_CONFIRMED")
 
-    def tour_manifest_deploy(self, candidate, raw, sha, worker, origin):
-        """Single-asset Pages upload: unchanged routes reuse canonical LIVE hashes.
+    def tour_manifest_deploy(self, candidate, assets, sha, worker, origin):
+        """Tour-only Pages upload: unchanged routes reuse canonical LIVE hashes.
 
         Fetch the *currently deployed* Worker payload rather than recompiling
         or modifying it. Never publish if its exact original bytes cannot be
         retrieved in a Cloudflare-supported worker upload format.
         """
-        rel = "jarvix-guided-tour.js"
-        key = digest(raw, rel)
-        insist(candidate.get("/" + rel) == key, "Tour hash is not in candidate manifest")
+        approved = {"jarvix-guided-tour.js", "jarvix-tour-choreography.js"}
+        insist(set(assets) and set(assets).issubset(approved),
+               "Only explicit JARVIX Tour assets can use manifest reuse")
+        keyed = {digest(raw, rel): (rel, raw) for rel, raw in assets.items()}
+        insist(len(keyed) == len(assets), "Tour content hash collision")
+        for key, (rel, _) in keyed.items():
+            insist(candidate.get("/" + rel) == key, "Tour hash is not in candidate manifest")
+        hashes = sorted(keyed)
         api_prefix = API + "/accounts/" + self.account + "/pages/projects/" + PROJECT
         token = self.json("/accounts/" + self.account +
                           "/pages/projects/" + PROJECT + "/upload-token").get("jwt")
         insist(isinstance(token, str) and token, "Pages asset upload token unavailable")
         jwt_headers = {"Authorization": "Bearer " + token}
         check = self.call("POST", API + "/pages/assets/check-missing",
-                          headers=jwt_headers, json={"hashes": [key]}).json()
+                          headers=jwt_headers, json={"hashes": hashes}).json()
         insist(check.get("success") is True and
                isinstance(check.get("result"), list) and
-               set(check["result"]).issubset({key}), "Cannot verify tour asset upload status")
-        if key in check["result"]:
+               set(check["result"]).issubset(set(hashes)), "Cannot verify tour asset upload status")
+        if check["result"]:
             upload = self.call("POST", API + "/pages/assets/upload",
                                headers=jwt_headers,
                                json=[{"key": key, "base64": True,
                                       "metadata": {"contentType": "application/javascript"},
-                                      "value": base64.b64encode(raw).decode("ascii")}]).json()
+                                      "value": base64.b64encode(keyed[key][1]).decode("ascii")}
+                                     for key in check["result"]]).json()
             insist(upload.get("success") is True, "Cloudflare tour asset upload failed")
         registered = self.call("POST", API + "/pages/assets/upsert-hashes",
-                               headers=jwt_headers, json={"hashes": [key]}).json()
+                               headers=jwt_headers, json={"hashes": hashes}).json()
         insist(registered.get("success") is True,
                "Cloudflare tour asset hash registration failed")
         confirmed = False
         for attempt in range(8):
             after = self.call("POST", API + "/pages/assets/check-missing",
-                              headers=jwt_headers, json={"hashes": [key]}).json()
+                              headers=jwt_headers, json={"hashes": hashes}).json()
             insist(after.get("success") is True and
                    isinstance(after.get("result"), list),
                    "Cloudflare tour asset verification malformed")
@@ -446,13 +452,12 @@ def main():
                 live, paths, origin, work)
             direct_manifest = False
         except Blocked as error:
-            insist(paths == ["jarvix-guided-tour.js"] and
+            insist(set(paths) == {"jarvix-guided-tour.js", "jarvix-tour-choreography.js"} and
                    str(error).startswith("Could not reproduce unchanged LIVE asset bytes:"),
                    str(error))
-            rel = paths[0]
-            raw = (ROOT / rel).read_bytes()
-            candidate, changed = surgical_manifest(live, {rel: digest(raw, rel)})
-            expected_bytes = {rel: raw}
+            expected_bytes = {rel: (ROOT / rel).read_bytes() for rel in paths}
+            candidate, changed = surgical_manifest(live, {
+                rel: digest(raw, rel) for rel, raw in expected_bytes.items()})
             from_live = 0
             stage = None
             direct_manifest = True
@@ -471,7 +476,7 @@ def main():
         insist(current_id == live_id and current_worker == worker,
                "Concurrent production update detected; no deploy")
         if direct_manifest:
-            deployed_id = cloudflare.tour_manifest_deploy(candidate, expected_bytes[paths[0]], sha, worker, origin)
+            deployed_id = cloudflare.tour_manifest_deploy(candidate, expected_bytes, sha, worker, origin)
         else:
             run_wrangle(stage, sha)
             deployed_id = None
