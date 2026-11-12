@@ -63,6 +63,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
+          fetch-depth: 0 # LIVE baseline commit must exist for fail-closed Worker/hash checks.
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
