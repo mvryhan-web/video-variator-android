@@ -93,7 +93,10 @@ function classify(q,lang){
  const s=normalize(q);
  const rules=TOPICS[lang]||TOPICS.ru;
  for(const intent of ['wellbeing','activity','hearing','identity','thanks','farewell','image','video','audio','hello']){
-  if(rules[intent].test(s))return intent;
+  // JavaScript `\\b` is ASCII word-boundary and fails for Russian letters.
+  // Replace only the leading/trailing word anchors with Unicode-safe spaces.
+  const pattern=rules[intent].source.replace(/^\\b/,'(?:^|\\s)').replace(/\\b$/,'(?=$|\\s)');
+  if(new RegExp(pattern,'u').test(s))return intent;
  }
  return null;
 }
