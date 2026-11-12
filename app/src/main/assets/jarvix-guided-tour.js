@@ -137,7 +137,7 @@ function speakNavigation(step,target,current){
   },125);
  };
  if(!file){navTimer=setTimeout(navigate,200);return;}
- audio=new Audio(file);clip=audio;clip.id='dsTourAudio';clip.hidden=true;clip.playbackRate=1.10;clip.preload='auto';document.body.append(clip);
+ audio=new Audio(file);clip=audio;clip.id='dsTourAudio';clip.hidden=true;clip.playbackRate=1.18;clip.preload='auto';document.body.append(clip);
  clip.onloadedmetadata=()=>{if(state?.position)clip.currentTime=Math.min(state.position,Math.max(0,(clip.duration||0)-.1));};
  clip.onplay=()=>{pauseJarvisRecognition();updateJarvisState('speaking');};
  clip.onended=navigate;clip.onerror=()=>blocked(current,'Navigation voice unavailable');
@@ -427,6 +427,9 @@ async function speakV3(text,current,complete,beat=null){
    setTourSpeaking(true);
    if(spoken)return;
    spoken=true;
+   // Starting a real MP3 disarms the loading watchdog. Long owner recordings
+   // must finish naturally; the former 14s timer cut them off mid-sentence.
+   clearTimeout(narrationTimer);
    caption(narration); // Actual approved V4 line when recorded; otherwise matching V3.
    if(beat){
     const title=tourPlan(state.language)[state.index]?.title;
@@ -481,9 +484,11 @@ async function speakV3(text,current,complete,beat=null){
    }
    done();
   };
-  narrationTimer=setTimeout(showWithoutAudio,14000);
+  // A stalled download should not freeze the whole tour for 14 seconds.
+  // This timer watches startup only, never the duration of a playing clip.
+  narrationTimer=setTimeout(()=>{if(!spoken)showWithoutAudio();},6000);
   if(voice){
-   audio=new Audio(voice);const clip=audio;clip.id='dsTourAudio';clip.hidden=true;clip.preload='auto';clip.playbackRate=1.10;document.body.append(clip);
+   audio=new Audio(voice);const clip=audio;clip.id='dsTourAudio';clip.hidden=true;clip.preload='auto';clip.playbackRate=1.18;document.body.append(clip);
    // Pause/Continue resumes the actual owner clip without replaying narration.
    clip.onloadedmetadata=()=>{
     if(current!==turn||!state)return;
@@ -560,11 +565,13 @@ function playV3(step,target,current){
   // At most ONE full-page navigation for this stage. A stale route, redirect,
   // or intercepted sidebar handler must not cause a reload loop.
   if(state.pendingRoute?.index===state.index&&state.pendingRoute?.href===target.href){
-   // play() clears the previous navigation timer. A second call while the
-   // document is still opening must RE-ARM it, not pause the entire tour.
+   // Re-arming must retain the AI Apps cross-page recovery marker; dropping
+   // it on a retry stranded the tour at the preceding Audio checkpoint.
+   const retry=new URL(target.href);
+   if(step.title==='AI Apps')retry.hash='jarvix-tour-resume-'+state.language;
    navTimer=setTimeout(()=>{
     if(current!==turn||!state||state.phase!=='playing')return;
-    try{location.assign(target.href);}catch{blocked(current,'Tour page could not be opened.');}
+    try{location.assign(retry.href);}catch{blocked(current,'Tour page could not be opened.');}
    },120);
    return;
   }
