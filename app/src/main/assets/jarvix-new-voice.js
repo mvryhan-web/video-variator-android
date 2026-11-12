@@ -479,7 +479,7 @@ async function respond(message,id){
  ui('thinking');
  const lang=recordedLanguage();
  setTranscript(message,true);
- const action=extractAction(message);
+ const action=extractAction(message.replace(/\bcanva\b/giu,'Canvas'));
  if(action?.intent==='NAVIGATE'){
   const destination=action.target==='uniquifier'?'video-uniquifier.html':action.url;
   stop();
