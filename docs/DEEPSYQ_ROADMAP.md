@@ -1,5 +1,18 @@
 # DEEPSYQ ROADMAP — approved next product phase
 
+## 2026-11-12 — Быстрые точечные SEO-исправления (по аудиту; задача владельца)
+
+**Режим:** только существующие HTML-метаданные и SEO-разметка; не редизайн, не новые страницы, не изменение Worker, генерации, платёжных сценариев или тарифов. Production `https://deepsyq.app/`, ветка `deepsyq-platform`.
+
+| Пакет | Scope | Результат / критерий готовности |
+| --- | --- | --- |
+| SEO-AUDIT-01 — ЗАВЕРШЕНО / LIVE_VERIFIED | `ai-apps.html`, `canvas.html`, `free-tools.html`, `sitemap.xml` | H1 для AI Apps, Open Graph для трёх страниц и достоверные `lastmod` для трёх адресов. Публикация Cloudflare `6043a4ed-2112-4f35-b118-7e670b645953`, исходный SHA `092e2f2fa4886a8d3e5f0fd94d1f0c8799a9ae93`, [CI success #43269776224](https://github.com/mvryhan-web/video-variator-android/actions/runs/43269776224). Все остальные 1244 актива и Worker/bindings сохранены. Это **не** подтверждение индексации Google. |
+| SEO-AUDIT-02 — В РАБОТЕ | `compare-ai.html`, `simple-background-remover.html`, `teleprompter.html` | Точечно добавить недостающие корректные Open Graph и карточки ссылок; убрать неподтверждённые маркетинговые обещания в метаданных, если есть. Подтверждать LIVE_VERIFIED **только** при результате `PUBLISHED_VERIFIED` с неизменными остальными файлами и Worker. |
+
+**Контроль:** фиксировать точный diff, тесты, SHA, Cloudflare deployment, оставшиеся проверки. Не запускать платные тесты. Подтверждение PageSpeed, индексирования Google, AI-провайдеров и Stripe не входит в эти два SEO-пакета.
+
+---
+
 ## OWNER D17 — ACTIVE ROADMAP TERMINOLOGY AND WAVES (2026-10-20)
 
 **CURRENT RULE — READ THIS BEFORE THE HISTORICAL BLOCK HEADINGS BELOW.** The owner renamed the eight platform workstreams: **F1=Block 1 Compare AI/Smart; F2=Block 2 User Agent; F3=Block 3 Inspiration; F4=Block 4 Studio/My Workspace; F5=Block 5 Product Watcher; F6=Block 6 Voice Agent; F7=Block 7 Pricing/Credits/Stripe; F8=Block 8 Virtual Pet.** `Block N` in this roadmap and existing Issues/PRs means `FN`. This is a naming change, **not** eight new implementations. Original source TXT specifications, requirement numbers, existing PRs and completed work remain untouched.
