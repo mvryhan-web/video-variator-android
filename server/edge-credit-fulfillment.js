@@ -59,5 +59,42 @@ export function createEdgeCreditFulfillment({databaseUrl,stripeKey,packs,fetcher
     return true;
   }
 
-  return {grant};
+  async function refund(event){
+    const object=event.data?.object;
+    if(event.type!=='charge.refunded'||object?.metadata?.aiWallet!=='v1')return false;
+    if(event.livemode!==live||!/^ch_[A-Za-z0-9]+$/.test(object.id))throw Error('REFUND_MODE_MISMATCH');
+    const charge=await stripe.charges.retrieve(object.id,{expand:[]});
+    if(charge.id!==object.id||charge.livemode!==live||charge.metadata?.aiWallet!=='v1'||
+       charge.paid!==true||charge.captured!==true||!Number.isSafeInteger(charge.amount_refunded)||charge.amount_refunded<1)
+      throw Error('REFUND_EVIDENCE_MISMATCH');
+    const intent=typeof charge.payment_intent==='string'?charge.payment_intent:charge.payment_intent?.id;
+    await sql('SELECT public.vv_refund_edge_credit_purchase($1,$2,$3,$4,$5)',[
+      event.id,intent,charge.id,charge.amount_refunded,live
+    ]);
+    return true;
+  }
+
+  async function balance(userId){
+    const [row]=await sql('SELECT available,reserved,debt FROM public.vv_ai_wallet WHERE user_id=$1',[userId]);
+    return {available:Number(row?.available||0),reserved:Number(row?.reserved||0),debt:Number(row?.debt||0)};
+  }
+
+  async function history(userId){
+    const rows=await sql(`SELECT id,kind,available_delta,reserved_delta,debt_delta,created_at
+      FROM public.vv_ai_ledger WHERE user_id=$1 ORDER BY id DESC LIMIT 50`,[userId]);
+    return rows.map(row=>({id:row.id,kind:row.kind,availableDelta:Number(row.available_delta),
+      reservedDelta:Number(row.reserved_delta),debtDelta:Number(row.debt_delta),createdAt:row.created_at}));
+  }
+
+  async function assertReady(){
+    const [row]=await sql(`SELECT (
+      to_regprocedure('public.vv_grant_edge_credit_purchase(text,text,text,integer,integer,text,bigint,bigint,text,text,boolean)') IS NOT NULL
+      AND to_regprocedure('public.vv_refund_edge_credit_purchase(text,text,text,integer,boolean)') IS NOT NULL
+      AND to_regclass('public.vv_ai_wallet') IS NOT NULL
+      AND to_regclass('public.vv_ai_ledger') IS NOT NULL
+    )::int AS ready`,[]);
+    if(Number(row?.ready)!==1)throw Error('WALLET_MIGRATION_REQUIRED');
+  }
+
+  return {grant,refund,balance,history,assertReady};
 }

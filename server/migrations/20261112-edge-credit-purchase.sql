@@ -56,3 +56,45 @@ BEGIN
   RETURN true;
 END;
 $function$;
+
+CREATE OR REPLACE FUNCTION public.vv_refund_edge_credit_purchase(
+  p_event text, p_intent text, p_charge text, p_cumulative integer, p_live boolean
+) RETURNS boolean
+LANGUAGE plpgsql SET search_path = pg_catalog, public
+AS $function$
+DECLARE
+  receipt public.vv_ai_purchase%ROWTYPE;
+  wallet public.vv_ai_wallet%ROWTYPE;
+  revocation bigint;
+  debit bigint;
+BEGIN
+  IF p_event IS NULL OR p_event !~ '^evt_[A-Za-z0-9]+$'
+    OR p_intent IS NULL OR p_intent !~ '^pi_[A-Za-z0-9]+$'
+    OR p_charge IS NULL OR p_charge !~ '^ch_[A-Za-z0-9]+$'
+    OR p_cumulative IS NULL OR p_cumulative <= 0 OR p_live IS NULL THEN
+    RAISE EXCEPTION 'INVALID_REFUND_EVIDENCE';
+  END IF;
+  SELECT * INTO receipt FROM public.vv_ai_purchase WHERE payment_intent = p_intent;
+  IF NOT FOUND THEN RAISE EXCEPTION 'PURCHASE_NOT_FOUND'; END IF;
+  SELECT * INTO STRICT wallet FROM public.vv_ai_wallet WHERE user_id = receipt.user_id FOR UPDATE;
+  SELECT * INTO STRICT receipt FROM public.vv_ai_purchase WHERE payment_intent = p_intent FOR UPDATE;
+  IF receipt.settlement_livemode IS DISTINCT FROM p_live
+     OR receipt.stripe_charge_id IS DISTINCT FROM p_charge OR p_cumulative > receipt.amount THEN
+    RAISE EXCEPTION 'REFUND_PURCHASE_MISMATCH';
+  END IF;
+  IF p_cumulative <= receipt.refunded_amount THEN RETURN false; END IF;
+  INSERT INTO public.vv_ai_refund_event(event_id,payment_intent,stripe_charge_id,cumulative_amount,livemode)
+  VALUES(p_event,p_intent,p_charge,p_cumulative,p_live)
+  ON CONFLICT(event_id) DO NOTHING;
+  IF NOT FOUND THEN RETURN false; END IF;
+  revocation := ceil(receipt.credits::numeric*p_cumulative/receipt.amount) -
+                ceil(receipt.credits::numeric*receipt.refunded_amount/receipt.amount);
+  debit := least(wallet.available,revocation);
+  UPDATE public.vv_ai_purchase SET refunded_amount=p_cumulative WHERE session_id=receipt.session_id;
+  UPDATE public.vv_ai_wallet SET available=wallet.available-debit, debt=wallet.debt+revocation-debit
+    WHERE user_id=receipt.user_id;
+  INSERT INTO public.vv_ai_ledger(user_id,reference,kind,available_delta,reserved_delta,debt_delta)
+  VALUES(receipt.user_id,receipt.session_id,'payment_refund',-debit,0,revocation-debit);
+  RETURN true;
+END;
+$function$;
