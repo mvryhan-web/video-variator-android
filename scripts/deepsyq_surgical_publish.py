@@ -33,6 +33,7 @@ MAX_FILE_BYTES = 25 * 1024 * 1024
 HASH_REUSE_RELEASE_SETS = (
     frozenset({"jarvix-guided-tour.js", "jarvix-tour-choreography.js"}),
     frozenset({"ai-apps.html", "canvas.html", "free-tools.html", "sitemap.xml"}),
+    frozenset({"compare-ai.html", "simple-background-remover.html", "teleprompter.html"}),
 )
 
 def allowed_hash_reuse(paths):
