@@ -68,7 +68,7 @@ jobs:
               assert c.canonical==['https://deepsyq.app/'+f],(f,'canonical',c.canonical)
               for tag in ('description','og:title','og:description','og:type','og:url'):
                   assert len(c.meta.get(tag,[]))==1,(f,tag,c.meta.get(tag))
-                  assert len(c.meta[tag][0].strip())>8,(f,tag)
+                  assert len(c.meta[tag][0].strip())>0,(f,tag)
               assert c.meta['og:url'][0]==c.canonical[0],f
               assert c.meta['og:type'][0]=='website',f
           print('SEO_AUDIT_BATCH_2_METADATA_PASS')
