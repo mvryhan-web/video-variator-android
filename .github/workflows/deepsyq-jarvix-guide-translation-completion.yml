@@ -1,0 +1,88 @@
+name: DEEPSYQ JARVIX guide translation completion - glossary only
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/deepsyq-jarvix-guide-translation-completion.yml'
+      - 'app/src/main/assets/deepsyq-i18n.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  guide-translation:
+    if: >-
+      github.ref == 'refs/heads/deepsyq-platform' &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.head_commit.message == 'release(DEEPSYQ i18n): publish only added JARVIX guide glossary rows')
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate old locale system and every visible JARVIX guide text node
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check app/src/main/assets/deepsyq-i18n.js
+          node --test tests/deepsyq-i18n-regression.test.mjs
+          python -m py_compile scripts/deepsyq_surgical_publish.py
+          python -m unittest discover -s tests -p 'test_deepsyq_surgical_publish.py' -v
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const root='app/src/main/assets/';
+          const js=readFileSync(root+'deepsyq-i18n.js','utf8');
+          const html=readFileSync(root+'jarvix.html','utf8');
+          const start=js.indexOf('const rows=')+'const rows='.length;
+          const end=js.indexOf(';\n const normalize=',start);
+          assert.ok(start>10 && end>start,'existing glossary structure intact');
+          const rows=JSON.parse(js.slice(start,end));
+          assert.ok(rows.length>=266,'previous 251 glossary entries and 15 additions');
+          const m=new Map(rows.map(row=>[row[0],row]));
+          assert.equal(m.size,rows.length,'no duplicate English keys');
+          const body=html.slice(html.indexOf('<body>'),html.indexOf('</body>'));
+          const nodes=body.replace(/<[^>]*>/g,'|').split('|').map(v=>v.replace(/\s+/g,' ').trim()).filter(Boolean);
+          for(const node of nodes){
+            if(node==='DeepSyQ')continue; // original untranslated brand
+            assert.ok(m.has(node),'untranslated visible JARVIX guide text: '+node);
+            const row=m.get(node);
+            assert.equal(row.length,4);
+            row.forEach(x=>assert.ok(typeof x==='string'&&x.trim()));
+          }
+          assert.ok(m.has('DeepSyQ home'),'aria-label is covered');
+          assert.ok(html.includes('deepsyq-i18n.js?v=20261111'),'existing bridge remains');
+          assert.ok(!html.includes('deepsyq-site-shell.js'),'no second site shell on editorial page');
+          for(const source of ['Open JARVIX Chat','Canvas','AI Apps','Everyday Tools'])
+            assert.ok(m.has(source),'previous translation preserved: '+source);
+          console.log('JARVIX_GUIDE_VISIBLE_TEXT_TRANSLATED_4_LANGUAGES_PASS',nodes.length);
+          JS
+          python - <<'PY'
+          from importlib.util import spec_from_file_location,module_from_spec
+          spec=spec_from_file_location('safe','scripts/deepsyq_surgical_publish.py')
+          safe=module_from_spec(spec);spec.loader.exec_module(safe)
+          assert safe.allowed_hash_reuse(['deepsyq-i18n.js'])
+          assert not safe.allowed_hash_reuse(['deepsyq-i18n.js','jarvix.html'])
+          print('ISOLATED_GLOSSARY_ALLOWSET_PASS')
+          PY
+      - name: Install surgical uploader dependencies
+        run: python -m pip install --disable-pip-version-check "requests==2.32.3" "blake3==1.0.8"
+      - name: Publish only existing shared locale glossary, preserve Worker and other assets
+        run: |
+          python scripts/deepsyq_surgical_publish.py \
+            --mode publish \
+            --files deepsyq-i18n.js \
+            --commit "$GITHUB_SHA"
