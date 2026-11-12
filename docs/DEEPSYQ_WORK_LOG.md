@@ -122,3 +122,13 @@
 - **Проверка:** `SEO_AUDIT_BATCH_2_METADATA_PASS`, семь модульных тестов издателя, [GitHub Actions #43271126119](https://github.com/mvryhan-web/video-variator-android/actions/runs/43271126119) — `completed/success`, SHA релиза `b27c6fe999f1a18695aa715ea2513c768d82d92c`.
 - **Рабочая публикация:** `PUBLISHED_VERIFIED`, Cloudflare deployment `26df404a-8189-42e1-ba94-a16cf4a36c36` (до него `6043a4ed-2112-4f35-b118-7e670b645953`), три точных файла заменены, **1245 остальных активов не изменены**, Worker и привязки Cloudflare сохранены.
 - **Оставшиеся отдельные вопросы:** реальная индексация Google, внешнее отображение карточек на разных платформах, работа AI-провайдеров, подписок и длительное хранение балансов этими SEO-выпусками **не проверялись**. Это не повод повторно менять выполненные SEO-пункты.
+
+
+## 12 ноября — SEO-AUDIT-03: Photo Collage — опубликовано, без повторных изменений
+
+- Перед работой сверены завершённые SEO-AUDIT-01, SEO-AUDIT-02 и фактические метаданные публичных страниц. `jarvix.html` и `deepsyq-vs-deepseek.html` уже имели подходящие `title`, `description`, `canonical`, `og:*`: **пропущены без правок**.
+- `photo-collage.html` имел `title`, `description`, `canonical`, WebApplication JSON-LD, H1, но не имел `og:title`, `og:description`, `og:type`. Точечно добавлены эти три поля и изменена только Twitter Card на `summary` (без ложного обещания большого изображения). Вся разметка тела и взаимодействия остались прежними.
+- Исходный коммит HTML: `eaecb796e14567c31a52ce9dec0d8d29952cad0c`; GitHub HEAD выпуска: `7937c33d20f7ce84cbdfe9ef43993f5e2f48600e`.
+- [GitHub Actions #43272943061](https://github.com/mvryhan-web/video-variator-android/actions/runs/43272943061): `completed/success`, тест `SEO_AUDIT_BATCH_3_METADATA_PASS`, модульные проверки точечного издателя.
+- Cloudflare: `PUBLISHED_VERIFIED`, deployment `85a32b96-7766-4f96-8660-8ff45ae91f0c` (предыдущий `26df404a-8189-42e1-ba94-a16cf4a36c36`). Опубликован **только один файл** `/photo-collage.html`; другие **1247 файлов не менялись**, Worker и bindings сохранены.
+- Не выдавать публикацию метатегов за подтверждение Google-индексации или за гарантию rich previews. Текущую страницу не менять повторно без новой подтверждённой ошибки. Оставшиеся финансовые/AI/SEO-задачи — отдельные этапы, не решались этим выпуском.
