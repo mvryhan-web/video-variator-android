@@ -1910,3 +1910,19 @@ main.jarvix-chat #jChatDropdown .j-drawer-footer {
     display:none!important;
   }
 }
+
+.j-bubble .j-generation-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: min(100%, 420px, calc(380px * var(--j-generation-ratio)));
+  aspect-ratio: var(--j-generation-ratio);
+  margin-top: 10px;
+  border-radius: 14px;
+  background: rgba(160, 191, 240, .08);
+  border: 1px solid rgba(160, 191, 240, .18);
+}
+@media (prefers-reduced-motion: reduce) {
+  .j-generation-frame .j-typing-dot { animation: none !important; }
+}

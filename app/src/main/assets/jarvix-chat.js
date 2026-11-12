@@ -156,6 +156,27 @@ function createMessageActions(m, bubble, item){
  return bar;
 }
 
+let pendingMediaFrame=null;
+function generationRatio(kind, explicit){
+ return ['1:1','16:9','9:16','4:3','3:4','4:5','3:2','2:3','21:9'].includes(explicit)
+  ? explicit : kind==='video'?'16:9':'1:1';
+}
+function appendGenerationFrame(bubble,kind,ratio){
+ if(kind!=='image'&&kind!=='video')return;
+ const frame=node('div');
+ frame.className='j-generation-frame';
+ const [width,height]=generationRatio(kind,ratio).split(':').map(Number);
+ frame.style.setProperty('--j-generation-ratio',String(width/height));
+ frame.setAttribute('role','status');
+ const label=kind==='video'
+  ? {ru:'Создаю видео',en:'Creating video',fr:'Création de la vidéo',es:'Creando vídeo'}
+  : {ru:'Создаю изображение',en:'Creating image',fr:'Création de l’image',es:'Creando imagen'};
+ frame.setAttribute('aria-label',label[getJarvixLanguage()]||label.en);
+ for(let i=0;i<3;i++){
+  const dot=node('span');dot.className='j-typing-dot';dot.setAttribute('aria-hidden','true');frame.append(dot);
+ }
+ bubble.append(frame);
+}
 function render(){
  for(const url of urls)URL.revokeObjectURL(url);
  urls=[];
@@ -212,6 +233,7 @@ function render(){
     bubble.append(button);
    }
   }
+  if(pendingMediaFrame?.messageId===m.id)appendGenerationFrame(bubble,pendingMediaFrame.kind,pendingMediaFrame.ratio);
   if(m.jobId){
    bubble.append(node('small',(m.status||'processing')+(m.demo?' · AI Generation':'')));
    const mediaSrc=(m.resultFile instanceof Blob)?URL.createObjectURL(m.resultFile):(m.status==='ready'?m.mediaUrl:null);
@@ -240,6 +262,8 @@ function render(){
      };
      bubble.append(reuse);
     }
+   }else if(['queued','processing','pending','running','submitted'].includes(m.status)){
+    appendGenerationFrame(bubble,m.kind,m.ratio);
    }else if(m.status==='ready'){
     bubble.append(node('p',m.mediaExpired?'This older result has expired. Your message is preserved; create a new creation to replace it.':'Saving result on this device…'));
    }
@@ -420,15 +444,22 @@ async function processMessage(message){
    const kind=mode==='audio'?'music':mode,model=message.action?resolveActionModel(message.action,config.models):(config.models||[]).find(m=>m.enabled&&m.kind===kind);
    if(!model)throw Error('No model is available for this mode.');
    const parameters=message.action?{...(message.action.aspect_ratio?{ratio:message.action.aspect_ratio}:{}),...(message.action.duration?{videoDuration:message.action.duration}:{})}:{};
+   if(mode==='image'||mode==='video'){
+    const requestedRatio=parameters.ratio||String(message.text||'').match(/(?<!\d)(?:16:9|9:16|1:1|4:3|3:4|4:5|3:2|2:3|21:9)(?!\d)/)?.[0];
+    parameters.ratio=generationRatio(mode,requestedRatio);
+    pendingMediaFrame={messageId:message.id,kind:mode,ratio:parameters.ratio};
+    render();
+   }
    const quote=await api('/api/studio/estimate',{kind,model:model.id,quantity:1,...parameters});
    if(quote.previewOnly!==true||Number(quote.cost)!==0)throw Error('Zero-cost TEST estimate could not be verified.');
    const d=await api('/api/studio/jobs',{kind,model:model.id,prompt:message.text,quantity:1,requestId:message.id,consent:false,...parameters});
    if(message.voiceAction)speakJarvis({ru:'Запустил',en:'Started',fr:'Lancé',es:'Iniciado'}[getJarvixLanguage()]||'Started');
    const resultLabel = ({ru:'Результат генерации · ',en:'Generation result · ',fr:'Résultat de génération · ',es:'Resultado de generación · '}[getJarvixLanguage()]||'Generation result · ') + mode;
-   answer={id:makeId(),role:'assistant',text:resultLabel,jobId:d.jobId||d.id,status:d.status,kind:mode,demo:false,createdAt:Date.now()};
+   answer={id:makeId(),role:'assistant',text:resultLabel,jobId:d.jobId||d.id,status:d.status,kind:mode,ratio:parameters.ratio,demo:false,createdAt:Date.now()};
   }
+  pendingMediaFrame=null;
   message.status='sent';conversation.messages.push(answer);await save();render();if(answer.jobId)await poll(answer);
- }catch(e){message.status=message.status==='sent'?'sent':e.name==='AbortError'?'interrupted':'error';message.error=e.message;await save();if(e.name!=='AbortError'){
+ }catch(e){pendingMediaFrame=null;message.status=message.status==='sent'?'sent':e.name==='AbortError'?'interrupted':'error';message.error=e.message;await save();if(e.name!=='AbortError'){
    status(e.message);if(message.voiceAction)speakJarvis(/credit|balance/i.test(e.message)?'Недостаточно кредитов':'Уточните промпт');const link=node('button','Open request in Studio');link.type='button';link.onclick=async()=>{const mode=resolveMode(message.text,message.mode),kind=mode==='audio'?'music':mode==='text'?'image':mode;const files=(message.files||[]).filter(f=>['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024);try{await saveStudioHandoff({kind,prompt:message.text,files,source:'jarvix-chat'});location.assign('jarvix-chat.html?mode='+(kind==='music'?'audio':kind)+'&prompt='+encodeURIComponent(message.text||''));}catch(e){status(e.message);}};$('jStatus').append(link);
   }if(e.name==='AbortError')throw e;}
 }
