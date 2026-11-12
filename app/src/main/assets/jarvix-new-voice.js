@@ -86,6 +86,17 @@ function updateSphereFromMicrophone(rms){
  orb?.style?.setProperty?.('--jv-mic-glow',(5+volume*24).toFixed(1)+'px');
  orb?.setAttribute?.('data-jv-mic-live',volume>.035?'true':'false');
 }
+// Unlock Web Audio in the ORIGINAL user click. Mobile browsers may block
+// AudioContext.resume() when called after awaiting microphone permission.
+function ensureAudioContextFromGesture(){
+ const Ctx=window.AudioContext||window.webkitAudioContext;
+ if(!Ctx)return null;
+ try{
+  if(!monitorContext||monitorContext.state==='closed')monitorContext=new Ctx();
+  Promise.resolve(monitorContext.resume?.()).catch(()=>{});
+  return monitorContext;
+ }catch{return null;}
+}
 // The sound level is read from the local microphone stream. No raw audio
 // is uploaded by this meter. Browser speech recognition is separate.
 function stopMicMonitor(){
@@ -99,12 +110,13 @@ function stopMicMonitor(){
  updateSphereFromMicrophone(0);
 }
 function startMicMonitor(stream){
- stopMicMonitor();
+ if(monitorTimer!==null){clearInterval(monitorTimer);monitorTimer=null;}
+ if(monitorStream&&monitorStream!==stream){
+  try{monitorStream.getTracks().forEach(t=>t.stop());}catch{}
+ }
  monitorStream=stream;
- const Ctx=window.AudioContext||window.webkitAudioContext;
- if(!Ctx)return;
+ if(!monitorContext)return;
  try{
-  monitorContext=new Ctx();
   const source=monitorContext.createMediaStreamSource(stream);
   monitorAnalyser=monitorContext.createAnalyser();
   monitorAnalyser.fftSize=512;
@@ -176,7 +188,7 @@ function stop(){
 function resumeMicrophone(){
  if(!on)return void start();
  if(micStage==='listening')return;
- try{monitorContext?.resume?.();}catch{}
+ ensureAudioContextFromGesture();
  if(ownerClip){try{ownerClip.pause();ownerClip.currentTime=0;}catch{}ownerClip=null;}
  if(ownerClipDone){const finish=ownerClipDone;ownerClipDone=null;finish(false);}
  if(request){try{request.abort();}catch{}request=null;}
@@ -442,6 +454,7 @@ async function start(){
  if(!Recognition()){on=true;ui('unsupported');return;}
  if(!navigator.mediaDevices?.getUserMedia){on=true;ui('error');return;}
  on=true;const id=++seq;setTranscript('');ui('starting');
+ ensureAudioContextFromGesture(); // synchronous mobile click, before await
  try{
   const stream=await navigator.mediaDevices.getUserMedia({audio:{
    echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
