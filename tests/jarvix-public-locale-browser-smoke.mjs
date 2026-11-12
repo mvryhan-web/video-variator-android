@@ -16,7 +16,11 @@ try{
     const context=await browser.newContext({locale:'en-US',viewport:{width,height:844}});
     const page=await context.newPage();
     const writes=[];
-    page.on('request',req=>{if(req.method()!=='GET'&&req.method()!=='HEAD')writes.push(req.method()+' '+req.url());});
+    page.on('request',req=>{
+      const method=req.method(),route=new URL(req.url()).pathname;
+      // Cloudflare's own Real User Monitoring beacon is not an app/paid API call.
+      if(method!=='GET'&&method!=='HEAD'&&route!=='/cdn-cgi/rum')writes.push(method+' '+req.url());
+    });
     try{
       const response=await page.goto(base+'/jarvix.html',{waitUntil:'domcontentloaded',timeout:30000});
       assert.equal(response?.status(),200,'JARVIX public guide HTTP 200');
