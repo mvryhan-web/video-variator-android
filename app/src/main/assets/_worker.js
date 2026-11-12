@@ -928,6 +928,7 @@ export default {
     }
 
     if (pathname === '/api/studio/estimate' && request.method === 'POST') {
+      if (!await getAuthenticatedUser(request, env)) return json({ error: 'AUTH_REQUIRED' }, 401);
       const body = await request.json().catch(() => ({}));
       const { kind = 'image', model, quantity = 1 } = body;
       const paidVideo=body.walletQuote===WAN_VIDEO_QUOTE&&kind==='video'&&model===WAN_VIDEO_MODEL;
@@ -952,6 +953,7 @@ export default {
 
     if (pathname === '/api/studio/jobs' && request.method === 'POST') {
       const user = await getAuthenticatedUser(request, env);
+      if (!user) return json({ error: 'AUTH_REQUIRED' }, 401);
       const body = await request.json().catch(() => ({}));
       const { kind = 'image', model, prompt = 'Cosmic nebula', ratio = '1:1', duration = 5 } = body;
       const useWanImage=kind==='image'&&(model===WAN_IMAGE_MODEL||(!model&&env.DASHSCOPE_API_KEY&&env.R2_BUCKET));
@@ -1496,11 +1498,12 @@ export default {
 
     if (pathname === '/api/jarvix/chat' && request.method === 'POST') {
       const jarvixAccount = await getAuthenticatedUser(request, env);
+      if (!jarvixAccount) return json({ error: 'AUTH_REQUIRED' }, 401);
       const body = await request.json().catch(() => ({}));
       const message = typeof body.message === 'string' ? body.message.trim() : '';
       if (!message || message.length > 3000) return json({ error: 'INVALID_MESSAGE' }, 400);
       const language = ['ru', 'en', 'es', 'fr'].includes(body.language) ? body.language : 'ru';
-      const sid = body.sessionId || body.conversationId || ('cf-' + crypto.randomUUID());
+      const sid = JSON.stringify([jarvixAccount.id, body.sessionId || body.conversationId || crypto.randomUUID()]);
       let sessionData = jarvixSessions.get(sid);
       if (!sessionData || Array.isArray(sessionData)) {
         sessionData = { history: Array.isArray(sessionData) ? sessionData : [], image: null };
@@ -1663,7 +1666,9 @@ export default {
     if (pathname === '/api/jarvix/reset' && request.method === 'POST') {
       const body = await request.json().catch(() => ({}));
       const sid = body.sessionId || body.conversationId;
-      if (sid) jarvixSessions.delete(sid);
+      const account = await getAuthenticatedUser(request, env);
+      if (!account) return json({ error: 'AUTH_REQUIRED' }, 401);
+      if (sid) jarvixSessions.delete(JSON.stringify([account.id, sid]));
       return json({ ok: true });
     }
 

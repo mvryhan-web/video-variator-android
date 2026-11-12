@@ -39,7 +39,11 @@ import {saveStudioHandoff, takeStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id),status=text=>$('jStatus').textContent=text;
 const store=await conversationStore();let conversation=null,busy=false,epoch=0,controller=null,config=null,urls=[];
 const headers=()=>({'Content-Type':'application/json',...(localStorage.getItem('vv_token')?{Authorization:'Bearer '+localStorage.getItem('vv_token')}:{})});
-async function api(path,body){store.guard();const r=await fetch(path,{method:body?'POST':'GET',headers:headers(),cache:'no-store',...(body?{body:JSON.stringify(body)}:{}),signal:controller?.signal});store.guard();const d=await r.json();if(!r.ok)throw Error(d.message||d.error||'Request failed');return d;}
+async function api(path,body){store.guard();const r=await fetch(path,{method:body?'POST':'GET',headers:headers(),cache:'no-store',...(body?{body:JSON.stringify(body)}:{}),signal:controller?.signal});store.guard();const d=await r.json();if(!r.ok){
+ const error=Error(d.message||d.error||'Request failed');
+ error.code=d.error;
+ throw error;
+}return d;}
 async function save(){conversation=await store.save(conversation);await historyList();}
 async function historyList(){const rows=await store.list();$('jHistory').replaceChildren();for(const r of rows){const o=document.createElement('option');o.value=r.id;o.textContent=r.title;o.selected=r.id===conversation?.id;$('jHistory').append(o);}}
 const node=(tag,text)=>{const n=document.createElement(tag);if(text)n.textContent=text;return n;};
@@ -481,6 +485,15 @@ async function processMessage(message){
   pendingMediaFrame=null;
   message.status='sent';conversation.messages.push(answer);await save();render();if(answer.jobId)await poll(answer);
  }catch(e){pendingMediaFrame=null;message.status=message.status==='sent'?'sent':e.name==='AbortError'?'interrupted':'error';message.error=e.message;await save();if(e.name!=='AbortError'){
+   if(e.code==='AUTH_REQUIRED'){
+    const copy={ru:'Войти, чтобы продолжить',en:'Sign in to continue',fr:'Se connecter pour continuer',es:'Inicia sesión para continuar'};
+    const label=copy[getJarvixLanguage()]||copy.en;
+    status('');
+    const signIn=node('a',label);
+    signIn.href='/video-uniquifier.html#signin';
+    $('jStatus').append(signIn);
+    return;
+   }
    status(e.message);if(message.voiceAction)speakJarvis(/credit|balance/i.test(e.message)?'Недостаточно кредитов':'Уточните промпт');const link=node('button','Open request in Studio');link.type='button';link.onclick=async()=>{const mode=resolveMode(message.text,message.mode),kind=mode==='audio'?'music':mode==='text'?'image':mode;const files=(message.files||[]).filter(f=>['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024);try{await saveStudioHandoff({kind,prompt:message.text,files,source:'jarvix-chat'});location.assign('jarvix-chat.html?mode='+(kind==='music'?'audio':kind)+'&prompt='+encodeURIComponent(message.text||''));}catch(e){status(e.message);}};$('jStatus').append(link);
   }if(e.name==='AbortError')throw e;}
 }
