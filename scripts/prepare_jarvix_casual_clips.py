@@ -51,8 +51,11 @@ def main():
                 raise SystemExit("Original audio checksum mismatch: "+name)
             duration=float(call(["ffprobe","-v","error","-show_entries","format=duration",
                                   "-of","default=noprint_wrappers=1:nokey=1",str(source)]))
-            if start<0 or end>duration or end<=start:
-                raise SystemExit("Invalid phrase trim: "+name)
+            # Some checked-in source encodings differ slightly in their
+            # container duration. Never seek beyond the actual MP3 bytes.
+            if end>duration: end=duration-0.035
+            if start<0 or end<=start or end-start<0.75:
+                raise SystemExit(f"Invalid phrase trim: {name}; {start:.3f}-{end:.3f}, duration={duration:.3f}")
             filename=f"{purpose}_{lang}.mp3"
             target=DEST/filename
             if not target.exists():
