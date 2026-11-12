@@ -1,0 +1,419 @@
+{
+  "schema": "jarvix-new-casual-25x4/v1",
+  "purpose": "live-conversation-smalltalk",
+  "status": "needs-local-VoxCPM2-generation-and-audition",
+  "sources": [
+    "voice-model:jarvix-master-voice-profile.json",
+    "tour-v3 approved voice source"
+  ],
+  "languages": [
+    "ru",
+    "en",
+    "fr",
+    "es"
+  ],
+  "countScenarios": 25,
+  "countAudioTargets": 100,
+  "scenarios": [
+    {
+      "index": 1,
+      "id": "wellbeing",
+      "phrases": {
+        "ru": "Всё хорошо, спасибо! А у тебя?",
+        "en": "I'm good, thanks! How about you?",
+        "fr": "Ça va bien, merci ! Et vous ?",
+        "es": "¡Muy bien, gracias! ¿Y tú?"
+      },
+      "audio": {
+        "ru": "wellbeing_ru.mp3",
+        "en": "wellbeing_en.mp3",
+        "fr": "wellbeing_fr.mp3",
+        "es": "wellbeing_es.mp3"
+      }
+    },
+    {
+      "index": 2,
+      "id": "activity",
+      "phrases": {
+        "ru": "Слушаю тебя. Чем помочь?",
+        "en": "I'm listening. How can I help?",
+        "fr": "Je vous écoute. Comment puis-je vous aider ?",
+        "es": "Te escucho. ¿En qué puedo ayudarte?"
+      },
+      "audio": {
+        "ru": "activity_ru.mp3",
+        "en": "activity_en.mp3",
+        "fr": "activity_fr.mp3",
+        "es": "activity_es.mp3"
+      }
+    },
+    {
+      "index": 3,
+      "id": "hearing",
+      "phrases": {
+        "ru": "Да, я тебя слышу. Говори.",
+        "en": "Yes, I can hear you. Go ahead.",
+        "fr": "Oui, je vous entends. Allez-y.",
+        "es": "Sí, te escucho. Adelante."
+      },
+      "audio": {
+        "ru": "hearing_ru.mp3",
+        "en": "hearing_en.mp3",
+        "fr": "hearing_fr.mp3",
+        "es": "hearing_es.mp3"
+      }
+    },
+    {
+      "index": 4,
+      "id": "identity",
+      "phrases": {
+        "ru": "Я JARVIX, твой голосовой помощник.",
+        "en": "I'm JARVIX, your voice assistant.",
+        "fr": "Je suis JARVIX, votre assistant vocal.",
+        "es": "Soy JARVIX, tu asistente de voz."
+      },
+      "audio": {
+        "ru": "identity_ru.mp3",
+        "en": "identity_en.mp3",
+        "fr": "identity_fr.mp3",
+        "es": "identity_es.mp3"
+      }
+    },
+    {
+      "index": 5,
+      "id": "thanks",
+      "phrases": {
+        "ru": "Всегда пожалуйста!",
+        "en": "You're very welcome!",
+        "fr": "Avec plaisir !",
+        "es": "¡De nada!"
+      },
+      "audio": {
+        "ru": "thanks_ru.mp3",
+        "en": "thanks_en.mp3",
+        "fr": "thanks_fr.mp3",
+        "es": "thanks_es.mp3"
+      }
+    },
+    {
+      "index": 6,
+      "id": "farewell",
+      "phrases": {
+        "ru": "Пока! До встречи!",
+        "en": "Bye! See you soon!",
+        "fr": "Au revoir ! À bientôt !",
+        "es": "¡Adiós! ¡Hasta pronto!"
+      },
+      "audio": {
+        "ru": "farewell_ru.mp3",
+        "en": "farewell_en.mp3",
+        "fr": "farewell_fr.mp3",
+        "es": "farewell_es.mp3"
+      }
+    },
+    {
+      "index": 7,
+      "id": "help",
+      "phrases": {
+        "ru": "Конечно, помогу. Расскажи, что нужно.",
+        "en": "Of course. Tell me what you need.",
+        "fr": "Bien sûr. Dites-moi ce dont vous avez besoin.",
+        "es": "Claro. Dime qué necesitas."
+      },
+      "audio": {
+        "ru": "help_ru.mp3",
+        "en": "help_en.mp3",
+        "fr": "help_fr.mp3",
+        "es": "help_es.mp3"
+      }
+    },
+    {
+      "index": 8,
+      "id": "clarify",
+      "phrases": {
+        "ru": "Можешь уточнить, что именно ты хочешь?",
+        "en": "Could you tell me a little more about what you want?",
+        "fr": "Pouvez-vous préciser ce que vous souhaitez ?",
+        "es": "¿Puedes decirme con más detalle qué quieres?"
+      },
+      "audio": {
+        "ru": "clarify_ru.mp3",
+        "en": "clarify_en.mp3",
+        "fr": "clarify_fr.mp3",
+        "es": "clarify_es.mp3"
+      }
+    },
+    {
+      "index": 9,
+      "id": "repeat",
+      "phrases": {
+        "ru": "Повтори, пожалуйста, я хочу правильно тебя понять.",
+        "en": "Please say that again so I can understand.",
+        "fr": "Pouvez-vous répéter, s'il vous plaît ?",
+        "es": "Repítelo, por favor, para que pueda entenderte bien."
+      },
+      "audio": {
+        "ru": "repeat_ru.mp3",
+        "en": "repeat_en.mp3",
+        "fr": "repeat_fr.mp3",
+        "es": "repeat_es.mp3"
+      }
+    },
+    {
+      "index": 10,
+      "id": "wait",
+      "phrases": {
+        "ru": "Хорошо, подожду.",
+        "en": "Okay, I'll wait.",
+        "fr": "D'accord, je vous attends.",
+        "es": "Vale, espero."
+      },
+      "audio": {
+        "ru": "wait_ru.mp3",
+        "en": "wait_en.mp3",
+        "fr": "wait_fr.mp3",
+        "es": "wait_es.mp3"
+      }
+    },
+    {
+      "index": 11,
+      "id": "continue",
+      "phrases": {
+        "ru": "Хорошо, продолжаем.",
+        "en": "Okay, let's continue.",
+        "fr": "Très bien, continuons.",
+        "es": "Bien, continuemos."
+      },
+      "audio": {
+        "ru": "continue_ru.mp3",
+        "en": "continue_en.mp3",
+        "fr": "continue_fr.mp3",
+        "es": "continue_es.mp3"
+      }
+    },
+    {
+      "index": 12,
+      "id": "yes",
+      "phrases": {
+        "ru": "Да, давай попробуем.",
+        "en": "Yes, let's try.",
+        "fr": "Oui, essayons.",
+        "es": "Sí, vamos a intentarlo."
+      },
+      "audio": {
+        "ru": "yes_ru.mp3",
+        "en": "yes_en.mp3",
+        "fr": "yes_fr.mp3",
+        "es": "yes_es.mp3"
+      }
+    },
+    {
+      "index": 13,
+      "id": "no",
+      "phrases": {
+        "ru": "Пока не могу это сделать, но могу предложить другой вариант.",
+        "en": "I can't do that yet, but I can suggest another way.",
+        "fr": "Je ne peux pas encore le faire, mais je peux proposer une autre solution.",
+        "es": "Todavía no puedo hacerlo, pero puedo sugerir otra opción."
+      },
+      "audio": {
+        "ru": "no_ru.mp3",
+        "en": "no_en.mp3",
+        "fr": "no_fr.mp3",
+        "es": "no_es.mp3"
+      }
+    },
+    {
+      "index": 14,
+      "id": "capabilities",
+      "phrases": {
+        "ru": "Я могу помочь тебе разобраться с инструментами DEEPSYQ.",
+        "en": "I can help you explore DEEPSYQ tools.",
+        "fr": "Je peux vous aider à découvrir les outils DEEPSYQ.",
+        "es": "Puedo ayudarte a conocer las herramientas de DEEPSYQ."
+      },
+      "audio": {
+        "ru": "capabilities_ru.mp3",
+        "en": "capabilities_en.mp3",
+        "fr": "capabilities_fr.mp3",
+        "es": "capabilities_es.mp3"
+      }
+    },
+    {
+      "index": 15,
+      "id": "image",
+      "phrases": {
+        "ru": "Давай создадим изображение. Опиши свою идею.",
+        "en": "Let's create an image. Describe your idea.",
+        "fr": "Créons une image. Décrivez votre idée.",
+        "es": "Vamos a crear una imagen. Describe tu idea."
+      },
+      "audio": {
+        "ru": "image_ru.mp3",
+        "en": "image_en.mp3",
+        "fr": "image_fr.mp3",
+        "es": "image_es.mp3"
+      }
+    },
+    {
+      "index": 16,
+      "id": "video",
+      "phrases": {
+        "ru": "Давай сделаем видео. Расскажи, что ты представляешь.",
+        "en": "Let's make a video. Tell me what you imagine.",
+        "fr": "Créons une vidéo. Dites-moi ce que vous imaginez.",
+        "es": "Hagamos un vídeo. Cuéntame qué imaginas."
+      },
+      "audio": {
+        "ru": "video_ru.mp3",
+        "en": "video_en.mp3",
+        "fr": "video_fr.mp3",
+        "es": "video_es.mp3"
+      }
+    },
+    {
+      "index": 17,
+      "id": "audio",
+      "phrases": {
+        "ru": "Могу помочь с аудио. Что хочешь сделать?",
+        "en": "I can help with audio. What would you like to do?",
+        "fr": "Je peux vous aider avec l'audio. Que voulez-vous faire ?",
+        "es": "Puedo ayudarte con audio. ¿Qué quieres hacer?"
+      },
+      "audio": {
+        "ru": "audio_ru.mp3",
+        "en": "audio_en.mp3",
+        "fr": "audio_fr.mp3",
+        "es": "audio_es.mp3"
+      }
+    },
+    {
+      "index": 18,
+      "id": "tools",
+      "phrases": {
+        "ru": "Могу подсказать подходящий инструмент.",
+        "en": "I can help you choose the right tool.",
+        "fr": "Je peux vous aider à choisir le bon outil.",
+        "es": "Puedo ayudarte a elegir la herramienta adecuada."
+      },
+      "audio": {
+        "ru": "tools_ru.mp3",
+        "en": "tools_en.mp3",
+        "fr": "tools_fr.mp3",
+        "es": "tools_es.mp3"
+      }
+    },
+    {
+      "index": 19,
+      "id": "settings",
+      "phrases": {
+        "ru": "Давай посмотрим настройки.",
+        "en": "Let's look at the settings.",
+        "fr": "Regardons les paramètres.",
+        "es": "Veamos los ajustes."
+      },
+      "audio": {
+        "ru": "settings_ru.mp3",
+        "en": "settings_en.mp3",
+        "fr": "settings_fr.mp3",
+        "es": "settings_es.mp3"
+      }
+    },
+    {
+      "index": 20,
+      "id": "problem",
+      "phrases": {
+        "ru": "Что именно не работает? Расскажи подробнее.",
+        "en": "What isn't working? Tell me more.",
+        "fr": "Qu'est-ce qui ne fonctionne pas ? Dites-m'en plus.",
+        "es": "¿Qué no funciona? Cuéntame más."
+      },
+      "audio": {
+        "ru": "problem_ru.mp3",
+        "en": "problem_en.mp3",
+        "fr": "problem_fr.mp3",
+        "es": "problem_es.mp3"
+      }
+    },
+    {
+      "index": 21,
+      "id": "retry",
+      "phrases": {
+        "ru": "Давай попробуем ещё раз.",
+        "en": "Let's try again.",
+        "fr": "Essayons encore une fois.",
+        "es": "Vamos a intentarlo otra vez."
+      },
+      "audio": {
+        "ru": "retry_ru.mp3",
+        "en": "retry_en.mp3",
+        "fr": "retry_fr.mp3",
+        "es": "retry_es.mp3"
+      }
+    },
+    {
+      "index": 22,
+      "id": "ready",
+      "phrases": {
+        "ru": "Я здесь. Можем начинать.",
+        "en": "I'm here. We can start.",
+        "fr": "Je suis là. Nous pouvons commencer.",
+        "es": "Aquí estoy. Podemos empezar."
+      },
+      "audio": {
+        "ru": "ready_ru.mp3",
+        "en": "ready_en.mp3",
+        "fr": "ready_fr.mp3",
+        "es": "ready_es.mp3"
+      }
+    },
+    {
+      "index": 23,
+      "id": "welcome_back",
+      "phrases": {
+        "ru": "Рад тебя снова слышать.",
+        "en": "It's good to hear you again.",
+        "fr": "Ravi de vous entendre à nouveau.",
+        "es": "Me alegra volver a escucharte."
+      },
+      "audio": {
+        "ru": "welcome_back_ru.mp3",
+        "en": "welcome_back_en.mp3",
+        "fr": "welcome_back_fr.mp3",
+        "es": "welcome_back_es.mp3"
+      }
+    },
+    {
+      "index": 24,
+      "id": "ask_question",
+      "phrases": {
+        "ru": "Задавай вопрос, я постараюсь помочь.",
+        "en": "Ask your question. I'll do my best to help.",
+        "fr": "Posez votre question, je ferai de mon mieux pour vous aider.",
+        "es": "Haz tu pregunta. Haré lo posible por ayudarte."
+      },
+      "audio": {
+        "ru": "ask_question_ru.mp3",
+        "en": "ask_question_en.mp3",
+        "fr": "ask_question_fr.mp3",
+        "es": "ask_question_es.mp3"
+      }
+    },
+    {
+      "index": 25,
+      "id": "fallback",
+      "phrases": {
+        "ru": "Я тебя слушаю. Расскажи чуть подробнее.",
+        "en": "I'm listening. Tell me a little more.",
+        "fr": "Je vous écoute. Dites-m'en un peu plus.",
+        "es": "Te escucho. Cuéntame un poco más."
+      },
+      "audio": {
+        "ru": "fallback_ru.mp3",
+        "en": "fallback_en.mp3",
+        "fr": "fallback_fr.mp3",
+        "es": "fallback_es.mp3"
+      }
+    }
+  ]
+}
