@@ -1,0 +1,82 @@
+name: DEEPSYQ SEO audit batch 5 - utility metadata only
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/deepsyq-seo-audit-batch5.yml'
+      - 'app/src/main/assets/smart-reminders.html'
+      - 'app/src/main/assets/mobile-utility.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  metadata-only:
+    if: >-
+      github.ref == 'refs/heads/deepsyq-platform' &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.head_commit.message == 'release(DEEPSYQ SEO): publish two missing utility metadata heads')
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify publisher and exact metadata presence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/deepsyq_surgical_publish.py
+          python -m unittest discover -s tests -p 'test_deepsyq_surgical_publish.py' -v
+          python - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          from importlib.util import spec_from_file_location,module_from_spec
+          spec=spec_from_file_location('publish','scripts/deepsyq_surgical_publish.py')
+          mod=module_from_spec(spec);spec.loader.exec_module(mod)
+          files=['smart-reminders.html','mobile-utility.html']
+          assert mod.allowed_hash_reuse(files)
+          assert not mod.allowed_hash_reuse(files[:1])
+          class Meta(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.meta={}
+                  self.canonical=[]
+                  self.h1=0
+              def handle_starttag(self,tag,attrs):
+                  a=dict(attrs)
+                  if tag=='meta':
+                      key=a.get('property') or a.get('name')
+                      if key:self.meta.setdefault(key,[]).append(a.get('content',''))
+                  if tag=='link' and a.get('rel')=='canonical':
+                      self.canonical.append(a.get('href'))
+                  if tag=='h1':self.h1+=1
+          for f in files:
+              src=(Path('app/src/main/assets')/f).read_text(encoding='utf-8')
+              c=Meta();c.feed(src)
+              assert c.h1==1,(f,c.h1)
+              assert c.canonical==['https://deepsyq.app/'+f],(f,c.canonical)
+              for name in ('description','og:title','og:description','og:url','og:type','twitter:card'):
+                  assert len(c.meta.get(name,[]))==1,(f,name,c.meta.get(name))
+              assert c.meta['og:url'][0]==c.canonical[0]
+              assert c.meta['og:type'][0]=='website'
+              assert c.meta['twitter:card'][0]=='summary'
+          print('SEO_AUDIT_BATCH_5_METADATA_PASS')
+          PY
+      - name: Install uploader
+        run: python -m pip install --disable-pip-version-check "requests==2.32.3" "blake3==1.0.8"
+      - name: Publish only two HTML metadata files and verify unchanged Worker
+        run: |
+          python scripts/deepsyq_surgical_publish.py \
+            --mode publish \
+            --files smart-reminders.html,mobile-utility.html \
+            --commit "$GITHUB_SHA"
