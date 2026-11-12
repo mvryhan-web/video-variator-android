@@ -19,7 +19,8 @@ test('Tour resumes at AI Apps and advances to Canvas without paid generation',as
    new Promise((_,reject)=>setTimeout(()=>reject(Error('Preview did not start')),15000))
   ]);
   browser=await chromium.launch({headless:true});
-  for(const viewport of [{width:1365,height:850},{width:390,height:844}]){
+  for(const scenario of ['already-on-ai-apps','fresh-cross-page-handoff']){
+   for(const viewport of [{width:1365,height:850},{width:390,height:844}]){
    const page=await browser.newPage({viewport});
    const paid=[],errors=[],transitions=[];
    page.on('pageerror',e=>errors.push(e.message));
@@ -44,7 +45,12 @@ test('Tour resumes at AI Apps and advances to Canvas without paid generation',as
    try{
     await page.goto('http://127.0.0.1:32744/ai-apps.html',{waitUntil:'domcontentloaded'});
     await page.evaluate(k=>sessionStorage.setItem(k,JSON.stringify({
-      index:4,language:'ru',phase:'playing',navAnnounced:4,beat:0,position:0
+      index:4,language:'ru',phase:'playing',
+      navAnnounced:scenario==='already-on-ai-apps'?4:3,
+      beat:0,position:0,
+      ...(scenario==='fresh-cross-page-handoff'?{
+        pendingRoute:{index:4,href:'http://127.0.0.1:32744/ai-apps.html'}
+      }:{})
     })),key);
     await page.reload({waitUntil:'domcontentloaded'});
     try{await page.waitForURL(/\/canvas\.html(?:\?|#|$)/,{timeout:22000});}
@@ -56,6 +62,7 @@ test('Tour resumes at AI Apps and advances to Canvas without paid generation',as
     assert.equal(saved?.index,5,'Canvas is the next stage without resetting the approved first four stages');
     assert.deepEqual(paid,[],'Tour must not trigger paid generation');
    }finally{await page.close();}
+   }
   }
  }finally{
   if(browser)await browser.close();
