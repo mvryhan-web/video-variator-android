@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `bc4fa23dd70b0940d83d6c3bdae5341f73dd5c27`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 121 | Named symbols: 418 | Checked relations: 79
+Source commit: `b241afc85908697e59ee8cc3843a73555b277f96`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 121 | Named symbols: 419 | Checked relations: 80
 
 ## Topic finder (matching filenames)
 
@@ -34,7 +34,7 @@ Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code 
 
 ### `app/src/main/assets/_worker.js`
 
-_worker.js (L1) · INSPIRATION_ITEMS (L4) · CREATIVE_TEMPLATES (L5) · studioJobs (L9) · dailyUserUsage (L10) · jarvixSessions (L19) · edgeUsers (L20) · edgeWallets (L21) · edgeWalletLedger (L22) · edgeHistory (L23) · edgeOnboarding (L24) · edgeRevenueLedger (L25) · platformUnitEconomics (L26) · LIVE_SUBSCRIPTION_LINKS (L34) · LIVE_PLAN_BY_PAYMENT_LINK (L42) · LIVE_CREDIT_PACKS (L50) · WAN_IMAGE_SIZES (L248)
+_worker.js (L1) · INSPIRATION_ITEMS (L4) · CREATIVE_TEMPLATES (L5) · studioJobs (L9) · dailyUserUsage (L10) · jarvixSessions (L19) · edgeUsers (L20) · edgeWallets (L21) · edgeWalletLedger (L22) · edgeHistory (L23) · edgeOnboarding (L24) · edgeRevenueLedger (L25) · platformUnitEconomics (L26) · LIVE_SUBSCRIPTION_LINKS (L34) · LIVE_PLAN_BY_PAYMENT_LINK (L42) · LIVE_CREDIT_PACKS (L50) · WAN_VIDEO_SIZES (L251) · WAN_IMAGE_SIZES (L260)
 
 ### `app/src/main/assets/ai-apps.js`
 
@@ -130,7 +130,7 @@ ACTION_ROUTES (L2)
 
 ### `app/src/main/assets/jarvix-chat.js`
 
-urls (L40) · composer (L466) · pendingMsg (L516) · pending (L544) · modeHeaderLabels (L548) · composerInput (L585) · wpPane (L655) · expandBtn (L674)
+urls (L40) · composer (L501) · pendingMsg (L551) · pending (L579) · modeHeaderLabels (L583) · composerInput (L620) · wpPane (L690) · expandBtn (L709)
 
 ### `app/src/main/assets/jarvix-clip-library.js`
 
