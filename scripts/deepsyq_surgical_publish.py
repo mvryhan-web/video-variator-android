@@ -6,6 +6,7 @@ the currently deployed assets, overlays only explicitly requested paths, and
 re-deploys with the unchanged Worker. It is intentionally fail-closed.
 """
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -192,6 +193,68 @@ class Cloudflare:
                              headers={"Cache-Control": "no-cache"})
         return response.status_code
 
+    def tour_manifest_deploy(self, candidate, raw, sha, worker, origin):
+        """Single-asset Pages upload: unchanged routes reuse canonical LIVE hashes.
+
+        Fetch the *currently deployed* Worker payload rather than recompiling
+        or modifying it. Never publish if its exact original bytes cannot be
+        retrieved in a Cloudflare-supported worker upload format.
+        """
+        rel = "jarvix-guided-tour.js"
+        key = digest(raw, rel)
+        insist(candidate.get("/" + rel) == key, "Tour hash is not in candidate manifest")
+        api_prefix = API + "/accounts/" + self.account + "/pages/projects/" + PROJECT
+        token = self.json("/accounts/" + self.account +
+                          "/pages/projects/" + PROJECT + "/upload-token").get("jwt")
+        insist(isinstance(token, str) and token, "Pages asset upload token unavailable")
+        jwt_headers = {"Authorization": "Bearer " + token}
+        check = self.call("POST", API + "/pages/assets/check-missing",
+                          headers=jwt_headers, json={"hashes": [key]}).json()
+        insist(check.get("success") is True and
+               isinstance(check.get("result"), list) and
+               set(check["result"]).issubset({key}), "Cannot verify tour asset upload status")
+        if key in check["result"]:
+            upload = self.call("POST", API + "/pages/assets/upload",
+                               headers=jwt_headers,
+                               json=[{"key": key, "base64": True,
+                                      "metadata": {"contentType": "application/javascript"},
+                                      "value": base64.b64encode(raw).decode("ascii")}]).json()
+            insist(upload.get("success") is True, "Cloudflare tour asset upload failed")
+        after = self.call("POST", API + "/pages/assets/check-missing",
+                          headers=jwt_headers, json={"hashes": [key]}).json()
+        insist(after.get("success") is True and after.get("result") == [],
+               "Tour asset not confirmed in Pages asset store")
+
+        worker_response = self.call("GET", API + "/accounts/" + self.account +
+                                    "/workers/scripts/" + quote(worker, safe=""))
+        mime = worker_response.headers.get("Content-Type", "").lower()
+        content = worker_response.content
+        insist(100 <= len(content) <= MAX_FILE_BYTES, "Worker bytes are not verifiable")
+        if mime.startswith("multipart/form-data"):
+            worker_field = "_worker.bundle"
+        elif "javascript" in mime:
+            worker_field = "_worker.js"
+        else:
+            raise Blocked("Original Worker format unsupported; no production deployment")
+        files = {worker_field: (worker_field, content, mime)}
+        # Mirror the canonical LIVE source routing metadata, never HEAD.
+        for special in ("_headers", "_redirects", "_routes.json"):
+            obj = subprocess.run(["git", "show",
+                                  origin + ":app/src/main/assets/" + special],
+                                 capture_output=True)
+            if obj.returncode == 0:
+                insist(len(obj.stdout) <= MAX_FILE_BYTES, "Special config too large")
+                files[special] = (special, obj.stdout, "application/octet-stream")
+        form = {"branch": BRANCH, "commit_hash": sha, "commit_dirty": "true",
+                "commit_message": "Tour-only manifest update, unchanged Worker",
+                "manifest": json.dumps(candidate, separators=(",", ":"))}
+        response = self.call("POST", api_prefix + "/deployments",
+                             data=form, files=files).json()
+        insist(response.get("success") is True and
+               isinstance((response.get("result") or {}).get("id"), str),
+               "Direct Pages manifest deployment was rejected")
+        return response["result"]["id"]
+
 def special_snapshot(candidate_dir, original_dir):
     # Worker and special Pages routing configuration are copied only from
     # the canonical live deployment's Git commit, never from current DEV.
@@ -322,8 +385,25 @@ def main():
     cloudflare.endpoint_status("/api/config")
     with tempfile.TemporaryDirectory(prefix="deepsyq-surgical-") as temp:
         work = Path(temp)
-        stage, candidate, changed, from_live, expected_bytes = build_candidate(
-            live, paths, origin, work)
+        # The normal reconstruction path preserves exact public bytes. If
+        # Cloudflare rewrites a non-targeted HTML asset such as /404.html,
+        # the tour-only escape hatch preserves the original LIVE manifest
+        # by hash rather than guessing content or changing unrelated routes.
+        try:
+            stage, candidate, changed, from_live, expected_bytes = build_candidate(
+                live, paths, origin, work)
+            direct_manifest = False
+        except Blocked as error:
+            insist(paths == ["jarvix-guided-tour.js"] and
+                   str(error).startswith("Could not reproduce unchanged LIVE asset bytes:"),
+                   str(error))
+            rel = paths[0]
+            raw = (ROOT / rel).read_bytes()
+            candidate, changed = surgical_manifest(live, {rel: digest(raw, rel)})
+            expected_bytes = {rel: raw}
+            from_live = 0
+            stage = None
+            direct_manifest = True
         if not changed:
             print(json.dumps({"status": "NO_CHANGE", "baseline": live_id,
                               "files": paths, "published": False}))
@@ -331,14 +411,17 @@ def main():
         print(json.dumps({"status": "SURGICAL_PREFLIGHT_PASS", "baseline": live_id,
                           "allowed": sorted(changed), "other_assets_preserved": len(live)-len(changed),
                           "live_assets_recovered": from_live, "worker_sha": saved_worker[:12],
-                          "published": False}))
+                          "manifest_reuse": bool(direct_manifest), "published": False}))
         if args.mode == "plan":
             return 0
 
         current_id, _, _, current_worker, _ = cloudflare.read_live()
         insist(current_id == live_id and current_worker == worker,
                "Concurrent production update detected; no deploy")
-        run_wrangle(stage, sha)
+        if direct_manifest:
+            cloudflare.tour_manifest_deploy(candidate, expected_bytes[paths[0]], sha, worker, origin)
+        else:
+            run_wrangle(stage, sha)
         # Do not claim success until new production, worker and all asset hashes agree.
         newest = None
         for _ in range(12):
