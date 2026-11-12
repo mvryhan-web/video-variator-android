@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `54bf7647bb4f2c8c0472a946ee0be159ddd567bf`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 121 | Named symbols: 416 | Checked relations: 77
+Source commit: `6d2f4861e088696bae86c509843efa1d1de45af5`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 121 | Named symbols: 417 | Checked relations: 78
 
 ## Topic finder (matching filenames)
 
@@ -34,7 +34,7 @@ Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code 
 
 ### `app/src/main/assets/_worker.js`
 
-_worker.js (L1) · INSPIRATION_ITEMS (L3) · CREATIVE_TEMPLATES (L4) · studioJobs (L8) · dailyUserUsage (L9) · jarvixSessions (L18) · edgeUsers (L19) · edgeWallets (L20) · edgeWalletLedger (L21) · edgeHistory (L22) · edgeOnboarding (L23) · edgeRevenueLedger (L24) · platformUnitEconomics (L25) · LIVE_SUBSCRIPTION_LINKS (L33) · LIVE_CREDIT_PACKS (L41)
+_worker.js (L1) · INSPIRATION_ITEMS (L3) · CREATIVE_TEMPLATES (L4) · studioJobs (L8) · dailyUserUsage (L9) · jarvixSessions (L18) · edgeUsers (L19) · edgeWallets (L20) · edgeWalletLedger (L21) · edgeHistory (L22) · edgeOnboarding (L23) · edgeRevenueLedger (L24) · platformUnitEconomics (L25) · LIVE_SUBSCRIPTION_LINKS (L33) · LIVE_CREDIT_PACKS (L41) · WAN_IMAGE_SIZES (L216)
 
 ### `app/src/main/assets/ai-apps.js`
 
