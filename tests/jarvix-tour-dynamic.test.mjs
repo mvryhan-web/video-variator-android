@@ -99,7 +99,19 @@ test('JARVIX completes all 19 sections through AI Apps, Canvas and Pricing, no p
      }
      furthest=Math.max(furthest,s.index);
      last='step '+s.index+' beat '+s.beat+' phase '+s.phase+' error '+String(s.error||'')+' url '+page.url();
-     if(s.phase==='paused')throw new Error('Tour unexpectedly paused: '+last+' browser errors '+JSON.stringify(errors.slice(-8)));
+     if(s.phase==='paused'){
+      const dom=await page.evaluate(()=>({
+       title:document.title,ready:document.readyState,
+       plus:!!document.getElementById('jPlus'),
+       menu:!!document.getElementById('jPlusMenu'),
+       choices:[...document.querySelectorAll('[data-j-mode]')].map(e=>e.getAttribute('data-j-mode')),
+       chat:!!document.getElementById('jChatForm'),
+       bodySize:document.body.innerHTML.length,
+       status:document.querySelector('.ds-tour-controls')?.dataset.error||'',
+       formHTML:document.querySelector('#jChatForm')?.outerHTML.slice(0,1800)
+      }));
+      throw new Error('Tour unexpectedly paused: '+last+' DOM '+JSON.stringify(dom)+' browser errors '+JSON.stringify(errors.slice(-8)));
+     }
     }else if(furthest>=18){finished=true;break;}
     await new Promise(resolve=>setTimeout(resolve,100));
    }
