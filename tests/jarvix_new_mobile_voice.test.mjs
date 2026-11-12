@@ -265,3 +265,18 @@ test('original recorded voice plays using user-unlocked Web Audio when mobile Au
     assert.equal(f.webAudioPlayCount,2,'Second owner-recorded reply also uses Web Audio');
   }finally{f.stop();}
 });
+
+test('interim recognized words pulse sphere if phone has no WebAudio analyser',async()=>{
+  const f=fixture({meter:false});
+  try{
+    f.clickSphere();await f.flush();
+    assert.equal(f.orb.style.vars['--jv-mic-scale']||'1.000','1.000');
+    const r=f.recognizers.at(-1);
+    r.emit('Как',false);
+    assert.ok(Number(f.orb.style.vars['--jv-mic-scale'])>1);
+    r.emit('Как дела',false);
+    assert.ok(Number(f.orb.style.vars['--jv-mic-scale'])>1);
+    await new Promise(resolve=>setTimeout(resolve,215));
+    assert.equal(f.orb.style.vars['--jv-mic-scale'],'1.000');
+  }finally{f.stop();}
+});
