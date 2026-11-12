@@ -1,0 +1,81 @@
+name: DEEPSYQ JARVIX four-language browser check and one-line locale fix
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/deepsyq-jarvix-browser-locale-completion.yml'
+      - 'tests/jarvix-public-locale-browser-smoke.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  first-render-lang:
+    if: >-
+      github.ref == 'refs/heads/deepsyq-platform' &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.head_commit.message == 'release(DEEPSYQ i18n): finish first-render JARVIX language and browser check')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Existing four-language unit and uploader tests
+        run: |
+          set -euo pipefail
+          node --check app/src/main/assets/deepsyq-i18n.js
+          node --check tests/jarvix-public-locale-browser-smoke.mjs
+          node --test tests/deepsyq-i18n-regression.test.mjs
+          python -m py_compile scripts/deepsyq_surgical_publish.py
+          python -m unittest discover -s tests -p 'test_deepsyq_surgical_publish.py' -v
+          python - <<'PY'
+          from importlib.util import spec_from_file_location,module_from_spec
+          spec=spec_from_file_location('publisher','scripts/deepsyq_surgical_publish.py')
+          publisher=module_from_spec(spec);spec.loader.exec_module(publisher)
+          assert publisher.allowed_hash_reuse(['deepsyq-i18n.js'])
+          assert not publisher.allowed_hash_reuse(['deepsyq-i18n.js','jarvix.html'])
+          s=open('app/src/main/assets/deepsyq-i18n.js',encoding='utf8').read()
+          assert s.count("document.documentElement.lang=language==='en'?'en-US':language;")==2
+          assert "const start=()=>{\n   scan(document.documentElement);\n   document.documentElement.lang=" in s
+          print('INITIAL_LOCALE_SINGLE_LINE_PATCH_PASS')
+          PY
+      - name: Install browser test dependencies
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Run read-only local real-browser tests at mobile and desktop widths
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8761 --bind 127.0.0.1 --directory app/src/main/assets > /tmp/jarvix-static.log 2>&1 &
+          PID=$!
+          trap 'kill "$PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8761/jarvix.html -o /dev/null; then break; fi
+            sleep 1
+          done
+          node tests/jarvix-public-locale-browser-smoke.mjs http://127.0.0.1:8761
+      - name: Install exact surgical uploader dependencies
+        run: python -m pip install --disable-pip-version-check "requests==2.32.3" "blake3==1.0.8"
+      - name: Publish ONLY the existing locale JS change, verify unchanged Worker and all other assets
+        run: |
+          python scripts/deepsyq_surgical_publish.py \
+            --mode publish \
+            --files deepsyq-i18n.js \
+            --commit "$GITHUB_SHA"
+      - name: Verify newly published JARVIX public page in real browser
+        run: node tests/jarvix-public-locale-browser-smoke.mjs https://deepsyq.app
