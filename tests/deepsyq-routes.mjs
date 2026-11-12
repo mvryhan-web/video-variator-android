@@ -19,9 +19,11 @@ for(const enabled of [false,true])test(`platform flag ${enabled}: preserves lega
   assert.doesNotMatch(dashboard,/<form id="quickCreateForm"/);
   assert.match(dashboard,/id="canvasExampleGrid"/);
   const canvas=await get('/canvas.html');
-  assert.match(canvas,/<form id="quickCreateForm"/);
-  assert.match(canvas,/id="quickCreatePrompt"/);
-  assert.match(canvas,/id="quickCreateKind"/);
+  // Canvas uses the existing Canvas Workspace controls, not the retired quick-create form.
+  assert.match(canvas,/id="canvasWorkspace"/);
+  assert.match(canvas,/id="cwImageMode"/);
+  assert.match(canvas,/id="cwVideoMode"/);
+  assert.doesNotMatch(canvas,/<form id="quickCreateForm"/);
   assert.equal((await fetch(base+'/api/studio/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).status,503);
  }finally{child.kill();await once(child,'exit');}
 });
