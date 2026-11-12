@@ -20,6 +20,7 @@ on:
     paths:
       - 'app/src/main/assets/jarvix-guided-tour.js'
       - 'app/src/main/assets/jarvix-tour-choreography.js'
+      - 'app/src/main/assets/app-v4.js'
       - 'scripts/deepsyq_surgical_publish.py'
       - 'tests/test_deepsyq_surgical_publish.py'
       - '.github/workflows/deepsyq-surgical-release.yml'
@@ -106,14 +107,14 @@ jobs:
     if: >-
       github.ref == 'refs/heads/deepsyq-platform' &&
       (github.event_name == 'workflow_dispatch' ||
-       (github.event_name == 'push' && github.event.head_commit.message == 'release(JARVIX Tour): publish tour-only fix'))
+       (github.event_name == 'push' && (github.event.head_commit.message == 'release(JARVIX Tour): publish tour-only fix' || github.event.head_commit.message == 'release(VU quality): enable 720p 1080p 4K selection')))
     needs: tests
     runs-on: ubuntu-latest
     timeout-minutes: 12
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
-      SCOPE_FILES: ${{ github.event_name == 'push' && 'jarvix-guided-tour.js,jarvix-tour-choreography.js' || inputs.files }}
+      SCOPE_FILES: ${{ github.event_name == 'push' && (github.event.head_commit.message == 'release(VU quality): enable 720p 1080p 4K selection' && 'app-v4.js' || 'jarvix-guided-tour.js,jarvix-tour-choreography.js') || inputs.files }}
       RELEASE_MODE: ${{ github.event_name == 'push' && 'publish' || inputs.mode }}
     steps:
       - uses: actions/checkout@v4
