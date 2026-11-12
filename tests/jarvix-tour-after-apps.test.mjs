@@ -77,6 +77,35 @@ test('Tour resumes at AI Apps and advances to Canvas without paid generation',as
    }finally{await page.close();}
    }
   }
+  // Inspiration may finish its Clone narration while the Chat document is
+  // loading. Pricing must resume from the already-advanced stage 12.
+  for(const viewport of [{width:1365,height:850},{width:390,height:844}]){
+   const page=await browser.newPage({viewport});
+   await page.addInitScript(()=>{
+    localStorage.setItem('deepsyq_home_language','ru');
+    const native=HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play=function(...args){
+     if(String(this.src||'').includes('/media/jarvix/')){
+      const clip=this;
+      setTimeout(()=>clip.dispatchEvent(new Event('playing')),25);
+      setTimeout(()=>{if(clip.isConnected)clip.dispatchEvent(new Event('ended'));},250);
+      return Promise.resolve();
+     }
+     return native.apply(this,args);
+    };
+   });
+   try{
+    await page.goto('http://127.0.0.1:32744/jarvix-chat.html?mode=image&from=inspiration&action=clone',{waitUntil:'domcontentloaded'});
+    await page.evaluate(k=>sessionStorage.setItem(k,JSON.stringify({
+     index:12,language:'ru',phase:'playing',beat:0,position:0,
+     navAnnounced:11,cloneHandoff:true
+    })),key);
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.waitForURL(/\/pricing\.html(?:\?|#|$)/,{timeout:15000});
+    const checkpoint=await page.evaluate(k=>JSON.parse(sessionStorage.getItem(k)||'null'),key);
+    assert.equal(checkpoint?.index,12,'Inspiration Clone handoff must not reset Pricing stage');
+   }finally{await page.close();}
+  }
  }finally{
   if(browser)await browser.close();
   child.kill('SIGTERM');
