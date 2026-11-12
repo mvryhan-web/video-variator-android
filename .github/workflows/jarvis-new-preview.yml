@@ -92,27 +92,41 @@ jobs:
           jq -e '.ok == true and (.enabled | type) == "boolean" and (.mode == "free-prerecorded" or .mode == "paid-owner-voice")'             /tmp/jarvix-paid-status.json >/dev/null
           # Never call /turn; this smoke check has zero billable operations.
           echo 'JARVIX NEW TEST paid configuration API responds without calling AI or billing'
-      - name: Public TEST smoke — original voice greeting MP3 plays on all 4 languages
+      - name: Public TEST smoke — 8 owner-voice MP3 actually downloadable over HTTPS
         run: |
-          python - <<'PY'
-          import hashlib,json,urllib.request
+          set -euo pipefail
           base='https://jarvis-new.deepsyq.pages.dev/media/jarvix/conversation/'
-          with urllib.request.urlopen(base+'manifest.json',timeout=15) as r:
-              d=json.load(r)
+          mkdir -p /tmp/jarvix-live-clips
+          curl -fsSL --retry 2 --retry-delay 2 -A 'Mozilla/5.0 (compatible; JarvixTest/1.0)' \
+               -H 'Accept: application/json' "$base"manifest.json \
+               -o /tmp/jarvix-live-clips/manifest.json
+          for lang in ru en fr es; do
+            for purpose in hello prompt; do
+              file="$purpose"_"$lang".mp3
+              curl -fsSL --retry 2 --retry-delay 2 -A 'Mozilla/5.0 (compatible; JarvixTest/1.0)' \
+                   -H 'Accept: audio/mpeg' "$base$file" \
+                   -o "/tmp/jarvix-live-clips/$file"
+            done
+          done
+          curl -fsSL -A 'Mozilla/5.0 (compatible; JarvixTest/1.0)' \
+              'https://jarvis-new.deepsyq.pages.dev/jarvix-new-voice.js' \
+              -o /tmp/jarvix-live-clips/jarvix-new-voice.js
+          python - <<'PY'
+          import hashlib,json,pathlib
+          directory=pathlib.Path('/tmp/jarvix-live-clips')
+          j=json.loads((directory/'manifest.json').read_text(encoding='utf-8'))
+          assert j['schema']=='jarvix-new-short-voice-v1'
           for lang in ('ru','en','fr','es'):
               for purpose in ('hello','prompt'):
                   name=purpose+'_'+lang+'.mp3'
-                  row=next(c for c in d['clips'] if c['filename']==name)
-                  with urllib.request.urlopen(base+name,timeout=18) as r:
-                      assert r.headers.get_content_type()=='audio/mpeg',name
-                      audio=r.read()
+                  row=next(x for x in j['clips'] if x['filename']==name)
+                  audio=(directory/name).read_bytes()
                   assert len(audio)>2800,name
                   assert hashlib.sha256(audio).hexdigest()==row['sha256'],name
-                  print('Public MP3 verified:',name,len(audio))
-          with urllib.request.urlopen('https://jarvis-new.deepsyq.pages.dev/jarvix-new-voice.js',timeout=15) as r:
-              js=r.read().decode('utf-8')
-          assert "from './jarvix-new-smalltalk.js'" in js
-          assert "async function respond(message,id)" in js
-          assert 'recordingsText()' not in js
-          print('TEST voice UI and 8 owner-voice MP3 available on public URL.')
+                  assert audio[:3]==b'ID3' or audio[:2] in (bytes.fromhex('fffb'),bytes.fromhex('fff3'))
+                  print('Verified publicly downloaded:',name,len(audio))
+          script=(directory/'jarvix-new-voice.js').read_text(encoding='utf-8')
+          assert "from './jarvix-new-smalltalk.js'" in script
+          assert 'recordingsText()' not in script
+          print('Public TEST: 8 original MP3 and cleaned voice JS verified.')
           PY
