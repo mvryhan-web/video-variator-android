@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-function fixture({recognition=true,meter=false,smalltalkAudio=true}={}){
+function fixture({recognition=true,meter=false,smalltalkAudio=true,rejectAudio=false,silent=false}={}){
   const source=fs.readFileSync('app/src/main/assets/jarvix-new-voice.js','utf8')
     .replace(/^import .*?;\s*$/gm,'')
     .replace('export function installJarvixNewVoice(){','function installJarvixNewVoice(){');
   const events={},listeners={},played=[],classes=new Set(),recognizers=[],buttons=[],elements=[];
+  let webAudioPlayCount=0;
   let lastSpeech='';
   const orb={
     style:{vars:{},setProperty(name,value){this.vars[name]=value}},
@@ -42,16 +43,21 @@ function fixture({recognition=true,meter=false,smalltalkAudio=true}={}){
   }
   class Audio{
     constructor(url){this.url=url;this.currentTime=0;played.push(url);}
-    play(){return Promise.resolve().then(()=>{this.onended?.();});}
+    play(){return rejectAudio?Promise.reject(new Error('NotAllowedError')):
+      Promise.resolve().then(()=>{this.onended?.();});}
     pause(){}
   }
   class AudioContextMock{
+    constructor(){this.state='running';this.destination={};}
     createAnalyser(){return {fftSize:512,getByteTimeDomainData(samples){
-      for(let i=0;i<samples.length;i++)samples[i]=i%2?136:120;
+      for(let i=0;i<samples.length;i++)samples[i]=silent?128:(i%2?136:120);
     }};}
     createMediaStreamSource(){return {connect(){}};}
-    resume(){return Promise.resolve();}
-    close(){return Promise.resolve();}
+    createBufferSource(){return {connect(){},stop(){this.onended?.()},
+      start(){webAudioPlayCount++;queueMicrotask(()=>this.onended?.());}};}
+    decodeAudioData(){return Promise.resolve({duration:1.5});}
+    resume(){this.state='running';return Promise.resolve();}
+    close(){this.state='closed';return Promise.resolve();}
   }
   const context={
     window:{addEventListener:(event,cb)=>{listeners[event]=cb},
@@ -64,7 +70,13 @@ function fixture({recognition=true,meter=false,smalltalkAudio=true}={}){
     localStorage:{getItem:key=>key==='deepsyq_home_language'?'ru':null},
     document:doc,innerWidth:420,innerHeight:800,
     URL,Blob,Audio,console,AbortController,
-    fetch:async()=>Response.json({found:false}),
+    fetch:async url=>{
+      if(String(url).includes('/media/jarvix/')){
+        const bytes=new Uint8Array(2000).fill(12);bytes.set([73,68,51],0);
+        return new Response(bytes,{status:200,headers:{'content-type':'audio/mpeg'}});
+      }
+      return Response.json({found:false});
+    },
     setTimeout,clearTimeout,setInterval,clearInterval,queueMicrotask,
     recordedReply:async()=>null,ownerLibraryReply:undefined,
     helloRecording:async()=>({audioUrl:'/media/jarvix/conversation/hello_ru.mp3',text:'Привет! Я JARVIX.'}),
@@ -81,6 +93,7 @@ function fixture({recognition=true,meter=false,smalltalkAudio=true}={}){
   });
   const flush=async()=>{for(let i=0;i<10;i++)await new Promise(resolve=>setImmediate(resolve));};
   return {context,orb,buttons,elements,classes,recognizers,played,clickSphere,flush,
+    get webAudioPlayCount(){return webAudioPlayCount;},
     get speech(){return lastSpeech;},stop:context.__exports.stop};
 }
 test('phone-style sphere click requests microphone and relistens after greeting MP3',async()=>{
@@ -227,5 +240,28 @@ test('recognized "Как дела?" receives honest visible TEXT response when v
     assert.equal(bot.textContent,'JARVIX: Всё хорошо, спасибо! А у тебя?');
     assert.equal(f.played.length,1,'No fabricated spoken MP3 for missing response');
     assert.equal(transcript.textContent,'Как дела?');
+  }finally{f.stop();}
+});
+
+test('quiet real microphone has no fabricated speech pulsing',async()=>{
+  const f=fixture({meter:true,silent:true});
+  try{
+    f.clickSphere();await f.flush();
+    await new Promise(resolve=>setTimeout(resolve,170));
+    assert.equal(f.orb.style.vars['--jv-mic-scale'],'1.000');
+    assert.equal(f.orb['data-jv-mic-live'],'false');
+  }finally{f.stop();}
+});
+test('original recorded voice plays using user-unlocked Web Audio when mobile Audio.play is blocked',async()=>{
+  const f=fixture({meter:true,rejectAudio:true});
+  try{
+    f.clickSphere();await f.flush();
+    assert.equal(f.played[0],'/media/jarvix/conversation/hello_ru.mp3');
+    assert.equal(f.webAudioPlayCount,1);
+    assert.ok(f.recognizers.length>=1,'Return to mic after audible greeting');
+    const recognition=f.recognizers.at(-1);
+    recognition.emit('Привет',true);
+    await f.flush();
+    assert.equal(f.webAudioPlayCount,2,'Second owner-recorded reply also uses Web Audio');
   }finally{f.stop();}
 });
