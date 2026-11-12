@@ -249,14 +249,20 @@ function tourStudioFocusStyle(doc){
  style.textContent='.ds-tour-focus-pulse{outline:3px solid #ffba52!important;outline-offset:4px!important;box-shadow:0 0 0 4px #e4a14a55,0 0 25px #ffb84b88!important;animation:none!important;position:relative;z-index:10050}';
  doc.head.append(style);
 }
-async function tourShowInsideStudio(selector,alive,ms=1200){
+async function tourShowInsideStudio(selector,alive,ms=700){
  const doc=tourStudioDocument();
  if(!doc||!alive())return null;
  tourStudioFocusStyle(doc);
  const el=[...doc.querySelectorAll(selector)].find(e=>e.isConnected&&!e.hidden&&e.getClientRects().length);
  if(!el)return null;
+ // The shared spotlight has a 1000ms floor for full-page demos. Using it
+ // repeatedly inside nested Studio settings caused several seconds of silence.
  doc.querySelectorAll('.ds-tour-focus-pulse').forEach(e=>e.classList.remove('ds-tour-focus-pulse'));
- return showTourElement(el,alive,ms);
+ el.classList.add('ds-tour-focus-pulse');
+ try{el.scrollIntoView({block:'nearest',behavior:'instant'});}catch{}
+ await pauseFrame(Math.max(250,Math.min(850,ms)));
+ if(!alive()){el.classList.remove('ds-tour-focus-pulse');return null;}
+ return el;
 }
 function tourCloseChildStudioDialog(id){
  const doc=tourStudioDocument(),dialog=doc?.getElementById(id);
@@ -268,6 +274,7 @@ function tourCloseChildStudioDialog(id){
 }
 function tourCloseStudioSettings(){
  if(!tourStudioSettingsOwned)return;
+ tourStudioDocument()?.querySelectorAll('.ds-tour-focus-pulse').forEach(e=>e.classList.remove('ds-tour-focus-pulse'));
  tourCloseChildStudioDialog('modelDialog');
  tourCloseChildStudioDialog('settingsDialog');
  const doc=tourStudioDocument(),hub=doc?.getElementById('studioSettingsHub');
