@@ -98,7 +98,8 @@ test('Tour resumes at AI Apps and advances to Canvas without paid generation',as
     await page.goto('http://127.0.0.1:32744/jarvix-chat.html?mode=image&from=inspiration&action=clone',{waitUntil:'domcontentloaded'});
     await page.evaluate(k=>sessionStorage.setItem(k,JSON.stringify({
      index:12,language:'ru',phase:'playing',beat:0,position:0,
-     navAnnounced:11,cloneHandoff:true
+     navAnnounced:11,cloneHandoff:true,
+     pendingRoute:{index:12,href:'http://127.0.0.1:32744/pricing.html'}
     })),key);
     await page.reload({waitUntil:'domcontentloaded'});
     await page.waitForURL(/\/pricing\.html(?:\?|#|$)/,{timeout:15000});
