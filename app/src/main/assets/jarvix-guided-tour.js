@@ -501,6 +501,7 @@ function playV3(step,target,current){
   }
   state.pendingRoute={index:state.index,href:target.href};
   save();
+  // Verified: the Home -> Image -> Video -> Audio walkthrough remains unchanged.
   // AI Apps is the hand-off boundary after the already-approved Audio demo.
   // A route-only marker lets the destination restore THIS stage if a browser
   // clears sessionStorage during a cross-document or canonical-host redirect.
