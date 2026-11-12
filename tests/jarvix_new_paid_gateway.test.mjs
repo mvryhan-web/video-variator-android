@@ -176,10 +176,16 @@ test('CosyVoice renders the model answer through the configured workspace before
   JARVIX_COSYVOICE_VOICE_ID:'cosyvoice-v3-plus-jarvixtest-fixture'};
  delete env.JARVIX_OWNER_VOICE_RENDER_URL;
  delete env.JARVIX_OWNER_VOICE_API_KEY;
+ for(const key of ['CHAT_URL','API_KEY','BASIC','PRO','BUSINESS'])delete env['JARVIX_MODEL_'+key];
  const sent=[];
  try{
   global.fetch=async(url,options)=>{
    if(!String(url).includes('maas.aliyuncs.com'))return fallback(url,options);
+   if(String(url).endsWith('/compatible-mode/v1/chat/completions')){
+    assert.equal(options.headers.authorization,'Bearer '+env.JARVIX_COSYVOICE_API_KEY);
+    assert.equal(JSON.parse(options.body).model,'qwen-flash');
+    return Response.json({choices:[{message:{content:'Привет! Я JARVIX.'}}]});
+   }
    assert.equal(options.headers.Upgrade,'websocket');
    assert.equal(options.headers.Authorization,'Bearer '+env.JARVIX_COSYVOICE_API_KEY);
    assert.ok(m.calls.some(c=>c.action==='reserve'));

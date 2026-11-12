@@ -39,7 +39,7 @@ function serverURL(raw){
  }catch{return null;}
 }
 function config(env){
- const provider=serverURL(env?.JARVIX_MODEL_CHAT_URL);
+ const customProvider=serverURL(env?.JARVIX_MODEL_CHAT_URL);
  const verify=serverURL(env?.JARVIX_ENTITLEMENT_VERIFY_URL);
  const billing=serverURL(env?.JARVIX_BILLING_RESERVATION_URL);
  const voice=serverURL(env?.JARVIX_OWNER_VOICE_RENDER_URL);
@@ -49,15 +49,20 @@ function config(env){
  const cosy=/^ws-[a-z0-9]+$/.test(workspace)&&cosyKey.length>=12&&
   /^cosyvoice-v3-plus-[A-Za-z0-9-]{4,70}$/.test(cosyVoiceId);
  const voiceId=cosy?cosyVoiceId:String(env?.JARVIX_OWNER_VOICE_ID||'');
- const apiKey=String(env?.JARVIX_MODEL_API_KEY||'');
+ // The test-only Singapore workspace can serve both Qwen and CosyVoice.
+ const workspaceChat=cosy&&!env?.JARVIX_MODEL_CHAT_URL&&!env?.JARVIX_MODEL_API_KEY;
+ const provider=workspaceChat
+  ? 'https://'+workspace+'.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1/chat/completions'
+  : customProvider;
+ const apiKey=workspaceChat?cosyKey:String(env?.JARVIX_MODEL_API_KEY||'');
  const entitlementKey=String(env?.JARVIX_ENTITLEMENT_SERVICE_KEY||'');
  const billingKey=String(env?.JARVIX_BILLING_SERVICE_KEY||'');
  const voiceKey=String(env?.JARVIX_OWNER_VOICE_API_KEY||'');
- const basic=String(env?.JARVIX_MODEL_BASIC||'');
- const pro=String(env?.JARVIX_MODEL_PRO||'');
- const business=String(env?.JARVIX_MODEL_BUSINESS||'');
+ const basic=String(env?.JARVIX_MODEL_BASIC||(workspaceChat?'qwen-flash':''));
+ const pro=String(env?.JARVIX_MODEL_PRO||(workspaceChat?'qwen-flash':''));
+ const business=String(env?.JARVIX_MODEL_BUSINESS||(workspaceChat?'qwen-flash':''));
  const budget=Number(env?.JARVIX_MAX_RESERVATION_CENTS);
- const maxTokens=Number(env?.JARVIX_MAX_OUTPUT_TOKENS);
+ const maxTokens=Number(env?.JARVIX_MAX_OUTPUT_TOKENS??(workspaceChat?128:undefined));
  const validModel=m=>/^[A-Za-z0-9_.:/-]{2,120}$/.test(m);
  const validId=/^[A-Za-z0-9_-]{4,90}$/.test(voiceId);
  return {
