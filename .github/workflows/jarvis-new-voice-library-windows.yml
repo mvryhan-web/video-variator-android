@@ -4,7 +4,9 @@ on:
     branches: [jarvis-new]
     paths:
       - 'jarvis_new/voice_library_desktop.py'
+      - 'jarvis_new/voice_library_blocks.py'
       - 'tests/test_jarvix_voice_library_desktop.py'
+      - 'tests/test_jarvix_voice_library_blocks.py'
       - '.github/workflows/jarvis-new-voice-library-windows.yml'
   workflow_dispatch:
 permissions:
@@ -27,12 +29,14 @@ jobs:
           $manifest='app/src/main/assets/media/jarvix/tour-v3/manifest.json'
           if (-not (Test-Path $manifest)) { throw 'Missing existing Tour V3 text manifest' }
           Write-Host "Verified 552 owner-provided MP3, no synthesis"
-      - name: Run read-only voice-library unit tests
-        run: python -m unittest discover -s tests -p 'test_jarvix_voice_library_desktop.py' -v
-      - name: Install Windows binary packaging tool
-        run: python -m pip install --disable-pip-version-check pyinstaller==6.16.0
-      - name: Build the standalone tkinter application containing all 552 MP3
-        run: python -m PyInstaller --noconfirm --clean --windowed --onedir --name JARVIX_Voice_Library --add-data "app/src/main/assets/media/jarvix;media/jarvix" jarvis_new/voice_library_desktop.py
+      - name: Install bundled FFmpeg and Python packager
+        run: python -m pip install --disable-pip-version-check pyinstaller==6.16.0 imageio-ffmpeg==0.6.0
+      - name: Run original library and offline block-composition tests
+        run: |
+          python -m unittest discover -s tests -p 'test_jarvix_voice_library_desktop.py' -v
+          python -m unittest discover -s tests -p 'test_jarvix_voice_library_blocks.py' -v
+      - name: Build the standalone tkinter application with all 552 MP3 and FFmpeg
+        run: python -m PyInstaller --noconfirm --clean --windowed --onedir --name JARVIX_Voice_Library --collect-all imageio_ffmpeg --hidden-import jarvis_new.voice_library_blocks --add-data "app/src/main/assets/media/jarvix;media/jarvix" jarvis_new/voice_library_desktop.py
       - name: Verify contents and create portable ZIP for manual TEST
         shell: pwsh
         run: |
@@ -40,12 +44,14 @@ jobs:
           if (-not (Test-Path $exe)) { throw 'Windows EXE build missing' }
           $audio=@(Get-ChildItem 'dist/JARVIX_Voice_Library' -Recurse -File -Filter '*.mp3')
           if ($audio.Count -ne 552) { throw "Packaged MP3 mismatch: $($audio.Count)" }
+          $ff=@(Get-ChildItem 'dist/JARVIX_Voice_Library' -Recurse -File | Where-Object { $_.Name -like '*ffmpeg*.exe' })
+          if ($ff.Count -lt 1) { throw 'Bundled FFmpeg.exe missing; offline phrase stitching would fail' }
           $s=Get-AuthenticodeSignature $exe
           Write-Host "Windows test binary signature status: $($s.Status)"
           if ($s.Status -eq 'Valid') { throw 'Unexpected signature: investigate build provenance' }
           New-Item -ItemType Directory -Force 'release' | Out-Null
-          Compress-Archive -Path 'dist/JARVIX_Voice_Library' -DestinationPath 'release/JARVIX_Voice_Library_552_Windows_Portable_TEST.zip' -CompressionLevel Optimal
-          if (-not (Test-Path 'release/JARVIX_Voice_Library_552_Windows_Portable_TEST.zip')) { throw 'ZIP missing' }
+          Compress-Archive -Path 'dist/JARVIX_Voice_Library' -DestinationPath 'release/JARVIX_Voice_Library_0.6_552_MP3_Blocks_Windows_TEST.zip' -CompressionLevel Optimal
+          if (-not (Test-Path 'release/JARVIX_Voice_Library_0.6_552_MP3_Blocks_Windows_TEST.zip')) { throw 'ZIP missing' }
           Get-FileHash 'release/JARVIX_Voice_Library_552_Windows_Portable_TEST.zip' -Algorithm SHA256 | Format-List
       - uses: actions/upload-artifact@v4
         with:
