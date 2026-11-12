@@ -40,6 +40,7 @@ HASH_REUSE_RELEASE_SETS = (
     frozenset({"design-gallery.html", "telegram-free-mini.html"}),
     frozenset({"audio-studio.html", "avatar-studio.html"}),
     frozenset({"jarvix.html"}),
+    frozenset({"deepsyq-i18n.js"}),
 )
 
 def allowed_hash_reuse(paths):
