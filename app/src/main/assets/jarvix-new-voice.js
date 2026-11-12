@@ -1,3 +1,4 @@
+import {extractAction} from './jarvix-action-plan.js';
 import {recordedReply} from './jarvix-new-recorded-dialog.js';
 import {helloRecording,smalltalkReply,smalltalkTextReply} from './jarvix-new-smalltalk.js';
 /* JARVIX NEW — voice-only mode on the OWNER'S EXISTING sphere, TEST host only.
@@ -478,6 +479,20 @@ async function respond(message,id){
  ui('thinking');
  const lang=recordedLanguage();
  setTranscript(message,true);
+ const action=extractAction(message);
+ if(action?.intent==='NAVIGATE'){
+  const destination=action.target==='uniquifier'?'video-uniquifier.html':action.url;
+  stop();
+  location.assign(new URL(destination,location.origin+'/'));
+  return;
+ }
+ if(lang==='ru'&&/^\s*(?:привет|здравствуй(?:те)?)(?:[,.!\s]+(?:джарвис|джарвикс|jarvix))?[.!\s]*$/iu.test(message)){
+  const greeting={text:'Привет! Я JARVIX. Смотрите, что я умею.',
+   audioUrl:'/media/jarvix/tour-v3/t3_ru_5c4572bce29c.mp3',source:'owner-tour-recording'};
+  if(await playResponse(greeting,id,message))return;
+  if(!on||seq!==id)return;
+ }
+
 
  // 1. Human conversation first — not a broken 500-scenario manifest.
  // Matching existing V3 owner MP3 is instant and does not use local network.
