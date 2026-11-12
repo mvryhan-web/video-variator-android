@@ -204,9 +204,19 @@ function homeMediaTourStep(step){
 // Chat's own tile switches the same conversation's mode in place.
 async function selectTourMediaMode(mode,current){
  const alive=()=>current===turn&&state?.phase==='playing';
- const plus=document.getElementById('jPlus'),menu=document.getElementById('jPlusMenu');
- const choice=menu?.querySelector('[data-j-mode="'+mode+'"]');
- if(!plus||!menu||!choice){blocked(current,'JARVIX mode menu unavailable');return;}
+ // On a newly navigated Chat document, the universal composer can mount
+ // after the guided-tour module. Do not treat unfinished DOM initialization
+ // as a missing menu, and never create a second chat to work around it.
+ let plus=null,menu=null,choice=null;
+ for(let attempt=0;attempt<55&&alive();attempt++){
+  plus=document.getElementById('jPlus');
+  menu=document.getElementById('jPlusMenu');
+  choice=menu?.querySelector('[data-j-mode="'+mode+'"]');
+  if(plus&&menu&&choice)break;
+  await pauseFrame(90);
+ }
+ if(!alive())return;
+ if(!plus||!menu||!choice){blocked(current,'JARVIX mode menu unavailable after load');return;}
  await showTourElement(plus,alive,1200);
  if(!alive())return;
  if(menu.hidden)plus.click();
@@ -507,6 +517,14 @@ function playV3(step,target,current){
  }
  const mode=mediaTourModes[step.title];
  const isChat=location.pathname.endsWith('/jarvix-chat.html');
+ // The URL is set by the user's original Image tile click. Once Chat has
+ // loaded in that exact mode, it is already selected; do not click '+' twice.
+ if(mode&&isChat&&new URLSearchParams(location.search).get('mode')===mode&&
+    (!document.getElementById('jActiveModeLabel')?.dataset.mode||
+      document.getElementById('jActiveModeLabel')?.dataset.mode===mode)&&
+    state.mediaSelectedStep!==state.index){
+  state.mediaSelectedStep=state.index;save();
+ }
  if(mode&&(!isChat||state.mediaSelectedStep!==state.index||
     (document.getElementById('jActiveModeLabel')?.dataset.mode&&
      document.getElementById('jActiveModeLabel').dataset.mode!==mode))){
