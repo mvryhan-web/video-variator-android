@@ -1,0 +1,83 @@
+name: DEEPSYQ SEO audit batch 2 - exact 3 assets
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/deepsyq-seo-audit-batch2.yml'
+      - 'app/src/main/assets/compare-ai.html'
+      - 'app/src/main/assets/simple-background-remover.html'
+      - 'app/src/main/assets/teleprompter.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  seo-batch-2:
+    if: >-
+      github.ref == 'refs/heads/deepsyq-platform' &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.head_commit.message == 'release(DEEPSYQ SEO): publish audit batch 2 exact three pages')
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify surgical publisher and exact HTML metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/deepsyq_surgical_publish.py
+          python -m unittest discover -s tests -p 'test_deepsyq_surgical_publish.py' -v
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from importlib.util import spec_from_file_location, module_from_spec
+          spec=spec_from_file_location('publish','scripts/deepsyq_surgical_publish.py')
+          mod=module_from_spec(spec);spec.loader.exec_module(mod)
+          files=['compare-ai.html','simple-background-remover.html','teleprompter.html']
+          assert mod.allowed_hash_reuse(files)
+          assert not mod.allowed_hash_reuse(files[:2])
+          class Check(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.meta={}
+                  self.canonical=[]
+                  self.h1=0
+              def handle_starttag(self,tag,attrs):
+                  d=dict(attrs)
+                  if tag=='h1': self.h1+=1
+                  if tag=='meta':
+                      k=d.get('property') or d.get('name')
+                      if k:self.meta.setdefault(k,[]).append(d.get('content',''))
+                  if tag=='link' and d.get('rel')=='canonical':
+                      self.canonical.append(d.get('href'))
+          for f in files:
+              c=Check()
+              c.feed((Path('app/src/main/assets')/f).read_text(encoding='utf8'))
+              assert c.h1==1,(f,'h1',c.h1)
+              assert c.canonical==['https://deepsyq.app/'+f],(f,'canonical',c.canonical)
+              for tag in ('description','og:title','og:description','og:type','og:url'):
+                  assert len(c.meta.get(tag,[]))==1,(f,tag,c.meta.get(tag))
+                  assert len(c.meta[tag][0].strip())>8,(f,tag)
+              assert c.meta['og:url'][0]==c.canonical[0],f
+              assert c.meta['og:type'][0]=='website',f
+          print('SEO_AUDIT_BATCH_2_METADATA_PASS')
+          PY
+      - name: Install surgical uploader dependencies
+        run: python -m pip install --disable-pip-version-check "requests==2.32.3" "blake3==1.0.8"
+      - name: Publish exactly three updated HTML head assets and verify unchanged Worker
+        run: |
+          python scripts/deepsyq_surgical_publish.py \
+            --mode publish \
+            --files compare-ai.html,simple-background-remover.html,teleprompter.html \
+            --commit "$GITHUB_SHA"
