@@ -20,6 +20,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install ffmpeg and ffprobe for native MP3 verification
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          ffmpeg -version
+          ffprobe -version
       - name: Derive 8 short original-voice clips; source clips remain untouched
         run: |
           python scripts/prepare_jarvix_casual_clips.py
