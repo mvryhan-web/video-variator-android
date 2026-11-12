@@ -486,6 +486,7 @@ async function processMessage(message){
   message.status='sent';conversation.messages.push(answer);await save();render();if(answer.jobId)await poll(answer);
  }catch(e){pendingMediaFrame=null;message.status=message.status==='sent'?'sent':e.name==='AbortError'?'interrupted':'error';message.error=e.message;await save();if(e.name!=='AbortError'){
    if(e.code==='AUTH_REQUIRED'){
+    window.dispatchEvent(new Event('deepsyq:action-auth-required'));
     const copy={ru:'Войти, чтобы продолжить',en:'Sign in to continue',fr:'Se connecter pour continuer',es:'Inicia sesión para continuar'};
     const label=copy[getJarvixLanguage()]||copy.en;
     status('');

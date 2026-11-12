@@ -1754,6 +1754,15 @@ export default {
       }
       if (!assetRes.ok) return assetRes;
       let html = await assetRes.text();
+      if (['/jarvix-chat', '/free-tools', '/ai-apps'].includes(assetKey)) {
+        html = html.replace('</body>', '<script defer src="/action-sign-in.js"></script></body>');
+      }
+      if (assetKey === '/jarvix-chat') html = html.replace('jarvix-chat.js?v=action-auth-1', 'jarvix-chat.js?v=action-auth-2');
+      if (assetKey === '/deepsyq') {
+        html = html.replace('<title>Deepsyq — Your creative workspace</title>',
+          '<title>DEEPSYQ — AI Video, Image and Creative Tools</title>');
+      }
+
       if (ensureHtmlSuffix) {
         const fixScript = `<script>(function(){if(location.pathname!==${JSON.stringify(ensureHtmlSuffix)}){history.replaceState(null,'',${JSON.stringify(ensureHtmlSuffix)}+location.search+location.hash);}})();</script>`;
         html = html.replace('<head>', '<head>' + fixScript);
