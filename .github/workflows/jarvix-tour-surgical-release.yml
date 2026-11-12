@@ -1,0 +1,47 @@
+name: JARVIX Tour only - verify production
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/jarvix-tour-surgical-release.yml'
+      - 'app/src/main/assets/jarvix-guided-tour.js'
+      - 'app/src/main/assets/jarvix-tour-choreography.js'
+      - 'scripts/deepsyq_surgical_publish.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+
+jobs:
+  tour-only:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.head_commit.message == 'release(JARVIX Tour): verify live assets'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify exact-file release guard
+        run: |
+          python -m py_compile scripts/deepsyq_surgical_publish.py
+          python -m unittest discover -s tests -p 'test_deepsyq_surgical_publish.py' -v
+      - name: Verify or publish ONLY the existing JARVIX Tour files
+        run: |
+          python -m pip install --disable-pip-version-check "requests==2.32.3" "blake3==1.0.8"
+          python scripts/deepsyq_surgical_publish.py \
+            --mode publish \
+            --files jarvix-guided-tour.js,jarvix-tour-choreography.js \
+            --commit "$GITHUB_SHA"
