@@ -211,6 +211,20 @@ function getWallet(userId) {
   return edgeWallets.get(userId);
 }
 
+const STUDIO_GUEST_COOKIE='__Host-ds-studio';
+function studioGuestId(request){
+  const cookie=(request.headers.get('Cookie')||'').split(';').map(part=>part.trim())
+    .find(part=>part.startsWith(STUDIO_GUEST_COOKIE+'='));
+  const token=cookie?.slice(STUDIO_GUEST_COOKIE.length+1);
+  return /^[a-f0-9]{32}$/.test(token||'')?'studio_guest:'+token:null;
+}
+
+async function ownsStudioJob(request,env,job){
+  if(!job?.userId||job.userId==='guest')return false;
+  if(job.userId.startsWith('studio_guest:'))return studioGuestId(request)===job.userId;
+  return (await getAuthenticatedUser(request,env))?.id===job.userId;
+}
+
 const WAN_IMAGE_MODEL='wan2.1-t2i-turbo';
 const WAN_IMAGE_API='https://dashscope-intl.aliyuncs.com/api/v1';
 const WAN_IMAGE_SIZES={
@@ -882,6 +896,12 @@ export default {
       if(useWanImage&&(!env.DASHSCOPE_API_KEY||!env.R2_BUCKET))return json({error:'WAN_IMAGE_NOT_CONFIGURED'},503);
       if(useWanImage&&(!Object.hasOwn(WAN_IMAGE_SIZES,ratio)||typeof prompt!=='string'||!prompt.trim()||
          Number(body.quantity??1)!==1||body.references?.length))return json({error:'WAN_IMAGE_INVALID_INPUT'},400);
+      const guestId=user?null:studioGuestId(request);
+      const newGuestToken=!user&&!guestId?crypto.randomUUID().replace(/-/g,''):null;
+      const jobOwner=user?.id||guestId||'studio_guest:'+newGuestToken;
+      const guestHeaders=newGuestToken?{
+        'Set-Cookie':STUDIO_GUEST_COOKIE+'='+newGuestToken+'; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=86400'
+      }:{};
       const clientIp = request.headers.get('cf-connecting-ip') || 'anon';
       const clientKey = user?.id || clientIp;
       const usage = getDailyUsage(clientKey);
@@ -931,7 +951,7 @@ export default {
 
       if(useWanImage){
         const id='job_image_wan_'+crypto.randomUUID().replace(/-/g,'');
-        const job={id,userId:user?.id||'guest',kind:'image',model:WAN_IMAGE_MODEL,provider:'Alibaba Cloud',
+        const job={id,userId:jobOwner,kind:'image',model:WAN_IMAGE_MODEL,provider:'Alibaba Cloud',
           prompt:prompt.trim().slice(0,500),title:prompt.trim().slice(0,60),status:'processing',progress:10,
           created_at:new Date().toISOString(),mime:'image/png'};
         let error;
@@ -941,7 +961,7 @@ export default {
           return json({error},error==='WAN_FREE_QUOTA_EXHAUSTED'?429:503);
         }
         studioJobs.set(id,job);
-        return json({ok:true,id,jobId:id,status:job.status,progress:job.progress});
+        return json({ok:true,id,jobId:id,status:job.status,progress:job.progress},200,guestHeaders);
       }
 
       const safeKind = (kind === 'audio' || kind === 'music') ? 'music' : (kind === 'video' ? 'video' : 'image');
@@ -1023,7 +1043,7 @@ export default {
       }
       const jobRecord = {
         id,
-        userId: user?.id || 'guest',
+        userId: jobOwner,
         kind,
         model: model || (kind === 'video' ? 'veo-3.1-lite-generate-preview' : isAudio ? 'lyria-3-clip-preview' : 'gemini-3.1-flash-image'),
         provider: kind === 'video' ? 'Google' : isAudio ? 'Google' : 'Google',
@@ -1049,14 +1069,15 @@ export default {
           });
         } catch {}
       }
-      return json({ ok: true, id, jobId: id, status, progress, wanTaskId });
+      return json({ ok: true, id, jobId: id, status, progress, wanTaskId },200,guestHeaders);
     }
 
     if (pathname === '/api/studio/jobs' && request.method === 'GET') {
       const user = await getAuthenticatedUser(request, env);
+      if (!user) return json({ error: 'AUTH_REQUIRED' }, 401);
       const filter = url.searchParams.get('filter') || 'all';
       const list = Array.from(studioJobs.values())
-        .filter(j => !user || j.userId === user.id || j.userId === 'guest')
+        .filter(j => j.userId === user.id)
         .filter(j => filter === 'all' || j.kind === filter)
         .map(j => ({
           id: j.id,
@@ -1082,7 +1103,7 @@ export default {
       const typeFilter = url.searchParams.get('type') || '';
       const statusFilter = url.searchParams.get('status') || '';
       const allCards = Array.from(studioJobs.values())
-        .filter(j => (j.userId === user.id || j.userId === 'guest') && !j.archived)
+        .filter(j => j.userId === user.id && !j.archived)
         .map(j => ({
           id: j.id,
           type: j.kind === 'music' ? 'audio' : j.kind,
@@ -1126,13 +1147,18 @@ export default {
       const user = await getAuthenticatedUser(request, env);
       if (!user) return json({ error: 'AUTH_REQUIRED' }, 401);
       const id = wsPatchMatch[1];
-      const job = studioJobs.get(id);
-      if (!job) return json({ error: 'NOT_FOUND' }, 404);
+      let job = studioJobs.get(id);
+      if(id.startsWith('job_image_wan_')&&env.R2_BUCKET){
+        const record=await env.R2_BUCKET.get(wanImageRecordKey(id));
+        job=record?await record.json():null;
+      }
+      if (!job || job.userId !== user.id) return json({ error: 'NOT_FOUND' }, 404);
       const body = await request.json().catch(() => ({}));
       if (body.action === 'favorite') job.isFavorite = Boolean(body.isFavorite);
       else if (body.action === 'rename' && typeof body.title === 'string' && body.title.trim()) job.title = body.title.trim().slice(0, 100);
       else if (body.action === 'archive') job.archived = true;
       else if (body.action === 'restore') job.archived = false;
+      if(id.startsWith('job_image_wan_')&&env.R2_BUCKET)await env.R2_BUCKET.put(wanImageRecordKey(id),JSON.stringify(job));
       studioJobs.set(id, job);
       return json({ ok: true, card: { id: job.id, title: job.title, isFavorite: job.isFavorite, status: job.archived ? 'archived' : 'ready' } });
     }
@@ -1165,9 +1191,9 @@ export default {
           job=record?await record.json():null;
         }catch{return json({error:'WAN_IMAGE_STORAGE_UNAVAILABLE'},503);}
         if(!job)return json({error:'NOT_FOUND'},404);
-        if(job.userId!=='guest'&&(await getAuthenticatedUser(request,env))?.id!==job.userId)
+        if(!(await ownsStudioJob(request,env,job)))
           return json({error:'NOT_FOUND'},404);
-        if(request.method==='DELETE'){
+        if(request.method==='DELETE'&&!isMedia){
           await env.R2_BUCKET.delete(wanImageRecordKey(id));
           studioJobs.delete(id);
           return json({ok:true});
@@ -1193,31 +1219,13 @@ export default {
           progress:job.progress,prompt:job.prompt,mime:job.mime,createdAt:job.created_at,
           mediaUrl:job.imageUrl?'/api/studio/jobs/'+id+'/media':null});
       }
-      let job = studioJobs.get(id);
-      if (!job) {
-        const parts = id.split('_');
-        const inferredKind = parts.length >= 3 && ['image', 'video', 'music', 'audio'].includes(parts[1]) ? parts[1] : null;
-        if (inferredKind) {
-          const isAud = inferredKind === 'audio' || inferredKind === 'music';
-          const seed = Math.floor(Math.random() * 1000000);
-          job = {
-            id,
-            kind: inferredKind,
-            model: inferredKind === 'video' ? 'veo-3.1-lite-generate-preview' : isAud ? 'lyria-3-clip-preview' : 'gemini-3.1-flash-image',
-            provider: inferredKind === 'video' ? 'Google' : isAud ? 'Google' : 'Google',
-            prompt: 'Studio Creation',
-            status: 'ready',
-            progress: 100,
-            videoUrl: null,
-            imageUrl: inferredKind === 'image' ? `https://image.pollinations.ai/prompt/cinematic%20masterpiece%2C%208k%2C%20hyperrealistic?width=1024&height=1024&model=flux&nologo=true&seed=${seed}` : null,
-            audioUrl: isAud ? '/media/jarvix/clips/jarvix_en_01.mp3' : null,
-            created_at: new Date().toISOString(),
-            mime: inferredKind === 'video' ? 'video/mp4' : isAud ? 'audio/mpeg' : 'image/jpeg'
-          };
-          studioJobs.set(id, job);
-        }
+      const job = studioJobs.get(id);
+      if (!(await ownsStudioJob(request,env,job)))
+        return json({ error: 'NOT_FOUND' }, 404);
+      if(request.method==='DELETE'&&!isMedia){
+        studioJobs.delete(id);
+        return json({ok:true});
       }
-      if (!job) return json({ error: 'NOT_FOUND' }, 404);
 
       if (job.wanTaskId && env.DASHSCOPE_API_KEY && (job.status === 'processing' || job.status === 'queued')) {
         try {
