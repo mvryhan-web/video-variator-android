@@ -22,6 +22,8 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 import unicodedata
 from urllib.parse import parse_qs, urlsplit
 
+from jarvis_new.voice_library_blocks import VoiceBlocks
+
 HOST = "127.0.0.1"
 PORT = 8770
 TEST_ORIGIN = "https://jarvis-new.deepsyq.pages.dev"
@@ -87,6 +89,7 @@ class Library:
                 approved INTEGER NOT NULL DEFAULT 0, source TEXT NOT NULL DEFAULT 'manual')""")
             db.execute("CREATE INDEX IF NOT EXISTS clips_lang ON clips(lang, approved)")
         self._index_bundled()
+        self.blocks=VoiceBlocks(self)
 
     @contextmanager
     def db(self):
@@ -154,7 +157,9 @@ class Library:
         with self.db() as db:
             db.row_factory=sqlite3.Row
             row=db.execute("SELECT * FROM clips WHERE id=?",(digest,)).fetchone()
-        if not row or (approved_only and not row["approved"]):
+        if not row:
+            return self.blocks.get(digest,approved_only=approved_only)
+        if approved_only and not row["approved"]:
             return None
         p = Path(row["path"])
         if not p.is_file():
@@ -175,6 +180,7 @@ class Library:
     def revoke(self,digest):
         with self.db() as db:
             db.execute("UPDATE clips SET approved=0 WHERE id=?",(digest,))
+        self.blocks.invalidate_source(digest)
 
     def answer(self, question: str, language: str):
         if language not in LANGUAGES or not isinstance(question,str) or len(question)>1000:
@@ -193,12 +199,12 @@ class Library:
                 p=Path(row["path"])
                 if p.is_file():
                     return {"id":row["id"],"text":row["transcript"]}
-        return None
+        return self.blocks.answer(question,language)
 
     def counts(self):
         with self.db() as db:
             total, approved = db.execute("SELECT COUNT(*),COALESCE(SUM(approved),0) FROM clips").fetchone()
-        return {"total":total,"approved":approved}
+        return {"total":total,"approved":approved,**self.blocks.counts()}
 
 
 def voice_api(library: Library):
@@ -237,7 +243,7 @@ def voice_api(library: Library):
                 return self.json(403,{"error":"Origin denied"})
             route=urlsplit(self.path)
             if route.path=="/v1/status":
-                return self.json(200,{"ok":True,"mode":"approved-mp3-only",**library.counts()})
+                return self.json(200,{"ok":True,"mode":"approved-mp3-and-reviewed-blocks",**library.counts()})
             if route.path=="/v1/audio":
                 digest=parse_qs(route.query).get("id",[""])[0]
                 item=library.get(digest,approved_only=True)
@@ -280,7 +286,7 @@ class App:
         self.server=None
         self.selected=None
         self.records=[]
-        root.title("JARVIX Voice Library — 552 MP3")
+        root.title("JARVIX Voice Library — 552 MP3 · сборка фраз")
         root.geometry("960x700")
         root.minsize(770,540)
         self.lang=tk.StringVar(value="ru")
@@ -293,6 +299,7 @@ class App:
         cmb=ttk.Combobox(head,textvariable=self.lang,values=LANGUAGES,state="readonly",width=6)
         cmb.pack(side="left");cmb.bind("<<ComboboxSelected>>",lambda e:self.refresh())
         ttk.Button(head,text="Добавить MP3",command=self.add_files).pack(side="right")
+        ttk.Button(head,text="Конструктор фраз",command=self.open_blocks).pack(side="right",padx=(0,8))
         body=ttk.Panedwindow(frame,orient="horizontal");body.pack(fill="both",expand=True,pady=14)
         left=ttk.Frame(body);right=ttk.Frame(body)
         body.add(left,weight=2);body.add(right,weight=3)
@@ -341,9 +348,12 @@ class App:
         self.question.insert(0,row["question"])
 
     def play(self):
-        if not self.selected:
+        return self.play_item(self.selected)
+
+    def play_item(self,identity):
+        if not identity:
             return
-        item=self.db.get(self.selected)
+        item=self.db.get(identity)
         if not item:
             return self.status.set("MP3 не найден")
         p=Path(item["path"])
@@ -396,8 +406,89 @@ class App:
         if not item:
             return self.status.set("Утверждённого ответа на этот вопрос ещё нет.")
         self.selected=item["id"]
-        self.status.set("Найден точный ответ: "+item["text"])
-        self.play()
+        self.status.set("Найден утверждённый ответ: "+item["text"])
+        self.play_item(item["id"])
+
+    def open_blocks(self):
+        win=tk.Toplevel(self.root)
+        win.title("JARVIX — конструктор голосовых фраз (без платных AI)")
+        win.geometry("730x590")
+        win.transient(self.root)
+        main=ttk.Frame(win,padding=16);main.pack(fill="both",expand=True)
+        ttk.Label(main,text="1. Добавить кубик из прослушанной MP3",font=("Segoe UI",12,"bold")).pack(anchor="w")
+        ttk.Label(main,text="Сначала выдели утверждённую запись в основном окне. Секунды указываются вручную.").pack(anchor="w",pady=5)
+        row=ttk.Frame(main);row.pack(fill="x",pady=5)
+        ttk.Label(row,text="Произнесённый фрагмент:").pack(side="left")
+        fragment=ttk.Entry(row);fragment.pack(side="left",fill="x",expand=True,padx=8)
+        time_row=ttk.Frame(main);time_row.pack(fill="x",pady=5)
+        ttk.Label(time_row,text="Начало, сек:").pack(side="left")
+        start=ttk.Entry(time_row,width=9);start.insert(0,"0.0");start.pack(side="left",padx=8)
+        ttk.Label(time_row,text="Конец, сек:").pack(side="left")
+        end=ttk.Entry(time_row,width=9);end.insert(0,"1.0");end.pack(side="left",padx=8)
+        ttk.Label(main,text="Сохранённые кубики выбранного языка:").pack(anchor="w",pady=3)
+        fragments=tk.Listbox(main,height=5)
+        fragments.pack(fill="x",pady=(0,9))
+        def refresh_fragments():
+            fragments.delete(0,"end")
+            for seg in self.db.blocks.list_segments(self.lang.get()):
+                fragments.insert("end",f'{seg["text"]} · {seg["start_ms"]/1000:.2f}–{seg["end_ms"]/1000:.2f} c')
+        def save_fragment():
+            if not self.selected:
+                return messagebox.showwarning("JARVIX","Выбери исходную MP3 в основном окне.",parent=win)
+            if not messagebox.askyesno("Проверка границ",
+                    "Ты прослушала исходный MP3 и проверила, что указанный фрагмент точно произносится в эти секунды?",
+                    parent=win):return
+            try:
+                self.db.blocks.create_segment(self.selected,fragment.get(),
+                   float(start.get()),float(end.get()),human_confirmed=True)
+                refresh_fragments()
+                self.status.set("Голосовой фрагмент сохранён. Можно собирать фразы.")
+            except (ValueError,RuntimeError) as error:
+                messagebox.showerror("Фрагмент не добавлен",str(error),parent=win)
+        ttk.Button(main,text="Сохранить утверждённый кубик",command=save_fragment).pack(anchor="w",pady=(0,14))
+        ttk.Separator(main,orient="horizontal").pack(fill="x",pady=5)
+        ttk.Label(main,text="2. Собрать новую фразу из одобренных кубиков",font=("Segoe UI",12,"bold")).pack(anchor="w",pady=(7,5))
+        ttk.Label(main,text="Ответ произносится только если каждое слово покрыто записанными фрагментами.").pack(anchor="w")
+        ttk.Label(main,text="Вопрос пользователя:").pack(anchor="w",pady=(9,2))
+        question=ttk.Entry(main);question.pack(fill="x")
+        ttk.Label(main,text="Текст нового ответа:").pack(anchor="w",pady=(9,2))
+        sentence=ttk.Entry(main);sentence.pack(fill="x")
+        note=tk.StringVar(value="Новый ответ не доступен JARVIX до прослушивания и отдельного утверждения.")
+        ttk.Label(main,textvariable=note,wraplength=670).pack(fill="x",pady=8)
+        state={"preview":None}
+        def compose():
+            try:
+                identity,path,num=self.db.blocks.compose_preview(question.get(),
+                    sentence.get(),self.lang.get())
+                state["preview"]=identity
+                note.set(f"Черновик из {num} фрагментов создан. Прослушай его перед публикацией.")
+                self.play_item(identity)
+            except (ValueError,RuntimeError) as error:
+                state["preview"]=None
+                note.set(str(error))
+        def listen_preview():
+            if state["preview"]:
+                self.play_item(state["preview"])
+            else:
+                note.set("Сначала собери черновик.")
+        def approve_preview():
+            identity=state["preview"]
+            if not identity:
+                return note.set("Сначала собери и прослушай черновик.")
+            if not messagebox.askyesno("Утверждение JARVIX",
+              "Ты прослушала новый ответ, все слова и переходы звучат правильно, и вопрос подходит к ответу?",
+              parent=win):return
+            try:
+                self.db.blocks.approve(identity,listened=True)
+                note.set("Готово. Этот собранный MP3 разрешён для точного вопроса.")
+                self.status.set("Утверждён собранный ответ: "+question.get())
+            except ValueError as error:
+                note.set(str(error))
+        buttons=ttk.Frame(main);buttons.pack(fill="x",pady=6)
+        ttk.Button(buttons,text="Собрать черновик",command=compose).pack(side="left",padx=(0,7))
+        ttk.Button(buttons,text="▶ Прослушать",command=listen_preview).pack(side="left",padx=(0,7))
+        ttk.Button(buttons,text="✓ Утвердить ответ",command=approve_preview).pack(side="left")
+        refresh_fragments()
 
     def close(self):
         if self.server:
