@@ -237,17 +237,41 @@ class Cloudflare:
             time.sleep(1)
         insist(confirmed, "Tour asset not confirmed in Pages asset store")
 
-        worker_response = self.call("GET", API + "/accounts/" + self.account +
-                                    "/workers/scripts/" + quote(worker, safe=""))
-        mime = worker_response.headers.get("Content-Type", "").lower()
-        content = worker_response.content
-        insist(100 <= len(content) <= MAX_FILE_BYTES, "Worker bytes are not verifiable")
-        if mime.startswith("multipart/form-data"):
-            worker_field = "_worker.bundle"
-        elif "javascript" in mime:
-            worker_field = "_worker.js"
-        else:
-            raise Blocked("Original Worker format unsupported; no production deployment")
+        endpoint = API + "/accounts/" + self.account + "/workers/scripts/" + quote(worker, safe="")
+        try:
+            worker_response = self.call("GET", endpoint)
+            mime = worker_response.headers.get("Content-Type", "").lower()
+            content = worker_response.content
+            insist(100 <= len(content) <= MAX_FILE_BYTES, "Worker bytes are not verifiable")
+            if mime.startswith("multipart/form-data"):
+                worker_field = "_worker.bundle"
+            elif "javascript" in mime:
+                worker_field = "_worker.js"
+            else:
+                raise Blocked("Original Worker format unsupported; no production deployment")
+        except Blocked as error:
+            # Pages-managed Workers may not expose their code through the
+            # standard Workers download endpoint. Bundle ONLY the exact
+            # canonical production commit, never current DEV imports.
+            insist("HTTP 404 on Cloudflare/live GET " + endpoint in str(error),
+                   "Worker download failed for an unexpected reason; no deployment")
+            with tempfile.TemporaryDirectory(prefix="deepsyq-worker-original-") as work:
+                baseline = Path(work) / "baseline"
+                checked_git("worktree", "add", "--detach", str(baseline), origin)
+                source = baseline / "app/src/main/assets/_worker.js"
+                insist(source.is_file(), "Canonical Worker source missing")
+                output = Path(work) / "canonical-worker.js"
+                bundle = subprocess.run(
+                    ["npx", "--yes", "esbuild@0.25.12", str(source),
+                     "--bundle", "--format=esm", "--platform=browser",
+                     "--target=es2022", "--outfile=" + str(output)],
+                    text=True, capture_output=True)
+                insist(bundle.returncode == 0 and output.is_file(),
+                       "Canonical Worker bundling failed; no production deployment")
+                content = output.read_bytes()
+            insist(100 <= len(content) <= MAX_FILE_BYTES,
+                   "Canonical Worker bundle exceeds safe bounds")
+            worker_field, mime = "_worker.js", "application/javascript"
         files = {worker_field: (worker_field, content, mime)}
         # Mirror the canonical LIVE source routing metadata, never HEAD.
         for special in ("_headers", "_redirects", "_routes.json"):
