@@ -33,6 +33,15 @@
 
 ---
 
+## 2026-11-12 — LANG-03: язык HTML при первой загрузке — BROWSER_VERIFIED
+
+- **ЗАВЕРШЕНО / LIVE_VERIFIED:** существующий модуль `deepsyq-i18n.js` дополнен **одним** присваиванием `document.documentElement.lang` после первой разметки текста. Словарь, все готовые переводы, URL, JARVIX UI, Worker и платежи не изменены.
+- **Публикация:** Cloudflare `3e868d54-2584-4755-903d-7414f19dbf5e`, [выпуск](https://github.com/mvryhan-web/video-variator-android/actions/runs/43278851187) с `PUBLISHED_VERIFIED`: заменён лишь `/deepsyq-i18n.js`, **1247** остальных активов и Worker/bindings сохранены.
+- **Проверка на настоящем production:** [GitHub Actions #43279301058](https://github.com/mvryhan-web/video-variator-android/actions/runs/43279301058) `success`: Chromium 390/1440 px, все четыре языка `en/ru/fr/es`, сохранение после reload, `html lang` и отсутствие платных запросов. Отдельный read-only запуск, без повторного деплоя.
+- **ОТКРЫТО ОТДЕЛЬНО:** голосовая экскурсия, реальные микрофон/LLM/TTS, полнота перевода прочих страниц и проверка на физическом смартфоне. Не переделывать законченные LANG-01—03.
+
+---
+
 ## OWNER D17 — ACTIVE ROADMAP TERMINOLOGY AND WAVES (2026-10-20)
 
 **CURRENT RULE — READ THIS BEFORE THE HISTORICAL BLOCK HEADINGS BELOW.** The owner renamed the eight platform workstreams: **F1=Block 1 Compare AI/Smart; F2=Block 2 User Agent; F3=Block 3 Inspiration; F4=Block 4 Studio/My Workspace; F5=Block 5 Product Watcher; F6=Block 6 Voice Agent; F7=Block 7 Pricing/Credits/Stripe; F8=Block 8 Virtual Pet.** `Block N` in this roadmap and existing Issues/PRs means `FN`. This is a naming change, **not** eight new implementations. Original source TXT specifications, requirement numbers, existing PRs and completed work remain untouched.
