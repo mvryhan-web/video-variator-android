@@ -28,6 +28,19 @@ SPECIAL = ("_worker.js", "_worker.bundle", "_headers", "_redirects", "_routes.js
 FINANCIAL = ("pricing.html", "pricing-page.js", "pricing-page.css",
              "pricing-wallet.js", "pricing-wallet.css")
 MAX_FILE_BYTES = 25 * 1024 * 1024
+# Only the already-approved JARVIX tour and this explicit SEO audit patch may
+# bypass non-reproducible live /404.html bytes by reusing canonical LIVE hashes.
+HASH_REUSE_RELEASE_SETS = (
+    frozenset({"jarvix-guided-tour.js", "jarvix-tour-choreography.js"}),
+    frozenset({"ai-apps.html", "canvas.html", "free-tools.html", "sitemap.xml"}),
+)
+
+def allowed_hash_reuse(paths):
+    return frozenset(paths) in HASH_REUSE_RELEASE_SETS
+
+def pages_asset_mime(path):
+    return {".js": "application/javascript", ".html": "text/html",
+            ".xml": "application/xml"}.get(Path(path).suffix, "application/octet-stream")
 
 class Blocked(Exception):
     pass
@@ -219,9 +232,8 @@ class Cloudflare:
         or modifying it. Never publish if its exact original bytes cannot be
         retrieved in a Cloudflare-supported worker upload format.
         """
-        approved = {"jarvix-guided-tour.js", "jarvix-tour-choreography.js"}
-        insist(set(assets) and set(assets).issubset(approved),
-               "Only explicit JARVIX Tour assets can use manifest reuse")
+        insist(allowed_hash_reuse(assets),
+               "Only the exact owner-approved surgical release sets can reuse LIVE hashes")
         keyed = {digest(raw, rel): (rel, raw) for rel, raw in assets.items()}
         insist(len(keyed) == len(assets), "Tour content hash collision")
         for key, (rel, _) in keyed.items():
@@ -241,7 +253,7 @@ class Cloudflare:
             upload = self.call("POST", API + "/pages/assets/upload",
                                headers=jwt_headers,
                                json=[{"key": key, "base64": True,
-                                      "metadata": {"contentType": "application/javascript"},
+                                      "metadata": {"contentType": pages_asset_mime(keyed[key][0])},
                                       "value": base64.b64encode(keyed[key][1]).decode("ascii")}
                                      for key in check["result"]]).json()
             insist(upload.get("success") is True, "Cloudflare tour asset upload failed")
@@ -455,7 +467,7 @@ def main():
                 live, paths, origin, work)
             direct_manifest = False
         except Blocked as error:
-            insist(set(paths) == {"jarvix-guided-tour.js", "jarvix-tour-choreography.js"} and
+            insist(allowed_hash_reuse(paths) and
                    str(error).startswith("Could not reproduce unchanged LIVE asset bytes:"),
                    str(error))
             expected_bytes = {rel: (ROOT / rel).read_bytes() for rel in paths}
