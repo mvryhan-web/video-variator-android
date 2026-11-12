@@ -59,6 +59,23 @@ jobs:
           test -s /tmp/jarvix-new-preview/jarvix-new-voice.js
           test -s /tmp/jarvix-new-preview/jarvix-new-recorded-dialog.js
           test -s /tmp/jarvix-new-preview/jarvix-new-smalltalk.js
+          # Source-derived short greetings must physically exist on TEST
+          # before this revised voice frontend can be published.
+          python - <<'PY'
+          import json,pathlib,hashlib
+          d=pathlib.Path('/tmp/jarvix-new-preview/media/jarvix/conversation')
+          j=json.loads((d/'manifest.json').read_text(encoding='utf-8'))
+          assert j.get('schema')=='jarvix-new-short-voice-v1'
+          for lang in ('ru','en','fr','es'):
+              for purpose in ('hello','prompt'):
+                  name=purpose+'_'+lang+'.mp3'
+                  row=next(x for x in j['clips'] if x['filename']==name)
+                  file=d/name
+                  assert file.stat().st_size>2800
+                  assert hashlib.sha256(file.read_bytes()).hexdigest()==row['sha256']
+                  assert row['previewOnly'] is True
+          print('Eight short owner voice MP3 verified: 4 languages, physical bytes, SHA256.')
+          PY
           test -s /tmp/jarvix-new-preview/jarvix-new-physical-audio-index.json
           ! grep -q 'SpeechSynthesisUtterance' /tmp/jarvix-new-preview/jarvix-new-voice.js
           test ! -f /tmp/jarvix-new-preview/jarvix-download.html
