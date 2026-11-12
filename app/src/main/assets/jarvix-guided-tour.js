@@ -722,6 +722,15 @@ if(typeof window!=='undefined'){
     // Continue Image, Video or Audio inside the existing JARVIX Chat.
     resumeJarvixGuidedTour();return;
    }
+   // The real Inspiration Clone click can finish its own speaking beat and
+   // advance to Pricing (index 12) before the Chat document finishes loading.
+   // Never wait for index 11 after it has already advanced: that was a silent
+   // permanent stall at the end of the tour.
+   const cloneArrival=new URLSearchParams(location.search);
+   if(checkpoint&&checkpoint.index>=12&&
+      cloneArrival.get('from')==='inspiration'&&cloneArrival.get('action')==='clone'){
+    state=checkpoint;state.cloneHandoff=false;save();void play();return;
+   }
    if(!checkpoint?.cloneHandoff){if(checkpoint)stopJarvixGuidedTour();return;}
    // Inspiration Clone & Try can hand off here as before.
    // No chat handlers are changed.
