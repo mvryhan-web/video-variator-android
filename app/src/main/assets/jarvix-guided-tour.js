@@ -550,7 +550,12 @@ function playV3(step,target,current){
   // At most ONE full-page navigation for this stage. A stale route, redirect,
   // or intercepted sidebar handler must not cause a reload loop.
   if(state.pendingRoute?.index===state.index&&state.pendingRoute?.href===target.href){
-   blocked(current,'Tour page could not be opened. Press Continue to retry.');
+   // play() clears the previous navigation timer. A second call while the
+   // document is still opening must RE-ARM it, not pause the entire tour.
+   navTimer=setTimeout(()=>{
+    if(current!==turn||!state||state.phase!=='playing')return;
+    try{location.assign(target.href);}catch{blocked(current,'Tour page could not be opened.');}
+   },120);
    return;
   }
   state.pendingRoute={index:state.index,href:target.href};
