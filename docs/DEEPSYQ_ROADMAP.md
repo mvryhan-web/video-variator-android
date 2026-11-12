@@ -25,6 +25,14 @@
 
 ---
 
+## 2026-11-12 — LANG-02: текст публичной страницы JARVIX на четырёх языках
+
+- **ЗАВЕРШЕНО / LIVE_VERIFIED:** дописаны только 15 отсутствовавших строк `en/ru/fr/es` в существующий `deepsyq-i18n.js`. Первые 251 строка и весь код локализации без изменений. Страница `jarvix.html` и функции JARVIX не переделывались. Проверка охватила 19 видимых текстовых узлов и `aria-label`; бренд не переводился.
+- **Подтверждение:** Cloudflare `18a4512a-14d1-40fc-9eb0-dc8043a531e8`, [GitHub Actions #43277681824](https://github.com/mvryhan-web/video-variator-android/actions/runs/43277681824) `success`; 1247 остальных активов и Worker/bindings сохранены.
+- **ОТКРЫТО ОТДЕЛЬНО:** браузерный переключатель на реальном устройстве, аудио/экскурсия JARVIX и полнота перевода остальных страниц. Не менять заново выполненные LANG-01 / LANG-02, если новая проблема не подтверждена.
+
+---
+
 ## OWNER D17 — ACTIVE ROADMAP TERMINOLOGY AND WAVES (2026-10-20)
 
 **CURRENT RULE — READ THIS BEFORE THE HISTORICAL BLOCK HEADINGS BELOW.** The owner renamed the eight platform workstreams: **F1=Block 1 Compare AI/Smart; F2=Block 2 User Agent; F3=Block 3 Inspiration; F4=Block 4 Studio/My Workspace; F5=Block 5 Product Watcher; F6=Block 6 Voice Agent; F7=Block 7 Pricing/Credits/Stripe; F8=Block 8 Virtual Pet.** `Block N` in this roadmap and existing Issues/PRs means `FN`. This is a naming change, **not** eight new implementations. Original source TXT specifications, requirement numbers, existing PRs and completed work remain untouched.
