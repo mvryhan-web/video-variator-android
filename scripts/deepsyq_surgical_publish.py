@@ -159,6 +159,11 @@ class Cloudflare:
         deployment = self.json(prefix + "/deployments/" + ident)
         insist(deployment.get("id") == ident and deployment.get("uses_functions") is True,
                "LIVE deployment missing original Worker/Functions")
+        from urllib.parse import urlparse
+        pinned = deployment.get("url") or canonical.get("url") or ""
+        host = urlparse(pinned).hostname or ""
+        self.pinned_url = pinned.rstrip("/") if (
+            pinned.startswith("https://") and host.endswith(".deepsyq.pages.dev")) else None
         live = normalize_manifest(deployment.get("files"))
         trigger = deployment.get("deployment_trigger") or canonical.get("deployment_trigger") or {}
         commit = (trigger.get("metadata") or {}).get("commit_hash")
@@ -228,6 +233,18 @@ def build_candidate(live, paths, production_commit, work):
             continue
         # Only trust Cloudflare-served bytes when their hash matches the LIVE manifest.
         raw = cloudflare.live_asset("/" + rel)
+        if digest(raw, rel) != live[key] and cloudflare.pinned_url:
+            # Deployment-specific Pages URL can bypass custom-domain transforms.
+            # Accept only the exact immutable hash from the canonical manifest.
+            try:
+                pinned = cloudflare.session.get(
+                    cloudflare.pinned_url + quote("/" + rel, safe="/") +
+                    "?deepsyq_surgical_baseline=1", timeout=30,
+                    headers={"Cache-Control": "no-cache", "Accept-Encoding": "identity"})
+                if pinned.ok and digest(pinned.content, rel) == live[key]:
+                    raw = pinned.content
+            except Exception:
+                pass
         if digest(raw, rel) != live[key]:
             raw = verified_historical_asset(rel, live[key])
         insist(raw is not None and digest(raw, rel) == live[key],
