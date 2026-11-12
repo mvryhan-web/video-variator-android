@@ -450,9 +450,23 @@ async function processMessage(message){
     pendingMediaFrame={messageId:message.id,kind:mode,ratio:parameters.ratio};
     render();
    }
-   const quote=await api('/api/studio/estimate',{kind,model:model.id,quantity:1,...parameters});
-   if(quote.previewOnly!==true||Number(quote.cost)!==0)throw Error('Zero-cost TEST estimate could not be verified.');
-   const d=await api('/api/studio/jobs',{kind,model:model.id,prompt:message.text,quantity:1,requestId:message.id,consent:false,...parameters});
+   const walletQuote=kind==='image'&&model.id==='wan2.1-t2i-turbo'&&localStorage.getItem('vv_token')
+    ?'wan-image-v1':null;
+   const quote=await api('/api/studio/estimate',{kind,model:model.id,quantity:1,...parameters,...(walletQuote?{walletQuote}:{})});
+   if(walletQuote){
+    if(quote.walletQuote!==walletQuote||quote.kind!==kind||quote.model!==model.id||quote.quantity!==1||
+       !Number.isSafeInteger(quote.credits)||quote.credits<1)throw Error('AI_CREDIT_QUOTE_INVALID');
+    const language=getJarvixLanguage();
+    const confirmation={
+     ru:`Создать изображение за ${quote.credits} AI‑кредитов?`,
+     en:`Generate an image for ${quote.credits} AI credits?`,
+     fr:`Générer une image pour ${quote.credits} crédits IA ?`,
+     es:`¿Generar una imagen por ${quote.credits} créditos de IA?`
+    };
+    if(!window.confirm(confirmation[language]||confirmation.en))throw new DOMException('Generation cancelled','AbortError');
+   }else if(quote.previewOnly!==true||Number(quote.cost)!==0)throw Error('Zero-cost TEST estimate could not be verified.');
+   const d=await api('/api/studio/jobs',{kind,model:model.id,prompt:message.text,quantity:1,requestId:message.id,
+    consent:Boolean(walletQuote),...(walletQuote?{walletQuote,expectedCredits:quote.credits}:{}),...parameters});
    if(message.voiceAction)speakJarvis({ru:'Запустил',en:'Started',fr:'Lancé',es:'Iniciado'}[getJarvixLanguage()]||'Started');
    const resultLabel = ({ru:'Результат генерации · ',en:'Generation result · ',fr:'Résultat de génération · ',es:'Resultado de generación · '}[getJarvixLanguage()]||'Generation result · ') + mode;
    answer={id:makeId(),role:'assistant',text:resultLabel,jobId:d.jobId||d.id,status:d.status,kind:mode,ratio:parameters.ratio,demo:false,createdAt:Date.now()};

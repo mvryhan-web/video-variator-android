@@ -89,6 +89,12 @@ export function createEdgeCreditFulfillment({databaseUrl,stripeKey,packs,fetcher
       reservedDelta:Number(row.reserved_delta),debtDelta:Number(row.debt_delta),createdAt:row.created_at}));
   }
 
+  async function generationCredit(userId,jobId,fingerprint,action){
+    const [row]=await sql('SELECT public.vv_edge_generation_credit($1,$2,$3,$4) AS status',[userId,jobId,fingerprint,action]);
+    if(!row?.status)throw Error('WALLET_DATABASE_UNAVAILABLE');
+    return row.status;
+  }
+
   async function assertReady(){
     const [row]=await sql(`SELECT (
       to_regprocedure('public.vv_grant_edge_credit_purchase(text,text,text,integer,integer,text,bigint,bigint,text,text,boolean)') IS NOT NULL
@@ -99,5 +105,5 @@ export function createEdgeCreditFulfillment({databaseUrl,stripeKey,packs,fetcher
     if(Number(row?.ready)!==1)throw Error('WALLET_MIGRATION_REQUIRED');
   }
 
-  return {grant,refund,balance,history,assertReady};
+  return {grant,refund,balance,history,assertReady,generationCredit};
 }
