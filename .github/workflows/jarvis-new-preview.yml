@@ -59,6 +59,8 @@ jobs:
           grep -q 'installJarvixNewVoice' /tmp/jarvix-new-preview/jarvix-new-preview-entry.js
           test -s /tmp/jarvix-new-preview/jarvix-new-voice.js
           grep -q 'jv-new-mic-chip' /tmp/jarvix-new-preview/jarvix-new-voice.js
+          grep -q 'jv-new-transcript' /tmp/jarvix-new-preview/jarvix-new-voice.js
+          grep -q 'getByteTimeDomainData' /tmp/jarvix-new-preview/jarvix-new-voice.js
           test -s /tmp/jarvix-new-preview/jarvix-new-recorded-dialog.js
           test -s /tmp/jarvix-new-preview/jarvix-new-smalltalk.js
           # Source-derived short greetings must physically exist on TEST
