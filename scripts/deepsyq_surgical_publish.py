@@ -489,7 +489,19 @@ def main():
                         result = dict(x)
                         bs = result.get("bindings")
                         if isinstance(bs, list):
-                            result["bindings"] = sorted(bs, key=lambda v: json.dumps(v, sort_keys=True))
+                            normalized = []
+                            for item in bs:
+                                if not isinstance(item, dict):
+                                    normalized.append(item)
+                                    continue
+                                entry = dict(item)
+                                # Cloudflare generates these immutable deployment metadata
+                                # text bindings anew each time; all other bindings must match.
+                                if (entry.get("type") == "plain_text" and
+                                    entry.get("name") in ("CF_PAGES_COMMIT_SHA", "CF_PAGES_URL")):
+                                    entry["text"] = "<deployment-generated>"
+                                normalized.append(entry)
+                            result["bindings"] = sorted(normalized, key=lambda v: json.dumps(v, sort_keys=True))
                         return result
                     if semantically_ordered(new_settings) != semantically_ordered(settings):
                         diff_keys = sorted(key for key in set(settings) | set(new_settings)
