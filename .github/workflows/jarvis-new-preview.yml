@@ -92,3 +92,27 @@ jobs:
           jq -e '.ok == true and (.enabled | type) == "boolean" and (.mode == "free-prerecorded" or .mode == "paid-owner-voice")'             /tmp/jarvix-paid-status.json >/dev/null
           # Never call /turn; this smoke check has zero billable operations.
           echo 'JARVIX NEW TEST paid configuration API responds without calling AI or billing'
+      - name: Public TEST smoke — original voice greeting MP3 plays on all 4 languages
+        run: |
+          python - <<'PY'
+          import hashlib,json,urllib.request
+          base='https://jarvis-new.deepsyq.pages.dev/media/jarvix/conversation/'
+          with urllib.request.urlopen(base+'manifest.json',timeout=15) as r:
+              d=json.load(r)
+          for lang in ('ru','en','fr','es'):
+              for purpose in ('hello','prompt'):
+                  name=purpose+'_'+lang+'.mp3'
+                  row=next(c for c in d['clips'] if c['filename']==name)
+                  with urllib.request.urlopen(base+name,timeout=18) as r:
+                      assert r.headers.get_content_type()=='audio/mpeg',name
+                      audio=r.read()
+                  assert len(audio)>2800,name
+                  assert hashlib.sha256(audio).hexdigest()==row['sha256'],name
+                  print('Public MP3 verified:',name,len(audio))
+          with urllib.request.urlopen('https://jarvis-new.deepsyq.pages.dev/jarvix-new-voice.js',timeout=15) as r:
+              js=r.read().decode('utf-8')
+          assert "from './jarvix-new-smalltalk.js'" in js
+          assert "async function respond(message,id)" in js
+          assert 'recordingsText()' not in js
+          print('TEST voice UI and 8 owner-voice MP3 available on public URL.')
+          PY
