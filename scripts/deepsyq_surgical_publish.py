@@ -465,8 +465,29 @@ def main():
             stage = None
             direct_manifest = True
         if not changed:
-            print(json.dumps({"status": "NO_CHANGE", "baseline": live_id,
-                              "files": paths, "published": False}))
+            # A previous Pages deployment can have committed both new hashes
+            # while its first public read was served from an older edge cache.
+            # Verify the actual bytes for every requested asset before declaring
+            # the already-live release complete. No deployment is performed.
+            verified = []
+            for rel in paths:
+                raw = (ROOT / rel).read_bytes()
+                insist(live.get("/" + rel) == digest(raw, rel),
+                       "LIVE_MANIFEST_DOES_NOT_MATCH_REQUEST: " + rel)
+                ok = False
+                for attempt in range(12):
+                    token = live_id.replace("-", "") + "-check-" + str(attempt)
+                    if cloudflare.live_asset("/" + rel, token) == raw:
+                        ok = True
+                        break
+                    time.sleep(2)
+                insist(ok, "LIVE_PUBLIC_FILE_STILL_STALE: " + rel)
+                verified.append("/" + rel)
+            cloudflare.endpoint_status("/api/config")
+            print(json.dumps({"status": "PUBLISHED_VERIFIED", "deployment": live_id,
+                              "files": verified, "already_live": True,
+                              "unchanged_asset_count": len(live)-len(verified),
+                              "worker_preserved": True, "published": True}))
             return 0
         print(json.dumps({"status": "SURGICAL_PREFLIGHT_PASS", "baseline": live_id,
                           "allowed": sorted(changed), "other_assets_preserved": len(live)-len(changed),
