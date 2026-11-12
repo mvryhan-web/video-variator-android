@@ -170,7 +170,13 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
    assert.match(response.headers.get('content-type')||'',/image\/png/);
   }
   const legacy=await(await fetch(base+'/manifest.webmanifest')).json();
-  assert.equal(legacy.short_name,'Uniquifier','existing video tool identity must not be overwritten');
+  // Both PWA manifest URLs now identify the approved DEEPSYQ app.
+  // The legacy video tool still has its own public URL and title.
+  assert.equal(legacy.short_name,'Deepsyq');
+  assert.equal(legacy.start_url,'/');
+  const videoTool=await fetch(base+'/video-uniquifier.html');
+  assert.equal(videoTool.status,200);
+  assert.match(await videoTool.text(),/<title>Video Uniquifier/);
   const forbidden=await fetch(base+'/.env');
   assert.equal(forbidden.status,404,'preview must not expose project-level secrets');
 
