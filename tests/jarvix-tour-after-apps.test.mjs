@@ -19,7 +19,7 @@ test('Tour resumes at AI Apps and advances to Canvas without paid generation',as
    new Promise((_,reject)=>setTimeout(()=>reject(Error('Preview did not start')),15000))
   ]);
   browser=await chromium.launch({headless:true});
-  for(const scenario of ['already-on-ai-apps','fresh-cross-page-handoff']){
+  for(const scenario of ['already-on-ai-apps','fresh-cross-page-handoff','lost-checkpoint-route-marker']){
    for(const viewport of [{width:1365,height:850},{width:390,height:844}]){
    const page=await browser.newPage({viewport});
    const paid=[],errors=[],transitions=[];
@@ -43,7 +43,9 @@ test('Tour resumes at AI Apps and advances to Canvas without paid generation',as
     };
    });
    try{
-    await page.goto('http://127.0.0.1:32744/ai-apps.html',{waitUntil:'domcontentloaded'});
+    const base='http://127.0.0.1:32744/ai-apps.html';
+    await page.goto(base+(scenario==='lost-checkpoint-route-marker'?'#jarvix-tour-resume-ru':''),{waitUntil:'domcontentloaded'});
+    if(scenario!=='lost-checkpoint-route-marker'){
     await page.evaluate(({key:k,scenario})=>sessionStorage.setItem(k,JSON.stringify({
       index:4,language:'ru',phase:'playing',
       navAnnounced:scenario==='already-on-ai-apps'?4:3,
@@ -53,6 +55,7 @@ test('Tour resumes at AI Apps and advances to Canvas without paid generation',as
       }:{})
     })),{key,scenario});
     await page.reload({waitUntil:'domcontentloaded'});
+    }
     try{await page.waitForURL(/\/canvas\.html(?:\?|#|$)/,{timeout:22000});}
     catch{
       const here=await page.evaluate(k=>({url:location.href,state:sessionStorage.getItem(k),ui:document.querySelector('.ds-tour-controls')?.outerHTML.slice(0,600)}),key);
