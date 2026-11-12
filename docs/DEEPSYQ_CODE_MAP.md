@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `61cb3a5fb53d183debd8332b2a5bd3425f6cc443`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `6fdc7722f3f419bff327da27536aab2edce084f6`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 121 | Named symbols: 417 | Checked relations: 78
 
 ## Topic finder (matching filenames)
@@ -138,7 +138,7 @@ blobs (L9) · SECTION_KEYWORDS (L14) · INTENT_KEYWORDS (L33) · topicContext (L
 
 ### `app/src/main/assets/jarvix-guided-tour.js`
 
-v3DialogsOpened (L152) · mediaTourModes (L177)
+v3DialogsOpened (L152) · mediaTourModes (L178)
 
 ### `app/src/main/assets/jarvix-home-chat.js`
 
