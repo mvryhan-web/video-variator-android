@@ -10,6 +10,7 @@ function fixture({recognition=true,meter=false,smalltalkAudio=true}={}){
   const events={},listeners={},played=[],classes=new Set(),recognizers=[],buttons=[],elements=[];
   let lastSpeech='';
   const orb={
+    style:{vars:{},setProperty(name,value){this.vars[name]=value}},
     classList:{toggle:(c,b)=>b?classes.add(c):classes.delete(c),
       remove:(...c)=>c.forEach(k=>classes.delete(k)),add:c=>classes.add(c)},
     getBoundingClientRect:()=>({left:100,width:64,bottom:58}),
@@ -155,7 +156,7 @@ test('live partial words appear under sphere before final question is sent',asyn
     const transcript=f.elements.find(x=>x.id==='jv-new-transcript-text');
     const panel=f.elements.find(x=>x.id==='jv-new-transcript');
     assert.ok(transcript && panel);
-    assert.match(transcript.textContent,/Скажите что-нибудь/);
+    assert.equal(panel.hidden,true,'No framed prompt before actual speech');
     const r=f.recognizers.at(-1);
     r.emit('Как',false);
     assert.equal(transcript.textContent,'Как');
@@ -170,7 +171,7 @@ test('live partial words appear under sphere before final question is sent',asyn
     await f.flush();
     assert.equal(f.speech,'Как дела?');
     assert.ok(f.recognizers.length>=2);
-    assert.match(transcript.textContent,/Скажите что-нибудь/);
+    assert.equal(panel.hidden,true,'No empty prompt before next speech');
   }finally{f.stop();}
 });
 test('final transcript combines multiple results and displays complete question',async()=>{
@@ -193,20 +194,23 @@ test('final transcript combines multiple results and displays complete question'
     assert.equal(f.speech,'Как дела?');
   }finally{f.stop();}
 });
-test('real microphone audio samples drive local meter, meter stops on end',async()=>{
+test('real microphone audio volume expands existing sphere and calms when stopped',async()=>{
   const f=fixture({meter:true});
   try{
     f.clickSphere();await f.flush();
+    const panel=f.elements.find(x=>x.id==='jv-new-transcript');
+    assert.ok(panel);
+    assert.equal(panel.hidden,true,'No empty speech frame');
     await new Promise(resolve=>setTimeout(resolve,165));
-    const meter=f.elements.find(x=>x.id==='jv-new-audio-fill');
-    assert.ok(meter);
-    assert.notEqual(meter.style.transform,'scaleX(.05)');
-    assert.match(meter.style.transform,/^scaleX\(0\./);
+    const scale=Number(f.orb.style.vars['--jv-mic-scale']);
+    assert.ok(scale>1,'Actual mic audio must enlarge the sphere');
+    assert.ok(scale<=1.19,'Never distort owner sphere');
+    assert.equal(f.orb['data-jv-mic-live'],'true');
+    assert.equal(f.classes.has('jv-new-voice-listening'),true);
     f.stop();
-    assert.equal(meter.style.transform,'scaleX(.05)');
+    assert.equal(f.classes.has('jv-new-voice-listening'),false);
   }finally{f.stop();}
 });
-
 test('recognized "Как дела?" receives honest visible TEXT response when voice MP3 is not yet created',async()=>{
   const f=fixture({smalltalkAudio:false});
   try{
