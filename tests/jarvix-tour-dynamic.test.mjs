@@ -32,6 +32,10 @@ async function instrument(page){
  await page.addInitScript(()=>{
   localStorage.setItem('deepsyq_home_language','ru');
   window.__tourClipCalls=[];
+  window.__tourClickAt=null;
+  document.addEventListener('click',e=>{
+   if(e.target?.closest?.('#dsTakeTour'))window.__tourClickAt=performance.now();
+  },true);
   // Simulate precisely the HTML media callbacks, preserving the REAL DOM actions,
   // navigation, state machine and private Studio iframe; no credit purchases.
   const native=HTMLMediaElement.prototype.play;
@@ -56,14 +60,13 @@ test('JARVIX greeting starts from the click immediately, even away from Home',as
    try{
     await page.goto(base+path,{waitUntil:'domcontentloaded'});
     await page.locator('#dsTakeTour').waitFor({state:'visible',timeout:15000});
-    const start=await page.evaluate(()=>performance.now());
     await page.locator('#dsTakeTour').click();
-    await page.waitForFunction(()=>window.__tourClipCalls?.length>0,{timeout:3000});
-    const result=await page.evaluate(start=>({
-      delta:window.__tourClipCalls[0].t-start,
+    await page.waitForFunction(()=>window.__tourClipCalls?.length>0,null,{timeout:3000});
+    const result=await page.evaluate(()=>({
+      delta:window.__tourClipCalls[0].t-window.__tourClickAt,
       first:window.__tourClipCalls[0].src.split('/').pop(),
       state:JSON.parse(sessionStorage.getItem('deepsyq_guided_tour_v6')||'null')
-    }),start);
+    }));
     assert.ok(result.delta>=0&&result.delta<650,'First audio play must begin within 650ms on '+path+': '+JSON.stringify(result));
     assert.equal(result.state?.index,0,'First spoken stage is always Home');
     console.log('INSTANT_AUDIO',path,Math.round(result.delta)+'ms',result.first);
