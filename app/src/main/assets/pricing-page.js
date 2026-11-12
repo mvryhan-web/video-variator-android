@@ -228,7 +228,7 @@ async function checkoutPlan(plan){
   return;
  }
 
- const fallbackUrl=LIVE_STRIPE_LINKS[plan];
+ const fallbackUrl=location.hostname==='deepsyq.app'?LIVE_STRIPE_LINKS[plan]:null;
  planCheckoutPending=true;message('pricingStatus','Opening secure checkout…');
  try{
   const d=await api('/api/billing/checkout',{method:'POST',body:JSON.stringify({plan})});

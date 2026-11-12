@@ -415,8 +415,13 @@ export default {
       const user = await getAuthenticatedUser(request, env);
       const body = await request.json().catch(() => ({}));
       const plan = String(body.plan || '');
-      const baseLink = LIVE_SUBSCRIPTION_LINKS[plan];
-      if (!baseLink) return json({ error: 'INVALID_OR_UNCONFIGURED_PLAN' }, 400);
+      if(!Object.hasOwn(LIVE_SUBSCRIPTION_LINKS,plan))return json({error:'INVALID_OR_UNCONFIGURED_PLAN'},400);
+      const production=url.hostname==='deepsyq.app';
+      const baseLink=production?LIVE_SUBSCRIPTION_LINKS[plan]:env['STRIPE_TEST_LINK_'+plan.toUpperCase()];
+      if(!production&&(!/^(sk|rk)_test_/.test(String(env.STRIPE_SECRET_KEY||''))||
+         !/^https:\/\/buy\.stripe\.com\/test_[A-Za-z0-9]+$/.test(baseLink||''))){
+        return json({error:'TEST_CHECKOUT_NOT_CONFIGURED'},503);
+      }
       const linkUrl = new URL(baseLink);
       if (user) {
         const pub = buildPublicUser(user, env);
@@ -430,7 +435,7 @@ export default {
 
     if (pathname === '/api/ai-billing/config') {
       const stripeKey = String(env.STRIPE_SECRET_KEY || '');
-      const isLiveKey = /^(sk_live_|rk_live_)/.test(stripeKey);
+      const isLiveKey = url.hostname==='deepsyq.app' && /^(sk_live_|rk_live_)/.test(stripeKey);
       const isTestKey = /^(sk_test_|rk_test_)/.test(stripeKey);
       const enabled = isLiveKey || isTestKey;
       const mode = isLiveKey ? 'live' : 'test';
@@ -450,7 +455,8 @@ export default {
     if (pathname === '/api/ai-billing/checkout' && request.method === 'POST') {
       const user = await getAuthenticatedUser(request, env);
       const stripeKey = String(env.STRIPE_SECRET_KEY || '');
-      if (!/^(sk_live_|rk_live_|sk_test_|rk_test_)/.test(stripeKey)) {
+      const expectedKey=url.hostname==='deepsyq.app'?/^(sk|rk)_live_/:/^(sk|rk)_test_/;
+      if (!expectedKey.test(stripeKey)) {
         return json({ error: 'PAYMENTS_NOT_ACTIVATED' }, 503);
       }
       const body = await request.json().catch(() => ({}));
@@ -504,6 +510,9 @@ export default {
     }
 
     if ((pathname === '/api/webhooks/stripe' || pathname === '/api/stripe/webhook') && request.method === 'POST') {
+      const stripeKey=String(env.STRIPE_SECRET_KEY||'');
+      const expectedKey=url.hostname==='deepsyq.app'?/^(sk|rk)_live_/:/^(sk|rk)_test_/;
+      if(!expectedKey.test(stripeKey))return json({error:'STRIPE_MODE_NOT_CONFIGURED'},503);
       const secret = env.STRIPE_WEBHOOK_SECRET || '';
       if (!secret) return new Response('Stripe webhook is not configured', { status: 503 });
       const rawBody = await request.text();
@@ -525,6 +534,7 @@ export default {
       let event;
       try { event=JSON.parse(rawBody); }
       catch { return json({error:'INVALID_WEBHOOK_EVENT'},400); }
+      if(event.livemode!==(url.hostname==='deepsyq.app'))return json({error:'STRIPE_EVENT_MODE_MISMATCH'},400);
       const stripeObject=event.data?.object;
       if(stripeObject?.metadata?.aiWallet==='v1'&&
          ['checkout.session.completed','checkout.session.async_payment_succeeded','charge.refunded'].includes(event.type)){
