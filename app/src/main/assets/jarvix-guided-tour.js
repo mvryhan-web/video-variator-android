@@ -203,7 +203,8 @@ function homeMediaTourStep(step){
 // Native, paced gestures only. Home's real tile navigates to Chat once;
 // Chat's own tile switches the same conversation's mode in place.
 async function selectTourMediaMode(mode,current){
- const alive=()=>current===turn&&state?.phase==='playing';
+ const scheduledStep=state?.index;
+ const alive=()=>current===turn&&state?.phase==='playing'&&state.index===scheduledStep;
  // On a newly navigated Chat document, the universal composer can mount
  // after the guided-tour module. Do not treat unfinished DOM initialization
  // as a missing menu, and never create a second chat to work around it.
@@ -216,7 +217,17 @@ async function selectTourMediaMode(mode,current){
   await pauseFrame(90);
  }
  if(!alive())return;
- if(!plus||!menu||!choice){blocked(current,'JARVIX mode menu unavailable after load');return;}
+ if(!plus||!menu||!choice){
+  // A full-document navigation can retire the previous stage's DOM while
+  // the next page is loading. A stale mode lookup must never stop the tour.
+  // Defer only this stage; the target Chat page will resume from storage.
+  if(location.pathname.endsWith('/jarvix-chat.html')&&
+     new URLSearchParams(location.search).get('mode')===mode){
+   state.mediaSelectedStep=scheduledStep;save();
+  }
+  waitTimer=setTimeout(()=>{if(alive())void play();},280);
+  return;
+ }
  await showTourElement(plus,alive,1200);
  if(!alive())return;
  if(menu.hidden)plus.click();
