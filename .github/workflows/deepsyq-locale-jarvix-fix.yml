@@ -1,0 +1,68 @@
+name: DEEPSYQ Locale bridge completion - JARVIX guide only
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/deepsyq-locale-jarvix-fix.yml'
+      - 'app/src/main/assets/jarvix.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  jarvix-locale-bridge:
+    if: >-
+      github.ref == 'refs/heads/deepsyq-platform' &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.head_commit.message == 'release(DEEPSYQ i18n): complete JARVIX guide language bridge only')
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify four-language locale bridge across all HTML and JARVIX only
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/deepsyq-i18n-regression.test.mjs
+          python -m py_compile scripts/deepsyq_surgical_publish.py
+          python -m unittest discover -s tests -p 'test_deepsyq_surgical_publish.py' -v
+          python - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          from importlib.util import spec_from_file_location,module_from_spec
+          spec=spec_from_file_location('safe','scripts/deepsyq_surgical_publish.py')
+          safe=module_from_spec(spec);spec.loader.exec_module(safe)
+          assert safe.allowed_hash_reuse(['jarvix.html'])
+          assert not safe.allowed_hash_reuse(['jarvix.html','jarvix-chat.html'])
+          html=Path('app/src/main/assets/jarvix.html').read_text(encoding='utf8')
+          head,body=html.split('</head>',1)
+          assert head.count('deepsyq-i18n.js?v=20261111')==1
+          assert '<script defer src="deepsyq-i18n.js?v=20261111"></script>' in head
+          assert 'deepsyq-site-shell.js' not in html
+          assert '<h1>Meet JARVIX, the DeepSyQ voice assistant</h1>' in body
+          assert '<a href="jarvix-chat.html">Open JARVIX Chat</a>' in body
+          assert '<a href="pricing.html">Pricing and AI credits</a>' in body
+          print('JARVIX_SINGLE_SCRIPT_LOCALE_COMPLETION_PASS')
+          PY
+      - name: Install surgical uploader dependencies
+        run: python -m pip install --disable-pip-version-check "requests==2.32.3" "blake3==1.0.8"
+      - name: Publish only JARVIX guide HTML preserving existing Worker and all assets
+        run: |
+          python scripts/deepsyq_surgical_publish.py \
+            --mode publish \
+            --files jarvix.html \
+            --commit "$GITHUB_SHA"
