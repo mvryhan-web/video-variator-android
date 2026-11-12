@@ -19,7 +19,8 @@ const getLang=()=>{
 };
 let on=false,seq=0,rec=null,request=null,pending=null,ownerClip=null,ownerClipDone=null;
 let turns=[],orb=null,micChip=null,micStage='idle',micFailures=0;
-let transcriptWrap=null,transcriptText=null,transcriptReply=null,meterFill=null,heardText='',heardIsFinal=false,botReplyText='';
+let transcriptWrap=null,transcriptText=null,transcriptReply=null,heardText='',heardIsFinal=false,botReplyText='';
+let micPulseRms=0;
 let monitorStream=null,monitorContext=null,monitorAnalyser=null,monitorTimer=null,monitorSamples=null;
 const Recognition=()=>window.SpeechRecognition||window.webkitSpeechRecognition;
 const MICROPHONE_STATES={
@@ -46,7 +47,7 @@ function positionMicChip(){
  micChip.style.top=y+'px';
  if(transcriptWrap){
   transcriptWrap.style.left=x+'px';
-  transcriptWrap.style.top=Math.min(innerHeight-84,y+(micChip.offsetHeight||35)+7)+'px';
+  transcriptWrap.style.top=Math.min(innerHeight-40,y+(micChip.offsetHeight||35)+5)+'px';
  }
 }
 function setTranscript(text='',final=false){
@@ -61,18 +62,11 @@ function showTextResponse(text){
 }
 function renderTranscript(){
  if(!transcriptWrap||!transcriptText)return;
- const active=on&&(micStage==='listening'||micStage==='starting'||
-   micStage==='thinking'||micStage==='speaking'||micStage==='missing'||micStage==='ready');
- transcriptWrap.hidden=!active;
- if(!active)return;
- const lang=recordedLanguage();
- const hint={
-  ru:'Скажите что-нибудь — здесь появятся распознанные слова',
-  en:'Speak now — recognized words will appear here',
-  fr:'Parlez — les mots reconnus apparaîtront ici',
-  es:'Habla — aquí aparecerán las palabras reconocidas'
- }[lang]||'Speak now';
- transcriptText.textContent=heardText||((micStage==='listening'||micStage==='starting')?hint:'');
+ // No framed prompt. Actual recognized words and optional answer only.
+ transcriptWrap.hidden=!(on&&(heardText||botReplyText));
+ if(transcriptWrap.hidden)return;
+ transcriptText.hidden=!heardText;
+ transcriptText.textContent=heardText;
  transcriptText.dataset.actual=heardText?'true':'false';
  if(transcriptReply){
   transcriptReply.hidden=!botReplyText;
@@ -81,6 +75,16 @@ function renderTranscript(){
  transcriptWrap.dataset.stage=micStage;
  transcriptWrap.dataset.final=heardIsFinal?'true':'false';
  positionMicChip();
+}
+function updateSphereFromMicrophone(rms){
+ // Use real microphone amplitude, with a slight noise gate and smooth decay.
+ const effective=on&&micStage==='listening'&&Number.isFinite(rms)?
+   Math.max(0,Math.min(.2,rms-.012)):0;
+ micPulseRms=micPulseRms*.58+effective*.42;
+ const volume=Math.min(1,micPulseRms*13);
+ orb?.style?.setProperty?.('--jv-mic-scale',(1+volume*.19).toFixed(3));
+ orb?.style?.setProperty?.('--jv-mic-glow',(5+volume*24).toFixed(1)+'px');
+ orb?.setAttribute?.('data-jv-mic-live',volume>.035?'true':'false');
 }
 // The sound level is read from the local microphone stream. No raw audio
 // is uploaded by this meter. Browser speech recognition is separate.
@@ -92,7 +96,7 @@ function stopMicMonitor(){
  }
  try{monitorContext?.close?.();}catch{}
  monitorContext=null;monitorAnalyser=null;monitorSamples=null;
- if(meterFill)meterFill.style.transform='scaleX(.05)';
+ updateSphereFromMicrophone(0);
 }
 function startMicMonitor(stream){
  stopMicMonitor();
@@ -108,8 +112,8 @@ function startMicMonitor(stream){
   monitorSamples=new Uint8Array(monitorAnalyser.fftSize);
   Promise.resolve(monitorContext.resume?.()).catch(()=>{});
   monitorTimer=setInterval(()=>{
-   if(!on||micStage!=='listening'||!monitorAnalyser||!meterFill){
-    if(meterFill)meterFill.style.transform='scaleX(.05)';
+   if(!on||micStage!=='listening'||!monitorAnalyser){
+    updateSphereFromMicrophone(0);
     return;
    }
    monitorAnalyser.getByteTimeDomainData(monitorSamples);
@@ -118,11 +122,8 @@ function startMicMonitor(stream){
     const centered=(value-128)/128;
     sum+=centered*centered;
    }
-   const rms=Math.sqrt(sum/monitorSamples.length);
-   // Visible response is actual microphone amplitude, not fake animation.
-   const level=Math.max(.05,Math.min(1,rms*10));
-   meterFill.style.transform='scaleX('+level.toFixed(2)+')';
-  },120);
+   updateSphereFromMicrophone(Math.sqrt(sum/monitorSamples.length));
+  },65);
  }catch{
   try{monitorContext?.close?.();}catch{}
   monitorContext=null;monitorAnalyser=null;monitorSamples=null;
@@ -130,6 +131,7 @@ function startMicMonitor(stream){
 }
 function ui(stage='idle'){
  micStage=stage;
+ if(stage!=='listening')updateSphereFromMicrophone(0);
  if(orb){
   orb.classList.toggle('jv-new-voice-active',on);
   orb.classList.remove('jv-new-voice-speaking','jv-new-voice-listening','jv-new-voice-thinking');
@@ -174,6 +176,7 @@ function stop(){
 function resumeMicrophone(){
  if(!on)return void start();
  if(micStage==='listening')return;
+ try{monitorContext?.resume?.();}catch{}
  if(ownerClip){try{ownerClip.pause();ownerClip.currentTime=0;}catch{}ownerClip=null;}
  if(ownerClipDone){const finish=ownerClipDone;ownerClipDone=null;finish(false);}
  if(request){try{request.abort();}catch{}request=null;}
@@ -460,7 +463,7 @@ export function installJarvixNewVoice(){
  '@keyframes jvListen{0%,100%{filter:hue-rotate(-18deg) drop-shadow(0 0 9px #34dce1)}50%{filter:hue-rotate(10deg) drop-shadow(0 0 20px #4effe6)}}',
  '@keyframes jvThink{0%,100%{filter:drop-shadow(0 0 7px #f2a949)}50%{filter:drop-shadow(0 0 24px #f9d27a)}}',
  '@keyframes jvSpeak{0%,100%{filter:drop-shadow(0 0 9px #ce58d4)}50%{filter:drop-shadow(0 0 29px #ff9f41) drop-shadow(0 0 10px #bc6bfc)}}',
- '#topJarvisBtn.jv-new-voice-listening .jarvis-mini-orb{animation:jvListen 1.8s ease-in-out infinite!important}',
+ '#topJarvisBtn.jv-new-voice-listening .jarvis-mini-orb{animation:none!important;transform:scale(var(--jv-mic-scale,1))!important;filter:drop-shadow(0 0 var(--jv-mic-glow,5px) #40e6d5)!important;transform-origin:center!important;transition:transform 75ms ease-out,filter 75ms linear!important;will-change:transform,filter}',
  '#topJarvisBtn.jv-new-voice-thinking .jarvis-mini-orb{animation:jvThink .95s ease-in-out infinite!important}',
  '#topJarvisBtn.jv-new-voice-speaking .jarvis-mini-orb{animation:jvSpeak .5s ease-in-out infinite!important}',
  '@media(prefers-reduced-motion:reduce){#topJarvisBtn.jv-new-voice-active .jarvis-mini-orb{animation:none!important}}',
@@ -470,17 +473,12 @@ export function installJarvixNewVoice(){
  '#jv-new-mic-chip[data-state="speaking"]{border-color:#d790f4;box-shadow:0 0 12px #a85fe688}',
  '#jv-new-mic-chip[data-state="error"],#jv-new-mic-chip[data-state="unsupported"]{border-color:#f2a960;color:#ffda9f}',
  '#jv-new-mic-chip:disabled{opacity:.9;cursor:default}',
- '#jv-new-transcript{position:fixed;z-index:2147482000;transform:translateX(-50%);width:min(312px,calc(100vw - 24px));padding:10px 12px 9px;background:#0c1828f5;border:1px solid #3c6e7b;border-radius:12px;color:#f7fafd;box-shadow:0 10px 26px #07111e77;pointer-events:none;text-align:center;font:500 14px/1.5 system-ui,sans-serif;overflow-wrap:anywhere}',
+ '#jv-new-transcript{position:fixed;z-index:2147482000;transform:translateX(-50%);width:min(290px,calc(100vw - 24px));padding:0 2px;background:transparent;border:none;border-radius:0;color:#fff;text-shadow:0 2px 7px #0a1429,0 0 9px #071126;box-shadow:none;pointer-events:none;text-align:center;font:600 15px/1.45 system-ui,sans-serif;overflow-wrap:anywhere}',
  '#jv-new-transcript[hidden]{display:none!important}',
- '#jv-new-transcript-text[data-actual="true"]{font-weight:700;font-size:16px;line-height:1.45;color:#fff}',
- '#jv-new-transcript-text[data-actual="false"]{font-size:12px;color:#9eb4be}',
- '#jv-new-transcript-reply{white-space:pre-wrap;border-top:1px solid #385464;margin-top:7px;padding-top:7px;color:#f7d6a4;font-size:13px;font-weight:600;line-height:1.45}',
+ '#jv-new-transcript-text[data-actual="true"]{font-weight:700;font-size:16px;color:#fff}',
+ '#jv-new-transcript-reply{margin-top:5px;color:#ffe0a5;font-size:13px;font-weight:600;line-height:1.45}',
  '#jv-new-transcript-reply[hidden]{display:none!important}',
- '#jv-new-transcript[data-stage="listening"]{border-color:#29c6ba}',
- '#jv-new-transcript[data-final="true"]{border-color:#ddaa68}',
- '#jv-new-audio-meter{height:3px;border-radius:4px;background:#284a55;margin:8px auto 0;overflow:hidden;width:74%}',
- '#jv-new-audio-fill{display:block;background:linear-gradient(90deg,#28b8a2,#63f2cf);height:100%;width:100%;transform:scaleX(.05);transform-origin:left;transition:transform 90ms linear}',
- '@media(prefers-reduced-motion:reduce){#jv-new-audio-fill{transition:none!important}}'
+ '@media(prefers-reduced-motion:reduce){#topJarvisBtn.jv-new-voice-listening .jarvis-mini-orb{transition:none!important}}'
  ].join('');
  document.head.append(style);
  // Remove old bottom error/status captions, including those left by an
@@ -509,15 +507,8 @@ export function installJarvixNewVoice(){
  transcriptReply=document.createElement('div');
  transcriptReply.id='jv-new-transcript-reply';
  transcriptReply.hidden=true;
- const level=document.createElement('div');
- level.id='jv-new-audio-meter';
- level.setAttribute('aria-hidden','true');
- meterFill=document.createElement('span');
- meterFill.id='jv-new-audio-fill';
- level.appendChild(meterFill);
  transcriptWrap.appendChild(transcriptText);
  transcriptWrap.appendChild(transcriptReply);
- transcriptWrap.appendChild(level);
  document.body.appendChild(transcriptWrap);
  window.addEventListener('resize',positionMicChip,{passive:true});
  window.addEventListener('scroll',positionMicChip,{passive:true});
