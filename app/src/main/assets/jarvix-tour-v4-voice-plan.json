@@ -69,5 +69,29 @@
       "fr": "Voilà pour cette démonstration gratuite de JARVIX. Vous n'avez découvert qu'une partie des possibilités de DEEPSYQ. Avec Basic, Pro et Business, choisissez les outils adaptés à vos projets, de vos premières créations à une production régulière. Choisissez votre offre et créez davantage.",
       "es": "Esta fue una demostración gratuita de JARVIX. Solo has visto una parte de lo que ofrece DEEPSYQ. Con Basic, Pro y Business puedes elegir herramientas para tus proyectos, desde tus primeras creaciones hasta la producción habitual. Elige tu plan y crea más."
     }
-  ]
+  ],
+  "voicePerformanceRevision": {
+    "status": "RECORDING_REVIEW_REQUIRED_NOT_RENDERED",
+    "reference": "media/jarvix/clips/jarvix_ru_01.mp3",
+    "goal": "Retain exactly the verified JARVIX owner's speaker identity, timbre, accent and language while producing a warm, positive, engaging, confident guide rather than a frightened or shaky delivery.",
+    "prosody": "Steady grounded intonation, relaxed breathing, gentle optimism, articulate consonants. Natural medium tempo; never hurried. Lift on invitations and examples, settle warmly at sentence ends, professional without shouting or sales theatrics.",
+    "avoid": [
+      "trembling or frightened cadence",
+      "whispering",
+      "hesitant rising inflection at each clause",
+      "unnatural robotic prosody",
+      "abrupt loudness shifts",
+      "rushed or monotone delivery"
+    ],
+    "silence": "Leading silence no more than 180ms, normal sentence breaks 230–420ms, trailing silence no more than 250ms. Preserve syllables and natural phrase boundaries.",
+    "priority": [
+      "final-upgrade",
+      "plans-available",
+      "clone-arrival",
+      "inspiration-clone",
+      "tools-overview"
+    ],
+    "process": "On the owner's local VoxCPM2 setup, first make a test sample and compare by ear with the approved JARVIX speaker reference. Re-record only clips that audibly require correction. Match text exactly and keep the existing 4-language manifest/paths; update per-file sha256, bytes, approval ONLY after listening and validating. Do not generate, pay, or change website in this step.",
+    "audibleQA": "Listen on headphones at normal volume. Compare speaker identity with the original greeting. Reject jitter, fear-like emphasis, word changes, clipped starts, excessive silent gaps, duplicated syllables, and wrong-language accent."
+  }
 }
