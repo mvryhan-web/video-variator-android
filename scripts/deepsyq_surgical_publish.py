@@ -35,6 +35,7 @@ HASH_REUSE_RELEASE_SETS = (
     frozenset({"ai-apps.html", "canvas.html", "free-tools.html", "sitemap.xml"}),
     frozenset({"compare-ai.html", "simple-background-remover.html", "teleprompter.html"}),
     frozenset({"photo-collage.html"}),
+    frozenset({"generate-studio.html"}),
 )
 
 def allowed_hash_reuse(paths):
