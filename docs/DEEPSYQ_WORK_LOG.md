@@ -132,3 +132,13 @@
 - [GitHub Actions #43272943061](https://github.com/mvryhan-web/video-variator-android/actions/runs/43272943061): `completed/success`, тест `SEO_AUDIT_BATCH_3_METADATA_PASS`, модульные проверки точечного издателя.
 - Cloudflare: `PUBLISHED_VERIFIED`, deployment `85a32b96-7766-4f96-8660-8ff45ae91f0c` (предыдущий `26df404a-8189-42e1-ba94-a16cf4a36c36`). Опубликован **только один файл** `/photo-collage.html`; другие **1247 файлов не менялись**, Worker и bindings сохранены.
 - Не выдавать публикацию метатегов за подтверждение Google-индексации или за гарантию rich previews. Текущую страницу не менять повторно без новой подтверждённой ошибки. Оставшиеся финансовые/AI/SEO-задачи — отдельные этапы, не решались этим выпуском.
+
+
+## 12 ноября — SEO-AUDIT-04: Creative Studio — только недостающие метаданные, LIVE_VERIFIED
+
+- **Сверка:** `SEO-AUDIT-01`, `SEO-AUDIT-02`, `SEO-AUDIT-03` уже завершены; эти страницы, ранее работающие функции и существующие интерфейсы не менялись. `pricing.html` и `video-uniquifier.html` имеют защищённые правила оформления и оплаты, поэтому исключены из этого выпуска.
+- **Обнаружено:** `generate-studio.html` имел `title`, `description`, `canonical`, `og:url`, H1; не хватало `og:title`, `og:description`, `og:type`. Twitter card был `summary_large_image` без предоставленного оглавного изображения.
+- **Исправлено:** добавлены **только** отсутствовавшие три OG-тега и `twitter:card=summary` для корректного текстового превью. Весь исходный HTML после `</head>`, JavaScript, модели, Studio, JARVIX, кредиты, тарифы и Worker оставлены без изменений.
+- **GitHub:** commit HTML `26bd3ba4b02e3051f2821b6f90fced53038b21d6`, SHA релиза `55c75f3bca5c0d8880660b1758d63dd7da26fa04`, [Actions #43273756880](https://github.com/mvryhan-web/video-variator-android/actions/runs/43273756880) — `completed/success`, `SEO_AUDIT_BATCH_4_METADATA_PASS`.
+- **Cloudflare:** `PUBLISHED_VERIFIED`, deployment `88c68355-f36c-4098-81f1-a1389ec05e5b` (предыдущий `85a32b96-7766-4f96-8660-8ff45ae91f0c`), заменён только `/generate-studio.html`; остальные **1247** файлов, Worker и bindings сохранены.
+- **Осталось за рамками:** фактическая индексация Google, внешнее распространение ссылок и реальное выполнение AI-генераций этим выпуском не проверялись. Снова менять завершённый Creative Studio SEO-пункт без подтверждённой новой ошибки запрещено.
