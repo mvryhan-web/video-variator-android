@@ -448,12 +448,21 @@ async function speakV3(text,current,complete,beat=null){
     if(current!==turn||state?.phase!=='playing')return;
     const step=tourPlan(state.language)[state.index];
     if(step?.title==='Inspiration'&&(state.beat||0)===1){
-     await performTourDemo('Inspiration',1,()=>current===turn&&state?.phase==='playing',{
-      beforeClone:()=>{
-       if(current!==turn||state?.phase!=='playing')return false;
-       state.beat=2;state.cloneHandoff=true;save();return true;
-      }
-     });
+     const alive=()=>current===turn&&state?.phase==='playing'&&state.index===11;
+     // The normal Clone button stores a template and Chat auto-submits it
+     // to /api/studio/jobs. The *tour* must demonstrate the native button
+     // without placing a paid generation request or changing the user's work.
+     await showTourElement('.inspiration-detail-copy',alive,300);
+     const clone=await showTourElement('.inspiration-detail-clone:not([disabled])',alive,340);
+     if(alive()&&clone){
+      state.beat=2;state.cloneHandoff=true;save();
+      // The user still sees an actual click; the one-click tour guard stops
+      // the normal auto-generation action before its handler can run.
+      const tourOnly=event=>{event.preventDefault();event.stopImmediatePropagation();};
+      clone.addEventListener('click',tourOnly,{capture:true,once:true});
+      try{clone.click();}finally{clone.removeEventListener('click',tourOnly,true);}
+      if(alive())location.assign('jarvix-chat.html?mode=image&from=inspiration&tour=clone');
+     }
     }
     // A short transition after an already-finished recording; the focus
     // itself stays visible long enough during the corresponding spoken beat.
@@ -733,7 +742,8 @@ if(typeof window!=='undefined'){
    // permanent stall at the end of the tour.
    const cloneArrival=new URLSearchParams(location.search);
    if(checkpoint&&checkpoint.index>=12&&
-      cloneArrival.get('from')==='inspiration'&&cloneArrival.get('action')==='clone'){
+      cloneArrival.get('from')==='inspiration'&&
+      (cloneArrival.get('action')==='clone'||cloneArrival.get('tour')==='clone')){
     state=checkpoint;state.cloneHandoff=false;save();void play();return;
    }
    if(!checkpoint?.cloneHandoff){if(checkpoint)stopJarvixGuidedTour();return;}
