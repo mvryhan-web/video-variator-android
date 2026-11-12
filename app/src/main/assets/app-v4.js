@@ -62,12 +62,12 @@
     return{modes:['gentle','balanced','dynamic'],qualities:['720','1080','2160'],maxVariants:5,label:'Free trial: Gentle + Balance + Dynamic · 720p / 1080p / 4K'};
   }
   function enforcePlanControls(){
-    const policy=policyFor(activePlan()),mode=$('mode'),quality=$('quality'),variants=$('variantCount'),allowedQualities=policy.qualities||['720'];
+    const policy=policyFor(activePlan()),mode=$('mode'),quality=$('quality'),variants=$('variantCount'),allowedQualities=['720','1080','2160'];
     Array.from(mode.options).forEach(o=>o.disabled=!policy.modes.includes(o.value));
     if(!policy.modes.includes(mode.value))mode.value=policy.modes[0];
     Array.from(quality.options).forEach(o=>o.disabled=!allowedQualities.includes(o.value));
     if(!allowedQualities.includes(quality.value))quality.value=allowedQualities[0];
-    quality.disabled=allowedQualities.length===1;
+    quality.disabled=false;
     Array.from(variants.options).forEach(o=>o.disabled=Number(o.value)>policy.maxVariants);
     if(Number(variants.value)>policy.maxVariants)variants.value=String(policy.maxVariants);
     $('planAccessHint').textContent=policy.label;
