@@ -9,7 +9,7 @@ export function installTourFocus(){
 }
 export async function showTourElement(selector,alive,ms=1300){
  if(!alive())return null;
- const el=typeof selector==='string'?document.querySelector(selector):selector;
+ const el=typeof selector==='string'?[...document.querySelectorAll(selector)].find(visible):selector;
  if(!visible(el))return null;
  installTourFocus();
  for(const n of document.querySelectorAll('.ds-tour-focus-pulse'))n.classList.remove('ds-tour-focus-pulse');
@@ -82,12 +82,62 @@ async function demoCanvas(index,alive){
   }
  }
 }
+// Use the ACTIVE controls rendered by video-uniquifier-reference.js.
+// The legacy selects are hidden in .vu-preserved-controls. Never bypass a
+// plan-locked/disabled choice, run processing, or leave changed settings.
+async function tourChooseVisible(selector,alive){
+ const el=[...document.querySelectorAll(selector)].find(node=>visible(node)&&!node.disabled);
+ if(!el||!alive())return false;
+ await showTourElement(el,alive,1300);
+ if(!alive())return false;
+ el.click();
+ await sleep(1050);
+ return alive();
+}
+async function tourRestoreSelect(id,initial,selector){
+ const select=document.getElementById(id);
+ if(!select||!select.isConnected||select.value===initial)return;
+ const button=[...document.querySelectorAll(selector)].find(el=>visible(el)&&!el.disabled);
+ if(button)button.click();
+ else if(!select.disabled&&[...select.options].some(o=>o.value===initial&&!o.disabled)){
+  select.value=initial;select.dispatchEvent(new Event('change',{bubbles:true}));
+ }
+}
 async function demoUniquifier(index,alive){
- if(index===0)await tourSelectValues('variantCount',['1','5','10','15'],alive);
- if(index===1)await tourSelectValues('mode',['gentle','balanced','dynamic'],alive);
+ if(index===0){
+  const select=document.getElementById('vuVariantChoice');
+  const initial=select?.value;
+  if(!visible(select)||select.disabled)return;
+  for(const value of ['1','5','10','15']){
+   if(!alive())break;
+   if(![...select.options].some(o=>o.value===value&&!o.disabled))continue;
+   await showTourElement(select,alive,1350);
+   if(!alive())break;
+   changeSelect(select,value);
+   await sleep(1100);
+  }
+  if(alive()&&initial)changeSelect(select,initial);
+ }
+ if(index===1){
+  const source=document.getElementById('mode'),initial=source?.value;
+  for(const value of ['gentle','balanced','dynamic']){
+   if(!alive())break;
+   await tourChooseVisible('.vu-mode-card[data-mode="'+value+'"]',alive);
+  }
+  if(alive()&&initial)await tourRestoreSelect('mode',initial,'.vu-mode-card[data-mode="'+initial+'"]');
+ }
  if(index===2){
-  await tourSelectValues('aspectRatio',['9:16','16:9'],alive);
-  await tourSelectValues('quality',['720','1080','2160'],alive);
+  for(const [id,selector,values,attribute] of [
+   ['aspectRatio','.vu-format-button',['9:16','16:9'],'ratio'],
+   ['quality','.vu-quality-button',['720','1080','2160'],'quality']
+  ]){
+   const select=document.getElementById(id),initial=select?.value;
+   for(const value of values){
+    if(!alive())break;
+    await tourChooseVisible(selector+'[data-'+attribute+'="'+value+'"]',alive);
+   }
+   if(alive()&&initial)await tourRestoreSelect(id,initial,selector+'[data-'+attribute+'="'+initial+'"]');
+  }
  }
  if(index===3)await showTourElement('#startBtn',alive,1700);
 }
