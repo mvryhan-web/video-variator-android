@@ -220,6 +220,7 @@ async function selectTourMediaMode(mode,current){
  choice.click(); // Existing Home -> JARVIX Chat anchor, clicked once.
  waitTimer=setTimeout(()=>{if(alive())blocked(current,'JARVIX Chat did not open');},6500);
 }
+// TOUR-ONLY RELEASE: approved native Chat Studio walkthrough; no other site assets change.
 // The existing Settings button opens the real, same-origin Studio inside a
 // private iframe (home-studio-settings.js). Demonstrate its native controls;
 // never create a second settings UI or change model/provider/user selections.
