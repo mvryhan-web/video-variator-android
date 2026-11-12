@@ -194,10 +194,10 @@ async function selectTourMediaMode(mode,current){
  await showTourElement(plus,alive,1200);
  if(!alive())return;
  if(menu.hidden)plus.click();
- await pauseFrame(200);
+ for(let n=0;menu.hidden&&n<12&&alive();n++)await pauseFrame(150);
  if(menu.hidden){blocked(current,'JARVIX mode menu did not open');return;}
- await showTourElement(menu,alive,1150);
- await showTourElement(choice,alive,1350);
+ if(!await showTourElement(menu,alive,1150))return;
+ if(!await showTourElement(choice,alive,1350))return;
  if(!alive())return;
  if(choice.disabled){blocked(current,'JARVIX mode unavailable');return;}
  const isChat=location.pathname.endsWith('/jarvix-chat.html');
@@ -228,10 +228,13 @@ async function cueV3(beat){
   // Legacy Studio model/settings buttons no longer exist on this page.
   const focused=await showTourElement(beat.target,canContinue,1300);
   if(!canContinue())return;
-  if(beat.action==='openModel'){
-   const settings=[...document.querySelectorAll('#jChatForm .j-settings-shortcut')]
-    .find(el=>el.getClientRects().length&&!el.disabled);
-   if(settings){settings.click();await pauseFrame(850);}
+  const settings=[...document.querySelectorAll('#jChatForm .j-settings-shortcut')]
+   .find(el=>el.getClientRects().length&&!el.disabled);
+  if(beat.action==='openModel'&&settings?.getAttribute('aria-expanded')!=='true'){
+   settings?.click();
+   await pauseFrame(850);
+  }else if(beat.action==='closeSettings'&&settings?.getAttribute('aria-expanded')==='true'){
+   settings.click(); // Close only the settings pane this tour opened.
   }
   if(focused)spotlight({target:beat.target,action:'focus'});
   await pauseFrame(1150);
@@ -365,7 +368,9 @@ function playV3(step,target,current){
  if(!state||state.phase!=='playing')return;
  const mode=mediaTourModes[step.title];
  const isChat=location.pathname.endsWith('/jarvix-chat.html');
- if(mode&&(!isChat||state.mediaSelectedStep!==state.index)){
+ if(mode&&(!isChat||state.mediaSelectedStep!==state.index||
+    (document.getElementById('jActiveModeLabel')?.dataset.mode&&
+     document.getElementById('jActiveModeLabel').dataset.mode!==mode))){
   void selectTourMediaMode(mode,current).catch(()=>blocked(current,'JARVIX mode transition failed'));
   return;
  }
