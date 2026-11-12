@@ -106,7 +106,7 @@ function recorded(clip){
 function fromStored(clip,lang){
  if(!clip||clip.language!==lang||!clip.text||!/^[A-Za-z_]+_(ru|en|fr|es)\.mp3$/.test(clip.filename))return null;
  const name=clip.filename;
- if(clip.previewOnly!==true)return null;
+ if(clip.previewOnly!==true&&clip.listeningReviewed!==true)return null;
  return recorded({id:name,language:lang,purpose:name.split('_')[0],
   text:clip.text,url:FOLDER+name});
 }
@@ -118,7 +118,9 @@ async function catalog(){
    if(j.schema!=='jarvix-new-short-voice-v1'||!Array.isArray(j.clips)||j.clips.length<8)return {};
    const out={};
    for(const c of j.clips){
-    if(LANGUAGE.has(c.language)&&['hello','prompt'].includes(c.id.split('_')[0])){
+    const role=String(c.id||'').replace(/_(ru|en|fr|es)$/,'');
+    if(LANGUAGE.has(c.language)&&
+       ['hello','prompt','wellbeing','activity','hearing','thanks','farewell','identity'].includes(role)){
       out[c.id]=c;
     }
    }
@@ -153,7 +155,13 @@ export async function smalltalkReply(question,language='ru'){
  const lang=LANGUAGE.has(language)?language:'ru';
  const kind=classify(question,lang);
  if(!kind)return null;
- if(kind==='hello'||kind==='identity')return helloRecording(lang);
+ if(kind==='hello')return helloRecording(lang);
+ const clips=await catalog();
+ // Prefer the fully-recorded matching phrase when Antigravity uploads it.
+ // In particular: wellbeing ("Хорошо") and hearing/activity ("Слушаю тебя").
+ const direct=fromStored(clips[kind+'_'+lang],lang);
+ if(direct)return direct;
+ if(kind==='identity')return helloRecording(lang);
  if(['image','video','audio'].includes(kind)){
   const [name,text]=EXISTING[lang][kind];
   return recorded({id:name,text,url:'/media/jarvix/tour-v3/'+name,purpose:kind});
