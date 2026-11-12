@@ -241,8 +241,7 @@ test('recognized "Как дела?" receives honest visible TEXT response when v
     await f.flush();
     const bot=f.elements.find(x=>x.id==='jv-new-transcript-reply');
     assert.ok(bot);
-    assert.equal(bot.hidden,false);
-    assert.equal(bot.textContent,'JARVIX: Всё хорошо, спасибо! А у тебя?');
+    assert.equal(bot.hidden,true,'Bot reply text is never printed under the sphere');
     assert.equal(f.played.length,0,'No fabricated spoken MP3 for missing response');
     assert.equal(transcript.textContent,'Как дела?');
   }finally{f.stop();}
@@ -285,15 +284,15 @@ test('interim recognized words pulse sphere if phone has no WebAudio analyser',a
   }finally{f.stop();}
 });
 
-test('no approved MP3: local bridge model reply is shown, spoken aloud and mic relistens',async()=>{
+test('no approved MP3: never switches to a system voice and never prints a reply',async()=>{
   const f=fixture({smalltalkAudio:false,bridge:true});
   try{
     f.clickSphere();await f.flush();
     f.recognizers.at(-1).emit('Расскажи что-нибудь новое',true);
     await f.flush();
-    assert.deepEqual(f.spoken,['Привет! У меня всё хорошо.']);
+    assert.deepEqual(f.spoken,[],'No system/female voice');
+    assert.equal(f.played.length,0);
     const bot=f.elements.find(x=>x.id==='jv-new-transcript-reply');
-    assert.equal(bot.textContent,'JARVIX: Привет! У меня всё хорошо.');
-    assert.ok(f.recognizers.length>=2,'Listens again after the spoken reply');
+    assert.equal(bot.hidden,true);
   }finally{f.stop();}
 });

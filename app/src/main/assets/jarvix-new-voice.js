@@ -416,45 +416,6 @@ async function ownerLibraryReply(question,language){
   return {id:data.id,text:data.text,audioUrl:expected,source:'local-voice-library'};
  }catch{return null;}finally{clearTimeout(timeout);}
 }
-const BRIDGE_CHAT='http://127.0.0.1:8768/v1/voice/chat';
-async function bridgeReply(message,id){
-  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),45000);
-  request=controller;
-  try{
-   const response=await fetch(BRIDGE_CHAT,{
-    method:'POST',mode:'cors',targetAddressSpace:'loopback',cache:'no-store',
-    signal:controller.signal,headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({message:message.slice(0,1200),
-     history:turns.slice(-6).map(({role,content})=>({role,content:content.slice(0,1200)}))})
-   });
-   if(!response.ok)return null;
-   const data=await response.json();
-   const text=typeof data?.reply==='string'?data.reply.trim().slice(0,600):'';
-   return text?{text}:null;
-  }catch{return null;}finally{
-   clearTimeout(timeout);
-   if(request===controller)request=null;
-  }
-}
-function speakText(text,id){
-  return new Promise(resolve=>{
-   const synth=window.speechSynthesis;
-   if(!synth||typeof SpeechSynthesisUtterance==='undefined'||!on||seq!==id)return resolve(false);
-   let done=false;
-   const utterance=new SpeechSynthesisUtterance(text);
-   utterance.lang=getLang().lang;
-   const finish=ok=>{
-    if(done)return;done=true;
-    ownerClipDone=null;
-    resolve(ok);
-   };
-   ownerClipDone=()=>{try{synth.cancel();}catch{}finish(false);};
-   utterance.onend=()=>finish(true);
-   utterance.onerror=()=>finish(false);
-   ui('speaking');
-   try{synth.cancel();synth.speak(utterance);}catch{finish(false);}
-  });
-}
 async function paidModeReady(){
  // No provider calls at all for anonymous users or when the owner feature is OFF.
  if(paidStatusOnce===null)paidStatusOnce=fetch(PAID_ROUTE+'status',
@@ -547,28 +508,13 @@ async function respond(message,id){
  if(await playResponse(recorded,id,message))return;
  if(!on||seq!==id)return;
 
- // 5. Local desktop bridge -> local Ollama model; the reply is spoken with
- // the system voice. Loopback only, no paid provider.
- const bridge=await bridgeReply(message,id);
- if(!on||seq!==id)return;
- if(bridge?.text){
-  showTextResponse(bridge.text);
-  const spoken=await speakText(bridge.text,id);
-  if(!on||seq!==id)return;
-  turns.push({role:'user',content:message.slice(0,1200)},
-             {role:'assistant',content:bridge.text.slice(0,1200)});
-  turns=turns.slice(-8);
-  if(spoken)listen(id);else ui('ready');
-  return;
- }
-
  // No approved voice MP3 exists for this question. For known everyday
  // replies, show a meaningful prepared answer as TEXT, never simulate audio.
  const prepared=await smalltalkTextReply(message,lang).catch(()=>null);
  if(!on||seq!==id)return;
  ui('missing');
  if(prepared?.text){
-  showTextResponse(prepared.text);
+  // The reply is never printed: only the user's own words are shown.
   turns.push({role:'user',content:message.slice(0,1200)},
              {role:'assistant',content:prepared.text.slice(0,1200)});
   turns=turns.slice(-8);
