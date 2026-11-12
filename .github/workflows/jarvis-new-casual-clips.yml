@@ -50,5 +50,9 @@ jobs:
             echo 'All clips already match the current checked-in originals'
           else
             git commit -m "assets(jarvis-new): 8 short original voice excerpts for casual chat TEST"
+            # Other TEST source edits may have landed while media rendered.
+            # Replay only this asset commit on latest remote branch; no force push.
+            git fetch origin jarvis-new
+            git rebase origin/jarvis-new
             git push origin HEAD:jarvis-new
           fi
