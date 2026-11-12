@@ -30,7 +30,9 @@ class LibraryTests(unittest.TestCase):
     def test_import_approve_reply_and_revoke(self):
         self.assertTrue(self.db.add(self.audio,"ru"))
         self.assertFalse(self.db.add(self.audio,"ru"))
-        self.assertEqual(self.db.counts(),{"total":1,"approved":0})
+        self.assertEqual(self.db.counts()["total"],1)
+        self.assertEqual(self.db.counts()["approved"],0)
+        self.assertEqual(self.db.counts()["fragments"],0)
         self.assertIsNone(self.db.answer("Привет","ru"))
         identity=self.db.list("ru")[0]["id"]
         self.db.review(identity,"Привет! Я JARVIX.","Привет")
