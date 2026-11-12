@@ -1,3 +1,27 @@
+# JARVIX Voice Library 0.6 — offline word/phrase blocks (2026-11-12)
+
+- GitHub Actions Windows build passed: https://github.com/mvryhan-web/video-variator-android/actions/runs/43173849397
+- Windows portable ZIP in owner conversation: `JARVIX_Voice_Library_0.6_552_MP3_Windows.zip`.
+- Manual phrase/block constructor: owner first approves source recording + transcript;
+  then records a verbatim substring and exact time range in seconds for each segment.
+- Local FFmpeg assembles an explicitly requested answer from **only exact coverage**
+  by previously approved fragments. If any words are missing, returns an error;
+  it never fills gaps from a paid model or unrelated recordings.
+- New assembled MP3 is a **draft**; owner listens and explicitly approves
+  question/answer before it is exposed via existing loopback API (`127.0.0.1:8770`).
+- Revoking any source MP3 invalidates compositions that used its segments.
+- Windows binary contains 552 original MP3 plus FFmpeg and Python runtime;
+  Python and FFmpeg installs are not separately required.
+- Offline Windows CI passed existing 5 audio library tests plus 5 new block
+  tests including real FFmpeg synthesis and composition approval rules.
+- Download ZIP was independently inspected in container: CRC OK, 552 MP3,
+  executable, bundled ffmpeg-win-x86_64-v7.1.exe, Russian instructions.
+- Still unsigned TEST binary. No guarantee of natural sound until owner auditions.
+- R2 inventory remains blocked by Cloudflare REST HTTP 403 / missing R2 read scope.
+- No subscription/paid LLM integration or arbitrary speech synthesis yet.
+- Production DEEPSYQ and the previous JARVIX remain untouched.
+
+---
 # Windows executable — tested portable package (2026-11-11)
 
 Successful Windows GitHub Actions build: https://github.com/mvryhan-web/video-variator-android/actions/runs/43093896024
