@@ -54,7 +54,7 @@ jobs:
         run: node --check app/src/main/assets/jarvis-core.js && node --check app/src/main/assets/jarvix-guided-tour.js && node --check app/src/main/assets/jarvix-tour-plan.js && node --check app/src/main/assets/jarvix-tour-v3-script.js && node --check app/src/main/assets/jarvix-tour-v3-audio.js && node --check tests/jarvix-tour-v3.test.mjs && node --check tests/jarvix-guided-tour.test.mjs && node --check tests/jarvix-tour-plan.test.mjs
       - name: Check AI Apps to Canvas continuation (approved earlier route untouched)
         run: node --test tests/jarvix-tour-after-apps.test.mjs
-      - name: Dynamic Tour: audible first click and full 19-step navigation
+      - name: "Dynamic Tour: audible first click and full 19-step navigation"
         run: node --test tests/jarvix-tour-dynamic.test.mjs
       - name: Check four-language narration/action timing contract
         run: node --test tests/jarvix-tour-plan.test.mjs tests/jarvix-tour-v3.test.mjs
