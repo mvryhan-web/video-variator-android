@@ -1,0 +1,72 @@
+name: DEEPSYQ SEO audit quick fixes - exact 4 assets
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/deepsyq-seo-audit-quickfix.yml'
+      - 'app/src/main/assets/ai-apps.html'
+      - 'app/src/main/assets/canvas.html'
+      - 'app/src/main/assets/free-tools.html'
+      - 'app/src/main/assets/sitemap.xml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  seo-quickfix:
+    if: >-
+      github.ref == 'refs/heads/deepsyq-platform' &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.head_commit.message == 'release(DEEPSYQ SEO): publish four verified pages')
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify allowlist and unchanged SEO page behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/deepsyq_surgical_publish.py
+          python -m unittest discover -s tests -p 'test_deepsyq_surgical_publish.py' -v
+          python - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          import re
+          root=Path('app/src/main/assets')
+          approved={'ai-apps.html','canvas.html','free-tools.html','sitemap.xml'}
+          for page in ('ai-apps.html','canvas.html','free-tools.html'):
+              source=(root/page).read_text(encoding='utf-8')
+              assert source.count('<meta property="og:title"')==1, page
+              assert source.count('<meta property="og:description"')==1, page
+              assert 'rel="canonical"' in source, page
+              assert 'href=' in source, page
+          apps=(root/'ai-apps.html').read_text(encoding='utf-8')
+          assert len(re.findall(r'<h1\b',apps))==1
+          assert '<h1 id="appsTitle" style="font-size:25px;margin:6px 0 18px">AI Apps</h1>' in apps
+          assert '<a class="skip-link" href="#appsTitle">' in apps
+          sitemap=ET.fromstring((root/'sitemap.xml').read_bytes())
+          ns={'m':'http://www.sitemaps.org/schemas/sitemap/0.9'}
+          for page in ('ai-apps.html','canvas.html','free-tools.html'):
+              matches=[v for v in sitemap.findall('m:url',ns) if v.findtext('m:loc',namespaces=ns)=='https://deepsyq.app/'+page]
+              assert len(matches)==1 and matches[0].findtext('m:lastmod',namespaces=ns)=='2026-11-12',page
+          print('SEO_QUICKFIX_SCOPE_TEST_PASS',sorted(approved))
+          PY
+      - name: Install uploader dependencies
+        run: python -m pip install --disable-pip-version-check "requests==2.32.3" "blake3==1.0.8"
+      - name: Publish and verify ONLY four SEO metadata/page assets
+        run: |
+          python scripts/deepsyq_surgical_publish.py \
+            --mode publish \
+            --files ai-apps.html,canvas.html,free-tools.html,sitemap.xml \
+            --commit "$GITHUB_SHA"
