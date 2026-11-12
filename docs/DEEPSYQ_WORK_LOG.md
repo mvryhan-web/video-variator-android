@@ -113,3 +113,12 @@
 - GitHub HEAD релиза `092e2f2fa4886a8d3e5f0fd94d1f0c8799a9ae93`; [Actions #43269776224](https://github.com/mvryhan-web/video-variator-android/actions/runs/43269776224) `success`; Cloudflare `6043a4ed-2112-4f35-b118-7e670b645953`, `PUBLISHED_VERIFIED`. Четыре файла обновлены; 1244 других актива, Worker и bindings сохранены. Данных об индексации Google и результатах ранжирования нет.
 - Следующий пакет **SEO-AUDIT-02**: `compare-ai.html`, `simple-background-remover.html`, `teleprompter.html`. До подтверждения нового выпуска статус **В РАБОТЕ**.
 
+
+## 12 ноября — SEO-AUDIT-02: три точечные SEO-правки, подтверждённая публикация
+
+- **Правило владельца:** перед каждой новой работой сверять журнал; уже сделанные, подтверждённые и опубликованные пункты **не изменять, не переписывать и не выполнять повторно**. Только доделывать действительно незавершённое точечно. При новом дефекте — отдельная запись с доказательством; не откатывать чужие работающие элементы.
+- **SEO-AUDIT-01 (уже завершено):** `ai-apps.html`, `canvas.html`, `free-tools.html`, `sitemap.xml`. Статус `LIVE_VERIFIED`; Cloudflare `6043a4ed-2112-4f35-b118-7e670b645953`; [успешный запуск #43269776224](https://github.com/mvryhan-web/video-variator-android/actions/runs/43269776224). Не редактировать повторно.
+- **SEO-AUDIT-02 (завершено):** только `compare-ai.html`, `simple-background-remover.html`, `teleprompter.html`. Добавлены недостающие Open Graph `title/description/type`, существующие canonical и функциональные элементы не трогали. На Background Remover уточнено честное SEO-описание локального удаления фона без AI-распознавания; на Teleprompter уточнено описание заявленных возможностей. Визуальный макет и кнопки не менялись.
+- **Проверка:** `SEO_AUDIT_BATCH_2_METADATA_PASS`, семь модульных тестов издателя, [GitHub Actions #43271126119](https://github.com/mvryhan-web/video-variator-android/actions/runs/43271126119) — `completed/success`, SHA релиза `b27c6fe999f1a18695aa715ea2513c768d82d92c`.
+- **Рабочая публикация:** `PUBLISHED_VERIFIED`, Cloudflare deployment `26df404a-8189-42e1-ba94-a16cf4a36c36` (до него `6043a4ed-2112-4f35-b118-7e670b645953`), три точных файла заменены, **1245 остальных активов не изменены**, Worker и привязки Cloudflare сохранены.
+- **Оставшиеся отдельные вопросы:** реальная индексация Google, внешнее отображение карточек на разных платформах, работа AI-провайдеров, подписок и длительное хранение балансов этими SEO-выпусками **не проверялись**. Это не повод повторно менять выполненные SEO-пункты.
