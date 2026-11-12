@@ -450,14 +450,21 @@ async function processMessage(message){
     pendingMediaFrame={messageId:message.id,kind:mode,ratio:parameters.ratio};
     render();
    }
-   const walletQuote=kind==='image'&&model.id==='wan2.1-t2i-turbo'&&localStorage.getItem('vv_token')
-    ?'wan-image-v1':null;
+   const walletQuote=localStorage.getItem('vv_token')
+    ? (kind==='image'&&model.id==='wan2.1-t2i-turbo'?'wan-image-v1':
+      kind==='video'&&model.id==='wan2.1-t2v-turbo'?'wan-video-v1':null)
+    : null;
    const quote=await api('/api/studio/estimate',{kind,model:model.id,quantity:1,...parameters,...(walletQuote?{walletQuote}:{})});
    if(walletQuote){
     if(quote.walletQuote!==walletQuote||quote.kind!==kind||quote.model!==model.id||quote.quantity!==1||
        !Number.isSafeInteger(quote.credits)||quote.credits<1)throw Error('AI_CREDIT_QUOTE_INVALID');
     const language=getJarvixLanguage();
-    const confirmation={
+    const confirmation=kind==='video'?{
+     ru:`Создать видео 5 секунд за ${quote.credits} AI‑кредитов?`,
+     en:`Generate a 5-second video for ${quote.credits} AI credits?`,
+     fr:`Générer une vidéo de 5 secondes pour ${quote.credits} crédits IA ?`,
+     es:`¿Generar un vídeo de 5 segundos por ${quote.credits} créditos de IA?`
+    }:{
      ru:`Создать изображение за ${quote.credits} AI‑кредитов?`,
      en:`Generate an image for ${quote.credits} AI credits?`,
      fr:`Générer une image pour ${quote.credits} crédits IA ?`,

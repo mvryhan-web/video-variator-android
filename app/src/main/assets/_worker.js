@@ -245,6 +245,11 @@ async function ownsStudioJob(request,env,job){
 
 const WAN_PAID_QUOTE='wan-image-v1';
 const WAN_IMAGE_CREDITS=5;
+const WAN_VIDEO_QUOTE='wan-video-v1';
+const WAN_VIDEO_MODEL='wan2.1-t2v-turbo';
+const WAN_VIDEO_CREDITS=20;
+const WAN_VIDEO_SIZES={'16:9':'1280*720','9:16':'720*1280'};
+const isWanWalletJob=id=>/^job_(image|video)_wan_[a-f0-9]{32}$/.test(id);
 async function studioDigest(input){
   const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(input));
   return Array.from(new Uint8Array(hash),b=>b.toString(16).padStart(2,'0')).join('');
@@ -268,10 +273,12 @@ function wanImageResultUrl(value){
 }
 
 async function submitWanImage(env,job,ratio){
-  const response=await fetch(WAN_IMAGE_API+'/services/aigc/text2image/image-synthesis',{
+  const video=job.kind==='video';
+  const path=video?'/services/aigc/video-generation/video-synthesis':'/services/aigc/text2image/image-synthesis';
+  const response=await fetch(WAN_IMAGE_API+path,{
     method:'POST',redirect:'manual',
     headers:{Authorization:'Bearer '+String(env.DASHSCOPE_API_KEY).trim(),'Content-Type':'application/json','X-DashScope-Async':'enable'},
-    body:JSON.stringify({model:WAN_IMAGE_MODEL,input:{prompt:job.prompt},parameters:{size:WAN_IMAGE_SIZES[ratio],n:1}})
+    body:JSON.stringify({model:job.model,input:{prompt:job.prompt},parameters:video?{size:WAN_VIDEO_SIZES[ratio],duration:5}:{size:WAN_IMAGE_SIZES[ratio],n:1}})
   });
   const data=await response.json().catch(()=>null);
   if(!response.ok)return data?.code==='AllocationQuota.FreeTierOnly'?'WAN_FREE_QUOTA_EXHAUSTED':'WAN_IMAGE_PROVIDER_UNAVAILABLE';
@@ -291,7 +298,7 @@ async function refreshWanImage(env,job){
   const output=(await response.json()).output;
   if(output?.task_status==='RUNNING'){job.progress=60;return;}
   if(!['SUCCEEDED','FAILED','CANCELED','UNKNOWN'].includes(output?.task_status))return;
-  job.imageUrl=output.task_status==='SUCCEEDED'?wanImageResultUrl(output.results?.[0]?.url):null;
+  job.imageUrl=output.task_status==='SUCCEEDED'?wanImageResultUrl(job.kind==='video'?output.video_url:output.results?.[0]?.url):null;
   job.status=job.imageUrl?'ready':'failed';
   job.progress=job.imageUrl?100:0;
   await env.R2_BUCKET.put(wanImageRecordKey(job.id),JSON.stringify(job));
@@ -852,6 +859,8 @@ export default {
     });
 
     if(env.DASHSCOPE_API_KEY&&env.R2_BUCKET){
+      freeStudioModels.unshift({id:WAN_VIDEO_MODEL,label:'Wan 2.1 Turbo Video',kind:'video',provider:'Alibaba Cloud',
+        adapter:true,enabled:true,ratios:Object.keys(WAN_VIDEO_SIZES),references:0,description:'Generate a 5-second video from a text prompt.'});
       freeStudioModels.unshift({
         id:WAN_IMAGE_MODEL,label:'Wan 2.1 Turbo',kind:'image',provider:'Alibaba Cloud',
         adapter:true,enabled:true,ratios:Object.keys(WAN_IMAGE_SIZES),references:0,
@@ -921,11 +930,12 @@ export default {
     if (pathname === '/api/studio/estimate' && request.method === 'POST') {
       const body = await request.json().catch(() => ({}));
       const { kind = 'image', model, quantity = 1 } = body;
-      if(body.walletQuote===WAN_PAID_QUOTE&&kind==='image'&&model===WAN_IMAGE_MODEL){
+      const paidVideo=body.walletQuote===WAN_VIDEO_QUOTE&&kind==='video'&&model===WAN_VIDEO_MODEL;
+      if(paidVideo||(body.walletQuote===WAN_PAID_QUOTE&&kind==='image'&&model===WAN_IMAGE_MODEL)){
         const user=await getAuthenticatedUser(request,env);
         if(!user)return json({error:'AUTH_REQUIRED'},401);
-        return json({ok:true,kind,model,quantity:1,credits:WAN_IMAGE_CREDITS,
-          walletQuote:WAN_PAID_QUOTE,previewOnly:false,freeTier:false});
+        return json({ok:true,kind,model,quantity:1,credits:paidVideo?WAN_VIDEO_CREDITS:WAN_IMAGE_CREDITS,
+          walletQuote:paidVideo?WAN_VIDEO_QUOTE:WAN_PAID_QUOTE,previewOnly:false,freeTier:false});
       }
       const baseCredits = kind === 'video' ? 20 : kind === 'music' ? 10 : 5;
       return json({
@@ -948,8 +958,14 @@ export default {
       if(useWanImage&&(!env.DASHSCOPE_API_KEY||!env.R2_BUCKET))return json({error:'WAN_IMAGE_NOT_CONFIGURED'},503);
       if(useWanImage&&(!Object.hasOwn(WAN_IMAGE_SIZES,ratio)||typeof prompt!=='string'||!prompt.trim()||
          Number(body.quantity??1)!==1||body.references?.length))return json({error:'WAN_IMAGE_INVALID_INPUT'},400);
+      const spendVideo=body.walletQuote===WAN_VIDEO_QUOTE;
       const spendImage=body.walletQuote===WAN_PAID_QUOTE;
-      if(spendImage&&(!useWanImage||!user||body.consent!==true||body.expectedCredits!==WAN_IMAGE_CREDITS||
+      const spendCredits=spendVideo?WAN_VIDEO_CREDITS:spendImage?WAN_IMAGE_CREDITS:0;
+      if(spendVideo&&(!env.DASHSCOPE_API_KEY||!env.R2_BUCKET||kind!=='video'||model!==WAN_VIDEO_MODEL||
+         !Object.hasOwn(WAN_VIDEO_SIZES,ratio)||typeof prompt!=='string'||!prompt.trim()||
+         Number(body.quantity??1)!==1||Number(body.videoDuration??5)!==5||body.references?.length))
+        return json({error:'WAN_VIDEO_INVALID_INPUT'},400);
+      if(spendCredits&&((spendImage&&!useWanImage)||!user||body.consent!==true||body.expectedCredits!==spendCredits||
          typeof body.requestId!=='string'||!/^[a-zA-Z0-9_-]{12,100}$/.test(body.requestId)))
         return json({error:'AI_CREDIT_QUOTE_INVALID'},400);
       const guestId=user?null:studioGuestId(request);
@@ -963,7 +979,7 @@ export default {
       const usage = getDailyUsage(clientKey);
       const isPaid = user && (user.plan === 'basic' || user.plan === 'pro' || user.plan === 'business' || isOwnerEmail(user.email, env));
 
-      if (!isPaid&&!spendImage) {
+      if (!isPaid&&!spendCredits) {
         if (kind === 'video' && usage.video >= 2) {
           return json({
             ok: false,
@@ -1005,12 +1021,13 @@ export default {
         else if (kind === 'audio' || kind === 'music') usage.music++;
       }
 
-      if(useWanImage){
-        const id='job_image_wan_'+(spendImage
+      if(useWanImage||spendVideo){
+        const wanModel=spendVideo?WAN_VIDEO_MODEL:WAN_IMAGE_MODEL;
+        const id='job_'+kind+'_wan_'+(spendCredits
           ? (await studioDigest(JSON.stringify([user.id,body.requestId]))).slice(0,32)
           : crypto.randomUUID().replace(/-/g,''));
-        if(spendImage){
-          const fingerprint=await studioDigest(JSON.stringify([WAN_IMAGE_MODEL,prompt.trim().slice(0,500),ratio]));
+        if(spendCredits){
+          const fingerprint=await studioDigest(JSON.stringify([wanModel,prompt.trim().slice(0,500),ratio]));
           let reserved;
           try{reserved=await edgeCreditWallet(env).generationCredit(user.id,id,fingerprint,'reserve');}
           catch{return json({error:'WALLET_DATABASE_UNAVAILABLE'},503);}
@@ -1020,23 +1037,23 @@ export default {
             const record=await env.R2_BUCKET.get(wanImageRecordKey(id));
             if(!record)return json({error:'AI_REQUEST_IN_PROGRESS'},409);
             const job=await record.json();
-            return json({ok:true,id,jobId:id,status:job.status,progress:job.progress,creditsReserved:reserved==='held'?WAN_IMAGE_CREDITS:0});
+            return json({ok:true,id,jobId:id,status:job.status,progress:job.progress,creditsReserved:reserved==='held'?spendCredits:0});
           }
         }
-        const job={id,userId:jobOwner,kind:'image',model:WAN_IMAGE_MODEL,provider:'Alibaba Cloud',
+        const job={id,userId:jobOwner,kind,model:wanModel,provider:'Alibaba Cloud',
           prompt:prompt.trim().slice(0,500),title:prompt.trim().slice(0,60),status:'processing',progress:10,
-          created_at:new Date().toISOString(),mime:'image/png',walletCharge:spendImage};
+          created_at:new Date().toISOString(),mime:spendVideo?'video/mp4':'image/png',walletCharge:Boolean(spendCredits)};
         let error;
         try{error=await submitWanImage(env,job,ratio);}catch{error='WAN_IMAGE_PROVIDER_UNAVAILABLE';}
         if(error){
-          if(spendImage){
+          if(spendCredits){
             try{await edgeCreditWallet(env).generationCredit(user.id,id,'','release');}
             catch{return json({error:'WALLET_DATABASE_UNAVAILABLE'},503);}
           }else if(!isPaid)usage.photo--;
           return json({error},error==='WAN_FREE_QUOTA_EXHAUSTED'?429:503);
         }
         studioJobs.set(id,job);
-        return json({ok:true,id,jobId:id,status:job.status,progress:job.progress,creditsReserved:spendImage?WAN_IMAGE_CREDITS:0},200,guestHeaders);
+        return json({ok:true,id,jobId:id,status:job.status,progress:job.progress,creditsReserved:spendCredits},200,guestHeaders);
       }
 
       const safeKind = (kind === 'audio' || kind === 'music') ? 'music' : (kind === 'video' ? 'video' : 'image');
@@ -1223,7 +1240,7 @@ export default {
       if (!user) return json({ error: 'AUTH_REQUIRED' }, 401);
       const id = wsPatchMatch[1];
       let job = studioJobs.get(id);
-      if(id.startsWith('job_image_wan_')&&env.R2_BUCKET){
+      if(isWanWalletJob(id)&&env.R2_BUCKET){
         const record=await env.R2_BUCKET.get(wanImageRecordKey(id));
         job=record?await record.json():null;
       }
@@ -1233,7 +1250,7 @@ export default {
       else if (body.action === 'rename' && typeof body.title === 'string' && body.title.trim()) job.title = body.title.trim().slice(0, 100);
       else if (body.action === 'archive') job.archived = true;
       else if (body.action === 'restore') job.archived = false;
-      if(id.startsWith('job_image_wan_')&&env.R2_BUCKET)await env.R2_BUCKET.put(wanImageRecordKey(id),JSON.stringify(job));
+      if(isWanWalletJob(id)&&env.R2_BUCKET)await env.R2_BUCKET.put(wanImageRecordKey(id),JSON.stringify(job));
       studioJobs.set(id, job);
       return json({ ok: true, card: { id: job.id, title: job.title, isFavorite: job.isFavorite, status: job.archived ? 'archived' : 'ready' } });
     }
@@ -1258,7 +1275,7 @@ export default {
     if (jobMatch) {
       const id = jobMatch[1];
       const isMedia = Boolean(jobMatch[2]);
-      if(id.startsWith('job_image_wan_')){
+      if(isWanWalletJob(id)){
         if(!env.R2_BUCKET||!env.DASHSCOPE_API_KEY)return json({error:'WAN_IMAGE_NOT_CONFIGURED'},503);
         let job;
         try{
@@ -1289,7 +1306,8 @@ export default {
           }
           if(!result?.ok)return json({error:'WAN_IMAGE_RESULT_UNAVAILABLE'},502);
           const bytes=new Uint8Array(await result.arrayBuffer());
-          const type=bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71?'image/png':
+          const type=job.kind==='video'?(bytes.length>=12&&String.fromCharCode(...bytes.subarray(4,8))==='ftyp'?'video/mp4':null):
+            bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71?'image/png':
             bytes[0]===255&&bytes[1]===216&&bytes[2]===255?'image/jpeg':
             String.fromCharCode(...bytes.subarray(0,4))==='RIFF'&&String.fromCharCode(...bytes.subarray(8,12))==='WEBP'?'image/webp':null;
           if(!type||bytes.length>20*1024*1024)return json({error:'WAN_IMAGE_RESULT_INVALID'},502);
@@ -1301,7 +1319,7 @@ export default {
           }
           return new Response(bytes,{headers:{'Content-Type':type,'Cache-Control':'private, no-store'}});
         }
-        return json({ok:true,id,kind:'image',model:job.model,provider:job.provider,status:job.status,
+        return json({ok:true,id,kind:job.kind,model:job.model,provider:job.provider,status:job.status,
           progress:job.progress,prompt:job.prompt,mime:job.mime,createdAt:job.created_at,
           mediaUrl:job.imageUrl?'/api/studio/jobs/'+id+'/media':null});
       }
