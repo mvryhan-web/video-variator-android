@@ -1,0 +1,31 @@
+name: JARVIX Tour dynamic browser verification
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/jarvix-tour-dynamic-verification.yml'
+      - 'app/src/main/assets/jarvix-guided-tour.js'
+      - 'app/src/main/assets/jarvix-tour-choreography.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dynamic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Tour JavaScript syntax
+        run: |
+          node --check app/src/main/assets/jarvix-guided-tour.js
+          node --check app/src/main/assets/jarvix-tour-choreography.js
+      - name: Six continuation scenarios (desktop and mobile)
+        run: node --test tests/jarvix-tour-after-apps.test.mjs
+      - name: First speech on click plus full 19-stage tour without paid actions
+        run: node --test tests/jarvix-tour-dynamic.test.mjs
