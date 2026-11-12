@@ -47,7 +47,10 @@ jobs:
   surgical:
     # Push publishes ONLY the pre-approved JARVIX Tour asset with the exact release commit.
     # Other pushes run tests only. Manual dispatch remains available and unchanged.
-    if: github.ref == 'refs/heads/deepsyq-platform' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.event.head_commit.message == 'release(JARVIX Tour): publish tour-only fix'))
+    if: >-
+      github.ref == 'refs/heads/deepsyq-platform' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'push' && github.event.head_commit.message == 'release(JARVIX Tour): publish tour-only fix'))
     needs: tests
     runs-on: ubuntu-latest
     timeout-minutes: 12
