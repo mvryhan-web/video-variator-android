@@ -2,7 +2,7 @@ name: Jarvix New test-only Cloudflare preview
 on:
   push:
     branches: [jarvis-new]
-    paths: ['app/src/main/assets/deepsyq-unified-platform-header.js', 'app/src/main/assets/deepsyq-mobile-shell.js', 'app/src/main/assets/jarvix-download.html', 'app/src/main/assets/jarvix-connect.html', 'app/src/main/assets/connect.html', 'app/src/main/assets/jarvix-connect.js', 'app/src/main/assets/jarvix-new.html', 'app/src/main/assets/jarvix-new.js', 'app/src/main/assets/jarvix-new-preview-entry.js', 'app/src/main/assets/jarvix-new-voice.js', 'app/src/main/assets/jarvix-new-recorded-dialog.js', 'app/src/main/assets/jarvix-new-physical-audio-index.json', 'app/src/main/assets/jarvix-new-download-menu.js', 'scripts/prepare_jarvix_new_test_preview.py', 'scripts/jarvix_new_preview_worker.js', '.github/workflows/jarvis-new-preview.yml']
+    paths: ['app/src/main/assets/deepsyq-unified-platform-header.js', 'app/src/main/assets/deepsyq-mobile-shell.js', 'app/src/main/assets/jarvix-download.html', 'app/src/main/assets/jarvix-connect.html', 'app/src/main/assets/connect.html', 'app/src/main/assets/jarvix-connect.js', 'app/src/main/assets/jarvix-new.html', 'app/src/main/assets/jarvix-new.js', 'app/src/main/assets/jarvix-new-preview-entry.js', 'app/src/main/assets/jarvix-new-voice.js', 'scripts/jarvix_new_paid_gateway.js', 'app/src/main/assets/jarvix-new-recorded-dialog.js', 'app/src/main/assets/jarvix-new-physical-audio-index.json', 'app/src/main/assets/jarvix-new-download-menu.js', 'scripts/prepare_jarvix_new_test_preview.py', 'scripts/jarvix_new_preview_worker.js', '.github/workflows/jarvis-new-preview.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -30,6 +30,8 @@ jobs:
           python -c "import json; d=json.load(open('app/src/main/assets/jarvix-new-physical-audio-index.json')); assert d['schema']=='jarvix-new-physical-audio-index/v1' and d['count']==len(d['paths'])==552 and len(set(d['paths']))==552"
           node --check app/src/main/assets/jarvix-new-download-menu.js
           node --check scripts/jarvix_new_preview_worker.js
+          node --check scripts/jarvix_new_paid_gateway.js
+          node --test tests/jarvix_new_paid_gateway.test.mjs
           python -m py_compile scripts/prepare_jarvix_new_test_preview.py
           test -f app/src/main/assets/jarvix-new.html
           test -f app/src/main/assets/jarvix-download.html
@@ -57,7 +59,9 @@ jobs:
           test -s /tmp/jarvix-new-preview/jarvix-new-physical-audio-index.json
           ! grep -q 'SpeechSynthesisUtterance' /tmp/jarvix-new-preview/jarvix-new-voice.js
           test ! -f /tmp/jarvix-new-preview/jarvix-download.html
+          cp scripts/jarvix_new_paid_gateway.js /tmp/jarvix-new-preview/jarvix-new-paid-gateway.js
           cp scripts/jarvix_new_preview_worker.js /tmp/jarvix-new-preview/_worker.js
+          test -s /tmp/jarvix-new-preview/jarvix-new-paid-gateway.js
           printf 'User-agent: *\nDisallow: /\n' >/tmp/jarvix-new-preview/robots.txt
       - name: Deploy ONLY to preview branch
         run: npx --yes wrangler@4.48.0 pages deploy /tmp/jarvix-new-preview --project-name deepsyq --branch jarvis-new --commit-hash "$GITHUB_SHA"
