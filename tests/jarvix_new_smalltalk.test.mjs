@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 
 const file=readFileSync('app/src/main/assets/jarvix-new-smalltalk.js','utf8');
 const url='data:text/javascript;base64,'+Buffer.from(file).toString('base64');
-const {classifySmalltalk,helloRecording,smalltalkReply,promptRecording}=await import(url);
+const {classifySmalltalk,helloRecording,smalltalkReply,promptRecording,smalltalkTextReply}=await import(url);
 
 test('RU speech matching uses Unicode-aware boundaries',()=>{
   assert.equal(classifySmalltalk('Привет, Джарвис!','ru'),'hello');
@@ -54,4 +54,19 @@ test('if 8 generated MP3 are present, short greeting and neutral prompt use them
     assert.ok(m.clips.some(c=>c.filename==='hello_'+lang+'.mp3'));
     assert.ok(m.clips.some(c=>c.filename==='prompt_'+lang+'.mp3'));
   }
+});
+
+test('prepared 25x4 conversation provides correct actual text for everyday questions, never fake audio',async()=>{
+  const previous=global.fetch;
+  const data=JSON.parse(readFileSync('app/src/main/assets/media/jarvix/conversation/casual-25x4-targets.json','utf8'));
+  global.fetch=async()=>Response.json(data);
+  try{
+    const ru=await smalltalkTextReply('Как дела?','ru');
+    assert.equal(ru.text,'Всё хорошо, спасибо! А у тебя?');
+    assert.equal(ru.source,'prepared-conversation-text-only');
+    assert.equal('audioUrl' in ru,false);
+    assert.equal((await smalltalkTextReply('Что делаешь?','ru')).text,'Слушаю тебя. Чем помочь?');
+    assert.match((await smalltalkTextReply('How are you?','en')).text,/good/);
+    assert.equal(await smalltalkTextReply('Сколько сейчас стоит тариф?','ru'),null);
+  }finally{global.fetch=previous;}
 });
