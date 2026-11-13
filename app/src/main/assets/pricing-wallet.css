@@ -192,17 +192,36 @@ body.deepsyq-pricing-page .price-credit-badge,
 body.deepsyq-pricing-page .price-credit-bottom{
  border:0;background:none;box-shadow:none;
 }
+body.deepsyq-pricing-page .price-credit-badge{
+ font-size:clamp(23px,2vw,32px);
+}
+body.deepsyq-pricing-page .price-credit-card{--gift-dark:#0d223d;--gift-accent:#9ad9ff}
+body.deepsyq-pricing-page .price-credit-card:nth-child(2){--gift-dark:#36132f;--gift-accent:#ffb8ea}
+body.deepsyq-pricing-page .price-credit-card:nth-child(3){--gift-dark:#34223f;--gift-accent:#e3c3ff}
+body.deepsyq-pricing-page .price-credit-card:nth-child(4){--gift-dark:#102f32;--gift-accent:#a2f1df}
+body.deepsyq-pricing-page .price-credit-card:nth-child(5){--gift-dark:#181c46;--gift-accent:#becbff}
 body.deepsyq-pricing-page .price-credit-breakdown{
- border-color:#e5a350;
- background:linear-gradient(110deg,#382113f5,#24160ff2);
+ position:relative;display:flex;align-items:flex-start;justify-content:center;gap:7px;
+ margin-top:max(64px,5.25vw);padding:19px 12px 12px;
+ border-color:color-mix(in srgb,var(--gift-accent) 55%,var(--gift-dark));
+ background:linear-gradient(115deg,var(--gift-dark),#080e1bf5);
  box-shadow:0 5px 18px #02071599;
 }
 body.deepsyq-pricing-page .price-credit-gift{
- grid-column:1/-1;display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;
- color:#ffdc9d;font-size:13px;
+ position:absolute;left:10px;top:0;transform:translateY(-50%);
+ display:inline-flex;align-items:center;gap:5px;padding:4px 9px;
+ border-radius:9px 9px 9px 0;background:var(--gift-dark);
+ color:var(--gift-accent);font-size:11px;
+}
+body.deepsyq-pricing-page .price-credit-gift-title{
+ display:flex;align-items:center;flex-wrap:wrap;gap:5px 8px;color:#fff;font-size:14px;
 }
 body.deepsyq-pricing-page .price-credit-gift-time{
- border-radius:999px;background:#ffd08a;color:#44260e;
- padding:3px 8px;font-size:10px;font-weight:800;text-transform:uppercase;
+ border-radius:999px;background:linear-gradient(100deg,#da286b,#b92b3b);
+ color:#fff;padding:3px 7px;font-size:9px;font-weight:800;text-transform:uppercase;
 }
-body.deepsyq-pricing-page .price-credit-segment:nth-child(3) .price-credit-segment-value{color:#ffca79}
+body.deepsyq-pricing-page .price-credit-gift-value{
+ color:var(--gift-accent);font-size:clamp(23px,2vw,31px);line-height:1.1;
+ font-variant-numeric:tabular-nums;
+}
+body.deepsyq-pricing-page .price-credit-gift-note{color:#d9e3f2;font-size:11px;line-height:1.35}

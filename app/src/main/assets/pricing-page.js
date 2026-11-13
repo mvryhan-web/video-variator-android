@@ -308,19 +308,11 @@ function renderCredits(config){
   card.setAttribute('aria-describedby','priceCreditDisclosure');
   const info=node('div','price-credit-bonus price-credit-breakdown');
   const gift=node('div','price-credit-gift');
-  gift.append(node('strong','','Bonus gift'),node('span','price-credit-gift-time','Limited time'));
-
-  for(const [label,number] of [
-   ['Base',numeral.format(p.credits)],
-   ['Bonus','+ '+numeral.format(p.bonus)],
-   ['Total',numeral.format(p.credits+p.bonus)]
-  ]){
-   const segment=node('div','price-credit-segment');
-   segment.append(node('span','price-credit-segment-label',label),
-                  node('strong','price-credit-segment-value',number));
-   info.append(segment);
-  }
-  info.prepend(gift);
+  gift.append(node('span','price-credit-gift-icon','🎁'),node('strong','','Bonus gift'));
+  const title=node('div','price-credit-gift-title');
+  title.append(node('strong','','General Credits'),node('span','price-credit-gift-time','Limited time'));
+  info.append(gift,title,node('strong','price-credit-gift-value',numeral.format(pack.bonusCredits ?? p.bonus)),
+              node('small','price-credit-gift-note','Video generation depends on the selected model and settings.'));
   const foot=node('div','price-credit-bottom');
   const badge=node('h3','price-credit-badge');
   badge.append(node('span','price-credit-badge-sparkle','✦'),
