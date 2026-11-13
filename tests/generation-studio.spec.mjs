@@ -87,6 +87,9 @@ test('three direct studio links and model/settings dialogs work on small phones'
 test('audio picker shows music and voice models without submitting requests',async({page})=>{
  let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});
  await page.goto('/generate-studio.html?studio=audio');
+ await chooseStudio(page,'music');
+ await page.locator('#studioSettingsToggle').click();
+ await expect(page.locator('#studioSettingsHub')).toBeVisible();
  await page.locator('#modelButton').click();
  const dialog=page.locator('#modelDialog');
  await expect(dialog).toContainText('Seed Audio 1.0 Beta');
@@ -100,7 +103,7 @@ test('audio picker shows music and voice models without submitting requests',asy
  expect(posts).toBe(0);
 });
 test('audio speech preparation and history do not send paid or fake requests',async({page})=>{
- let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});await page.goto('/generate-studio.html?studio=audio');await page.locator('#settingsButton').click();await page.locator('#musicMode').selectOption('voice');await expect(page.locator('#voiceSettings')).toBeVisible();await page.locator('#voiceLanguage').selectOption({label:'Russian'});await expect.poll(()=>page.locator('#settingsDialog').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=11&&r.bottom<=innerHeight-11;})).toBe(true);await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#modelButton')).toContainText('AI Voice Preview');await expect(page.locator('#generate')).toBeDisabled();
+ let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});await page.goto('/generate-studio.html?studio=audio');await chooseStudio(page,'music');await page.locator('#studioSettingsToggle').click();await expect(page.locator('#studioSettingsHub')).toBeVisible();await page.locator('#settingsButton').click();await page.locator('#musicMode').selectOption('voice');await expect(page.locator('#voiceSettings')).toBeVisible();await page.locator('#voiceLanguage').selectOption({label:'Russian'});await expect.poll(()=>page.locator('#settingsDialog').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=11&&r.bottom<=innerHeight-11;})).toBe(true);await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#modelButton')).toContainText('AI Voice Preview');await expect(page.locator('#generate')).toBeDisabled();
  await page.locator('#modelButton').click();await page.getByRole('button',{name:/Seed Speech 2.0/}).click();await expect(page.locator('#availability')).toContainText('not connected');await page.locator('#showHistory').click();await expect(page.locator('#historyEmpty')).toBeVisible();await expect(page.locator('#resumeJob')).toBeHidden();await page.locator('#showCreate').click();await expect(page.locator('#empty')).toBeVisible();expect(posts).toBe(0);
 });
 test('reference photo preview, draft retention and clear are local',async({page})=>{
