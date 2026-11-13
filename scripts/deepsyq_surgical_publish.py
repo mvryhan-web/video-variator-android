@@ -681,6 +681,7 @@ def main():
                 # Fail closed and roll back the new Worker if credentials or schema
                 # are unavailable, rather than exposing a nonworking Email login.
                 ready = False
+                email_reason = "UNAVAILABLE"
                 for attempt in range(8):
                     response = cloudflare.session.get(
                         DOMAIN + "/api/auth/email/status?email_release=" +
@@ -688,10 +689,17 @@ def main():
                         headers={"Cache-Control":"no-store"}, timeout=20)
                     if response.ok:
                         payload = response.json()
+                        reason = payload.get("reason")
+                        approved = ("DATABASE_BINDING_INVALID", "AUTH_SECRET_MISSING",
+                                    "ACCOUNT_TABLE_MISSING", "PASSWORD_COLUMN_MISSING",
+                                    "ACCOUNT_INDEX_MISSING", "DATABASE_QUERY_FAILED")
+                        email_reason = reason if reason in approved else "UNKNOWN"
                         if payload.get("configured") is True:
                             ready = True
                             break
                     time.sleep(2)
+                if not ready:
+                    print("EMAIL_STORAGE_DIAGNOSTIC", email_reason, flush=True)
                 insist(ready, "EMAIL_STORAGE_NOT_READY_POST_DEPLOY")
                 print("EMAIL_STORAGE_READY_POST_DEPLOY", newest)
             public_checks = expected_bytes
