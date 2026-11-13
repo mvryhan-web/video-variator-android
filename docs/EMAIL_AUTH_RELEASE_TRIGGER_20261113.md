@@ -12,3 +12,6 @@ Retry 2: sanitized backend diagnostic, unchanged Google code. Previous release r
 
 
 Retry 3: fix Neon SQL HTTP endpoint to regional API host (the serverless driver default). One more guarded production release; Google route byte-identical, all non-Email resources preserved, automatic rollback enabled if account readiness fails.
+
+
+Retry 4: authorized Email-only guarded release after adding sanitized HTTP status diagnostic. Cloudflare must check persistent account database readiness and automatically roll back if unreachable. No Google OAuth/UI modifications.
