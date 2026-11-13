@@ -21,9 +21,9 @@ function getStore(env) {
   if(!['postgres:','postgresql:'].includes(db.protocol) ||
     !/^[a-z0-9.-]+\.neon\.tech$/.test(db.hostname) ||
     !db.username || !db.password || !db.pathname || db.pathname==='/')return null;
-  // Use the same HTTPS endpoint derivation as the Neon serverless driver.
+  // Match the existing edge wallet transport, retaining the original connection string.
   if (!db.hostname.startsWith('ep-')) return null;
-  return {url:raw,endpoint:'https://'+db.hostname+'/sql'};
+  return {url:raw,endpoint:'https://'+db.hostname.replace('-pooler.','.')+'/sql'};
 }
 async function query(store,statement,params=[],fetcher=fetch) {
   let response;
