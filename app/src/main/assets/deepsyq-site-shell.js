@@ -1,6 +1,8 @@
 /* Site-wide read-only Deepsyq navigation & Multilingual Shell.
    Mirrors the owner-approved neon Home groups, applies themes and auto-translates subpages. */
 (() => {
+  // Shared gate for subpages that do not load the mobile header module.
+  import('./deepsyq-action-auth-gate.js').catch(error => console.warn('Guest login prompt unavailable:', error?.message));
 
   // Shared locale bridge covers pages without duplicating or replacing their existing UI.
   if (!document.querySelector('script[src*="deepsyq-i18n.js"]')) {
