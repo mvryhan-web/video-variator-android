@@ -234,7 +234,8 @@ function openImageViewer(message, opener){
    store.guard();if(dialog.open)location.assign(path+'?from=jarvix-image');
   });
  }
- dialog.append(picture,toolbar,notice,close);document.body.append(dialog);
+ const closeText=node('button',labels[1]);closeText.type='button';closeText.onclick=()=>dialog.close();
+ toolbar.append(closeText);dialog.append(picture,toolbar,notice,close);document.body.append(dialog);
  dialog.addEventListener('close',()=>{if(previewUrl)URL.revokeObjectURL(previewUrl);dialog.remove();if(imageViewer===dialog)imageViewer=null;opener.focus();},{once:true});
  dialog.showModal();
 }
