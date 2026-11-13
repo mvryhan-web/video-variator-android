@@ -1,4 +1,5 @@
 /* Free mobile utilities: processing on-device, no raw file uploads. */
+import {ownerScope} from './jarvix-conversations.js';
 import {createEngine,saveLocal,subtitleFiles} from './ai-media.js';
 import {videoCompressionArgs,videoCompressionSummary,videoCompressionInputSupported} from './video-compression-args.mjs';
 const $=id=>typeof document!=='undefined'?document.getElementById(id):null;
@@ -70,6 +71,94 @@ function isCurrentRedactSource(file){
   file.name===redactSource.name&&file.type===redactSource.type&&
   file.size===redactSource.size&&file.lastModified===redactSource.lastModified);
 }
+const storyMode=tool==='video-trim'&&new URLSearchParams(location.search).get('story')==='1';
+let storyScope,storyToken,storyFile,storyDuration;
+function storyGuard(){
+ if(storyToken!==(localStorage.getItem('vv_token')||'guest'))throw Error('ACCOUNT_CHANGED');
+}
+function storyDatabase(){
+ return new Promise((resolve,reject)=>{
+  const request=indexedDB.open('deepsyq-story-project',1);
+  request.onupgradeneeded=()=>request.result.createObjectStore('drafts');
+  request.onsuccess=()=>resolve(request.result);
+  request.onerror=()=>reject(request.error);
+ });
+}
+async function storyRecord(value){
+ storyGuard();
+ const db=await storyDatabase();
+ try{
+  storyGuard();
+  return await new Promise((resolve,reject)=>{
+   const transaction=db.transaction('drafts',value?'readwrite':'readonly');
+   const records=transaction.objectStore('drafts');
+   const request=value?records.put(value,storyScope):records.get(storyScope);
+   transaction.oncomplete=()=>resolve(request.result);
+   transaction.onabort=transaction.onerror=()=>reject(transaction.error);
+  });
+ }finally{db.close();}
+}
+async function initStory(){
+ storyToken=localStorage.getItem('vv_token')||'guest';
+ storyScope=await ownerScope(storyToken);
+ storyGuard();
+ $('utilityTitle').textContent=label('Video for Stories','Видео для сторис');
+ $('utilityRun').textContent=label('Export 9:16 video','Скачать видео 9:16');
+ help('Your draft and original file are saved in this browser. Review the suggested opening clip or enter your own timestamps.',
+  'Черновик и исходник сохраняются в этом браузере. Проверьте предложенный фрагмент или укажите свои таймкоды.');
+ const note=document.createElement('p');
+ $('fileLine').after(note);
+ const save=document.createElement('button');
+ save.type='button';save.textContent=label('Save draft','Сохранить черновик');
+ note.after(save);
+ const suggest=document.createElement('button');
+ suggest.type='button';suggest.textContent=label('Suggest opening clip','Предложить начало ролика');
+ save.after(suggest);
+ let draft;
+ try{draft=await storyRecord();}catch{}
+ storyGuard();
+ const choose=async(file,prior)=>{
+  if(!file.size||file.size>160*1024*1024||!file.type.startsWith('video/'))throw Error(label('Choose a video up to 160 MB','Выберите видео до 160 МБ'));
+  storyGuard();
+  storyFile=file;
+  const duration=await estimateDuration(file);
+  storyGuard();
+  if(storyFile!==file)return;
+  storyDuration=duration;
+  if(!Number.isFinite(storyDuration)||storyDuration<=0)throw Error(label('Unsupported video','Видео не удалось прочитать'));
+  const start=Number(prior?.start),end=Number(prior?.end);
+  const fits=Number.isFinite(start)&&Number.isFinite(end)&&start>=0&&end>start&&end<=storyDuration;
+  $('utilityStart').value=String(fits?start:0);
+  $('utilityEnd').value=String(fits?end:Math.min(15,storyDuration));
+  note.textContent=file.name+' · 9:16';
+ };
+ suggest.onclick=()=>{
+  if(!storyDuration)return;
+  $('utilityStart').value='0';
+  $('utilityEnd').value=String(Math.min(15,storyDuration));
+  status(label('Suggested opening: the first seconds of the source video. Preview them before exporting.',
+   'Предложение: первые секунды исходного видео. Проверьте фрагмент перед экспортом.'));
+ };
+ const saveDraft=async()=>{
+  const file=files()[0],start=settingsNum('utilityStart'),end=settingsNum('utilityEnd');
+  if(end<=start||end>storyDuration)throw Error(label('Choose valid timestamps','Проверьте таймкоды'));
+  await storyRecord({file,start,end});
+  storyGuard();
+  status(label('Draft saved on this device','Черновик сохранён на этом устройстве'));
+ };
+ const report=error=>status(String(error.message||error));
+ save.onclick=()=>void saveDraft().catch(report);
+ $('utilityFiles').addEventListener('change',()=>{
+  const file=$('utilityFiles').files[0];
+  storyFile=null;storyDuration=undefined;
+  if(file)void choose(file,draft?.file?.name===file.name&&draft.file.size===file.size&&draft.file.lastModified===file.lastModified?draft:null).then(()=>storyFile===file&&saveDraft()).catch(report);
+ });
+ if(draft?.file instanceof File&&!$('utilityFiles').files.length)await choose(draft.file,draft);
+ window.addEventListener('storage',event=>{
+  if(event.key==='vv_token'&&(localStorage.getItem('vv_token')||'guest')!==storyToken)location.reload();
+ });
+}
+
 function init(){
  $('utilityTitle').textContent=mode.title;document.title=mode.title+' · Video Uniquifier';
  $('utilityDescription').textContent=mode.note;document.getElementById('utilityBack').textContent=label('← Everyday Tools','← Повседневные инструменты');
@@ -136,13 +225,15 @@ function init(){
   $('fileLine').hidden=true;$('settingsRow').hidden=true;
   $('utilityRun').textContent=label('Open subtitle creator','Открыть создание субтитров');
  }
- $('utilityFiles').addEventListener('change',()=>{status('');if(tool==='photo-redact')loadRedaction();if(['video-trim','audio-trim'].includes(tool))estimateDuration();});
+ $('utilityFiles').addEventListener('change',()=>{status('');if(tool==='photo-redact')loadRedaction();if(!storyMode&&['video-trim','audio-trim'].includes(tool))estimateDuration();});
  $('utilityKind').addEventListener('change',()=>{const unpack=$('utilityKind').value==='unpack';$('utilityFiles').accept=unpack?'.zip,application/zip':'*/*';$('utilityFiles').multiple=!unpack;$('utilityFiles').value='';});
+ if(storyMode)void initStory().catch(error=>status(error.message));
  $('utilityRun').addEventListener('click',run);
  $('utilityCancel').onclick=()=>{abort=true;try{engine?.terminate();}catch(_){};status(label('Canceled','Отменено'));};
 }
 function files(){
- const f=Array.from($('utilityFiles').files);
+ if(storyMode)storyGuard();
+ const f=storyMode&&storyFile?[storyFile]:Array.from($('utilityFiles').files);
  if(!f.length)throw Error(label('Choose a file first.','Сначала выберите файл.'));
  if(f.length>50||f.some(x=>x.size>160*1024*1024))throw Error(label('Too many or oversized files.','Слишком много файлов или большой размер.'));
  return f;
@@ -221,10 +312,10 @@ async function openImage(f){
 }
 const blobFrom=(canvas,type='image/png',quality=.9)=>new Promise((ok,no)=>canvas.toBlob(b=>b?ok(b):no(Error('Could not encode image')),type,quality));
 function settingsNum(id){const n=Number($(id).value);if(!Number.isFinite(n)||n<0)throw Error(label('Check numeric settings.','Проверьте числовые параметры.'));return n;}
-async function estimateDuration(){
- const f=$('utilityFiles').files[0];if(!f)return;
+async function estimateDuration(f=$('utilityFiles').files[0]){
+ if(!f)return;
  const u=URL.createObjectURL(f),a=document.createElement(tool==='video-trim'?'video':'audio');a.preload='metadata';
- try{await new Promise((ok,no)=>{const timeout=setTimeout(()=>no(Error('Metadata unavailable')),10000);a.onloadedmetadata=()=>{clearTimeout(timeout);ok();};a.onerror=()=>{clearTimeout(timeout);no(Error('Unsupported media'));};a.src=u;});$('utilityEnd').value=String(Math.round(a.duration*10)/10);}
+ try{await new Promise((ok,no)=>{const timeout=setTimeout(()=>no(Error('Metadata unavailable')),10000);a.onloadedmetadata=()=>{clearTimeout(timeout);ok();};a.onerror=()=>{clearTimeout(timeout);no(Error('Unsupported media'));};a.src=u;});if(!storyMode)$('utilityEnd').value=String(Math.round(a.duration*10)/10);return a.duration;}
  catch(_){}finally{a.removeAttribute('src');a.load();URL.revokeObjectURL(u);}
 }
 function addResizeOption(){
@@ -504,6 +595,10 @@ async function processMedia(){
  if(tool==='video-compress'&&f.size===0)throw Error(label('Choose a non-empty video file.','Выберите видеофайл с данными.'));
  let start=0,end=0;
  if(tool!=='video-mute'&&tool!=='video-compress'){start=settingsNum('utilityStart');end=settingsNum('utilityEnd');if(end<=start||end-start>3600)throw Error(label('End must be after start; maximum 60 minutes.','Конец должен быть позже начала. Максимум 60 минут.'));}
+ if(storyMode){
+  if(!Number.isFinite(storyDuration)||end>storyDuration)throw Error(label('Choose valid timestamps','Проверьте таймкоды'));
+  await storyRecord({file:f,start,end});storyGuard();
+ }
  engine=await createEngine();if(abort)return;
  await engine.writeFile('input',new Uint8Array(await f.arrayBuffer()));
  if(abort)return;
@@ -513,16 +608,18 @@ async function processMedia(){
  }else if(tool==='video-compress'){
   out='compressed.mp4';args=videoCompressionArgs($('videoCompressQuality').value,out);
  }else if(tool==='video-trim'){
-  out='trimmed.mp4';args=['-ss',String(start),'-i','input','-t',String(end-start),'-map','0:v:0','-map','0:a:0?','-c:v','libx264','-preset','ultrafast','-crf','25','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','-movflags','+faststart',out];
+  out=storyMode?'story-9x16.mp4':'trimmed.mp4';args=['-ss',String(start),'-i','input','-t',String(end-start),'-map','0:v:0','-map','0:a:0?','-c:v','libx264','-preset','ultrafast','-crf','25','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','-movflags','+faststart',out];
  }else{
   out='trimmed.m4a';args=['-ss',String(start),'-i','input','-t',String(end-start),'-vn','-map','0:a:0','-c:a','aac','-b:a','128k',out];
  }
+ if(storyMode)args.splice(args.indexOf('-c:v'),0,'-vf','scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1');
  const code=await engine.exec(args);if(abort)return;if(code!==0)throw Error(label('The file codec is not supported.','Кодек файла не поддерживается.'));
  const bytes=await engine.readFile(out),mime=video?'video/mp4':'audio/mp4';
  const converted=new File([bytes],base(f)+'-'+out,{type:mime});
  if(tool==='video-compress'&&converted.size===0)throw Error(label('The video codec produced no output. Try another file or quality.','Видеокодек не создал файл. Попробуйте другое видео или качество.'));
  // Validate a real, non-empty conversion before adding any Download action.
  const compressionStats=tool==='video-compress'?videoCompressionSummary(f.size,converted.size):null;
+ if(storyMode){storyGuard();if(!converted.size)throw Error('EMPTY_VIDEO');}
  await result(converted);
  if(tool==='video-compress'){
   const stats=compressionStats;

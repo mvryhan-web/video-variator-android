@@ -365,4 +365,10 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')$('mcDetail'
 if(window.matchMedia('(max-width:820px)').matches)$('mcDetail').hidden=true;
 window.addEventListener('storage',event=>{if(event.key==='vv_token'||event.key===null)void fetchMyCards();});
 window.addEventListener('pageshow',event=>{if(event.persisted)void fetchMyCards();});
+const storyLink=document.createElement('a');
+storyLink.className='mc-filter';
+storyLink.href='/mobile-utility.html?tool=video-trim&story=1';
+storyLink.textContent=(localStorage.getItem('deepsyq_lang')||document.documentElement.lang).startsWith('ru')
+ ?'Создать или продолжить ролик для сторис':'Create or resume a Story video';
+$('mcGrid')?.before(storyLink);
 render();void loadSamples();void fetchMyCards();
