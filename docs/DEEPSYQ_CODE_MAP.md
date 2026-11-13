@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `4e7efd3400ec467a77d08cfd1e8c52300d508750`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 125 | Named symbols: 442 | Checked relations: 80
+Source commit: `0e947e06d9c7d6e97788272667b9b8d01280ff6c`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 126 | Named symbols: 445 | Checked relations: 80
 
 ## Topic finder (matching filenames)
 
@@ -13,7 +13,7 @@ Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code 
 - **Image, Canvas and Home:** `app/src/main/assets/audio-studio.js`, `app/src/main/assets/avatar-studio.js`, `app/src/main/assets/canvas-editor.js`, `app/src/main/assets/canvas-workspace.js`, `app/src/main/assets/generate-studio.js`, `app/src/main/assets/jarvix-studio-page.js`, `app/src/main/assets/studio-job-progress.js`, `server/deepsyq-preview.js`, `server/generation-openai-image.js`
 - **Audio and voice:** `app/src/main/assets/audio-studio.js`, `app/src/main/assets/jarvix-new-voice.js`, `app/src/main/assets/jarvix-owner-speech.js`, `app/src/main/assets/jarvix-tour-v3-audio.js`, `app/src/main/assets/jarvix-tour-v4-audio.js`, `app/src/main/assets/speech-client.js`, `app/src/main/assets/voice-agent-controller.js`, `server/jarvix-voice.js`, `server/speech.js`
 - **AI Apps, Inspiration, History:** `app/src/main/assets/_worker.js`, `app/src/main/assets/ai-apps.js`, `app/src/main/assets/ai-pricing.js`, `app/src/main/assets/ai-template-product-name.js`, `app/src/main/assets/audio-studio.js`, `app/src/main/assets/avatar-studio.js`, `app/src/main/assets/bootstrap.js`, `app/src/main/assets/canvas-editor.js`, `app/src/main/assets/canvas-workspace.js`, `app/src/main/assets/deepsyq-admin.js`, `app/src/main/assets/deepsyq-canonical-nav-icons.js`, `app/src/main/assets/deepsyq-unified-platform-header.js`, `app/src/main/assets/deepsyq.js`, `app/src/main/assets/ffmpeg-worker.js`, `app/src/main/assets/folder.js`, `app/src/main/assets/generate-models.js`, `app/src/main/assets/generate-studio.js`, `app/src/main/assets/home-creative-examples.js`, `app/src/main/assets/home-credit-store.js`, `app/src/main/assets/home-experience.js`, `app/src/main/assets/home-inspiration.js`, `app/src/main/assets/inspiration.js`, `app/src/main/assets/jarvis-core.js`, `app/src/main/assets/jarvix-action-plan.js`, `app/src/main/assets/jarvix-chat.js`, `app/src/main/assets/jarvix-clip-library.js`, `app/src/main/assets/jarvix-guided-tour.js`, `app/src/main/assets/jarvix-home-chat.js`, `app/src/main/assets/jarvix-navigation-reply.js`, `app/src/main/assets/jarvix-new-recorded-dialog.js`
-- **Accounts and security:** `server/creation-storage-policy.js`, `server/email-auth.js`, `server/generation-trial-policy.js`, `server/product-watcher/lite-delivery-policy.js`, `server/product-watcher/scheduler-state-policy.js`, `server/tool-policy.js`, `server/user-agent-plan.js`, `server/user-agent-stage1-local-draft.js`, `server/workspace-project-policy.js`
+- **Accounts and security:** `server/creation-storage-policy.js`, `server/edge-email-auth.js`, `server/email-auth.js`, `server/generation-trial-policy.js`, `server/product-watcher/lite-delivery-policy.js`, `server/product-watcher/scheduler-state-policy.js`, `server/tool-policy.js`, `server/user-agent-plan.js`, `server/user-agent-stage1-local-draft.js`, `server/workspace-project-policy.js`
 - **JARVIX unified chat and composer:** `app/src/main/assets/jarvis-core.js`, `app/src/main/assets/jarvix-action-plan.js`, `app/src/main/assets/jarvix-chat.js`, `app/src/main/assets/jarvix-clip-library.js`, `app/src/main/assets/jarvix-guided-tour.js`, `app/src/main/assets/jarvix-home-chat.js`, `app/src/main/assets/jarvix-navigation-reply.js`, `app/src/main/assets/jarvix-new-recorded-dialog.js`, `app/src/main/assets/jarvix-new-smalltalk.js`, `app/src/main/assets/jarvix-new-voice.js`, `app/src/main/assets/jarvix-owner-speech.js`, `app/src/main/assets/jarvix-studio-page.js`, `app/src/main/assets/jarvix-tour-plan.js`, `app/src/main/assets/jarvix-tour-v3-audio.js`, `app/src/main/assets/jarvix-tour-v3-script.js`, `app/src/main/assets/jarvix-tour-v4-audio.js`, `server/jarvix-brain.js`, `server/jarvix-free-llm.js`, `server/jarvix-voice.js`
 - **Pricing and subscriptions:** `app/src/main/assets/ai-pricing.js`, `app/src/main/assets/pricing-page.js`, `app/src/main/assets/pricing-wallet.js`, `server/generation-subscription-credits.js`
 - **Android app:** `app/src/main/java/com/videovariator/app/MainActivity.java`, `app/src/main/java/com/videovariator/app/ProcessingService.java`, `app/src/main/java/com/videovariator/app/TeleprompterActivity.java`
@@ -34,7 +34,7 @@ Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code 
 
 ### `app/src/main/assets/_worker.js`
 
-_worker.js (L1) · INSPIRATION_ITEMS (L4) · CREATIVE_TEMPLATES (L5) · studioJobs (L9) · dailyUserUsage (L10) · jarvixSessions (L19) · edgeUsers (L20) · edgeWallets (L21) · edgeWalletLedger (L22) · edgeHistory (L23) · edgeOnboarding (L24) · edgeRevenueLedger (L25) · platformUnitEconomics (L26) · LIVE_SUBSCRIPTION_LINKS (L34) · LIVE_PLAN_BY_PAYMENT_LINK (L42) · LIVE_CREDIT_PACKS (L50) · WAN_VIDEO_SIZES (L251) · WAN_IMAGE_SIZES (L260)
+_worker.js (L1) · INSPIRATION_ITEMS (L5) · CREATIVE_TEMPLATES (L6) · studioJobs (L10) · dailyUserUsage (L11) · jarvixSessions (L20) · edgeUsers (L21) · edgeWallets (L22) · edgeWalletLedger (L23) · edgeHistory (L24) · edgeOnboarding (L25) · edgeRevenueLedger (L26) · platformUnitEconomics (L27) · LIVE_SUBSCRIPTION_LINKS (L35) · LIVE_PLAN_BY_PAYMENT_LINK (L43) · LIVE_CREDIT_PACKS (L51) · WAN_VIDEO_SIZES (L257) · WAN_IMAGE_SIZES (L266)
 
 ### `app/src/main/assets/ai-apps.js`
 
@@ -307,6 +307,10 @@ db.js (L1) · adminEmail (L6) · pool (L8)
 ### `server/deepsyq-preview.js`
 
 app (L20) · port (L21) · root (L22) · assets (L23) · ffmpegUmd (L24) · ffmpegCore (L25) · disabled (L28) · freeStudioModels (L89) · freeJarvix (L269) · jarvixRequests (L270) · ownerMedia (L312) · imageMedia (L313) · ownerInspiration (L318) · ownerNext (L322) · approvedItems (L324) · previewItems (L325) · creativeMedia (L335)
+
+### `server/edge-email-auth.js`
+
+scrypt (L10) · attempts (L14) · _emailAuthTest (L170)
 
 ### `server/email-auth.js`
 
