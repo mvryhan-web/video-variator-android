@@ -161,6 +161,7 @@ const NUMBERED_QUESTIONS_RU=[
  [72,'Что ты умеешь?']
 ];
 const FOLLOW_UP=/^(?:а\s+)?(?:что дальше|дальше|продолжай|подробнее|расскажи подробнее|и что дальше|what next|go on|tell me more|et ensuite|continue|y después|continúa)[\s.!?]*$/iu;
+const REPHRASE=/^(?:а\s+)?(?:скажи\s+(?:иначе|по\s*другому)|объясни\s+(?:иначе|по\s*другому)|другими\s+словами|перефразируй|другой\s+вариант|еще\s+вариант|ещё\s+вариант|можно\s+(?:иначе|по\s*другому)|say\s+it\s+(?:differently|another\s+way)|rephrase(?:\s+that)?|in\s+other\s+words|another\s+version|different\s+wording|reformule|dis\s+le\s+autrement|autrement|avec\s+d\s+autres\s+mots|reformula|dilo\s+de\s+otra\s+manera|con\s+otras\s+palabras|otra\s+versi[oó]n)[\s.!?]*$/iu;
 const SITE_QUESTION=/^\s*(?:что|как|зачем|для чего|расскажи|объясни)(?:[\s,.!?]|$)/iu;
 
 function answerFromParts(parts){
@@ -230,9 +231,22 @@ export async function recordedConversationReply(question,language,history=[]){
   });
   return parts.length<=3?answerFromParts(parts):null;
  }
- if(!FOLLOW_UP.test(question.trim()))return findReply(clips,question,lang);
- const previous=[...history].reverse().find(turn=>turn.role==='user'&&!FOLLOW_UP.test(turn.content.trim()));
+ if(!FOLLOW_UP.test(question.trim())&&!REPHRASE.test(question.trim()))
+  return findReply(clips,question,lang);
+ // "Say it differently" means pick a different, already recorded response to
+ // the preceding user question. Never edit audio bytes or invent a transcript.
+ const previous=[...history].reverse().find(turn=>turn.role==='user'&&
+  !FOLLOW_UP.test(turn.content.trim())&&!REPHRASE.test(turn.content.trim()));
  if(!previous)return null;
+ if(REPHRASE.test(question.trim())){
+  // Only a verified, unused clip with a matching documented question/triggers.
+  // A semantically unrelated recording is never used as a stylistic variant.
+  const alternative=clips.filter(clip=>clip.source==='scenario'&&clip.question)
+   .map(clip=>({clip,score:scoreRecordedQuestion(previous.content,clip.question,clip.triggers)}))
+   .filter(item=>item.score>=110)
+   .sort((a,b)=>b.score-a.score||String(a.clip.id).localeCompare(String(b.clip.id)))[0];
+  return alternative?.clip||null;
+ }
  if(lang==='ru'){
   const details=SITE_DETAILS_RU.find(([topic])=>topic.test(previous.content))?.[1];
   const next=details?.map(file=>tourClip(clips,file)).filter(Boolean);
