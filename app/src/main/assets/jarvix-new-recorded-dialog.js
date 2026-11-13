@@ -170,6 +170,12 @@ function answerFromParts(parts){
   parts:unique,text:unique.map(part=>part.text).join(' '),source:'combined-recordings'
  };
 }
+export function wasRecordedReplyUsed(text,history){
+ const phrase=normalize(text);
+ return !!phrase&&history.some(turn=>turn.role==='assistant'&&
+  (' '+normalize(turn.content)+' ').includes(' '+phrase+' '));
+}
+
 const languageKey=language=>LANGS.has(language)?language:'ru';
 const exactClip=(clips,text)=>clips.find(clip=>normalize(clip.text)===normalize(text))||null;
 const tourClip=(clips,file)=>clips.find(clip=>clip.source==='tour'&&clip.id===file)||null;
@@ -186,7 +192,15 @@ function findReply(clips,question,lang){
   const match=scoreRecordedQuestion(question,clip.question||alias,clip.triggers);
   if(match>score){score=match;best=clip;}
  }
- if(best || lang!=='ru' || !SITE_QUESTION.test(question))return best;
+ if(best || lang!=='ru')return best;
+ if(/^(?:а )?(?:какую|какое|какой) (?:фотографию|фото|изображение|снимок)(?: |$)/u.test(normalize(question))){
+  for(const number of ['73','70','65']){
+   const option=clips.find(clip=>clip.id==='jarvix_ru_'+number);
+   if(option)return option;
+  }
+  return null;
+ }
+ if(!SITE_QUESTION.test(question))return null;
  const details=/(?:как\s|подробнее)/iu.test(question)
   ? SITE_DETAILS_RU.find(([topic])=>topic.test(question))?.[1] : null;
  if(details){
@@ -204,7 +218,7 @@ export async function recordedReply(question,language='ru'){
 export async function recordedConversationReply(question,language,history=[]){
  const lang=languageKey(language);
  if(!normalize(question))return null;
- const clips=await catalog(lang);
+ const clips=(await catalog(lang)).filter(clip=>!wasRecordedReplyUsed(clip.text,history));
  const exact=exactClip(clips,question);
  if(exact)return exact;
  const questions=question.trim().split(/\?\s*(?=\S)|\s+(?:и|and|et|y)\s+(?=(?:как|что|где|сколько|зачем|how|what|where|comment|cómo|dónde)\s)/iu);
@@ -219,17 +233,14 @@ export async function recordedConversationReply(question,language,history=[]){
  if(!FOLLOW_UP.test(question.trim()))return findReply(clips,question,lang);
  const previous=[...history].reverse().find(turn=>turn.role==='user'&&!FOLLOW_UP.test(turn.content.trim()));
  if(!previous)return null;
- const alreadySpoken=history.filter(turn=>turn.role==='assistant').map(turn=>normalize(turn.content));
- const unused=clips.filter(clip=>!alreadySpoken.some(text=>
-  (' '+text+' ').includes(' '+normalize(clip.text)+' ')));
  if(lang==='ru'){
   const details=SITE_DETAILS_RU.find(([topic])=>topic.test(previous.content))?.[1];
-  const next=details?.map(file=>tourClip(unused,file)).filter(Boolean);
+  const next=details?.map(file=>tourClip(clips,file)).filter(Boolean);
   if(next?.length)return answerFromParts(next);
   if(/(?:inspiration|вдохновени)/iu.test(previous.content)){
-   const nextInspiration=tourClip(unused,'t3_ru_7fd91e38c5ce.mp3');
+   const nextInspiration=tourClip(clips,'t3_ru_7fd91e38c5ce.mp3');
    if(nextInspiration)return nextInspiration;
   }
  }
- return findReply(unused,previous.content,lang);
+ return findReply(clips,previous.content,lang);
 }

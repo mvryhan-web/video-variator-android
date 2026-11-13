@@ -1,6 +1,6 @@
 import {saveStudioHandoff} from './studio-handoff.js';
 import {extractAction} from './jarvix-action-plan.js';
-import {recordedConversationReply as recordedReply,recordedExact} from './jarvix-new-recorded-dialog.js';
+import {recordedConversationReply as recordedReply,recordedExact,wasRecordedReplyUsed} from './jarvix-new-recorded-dialog.js';
 import {helloRecording,smalltalkReply,smalltalkTextReply,isGreetingOnly} from './jarvix-new-smalltalk.js';
 /* JARVIX NEW — voice-only mode on the OWNER'S EXISTING sphere, TEST host only.
    No new page, code form, paid API or simulated model answer. */
@@ -537,10 +537,23 @@ async function paidVoiceReply(message,language,id){
 }
 async function playResponse(record,id,message){
  if(!record||!on||seq!==id)return false;
- for(const part of record.parts||[record]){
-  if(!await playOwnerRecording(part,id)||!on||seq!==id)return false;
+ const seen=[...turns];
+ const parts=(record.parts||[record]).filter(part=>{
+  if(wasRecordedReplyUsed(part.text,seen))return false;
+  seen.push({role:'assistant',content:part.text});
+  return true;
+ });
+ if(!parts.length){
+  if(record.temporaryBlob)URL.revokeObjectURL(record.audioUrl);
+  return false;
  }
- rememberTurn(message,record.text);
+ const spoken=[];
+ for(const part of parts){
+  if(!await playOwnerRecording(part,id)||!on||seq!==id)break;
+  spoken.push(part.text);
+ }
+ if(spoken.length)rememberTurn(message,spoken.join(' '));
+ if(spoken.length!==parts.length)return false;
  listen(id);
  return true;
 }
@@ -548,6 +561,7 @@ async function respond(message,id){
  if(!on||seq!==id)return;
  ui('thinking');
  const lang=recordedLanguage();
+ showTextResponse('');
  setTranscript(message,true);
  const extra=NAVIGATION_COMMAND.test(message)
   ? EXTRA_NAVIGATION.find(([,pattern])=>pattern.test(message))?.[0] : null;
@@ -610,11 +624,11 @@ async function respond(message,id){
  // Keep the prepared text available when its spoken equivalent is unavailable.
  const prepared=await smalltalkTextReply(message,lang).catch(()=>null);
  if(!on||seq!==id)return;
- if(prepared?.text){
+ if(prepared?.text&&!wasRecordedReplyUsed(prepared.text,turns)){
   showTextResponse(prepared.text);
   rememberTurn(message,prepared.text);
  }else ui('missing');
- const delay=prepared?.text?3800:1400;
+ const delay=botReplyText?3800:1400;
  pending=setTimeout(()=>{pending=null;if(on&&seq===id)listen(id);},delay);
 }
 async function start({greet=true}={}){

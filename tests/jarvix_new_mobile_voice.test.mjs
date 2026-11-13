@@ -85,7 +85,7 @@ function fixture({recognition=true,meter=false,smalltalkAudio=true,rejectAudio=f
     },
     setTimeout,clearTimeout,setInterval,clearInterval,queueMicrotask,
     recordedReply:async()=>null,ownerLibraryReply:undefined,
-    extractAction,isGreetingOnly:message=>/^привет(?:[, ]+джарвис)?[!.]?$/iu.test(message),recordedExact:async()=>null,
+    extractAction,isGreetingOnly:message=>/^привет(?:[, ]+джарвис)?[!.]?$/iu.test(message),recordedExact:async()=>null,wasRecordedReplyUsed:(text,turns)=>turns.some(t=>t.role==='assistant'&&t.content===text),
     helloRecording:async()=>({audioUrl:'/media/jarvix/conversation/hello_ru.mp3',text:'Привет! Я JARVIX.'}),
     smalltalkReply:async(message)=>{lastSpeech=message;return smalltalkAudio?
       {audioUrl:'/media/jarvix/conversation/smalltalk_ru.mp3',text:'Спасибо!'}:null;},
@@ -297,5 +297,15 @@ test('no approved MP3: never switches to a system voice and never prints a reply
     assert.equal(f.played.length,1);
     const bot=f.elements.find(x=>x.id==='jv-new-transcript-reply');
     assert.equal(bot.hidden,true);
+  }finally{f.stop();}
+});
+
+test('a repeated recorded reply is skipped on the next question',async()=>{
+  const f=fixture();
+  try{
+    f.clickSphere();await f.flush();
+    f.recognizers.at(-1).emit('Как дела?',true);await f.flush();
+    f.recognizers.at(-1).emit('Как дела?',true);await f.flush();
+    assert.equal(f.played.filter(url=>url.endsWith('smalltalk_ru.mp3')).length,1);
   }finally{f.stop();}
 });
