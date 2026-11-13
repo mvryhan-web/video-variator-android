@@ -156,7 +156,14 @@ test('Canvas uploaded reference photo stays local and disappears after reload',a
 });
 
 test('Canvas hands one local reference to Studio without submitting paid AI job',async({page})=>{
- await fixtures(page);let posts=0;
+ await fixtures(page);
+ // The default test server disables Studio references; exercise the real handoff with
+ // the same image reference capability fixture used by the historical browser test.
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{
+  enabled:true,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:2,enabled:true}],
+  catalog:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:2,enabled:true,adapter:true,provider:'Fixture'}]
+ }}));
+ let posts=0;
  page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
  await page.goto('/canvas.html');
