@@ -1,5 +1,5 @@
 import {extractAction} from './jarvix-action-plan.js';
-import {recordedReply} from './jarvix-new-recorded-dialog.js';
+import {recordedConversationReply as recordedReply} from './jarvix-new-recorded-dialog.js';
 import {helloRecording,smalltalkReply,smalltalkTextReply} from './jarvix-new-smalltalk.js';
 /* JARVIX NEW — voice-only mode on the OWNER'S EXISTING sphere, TEST host only.
    No new page, code form, paid API or simulated model answer. */
@@ -58,7 +58,7 @@ const RESUME_KEY='jarvix-new:resume-listening';
 const CONVERSATION_MEMORY='jarvix-new:conversation:v1';
 function cleanTurns(saved){
  if(!Array.isArray(saved))return [];
- return saved.slice(-8).filter(turn=>turn&&
+ return saved.slice(-20).filter(turn=>turn&&
   (turn.role==='user'||turn.role==='assistant')&&typeof turn.content==='string')
   .map(({role,content})=>({role,content:content.slice(0,1200)}));
 }
@@ -95,7 +95,7 @@ function syncConversation(){
 }
 function rememberTurn(message,reply){
  turns=[...turns,{role:'user',content:message.slice(0,1200)},
-  {role:'assistant',content:String(reply||'').slice(0,1200)}].slice(-8);
+  {role:'assistant',content:String(reply||'').slice(0,1200)}].slice(-20);
  memoryUpdatedAt=Math.max(Date.now(),memoryUpdatedAt+1);
  saveMemory();
  try{memoryChannel?.postMessage({type:'history',turns,updatedAt:memoryUpdatedAt});}catch{}
@@ -548,8 +548,9 @@ async function paidVoiceReply(message,language,id){
 }
 async function playResponse(record,id,message){
  if(!record||!on||seq!==id)return false;
- const ok=await playOwnerRecording(record,id);
- if(!ok||!on||seq!==id)return false;
+ for(const part of record.parts||[record]){
+  if(!await playOwnerRecording(part,id)||!on||seq!==id)return false;
+ }
  rememberTurn(message,record.text);
  listen(id);
  return true;
@@ -608,7 +609,7 @@ async function respond(message,id){
  if(!on||seq!==id)return;
 
  // 4. Other real, verified, existing MP3 from the tour/catalog.
- const recorded=await recordedReply(message,lang).catch(()=>null);
+ const recorded=await recordedReply(message,lang,turns).catch(()=>null);
  if(!on||seq!==id)return;
  if(await playResponse(recorded,id,message))return;
  if(!on||seq!==id)return;

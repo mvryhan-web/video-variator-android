@@ -109,3 +109,32 @@ export async function recordedReply(question,language='ru'){
  // Do not play an unrelated recording to make the voice appear functional.
  return score>=100?best:null;
 }
+
+const RECORDED_DIALOG_FLAGS=Object.freeze({followUps:true,combineReplies:true});
+const FOLLOW_UP=/^(?:а\s+)?(?:а дальше|что дальше|дальше|продолжай|подробнее|расскажи подробнее|и что дальше|what next|go on|tell me more|et ensuite|continue|y después|continúa)[\s.!?]*$/iu;
+
+export async function recordedConversationReply(question,language,history=[]){
+ const direct=await recordedReply(question,language);
+ if(direct)return direct;
+ if(RECORDED_DIALOG_FLAGS.combineReplies){
+  const parts=question.trim().split(/\?\s*(?=\S)/u);
+  if(parts.length===2&&parts.every(part=>part.trim().length>3)){
+   const clips=await Promise.all(parts.map(part=>recordedReply(part,language)));
+   if(clips.every(Boolean)&&clips[0].audioUrl!==clips[1].audioUrl)
+    return {parts:clips,text:clips.map(clip=>clip.text).join(' '),source:'combined-recordings'};
+  }
+ }
+ if(!RECORDED_DIALOG_FLAGS.followUps||!FOLLOW_UP.test(question.trim()))return null;
+ const previous=[...history].reverse().find(turn=>turn.role==='user'&&!FOLLOW_UP.test(turn.content.trim()));
+ if(!previous)return null;
+ const {available,scenarios}=await catalog(language);
+ const alreadySpoken=new Set(history.filter(turn=>turn.role==='assistant').map(turn=>normalize(turn.content)));
+ let best=null,score=0;
+ for(const item of scenarios){
+  const answer=audioRecord(item,language,available);
+  if(!answer||alreadySpoken.has(normalize(answer.text)))continue;
+  const match=scoreRecordedQuestion(previous.content,item.qa?.[language]?.question,item.triggers?.[language]||[]);
+  if(match>score){best=answer;score=match;}
+ }
+ return score>=100?best:null;
+}
