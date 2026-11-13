@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `b241afc85908697e59ee8cc3843a73555b277f96`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `1558dddb2fc2d13aaa54469f2f8f9df97facfad5`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 121 | Named symbols: 419 | Checked relations: 80
 
 ## Topic finder (matching filenames)
@@ -130,7 +130,7 @@ ACTION_ROUTES (L2)
 
 ### `app/src/main/assets/jarvix-chat.js`
 
-urls (L40) · composer (L501) · pendingMsg (L551) · pending (L579) · modeHeaderLabels (L583) · composerInput (L620) · wpPane (L690) · expandBtn (L709)
+modeHeaderLabels (L40) · urls (L46) · composer (L549) · pendingMsg (L599) · pending (L627) · composerInput (L662) · wpPane (L732) · expandBtn (L751)
 
 ### `app/src/main/assets/jarvix-clip-library.js`
 
