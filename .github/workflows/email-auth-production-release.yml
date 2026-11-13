@@ -46,7 +46,8 @@ jobs:
           python scripts/deepsyq_surgical_publish.py \
             --mode plan --files "" --commit "$GITHUB_SHA" --email-worker
   publish:
-    if: github.event.head_commit.message == 'release(Email): activate Neon account storage'
+    if: >-
+      github.event.head_commit.message == 'release(Email): activate Neon account storage'
     needs: preflight
     runs-on: ubuntu-latest
     timeout-minutes: 25
