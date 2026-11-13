@@ -25,6 +25,8 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-24.04
+    # A broken legacy browser assertion must not burn hours of CI or create multi-GB artifacts.
+    timeout-minutes: 30
     steps:
       - name: Prefer official Ubuntu archive for browser dependencies
         run: |
@@ -40,9 +42,15 @@ jobs:
       - run: node --test tests/deepsyq-routes.mjs tests/generation-studio-unit.mjs tests/generation-byteplus-unit.mjs tests/generation-billing-unit.mjs tests/generation-routing-unit.mjs tests/generation-policy-unit.mjs tests/generation-storage-unit.mjs tests/generation-errors-unit.mjs tests/admin-audit-unit.mjs tests/ai-migrations-unit.mjs tests/ai-migration-status-unit.mjs tests/generation-model-capabilities-unit.mjs tests/generation-entitlements-unit.mjs tests/generation-worker-runtime-unit.mjs tests/generation-readiness-unit.mjs tests/generation-idempotency-unit.mjs tests/generation-billing-review-unit.mjs tests/generation-templates-unit.mjs tests/generation-inspiration-unit.mjs tests/generation-onboarding-unit.mjs server/tests/telegram-free-mini.test.mjs
       - run: node --test tests/deepsyq-preview.mjs
       - run: npx playwright install --with-deps chromium firefox webkit
-      - run: npx playwright test tests/deepsyq.spec.mjs tests/generation-studio.spec.mjs
+      # Keep the full test selection and report failures honestly; stop after five to diagnose incrementally.
+      - run: npx playwright test tests/deepsyq.spec.mjs tests/generation-studio.spec.mjs --max-failures=5
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: deepsyq-browser-evidence
-          path: test-results/
+          # Preserve actionable failure evidence, not every full-page image and video attachment.
+          path: |
+            test-results/**/error-context.md
+            test-results/**/trace.zip
+          if-no-files-found: ignore
+          retention-days: 1
