@@ -43,3 +43,7 @@ TEST commit `992e3cb`: greeting-only turns rearm listening without playing the i
 ## Reply rotation and photo questions
 
 Published TEST commit `9a1ecd4` and verified both updated JS files over HTTPS. Recorded matching skips phrases already used within retained recent conversation history. Playback also checks other reply sources and component clips for repetition. Russian photo-choice questions try three relevant existing recordings in order. Local checks confirmed three distinct responses followed by no repeated response, two/three-clip assembly, follow-up and 21 voice/smalltalk tests. Physical microphone and broader free-form dialogue were not verified. The 1,540 imported scenario recordings still await transcript review.
+
+## 2026-11-13 — Голосовой переход к созданию изображения
+
+TEST, коммит `98c8b5b`, [выпуск #43461925540](https://github.com/mvryhan-web/video-variator-android/actions/runs/43461925540). Команда без описания открывает существующий чат в режиме «Изображение» и запрашивает описание и пропорции. «Да, конечно» озвучивается при наличии точной записи, иначе отображается текстом. Проверены открытие маршрута и локальная обработка описания и формата. TEST API оставлен изолированным: внешние Gemini и генерация не запускались. Рабочий сайт не публиковался.
