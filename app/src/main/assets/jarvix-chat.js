@@ -234,6 +234,18 @@ function openImageViewer(message, opener){
    store.guard();if(dialog.open)location.assign(path+'?from=jarvix-image');
   });
  }
+ // Return the selected image to this same JARVIX conversation; no new page or tool.
+ const removeBgLabel=({ru:'Удалить фон',en:'Remove background',fr:'Supprimer le fond',es:'Quitar fondo'})[lang]||'Remove background';
+ const removeBgPrompt=({ru:'Удали фон с этой фотографии',en:'Remove the background from this photo',fr:'Supprime le fond de cette photo',es:'Quita el fondo de esta foto'})[lang]||'Remove the background from this photo';
+ action(removeBgLabel,image=>{
+  store.guard();
+  if(busy){status(({ru:'Дождитесь ответа Джарвиса.',en:'Wait for JARVIX to finish.',fr:'Attendez la réponse de JARVIX.',es:'Espere a que termine JARVIX.'})[lang]||'Wait for JARVIX to finish.');return;}
+  composer.add(image);
+  const input=$('jInput');input.value=removeBgPrompt;
+  input.dispatchEvent(new Event('input',{bubbles:true}));
+  dialog.close();
+  $('jChatForm').requestSubmit();
+ });
  const closeText=node('button',labels[1]);closeText.type='button';closeText.onclick=()=>dialog.close();
  toolbar.append(closeText);dialog.append(picture,toolbar,notice,close);document.body.append(dialog);
  dialog.addEventListener('close',()=>{if(previewUrl)URL.revokeObjectURL(previewUrl);dialog.remove();if(imageViewer===dialog)imageViewer=null;opener.focus();},{once:true});
