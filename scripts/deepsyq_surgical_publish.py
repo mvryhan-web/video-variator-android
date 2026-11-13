@@ -52,7 +52,7 @@ def allowed_hash_reuse(paths):
     return frozenset(paths) in HASH_REUSE_RELEASE_SETS
 
 def pages_asset_mime(path):
-    return {".js": "application/javascript", ".html": "text/html",
+    return {".js": "application/javascript", ".html": "text/html", ".css": "text/css",
             ".xml": "application/xml", ".mp3": "audio/mpeg", ".json": "application/json"}.get(Path(path).suffix, "application/octet-stream")
 
 class Blocked(Exception):
