@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `147553c55985be5e020c5f56b9bd682f410ca3e8`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 122 | Named symbols: 421 | Checked relations: 80
+Source commit: `adf8a3d6389717c89f7c234bdec0a66fde0d8e84`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 122 | Named symbols: 423 | Checked relations: 80
 
 ## Topic finder (matching filenames)
 
@@ -178,7 +178,7 @@ mode (L7) · fileTypes (L21) · timeModes (L30) · redactRects (L31) · redactPr
 
 ### `app/src/main/assets/my-creations-gallery.js`
 
-showcase (L6) · icons (L16) · state (L23)
+showcase (L6) · icons (L16) · state (L23) · selectedPhotos (L67) · batchDelete (L69)
 
 ### `app/src/main/assets/onboarding-options.js`
 
