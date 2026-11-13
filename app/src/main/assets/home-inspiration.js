@@ -168,6 +168,191 @@ function radarEditor(form,storage,copy,say){
   try{storage.write('radarNiche',value);openCreativeDraft(radarDraftPrompt(value,example,copy.language));}catch{say(copy.error);}
  };
 }
+
+const directorModels={
+ image:{model:'wan2.1-t2i-turbo',walletQuote:'wan-image-v1'},
+ video:{model:'wan2.1-t2v-turbo',walletQuote:'wan-video-v1',videoDuration:5}
+};
+function directorStore(scope){
+ const db=new Promise((resolve,reject)=>{
+  const request=indexedDB.open('deepsyq-director',1);
+  request.onupgradeneeded=()=>request.result.createObjectStore('chains');
+  request.onsuccess=()=>resolve(request.result);
+  request.onerror=()=>reject(request.error);
+ });
+ return async function access(value){
+  const database=await db;
+  return new Promise((resolve,reject)=>{
+   const tx=database.transaction('chains',value?'readwrite':'readonly');
+   const store=tx.objectStore('chains');
+   const request=value?store.put(value,scope):store.get(scope);
+   tx.oncomplete=()=>resolve(request.result);
+   tx.onabort=()=>reject(tx.error);
+  });
+ };
+}
+async function directorEditor(form,submit,say,dialog){
+ const ru=creativeCopy().language==='Russian';
+ const label=(r,e)=>ru?r:e;
+ const token=localStorage.getItem('vv_token');
+ if(!token)throw Error(label('Войдите, чтобы рассчитать стоимость генерации.','Sign in to estimate generation costs.'));
+ if(!navigator.locks)throw Error(label('Откройте цепочку в браузере с поддержкой Web Locks.','Open the chain in a browser with Web Locks support.'));
+ const {ownerScope}=await import('./jarvix-conversations.js');
+ const scope=await ownerScope(token);
+ const access=directorStore(scope);
+ const guard=()=>{if(localStorage.getItem('vv_token')!==token)throw Error('AUTH_REQUIRED');};
+ const api=async(path,body,media=false)=>{
+  guard();
+  const response=await fetch(path,{cache:'no-store',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},...(body?{method:'POST',body:JSON.stringify(body)}:{})});
+  guard();
+  if(!response.ok)throw Error((await response.json().catch(()=>null))?.error||'HTTP '+response.status);
+  return media?response.blob():response.json();
+ };
+ let chain=await access();
+ let previous=chain?.previous;
+ if(!chain?.steps.length)chain=null;
+ if(!dialog.open)return;
+ dialog.addEventListener('close',()=>{for(const link of summary.querySelectorAll('a'))URL.revokeObjectURL(link.href);},{once:true});
+ const inputs=['image','video'].map((kind,index)=>{
+  const input=creativeField(form,index?label('Описание видео · 5 секунд','Video prompt · 5 seconds'):label('Описание изображения','Image prompt'),'textarea',chain?.steps[index].prompt||'',500);
+  input.rows=2;input.required=true;return input;
+ });
+ const ratio=creativeField(form,label('Формат','Aspect ratio'),'select');
+ ratio.append(new Option('9:16'),new Option('16:9'));ratio.value=chain?.ratio||'9:16';
+ const summary=detailEl('div','inspiration-detail-feedback');
+ form.append(summary);
+ const reset=detailEl('button','inspiration-detail-secondary',label('Новая цепочка','New chain'));
+ reset.type='button';reset.hidden=true;form.append(reset);
+ let quote;
+ const refresh=()=>{
+  for(const link of summary.querySelectorAll('a'))URL.revokeObjectURL(link.href);
+  summary.replaceChildren();
+  for(const [i,step] of (chain?.steps||quote?.steps||[]).entries()){
+   const title=i?label('Видео','Video'):label('Изображение','Image');
+   const status={ready:label('готово','ready'),failed:label('ошибка','failed'),running:label('в работе','in progress')}[step.state];
+   const row=detailEl('p','',title+' · '+step.cost+' AI Credits'+(status?' · '+status:''));
+   if(step.blob){
+    const url=URL.createObjectURL(step.blob);
+    const link=detailEl('a','',label('Скачать','Download'));
+    link.href=url;link.download=i?'director-video.mp4':'director-image';row.append(' ',link);
+   }
+   summary.append(row);
+  }
+  if(previous?.length){
+   const history=detailEl('details');history.append(detailEl('summary','',label('Предыдущая цепочка','Previous chain')));
+   for(const step of previous){
+    if(!step.blob)continue;
+    const link=detailEl('a','',label('Скачать','Download')+' '+(step.kind==='video'?label('видео','video'):label('изображение','image')));
+    link.href=URL.createObjectURL(step.blob);link.download='director-'+step.kind;
+    const row=detailEl('p');row.append(link);history.append(row);
+   }
+   summary.append(history);
+  }
+  if(quote)summary.append(detailEl('p','',label('Всего','Total')+' · '+quote.steps.reduce((sum,step)=>sum+step.cost,0)+' AI Credits'));
+  const pending=chain?.steps.find(step=>step.state!=='ready');
+  submit.textContent=pending?.state==='failed'?label('Подтвердить повтор','Confirm retry'):
+   pending?label('Продолжить цепочку','Continue chain'):chain?label('Цепочка завершена','Chain complete'):
+   quote?label('Подтвердить и запустить','Confirm and run'):label('Рассчитать стоимость','Estimate cost');
+  submit.disabled=Boolean(chain&&!pending);
+  reset.hidden=!chain||Boolean(pending);
+  for(const input of [...inputs,ratio])input.disabled=Boolean(chain);
+ };
+ const save=()=>{guard();return access(chain);};
+ const estimate=async(step,format)=>{
+  const data=await api('/api/studio/estimate',{kind:step.kind,ratio:format,quantity:1,...directorModels[step.kind]});
+  const {model,walletQuote}=directorModels[step.kind];
+  if(data.model!==model||data.walletQuote!==walletQuote||data.kind!==step.kind||data.quantity!==1||data.previewOnly!==false||
+    !Number.isSafeInteger(data.credits)||data.credits<1)throw Error('AI_CREDIT_QUOTE_INVALID');
+  return {...step,cost:data.ownerAccess===true?0:data.credits,credits:data.credits,owner:data.ownerAccess===true};
+ };
+ const submitStep=async(step,model)=>{
+  try{
+   const job=await api('/api/studio/jobs',{kind:step.kind,ratio:chain.ratio,prompt:step.prompt,quantity:1,...model,consent:true,expectedCredits:step.credits,requestId:step.requestId});
+   step.jobId=job.jobId;await save();
+  }catch(error){
+   if(['INSUFFICIENT_AI_CREDITS','AI_CREDIT_QUOTE_INVALID','WAN_IMAGE_INVALID_INPUT','WAN_VIDEO_INVALID_INPUT','WAN_FREE_QUOTA_EXHAUSTED'].includes(error.message)){
+    step.state='failed';await save();
+   }
+   throw error;
+  }
+ };
+ const execute=async step=>{
+  const model=directorModels[step.kind];
+  if(step.state!=='running'){
+   const checked=await estimate(step,chain.ratio);
+   if(checked.cost!==step.cost||checked.credits!==step.credits||checked.owner!==step.owner)throw Error('AI_CREDIT_QUOTE_CHANGED');
+   step.state='running';step.requestId=crypto.randomUUID();step.jobId=null;
+   await save();
+   await submitStep(step,model);
+  }else if(!step.jobId){
+   if(step.owner)throw Error(label('Статус запуска неизвестен. Проверьте «Мои работы».','Submission status is unknown. Check My Creations.'));
+   const job=await api('/api/studio/jobs',{kind:step.kind,ratio:chain.ratio,prompt:step.prompt,quantity:1,...model,consent:true,expectedCredits:step.credits,requestId:step.requestId});
+   step.jobId=job.jobId;await save();
+  }
+  if(!/^job_(image|video)_wan_[a-f0-9]{32}$/.test(step.jobId||''))throw Error('AI_JOB_INVALID');
+  const path='/api/studio/jobs/'+step.jobId;
+  for(let attempt=0;attempt<90&&dialog.open;attempt++){
+   const job=await api(path);
+   if(job.status==='failed'){step.state='failed';await save();throw Error(label('Шаг не удался. Готовые результаты сохранены.','The step failed. Completed results were saved.'));}
+   if(job.status==='ready'){
+    const blob=await api(path+'/media',undefined,true);
+    if(!blob.size||!blob.type.startsWith(step.kind+'/'))throw Error('AI_MEDIA_INVALID');
+    step.blob=blob;step.state='ready';await save();return true;
+   }
+   await new Promise(resolve=>setTimeout(resolve,3000));
+  }
+  return false;
+ };
+ reset.onclick=async()=>{
+  try{
+   await navigator.locks.request('deepsyq-director:'+scope,async()=>{
+    guard();const saved=await access();
+    if(!saved||!saved.steps.every(step=>step.state==='ready'))return;
+    await access({ratio:ratio.value,steps:[],previous:saved.steps});
+    previous=saved.steps;chain=null;quote=null;inputs.forEach(input=>{input.value='';});refresh();
+   });
+  }catch(error){say(error.message);}
+ };
+ form.addEventListener('input',()=>{if(!chain&&quote){quote=null;refresh();}});
+ form.onsubmit=async event=>{
+  event.preventDefault();
+  if(submit.disabled)return;
+  submit.disabled=true;
+  try{
+   await navigator.locks.request('deepsyq-director:'+scope,{ifAvailable:true},async lock=>{
+    if(!lock)throw Error(label('Цепочка открыта в другой вкладке.','The chain is running in another tab.'));
+    guard();
+    const saved=await access();
+    if(saved?.steps.length){chain=saved;inputs.forEach((input,i)=>{input.value=saved.steps[i].prompt;});ratio.value=saved.ratio;}
+    else if(chain){chain=null;quote=null;refresh();return;}
+    if(!chain&&!quote){
+     const steps=inputs.map((input,i)=>({kind:i?'video':'image',prompt:input.value.trim()}));
+     if(steps.some(step=>!step.prompt))return;
+     const format=ratio.value;
+     quote={ratio:format,steps:await Promise.all(steps.map(step=>estimate(step,format)))};
+     if(steps.some((step,i)=>step.prompt!==inputs[i].value.trim())||quote.ratio!==ratio.value)quote=null;
+     return;
+    }
+    if(!chain){
+     const approved=quote;
+     const total=approved.steps.reduce((sum,step)=>sum+step.cost,0);
+     const balance=total?await api('/api/ai-wallet/balance'):null;
+     if(total&&!(balance.available>=total))throw Error('INSUFFICIENT_AI_CREDITS');
+     if(!dialog.open||quote!==approved)return;
+     chain={ratio:approved.ratio,steps:approved.steps,previous};await save();quote=null;
+    }
+    for(const step of chain.steps){
+     if(!dialog.open)break;
+     if(step.state!=='ready'&&!await execute(step))break;
+     refresh();submit.disabled=true;
+    }
+   });
+  }catch(error){say(error.message);}
+  finally{refresh();}
+ };
+ refresh();
+}
+
 async function openCreativeTool(tool,opener){
  const language=creativeCopy();
  const lang=Object.keys(creativeToolsCopy).find(key=>creativeToolsCopy[key]===language)||'en';
@@ -175,6 +360,7 @@ async function openCreativeTool(tool,opener){
   characterName:{ru:'Имя персонажа',en:'Character name',fr:'Nom du personnage',es:'Nombre del personaje'}[lang],
   imageMode:{ru:'Изображение',en:'Image',fr:'Image',es:'Imagen'}[lang],
   videoMode:{ru:'Видео',en:'Video',fr:'Vidéo',es:'Vídeo'}[lang]};
+ copy.director='JARVIX Director';
  const dialog=detailEl('dialog','inspiration-detail-dialog');
  dialog.style.cssText='width:min(520px,calc(100% - 24px));height:auto;max-height:90dvh;margin:auto;border:1px solid #7563b577;border-radius:20px;overflow:auto';
  const form=detailEl('form','inspiration-detail-sidebar');
@@ -202,6 +388,7 @@ async function openCreativeTool(tool,opener){
   const storage=await creativeStorage();
   if(!dialog.open||!storage.current){if(dialog.open)dialog.close();return;}
   const brand=storage.read('brand')||{};
+  if(tool==='director'){await directorEditor(form,submit,say,dialog);form.append(status,actions);return;}
   if(tool==='characters')characterEditor(form,storage,brand,copy,submit,say);
   else if(tool==='radar')radarEditor(form,storage,copy,say);
   else if(tool==='factory'){
@@ -295,12 +482,13 @@ function renderQuickStarts(section){
  });
  const language=creativeCopy();
  const lang=Object.keys(creativeToolsCopy).find(key=>creativeToolsCopy[key]===language)||'en';
- const copy={...language,...characterRadarCopy[lang]};
+ const copy={...language,...characterRadarCopy[lang],director:'JARVIX Director',chain:lang==='ru'?'Изображение и видео по шагам':'Image and video, step by step'};
  for(const [tool,subtitle,kind,imageSrc] of [
   ['factory','plan','video','media/home/owner-20261018/04-neon-motorcycle.jpg'],
   ['brand','style','image','media/home/neon-20261018/canvas.webp'],
   ['characters','cast','image','media/home/owner-20261018/01-close-up-woman.jpg'],
-  ['radar','radarHint','video','media/home/neon-20261018/agent.webp']
+  ['radar','radarHint','video','media/home/neon-20261018/agent.webp'],
+  ['director','chain','video','media/home/neon-20261018/agent.webp']
  ]){
   const button=detailEl('button','home-create-card tile-'+kind);
   button.type='button';button.style.cssText='text-align:start;font:inherit;color:inherit;cursor:pointer';
