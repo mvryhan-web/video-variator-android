@@ -14,10 +14,38 @@ async function setInternalVideoOption(page,id,value){
  },value);
 }
 
-async function chooseStudio(page,kind){await page.locator('.studio-nav button[data-kind="'+kind+'"]').click();}
-test('mobile studio has clear sections, no false generation and no overflow',async({page})=>{await page.setViewportSize({width:390,height:844});let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});await page.goto('/generate-studio.html');await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await page.locator('#prompt').fill('Ocean');await page.locator('#consent').check();await expect(page.locator('#generate')).toBeDisabled();await expect(page.locator('#availability')).toContainText('not enabled');await chooseStudio(page,'image');await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await expect(page.locator('#ratio option')).toHaveCount(5);await chooseStudio(page,'music');await page.locator('#settingsButton').click();await expect(page.locator('#musicOptions')).toBeVisible();await page.locator('#musicMode').selectOption('instrumental');await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#referenceBox')).toBeHidden();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(posts).toBe(0);});
+async function chooseStudio(page,kind){
+ const mode=kind==='music'?'audio':kind;
+ await expect(page.locator('#jPlus')).toBeVisible();
+ await page.locator('#jPlus').click();
+ await page.locator('#jPlusMenu [data-j-mode="'+mode+'"]').click();
+ await expect(page.locator('#jPlusMenu')).toBeHidden();
+}
+test('mobile studio has clear sections, no false generation and no overflow',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ let generationPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')generationPosts++;});
+ await page.goto('/generate-studio.html');
+ await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');
+ await page.locator('#prompt').fill('Ocean');
+ await expect(page.locator('#generate')).toBeDisabled();
+ await expect(page.locator('#availability')).toContainText('not enabled');
+ await chooseStudio(page,'image');
+ await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');
+ await expect(page.locator('#ratio option')).toHaveCount(5);
+ await chooseStudio(page,'music');
+ await page.locator('#studioSettingsToggle').click();
+ await expect(page.locator('#studioSettingsHub')).toBeVisible();
+ await page.locator('#settingsButton').click();
+ await expect(page.locator('#musicOptions')).toBeVisible();
+ await page.locator('#musicMode').selectOption('instrumental');
+ await page.getByRole('button',{name:'Done',exact:true}).click();
+ await expect(page.locator('#referenceBox')).toBeHidden();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ expect(generationPosts).toBe(0);
+});
 test('config exposes readiness without secrets and disabled endpoint fails closed',async({request})=>{const r=await request.get('/api/studio/config');expect(r.status()).toBe(200);const c=await r.json();expect(c.enabled).toBe(false);expect(c.ownerOnly).toBe(true);expect(c.translation.enabled).toBe(false);const post=await request.post('/api/studio/jobs',{data:{kind:'image',prompt:'test',consent:true}});expect(post.status()).toBe(503);});
-test('Russian device language and retained per-studio draft',async({browser})=>{const context=await browser.newContext({locale:'ru-RU'});const page=await context.newPage();await page.goto('/generate-studio.html');await expect(page.locator('h1#taskTitle')).toHaveText('Оживите свою идею с Deepsyq');await expect(page.locator('html')).toHaveAttribute('lang','ru');await expect(page.locator('.studio-nav [data-kind="image"] [data-t="image"]')).toHaveText('Изображения');await page.locator('#prompt').fill('Море');await chooseStudio(page,'image');await page.locator('#prompt').fill('Цветок');await chooseStudio(page,'video');await expect(page.locator('#prompt')).toHaveValue('Море');await context.close();});
+test('Russian device language and retained per-studio draft',async({browser})=>{const context=await browser.newContext({locale:'ru-RU'});const page=await context.newPage();await page.goto('/generate-studio.html');await expect(page.locator('h1#taskTitle')).toHaveText('Оживите свою идею с Deepsyq');await expect(page.locator('html')).toHaveAttribute('lang','ru');await expect(page.locator('.studio-nav [data-kind="image"] [data-t="image"]')).toHaveText('Изображение');await page.locator('#prompt').fill('Море');await chooseStudio(page,'image');await page.locator('#prompt').fill('Цветок');await chooseStudio(page,'video');await expect(page.locator('#prompt')).toHaveValue('Море');await context.close();});
 test('mocked contract result confirms selected service and current credits before posting, then previews, downloads and deletes',async({page})=>{
  const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:3,enabled:true}],catalog:[{kind:'image',label:'Fixture',id:'fixture',provider:'Google',adapter:true,ratios:['1:1'],references:3,enabled:true}]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
