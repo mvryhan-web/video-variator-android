@@ -239,6 +239,21 @@ function openImageViewer(message, opener){
  dialog.addEventListener('close',()=>{if(previewUrl)URL.revokeObjectURL(previewUrl);dialog.remove();if(imageViewer===dialog)imageViewer=null;opener.focus();},{once:true});
  dialog.showModal();
 }
+const siteAnswers=[
+ [/(?:pdf|пдф).*(?:объедин|скле)|(?:объедин|скле).*(?:pdf|пдф)/iu,'Откройте «Объединение PDF», добавьте документы, расположите их в нужном порядке и скачайте готовый PDF.','/mobile-utility.html?tool=pdf-merge','Объединение PDF'],
+ [/(?:тариф|подписк|кредит)/iu,'В «Тарифах» можно сравнить Trial, Basic, Pro, Business и Lifetime. Пакеты AI-кредитов доступны на отдельной странице AI Credits.','/pricing.html','Тарифы'],
+ [/(?:canvas|canva|канва|холст)/iu,'Canvas — редактор для работы с изображениями. Готовое изображение можно открыть в Canvas из просмотра в JARVIX Chat.','/canvas.html','Canvas'],
+ [/(?:мои работы|мо[ию] (?:работ[уы]|генераци[ию])|результат[ыа]? генераци[ий])/iu,'В «Моих работах» есть фильтры по изображениям, видео и аудио. Войдите в аккаунт, чтобы увидеть свои работы.','/my-creations.html','Мои работы'],
+ [/(?:ai apps|шаблон)/iu,'В AI Apps можно выбрать шаблон и открыть его в подходящем инструменте кнопкой Use Template.','/ai-apps.html','AI Apps'],
+ [/(?:генерац|создат).*(?:изображен|картин|фото|видео|музык)/iu,'В AI Studio выберите режим «Изображение», «Видео» или «Аудио», затем задайте описание и параметры.','/generate-studio.html','AI Studio'],
+ [/(?:everyday tools|повседневн.*инструмент|все инструменты)/iu,'В «Все инструменты» собраны утилиты для работы с изображениями, видео и документами.','/free-tools.html','Все инструменты']
+];
+function siteKnowledge(question){
+ const text=question.trim().replace(/^(?:(?:слушай|джарвис|джарвикс|jarvis|jarvix|пожалуйста)[,\s:]+)+/iu,'');
+ if(!/^(?:где|как|что|какие|какой|сколько|для чего|расскажи|подскажи|объясни)(?=\s|[,.!?]|$)/iu.test(text))return null;
+ return siteAnswers.find(([pattern])=>pattern.test(text))||null;
+}
+
 function render(){
  for(const url of urls)URL.revokeObjectURL(url);
  urls=[];
@@ -262,6 +277,8 @@ function render(){
    content.className='j-message-content';
    bubble.append(content);
   }
+  const siteLink=siteAnswers.find(([, ,url])=>url===m.siteLink);
+  if(m.role==='assistant'&&siteLink){const link=node('a',siteLink[3]);link.href=siteLink[2];bubble.append(link);}
 
   if(m.role==='assistant'&&m.limitReached===true){
    const labels={ru:'Выбрать тариф',en:'View plans',fr:'Voir les offres',es:'Ver planes'};
@@ -545,6 +562,12 @@ async function processMessage(message){
    await saveStudioHandoff({kind:'image',prompt:lastImage.imageRecipe?.description||'Canvas',files:[image],target:'canvas',source:'jarvix-chat'});
    store.guard();message.status='sent';await save();location.assign('canvas.html?from=jarvix-image');return;
   }
+  const knowledge=!(message.files||[]).length?siteKnowledge(message.text):null;
+  if(knowledge){
+   message.status='sent';
+   conversation.messages.push({...imageIntakeReply(knowledge[1]),siteLink:knowledge[2]});
+   await save();render();return;
+  }
   const tool=builtinTool(message.text);
   if(tool){
    textChat=true;
@@ -591,7 +614,7 @@ async function processMessage(message){
   const imageIntentText = rawText.replace(/^(?:(?:слушай|смотри|эй|джарвис|джарвикс|jarvix|jarvis|пожалуйста|hey|please)[,\s:]+)+/iu, '').trim();
   const explicitImageEdit = /^(?:измени|отредактируй|перерисуй|добавь|убери|удали|замени|осветли|затемни|edit|modify|change|add|remove|replace|ajoute|modifie|supprime|edita|cambia|quita)(?![\p{L}\p{N}_])/iu.test(imageIntentText);
   const explicitImageRequest = explicitImageEdit || /^(?:сгенерируй|нарисуй|создай|сделай|generate|create|draw|make|render|хочу\s+(?:создать|сгенерировать|нарисовать)|(?:можешь|можете|можно)\s+(?:создать|сгенерировать|нарисовать|сделать|изменить)|(?:can|could|would)\s+you\s+(?:create|generate|draw|make|edit)|génère|crée|crea|genera)(?![\p{L}\p{N}_])/iu.test(imageIntentText);
-  const shouldGenerateMedia = mode==='image'
+  const shouldGenerateMedia = message.mode==='text'?false:mode==='image'
    ? Boolean(mediaCommand || message.action?.intent==='GENERATE_MEDIA' || explicitImageRequest)
    : mediaCommand || isModeSelected || (!isAdviceOrQuestion && (
    isExplicitGen ||
@@ -941,12 +964,25 @@ if(imageIntakeEnabled&&!conversation.imageIntake){
  void save().then(render).catch(error=>status(error.message));
  }else if(!imageIntakeEnabled&&!imageIntakeQuery.has('jarvixBuiltin'))void applyIncomingHandoffOrTemplate();
 const incomingTool=imageIntakeQuery.get('jarvixBuiltin');
-const incomingCommand={'latest-image':'Открой последнюю картинку в Canvas','latest-video':'Покажи последнее видео'}[incomingTool];
+let incomingCommand={'latest-image':'Открой последнюю картинку в Canvas','latest-video':'Покажи последнее видео'}[incomingTool];
+let incomingVoiceQuestion=false;
+if(incomingTool==='voice-question'){
+ try{
+  const pending=JSON.parse(sessionStorage.getItem('jarvixVoiceQuestion')||'null');
+  sessionStorage.removeItem('jarvixVoiceQuestion');
+  const token=localStorage.getItem('vv_token')||'';
+  const owner=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token))));
+  store.guard();
+  if(pending?.expires>Date.now()&&token===(localStorage.getItem('vv_token')||'')&&JSON.stringify(pending.owner)===JSON.stringify(owner)&&typeof pending.text==='string'){
+   incomingCommand=pending.text.slice(0,1200);incomingVoiceQuestion=true;
+  }
+ }catch{}
+}
 if(typeof incomingCommand==='string'){
  imageIntakeQuery.delete('jarvixBuiltin');
  history.replaceState(null,'',location.pathname+(imageIntakeQuery.size?'?'+imageIntakeQuery:'')+location.hash);
  void run(async()=>{
-  const message={id:makeId(),role:'user',text:incomingCommand,mode:'auto',files:[],status:'pending',createdAt:Date.now()};
+  const message={id:makeId(),role:'user',text:incomingCommand,mode:incomingVoiceQuestion?'text':'auto',files:[],status:'pending',createdAt:Date.now()};
   conversation.messages.push(message);
   await processMessage(message);
  });
