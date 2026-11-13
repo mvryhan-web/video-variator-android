@@ -1,0 +1,68 @@
+name: DEEPSYQ email-only Neon Worker release (guarded)
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/email-auth-production-release.yml'
+      - 'app/src/main/assets/_worker.js'
+      - 'server/edge-email-auth.js'
+      - 'scripts/email_worker_scope.py'
+      - 'scripts/deepsyq_surgical_publish.py'
+      - 'tests/edge-email-auth.test.mjs'
+      - 'tests/test_email_worker_scope.py'
+      - 'docs/EMAIL_AUTH_RELEASE_TRIGGER_20261113.md'
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Email code and Google OAuth source integrity
+        run: |
+          node --check server/edge-email-auth.js
+          node --check app/src/main/assets/_worker.js
+          PYTHONPATH=scripts python -m unittest discover -s tests -p 'test_email_worker_scope.py' -v
+          node --test tests/edge-email-auth.test.mjs
+      - name: Install publisher dependencies
+        run: python -m pip install --disable-pip-version-check 'requests==2.32.3' 'blake3==1.0.8'
+      - name: Read-only production baseline and exact Email-only Worker diff preflight
+        run: |
+          python scripts/deepsyq_surgical_publish.py \
+            --mode plan --files "" --commit "$GITHUB_SHA" --email-worker
+  publish:
+    if: github.event.head_commit.message == 'release(Email): activate Neon account storage'
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install publisher dependencies
+        run: python -m pip install --disable-pip-version-check 'requests==2.32.3' 'blake3==1.0.8'
+      - name: Publish only audited Email Worker or fail closed and roll back
+        run: |
+          python scripts/deepsyq_surgical_publish.py \
+            --mode publish --files "" --commit "$GITHUB_SHA" --email-worker
