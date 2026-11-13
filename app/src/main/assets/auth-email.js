@@ -15,6 +15,8 @@
   };
   copy.es={title:'Inicia sesión',sub:'Usa Google o tu correo electrónico.',divider:'o continúa con tu correo',email:'Correo electrónico',password:'Contraseña',name:'Nombre (opcional)',login:'Iniciar sesión',create:'Crear cuenta',have:'Ya tengo cuenta',new:'Crear cuenta con correo',creating:'Creando cuenta…',signing:'Iniciando sesión…',done:'Sesión iniciada.',bad:'Revisa tu correo y contraseña.',exists:'Ya existe una cuenta con ese correo. Inicia sesión.',passwordRule:'Usa al menos 8 caracteres.',storagePending:'El acceso por correo no está disponible.'};
   const c=copy[locale]||copy.en;
+  const unavailable=({ru:'Вход по email временно недоступен. Можно войти через Google.',fr:'La connexion par e-mail est indisponible. Vous pouvez utiliser Google.',es:'El acceso por correo no está disponible. Puedes usar Google.',uk:'Вхід через email тимчасово недоступний. Можна увійти через Google.'})[locale]||'Email sign-in is temporarily unavailable. You can use Google.';
+  const nameLabelText=({ru:'Ваше имя',fr:'Votre nom',es:'Tu nombre',uk:'Ваше ім’я'})[locale]||'Your name';
 
   function apiBase(){
     try{const native=window.AndroidBridge?.getApiBase?.();if(native)return String(native).replace(/\/$/,'');}catch(_){ }
@@ -23,22 +25,9 @@
   function messageFor(error){
     if(error==='EMAIL_ALREADY_REGISTERED')return c.exists;
     if(error==='INVALID_PASSWORD_LENGTH')return c.passwordRule;
-    if(error==='ACCOUNT_STORAGE_NOT_CONFIGURED')return c.storagePending;
+    if(error==='ACCOUNT_STORAGE_NOT_CONFIGURED'||error==='EMAIL_AUTH_FAILED')return unavailable;
     return c.bad;
   }
-  function setAvailability(configured){
-    const wrap=document.querySelector('#authModal .emailAuthWrap');
-    if(!wrap)return;
-    wrap.hidden=!configured;
-    wrap.querySelectorAll('input,button').forEach(el=>el.disabled=!configured);
-  }
-  async function refreshAvailability(){
-    try{
-      const r=await fetch(apiBase()+'/api/auth/email/status',{cache:'no-store'}),data=await r.json().catch(()=>({}));
-      setAvailability(r.ok&&data.configured===true);
-    }catch(_){setAvailability(false);}
-  }
-
   function install(){
     const apple=$('appleButton');if(apple)apple.remove();
     const card=document.querySelector('#authModal .authCard');if(!card||$('emailAuthForm'))return;
@@ -54,11 +43,11 @@
     card.append(privacyLink);
 
     const google=$('googleButton');
-    const wrap=document.createElement('div');wrap.className='emailAuthWrap';wrap.hidden=true;
+    const wrap=document.createElement('div');wrap.className='emailAuthWrap';
     wrap.innerHTML=`
       <div class="authDivider"><span>${c.divider}</span></div>
-      <form id="emailAuthForm" class="emailAuthForm" novalidate>
-        <label id="emailNameLabel" hidden><span>${c.name}</span><input id="emailAuthName" name="name" autocomplete="name" maxlength="80"></label>
+      <form id="emailAuthForm" class="emailAuthForm">
+        <label id="emailNameLabel" hidden><span>${nameLabelText}</span><input id="emailAuthName" name="name" autocomplete="name" maxlength="80"></label>
         <label><span>${c.email}</span><input id="emailAuthEmail" name="email" type="email" autocomplete="email" inputmode="email" required maxlength="254"></label>
         <label><span>${c.password}</span><input id="emailAuthPassword" name="password" type="password" autocomplete="current-password" required minlength="8" maxlength="128"></label>
         <small id="emailAuthHint" class="muted" hidden>${c.passwordRule}</small>
@@ -72,24 +61,20 @@
     const hint=$('emailAuthHint');
     const form=$('emailAuthForm'),nameLabel=$('emailNameLabel'),password=$('emailAuthPassword'),submit=$('emailAuthSubmit'),toggle=$('emailAuthToggle'),msg=$('emailAuthMessage');
     toggle.addEventListener('click',()=>{
-      creating=!creating;nameLabel.hidden=!creating;hint.hidden=!creating;password.autocomplete=creating?'new-password':'current-password';submit.textContent=creating?c.create:c.login;toggle.textContent=creating?c.have:c.new;msg.textContent='';
+      creating=!creating;nameLabel.hidden=!creating;hint.hidden=!creating;$('emailAuthName').required=creating;password.value='';updateCopy();(creating?$('emailAuthName'):$('emailAuthEmail')).focus();password.autocomplete=creating?'new-password':'current-password';submit.textContent=creating?c.create:c.login;toggle.textContent=creating?c.have:c.new;msg.textContent='';
     });
     form.addEventListener('submit',async e=>{
       e.preventDefault();
       const email=$('emailAuthEmail').value.trim(),pass=password.value,name=$('emailAuthName').value.trim();
-      if(!email||pass.length<8){msg.textContent=c.passwordRule;return;}
+      if(!email||pass.length<8||(creating&&!name)){msg.textContent=c.passwordRule;return;}
       submit.disabled=true;toggle.disabled=true;msg.textContent=creating?c.creating:c.signing;
       try{
         const endpoint=creating?'/api/auth/email/register':'/api/auth/email/login';
         const response=await fetch(apiBase()+endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass,name})});
         const data=await response.json().catch(()=>({}));
-        if(!response.ok||!data.token)throw new Error(data.error||'EMAIL_AUTH_FAILED');
+        if(!response.ok||!data.token)throw new Error(response.status===404||response.status===405||response.status===503?'ACCOUNT_STORAGE_NOT_CONFIGURED':data.error||'EMAIL_AUTH_FAILED');
         localStorage.setItem('vv_token',data.token);if(data.newAccount===true)localStorage.setItem('deepsyq_onboarding_pending','1');msg.textContent=c.done;
-        if(window.openLuminaTermsModal && !window.isLuminaTermsAccepted?.()){
-          window.openLuminaTermsModal(()=>{ setTimeout(()=>location.reload(), 200); });
-        } else {
-          setTimeout(()=>location.reload(), 250);
-        }
+        setTimeout(()=>location.reload(), 250);
       }catch(err){msg.textContent=messageFor(err.message);submit.disabled=false;toggle.disabled=false;}
     });
     const modal=$('authModal');
@@ -97,11 +82,14 @@
       const current=(()=>{
         try{return localStorage.getItem('deepsyq_lang')?.split('-')[0];}catch(_){}
       })();
-      if(heading)heading.textContent=(copy[current]||c).title;
-      if(intro)intro.hidden=wrap.hidden;
+      const labels=copy[current]||c;
+      if(heading)heading.textContent=creating?labels.create:labels.title;
+      if(intro)intro.hidden=creating;
+      if(google)google.hidden=creating;
+      wrap.querySelector('.authDivider').hidden=creating;
     };
     updateCopy();
-    refreshAvailability().then(updateCopy);
+
     new MutationObserver(updateCopy).observe(modal,{attributes:true,attributeFilter:['hidden']});
   }
 

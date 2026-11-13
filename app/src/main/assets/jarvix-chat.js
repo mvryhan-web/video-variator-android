@@ -405,6 +405,39 @@ function localGreeting(message,language){
  if(!/^(?:привет|хай|здравствуйте|здравствуй|салют|hello|hi|hey|bonjour|salut|hola)(?:\s+(?:привет|хай|hello|hi|hey))?$/u.test(words))return null;
  return ({ru:'Привет! Чем помочь?',en:'Hi! How can I help?',fr:'Salut ! Comment puis-je t’aider ?',es:'¡Hola! ¿En qué puedo ayudarte?'})[language]||'Hi! How can I help?';
 }
+const CHAT_TRIAL_REPLY_THRESHOLD=5;
+const chatTrialCopy={
+ ru:'Пять пробных ответов уже использованы. Посмотрите пробный доступ за $0,99 и другие тарифы DEEPSYQ.',
+ en:'You’ve used five trial replies. Explore the $0.99 trial and other DEEPSYQ plans.',
+ fr:'Vous avez utilisé cinq réponses d’essai. Découvrez l’essai à 0,99 $ et les autres offres DEEPSYQ.',
+ es:'Ya has usado cinco respuestas de prueba. Consulta la prueba de 0,99 $ y los demás planes de DEEPSYQ.'
+};
+function addChatPlanOffer(){
+ conversation.messages.push({id:makeId(),role:'assistant',text:chatTrialCopy[getJarvixLanguage()]||chatTrialCopy.en,limitReached:true,createdAt:Date.now()});
+}
+let verifiedChatAccount;
+async function recordChatReply(){
+ const token=localStorage.getItem('vv_token');
+ if(!token)return false;
+ try{
+  if(verifiedChatAccount?.token!==token){
+   const {user}=await api('/api/me');
+   if(!user?.id||token!==localStorage.getItem('vv_token'))return false;
+   verifiedChatAccount={token,user};
+  }
+  const {user}=verifiedChatAccount;
+  if(user.isAdmin||user.usage?.active)return false;
+  const key='deepsyq_chat_replies_v1:'+user.id;
+  const replies=Math.min(CHAT_TRIAL_REPLY_THRESHOLD+1,(Number(localStorage.getItem(key))||0)+1);
+  localStorage.setItem(key,String(replies));
+  if(replies<=CHAT_TRIAL_REPLY_THRESHOLD)return false;
+  // Refresh the entitlement before showing a purchase offer to a returning buyer.
+  const current=(await api('/api/me')).user;
+  if(token!==localStorage.getItem('vv_token')||current?.id!==user.id)return false;
+  verifiedChatAccount={token,user:current};
+  return !current.isAdmin&&!current.usage?.active;
+ }catch(_){return false;}
+}
 function generationPlanNotice(mode){
  const copy={
   ru:mode==='video'?'Недостаточно AI-кредитов. Чтобы создать видео, выберите подходящий тариф.':'Недостаточно AI-кредитов. Чтобы создать изображение, выберите подходящий тариф.',
@@ -415,13 +448,15 @@ function generationPlanNotice(mode){
  return copy[getJarvixLanguage()]||copy.en;
 }
 async function processMessage(message){
- let mode;
+ let mode, textChat=false;
  const greeting=localStorage.getItem('vv_token')?localGreeting(message,getJarvixLanguage()):null;
  if(!greeting){message.status='processing';await save();render();}
  try{
   if(greeting){
    message.status='sent';
    conversation.messages.push({id:makeId(),role:'assistant',text:greeting,createdAt:Date.now()});
+   render();
+   if(await recordChatReply())addChatPlanOffer();
    await save();render();return;
   }
   // Use the same allowlisted local tool router as the voice sphere.
@@ -462,6 +497,7 @@ async function processMessage(message){
   ));
 
   if(!shouldGenerateMedia){
+   textChat=true;
    // Text conversation / advice / question: dynamically switch header to Chat
    setChatHeaderMode('auto');
    window.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode:'auto'}}));
@@ -565,7 +601,7 @@ async function processMessage(message){
    answer={id:makeId(),role:'assistant',text:resultLabel,jobId:d.jobId||d.id,status:d.status,kind:mode,ratio:parameters.ratio,demo:false,createdAt:Date.now()};
   }
   pendingMediaFrame=null;
-  message.status='sent';conversation.messages.push(answer);await save();render();if(answer.jobId)await poll(answer);
+  message.status='sent';conversation.messages.push(answer);if(!shouldGenerateMedia){render();if(await recordChatReply())addChatPlanOffer();}await save();render();if(answer.jobId)await poll(answer);
  }catch(e){
   if(['image','video'].includes(mode)&&['INSUFFICIENT_AI_CREDITS','INSUFFICIENT_CREDITS','LIMIT_REACHED'].includes(e.code)){
    pendingMediaFrame=null;
@@ -582,6 +618,9 @@ async function processMessage(message){
    return;
   }
   pendingMediaFrame=null;message.status=message.status==='sent'?'sent':e.name==='AbortError'?'interrupted':'error';message.error=e.message;await save();if(e.name!=='AbortError'){
+   if(e.code==='AUTH_REQUIRED'&&textChat){
+    addChatPlanOffer();await save();render();status('');return;
+   }
    if(e.code==='AUTH_REQUIRED'){
     window.dispatchEvent(new Event('deepsyq:action-auth-required'));
     const copy={ru:'Войти, чтобы продолжить',en:'Sign in to continue',fr:'Se connecter pour continuer',es:'Inicia sesión para continuar'};

@@ -7,3 +7,6 @@
  #authModal #googleButton{display:grid;justify-items:center;max-width:100%;margin-top:16px}
 }
 #authModal .authPrivacyLink{display:block;margin-top:16px;text-align:center;color:var(--muted,#a7aec3);font-size:12px;text-underline-offset:3px}
+
+#authModal #googleButton[hidden],#authModal .authDivider[hidden],#authModal .emailAuthMessage:empty{display:none}
+#authModal .authTextButton{min-height:44px;text-decoration:underline;text-underline-offset:3px}
