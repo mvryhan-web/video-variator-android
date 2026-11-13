@@ -1,5 +1,12 @@
 # DEEPSYQ ROADMAP — approved next product phase
 
+## 2026-11-13 — STUDIO-DOCK-01 / AUTH-TEST-01 — SOURCE_UPDATED, ACCEPTANCE_PENDING
+
+- **Mount missing + menu:** one-condition fix [31457b2](https://github.com/mvryhan-web/video-variator-android/commit/31457b27f1c00e80a5656f1bdfe83458150e283f) excludes only Studio creator from the quick-chat bypass; preserves Home/JARVIX Chat. Browser [#43395652282](https://github.com/mvryhan-web/video-variator-android/actions/runs/43395652282) confirmed #jPlus exists, but Terms modal was intercepting clicks before explicit consent.
+- **Existing consent flow, not bypassed:** test-only [a703e68](https://github.com/mvryhan-web/video-variator-android/commit/a703e6815a603ad6ae8f8faef258fb44c412b0ee) (auth) and [2939dad](https://github.com/mvryhan-web/video-variator-android/commit/2939dad3d8167fcd04837e31d08c4666ece08909) (Studio) execute current Terms UI before asserting signed-in navigation. [CI #43396308271](https://github.com/mvryhan-web/video-variator-android/actions/runs/43396308271) started; no full green claim.
+- **BLOCKED_MAIN:** runtime fixes remain in GitHub only. Do not bypass surgical Worker SHA + bindings preflight or deploy unreviewed pending Worker; no Cloudflare release confirmed.
+
+---
 ## 2026-11-13 — CI-BROWSER-02 / LANG-STUDIO-01 / CI-BROWSER-03
 
 - **Canvas 4/4 CHROMIUM_VERIFIED:** [#43389123930](https://github.com/mvryhan-web/video-variator-android/actions/runs/43389123930) passes all four new scoped Canvas smoke tests; overall Playwright is still red (8 passed, 5 failed, rest not run). Do not rebuild completed Canvas.
