@@ -205,7 +205,7 @@ function openImageViewer(message, opener){
  picture.src=previewUrl||opener.querySelector('img').src;
  const toolbar=node('div','');toolbar.className='j-image-viewer-actions';
  const notice=node('p','');notice.setAttribute('role','status');notice.hidden=true;
- const close=node('button',labels[1]);close.type='button';close.autofocus=true;close.onclick=()=>dialog.close();
+ const close=node('button','×');close.type='button';close.autofocus=true;close.className='j-image-viewer-close';close.setAttribute('aria-label',labels[1]);close.title=labels[1];close.onclick=()=>dialog.close();
  const file=async()=>{
   store.guard();
   const blob=message.resultFile instanceof Blob?message.resultFile:
@@ -234,7 +234,7 @@ function openImageViewer(message, opener){
    store.guard();if(dialog.open)location.assign(path+'?from=jarvix-image');
   });
  }
- toolbar.append(close);dialog.append(picture,toolbar,notice);document.body.append(dialog);
+ dialog.append(picture,toolbar,notice,close);document.body.append(dialog);
  dialog.addEventListener('close',()=>{if(previewUrl)URL.revokeObjectURL(previewUrl);dialog.remove();if(imageViewer===dialog)imageViewer=null;opener.focus();},{once:true});
  dialog.showModal();
 }
