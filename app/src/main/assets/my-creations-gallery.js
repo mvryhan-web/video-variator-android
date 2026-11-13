@@ -64,22 +64,66 @@ async function loadSamples(){
  render();
 }
 
+let accountToken;
+let cardsRequest=0;
+const localFlags=async store=>{
+ store.guard();
+ try{return JSON.parse(localStorage.getItem('deepsyq_creation_flags_'+store.scope)||'{}');}
+ catch{return {};}
+};
 async function fetchMyCards(){
  const token=localStorage.getItem('vv_token');
- if(!token){state.userItems=[];render();return}
- try{
-  const response=await fetch('/api/studio/workspace/cards?',{headers:authHeaders(),cache:'no-store',credentials:'same-origin'});
-  if(!response.ok)throw Error('Workspace request: '+response.status);
-  const json=await response.json();
-  state.userItems=(Array.isArray(json.sections?.recent)?json.sections.recent:[])
-   .filter(x=>x&&typeof x.id==='string'&&['image','video','audio'].includes(x.type))
-   .map(x=>({...x,kind:'own',model:x.model||'DEEPSYQ Studio',prompt:x.prompt||null,preview:state.mediaCache.get(x.id)||null}));
+ const request=++cardsRequest;
+ if(accountToken!==token){
+  accountToken=token;
+  for(const url of state.mediaCache.values())if(url)URL.revokeObjectURL(url);
+  state.mediaCache.clear();
+  state.userItems=[];
+  $('mcDetail').hidden=true;
   render();
- }catch(err){say('Личные работы пока недоступны. Демонстрационная коллекция остаётся открытой.');console.warn('My Creations:',err)}
+ }
+ if(!token)return;
+ const [server,local]=await Promise.allSettled([
+  (async()=>{
+   const response=await fetch('/api/studio/workspace/cards?',{headers:authHeaders(),cache:'no-store',credentials:'same-origin'});
+   if(!response.ok)throw Error('Workspace request: '+response.status);
+   const data=await response.json();
+   return Array.isArray(data.sections?.recent)?data.sections.recent:[];
+  })(),
+  (async()=>{
+   const {conversationStore}=await import('./jarvix-conversations.js');
+   const store=await conversationStore();
+   const flags=await localFlags(store),rows=await store.list(),items=[];
+   for(const conversation of rows){
+    let prompt='';
+    for(const message of conversation.messages||[]){
+     if(message.role==='user'){prompt=message.text||'';continue;}
+     const blob=message.resultFile;
+     const type=blob instanceof Blob?blob.type.split('/')[0]:'';
+     if(message.status!=='ready'||!message.jobId||!blob?.size||!['image','video','audio'].includes(type))continue;
+     if(flags[message.jobId]?.archived)continue;
+     items.push({id:message.jobId,type,status:'completed',title:(prompt||message.text||'').slice(0,80),
+      prompt,createdAt:message.createdAt,isFavorite:!!flags[message.jobId]?.favorite,localBlob:blob,localScope:store.scope});
+    }
+   }
+   return {items,flags};
+  })()
+ ]);
+ if(request!==cardsRequest||localStorage.getItem('vv_token')!==token)return;
+ const rows=new Map();
+ for(const item of local.value?.items||[])rows.set(item.id,item);
+ for(const item of server.value||[]){
+  if(!item||typeof item.id!=='string'||!['image','video','audio'].includes(item.type)||local.value?.flags[item.id]?.archived)continue;
+  rows.set(item.id,{...rows.get(item.id),...item,serverRecord:true});
+ }
+ state.userItems=[...rows.values()].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
+  .map(x=>({...x,kind:'own',model:x.model||'DEEPSYQ Studio',preview:state.mediaCache.get(x.id)||null}));
+ render();
+ if(server.status==='rejected')say('Серверная история пока недоступна. Показаны работы, сохранённые в этом браузере.');
 }
 function thumb(item){
  const node=document.createElement('div');node.className='mc-card-image';
- if(item.preview){const image=new Image();image.src=item.preview;image.alt='';image.loading='lazy';node.append(image)}
+ if(item.preview&&(item.kind==='sample'||item.type==='image')){const image=new Image();image.src=item.preview;image.alt='';image.loading='lazy';node.append(image)}
  else {
   const block=document.createElement('div');block.className='mc-placeholder';block.innerHTML='<span aria-hidden="true">'+(icons[item.type]||'✦')+'</span><span>'+(item.kind==='own'?'Saved creation':'Preview loading…')+'</span>';
   node.append(block);
@@ -89,15 +133,23 @@ function thumb(item){
 async function tryOwnMedia(item){
  if(item.kind!=='own')return item.preview||null;
  if(state.mediaCache.has(item.id))return state.mediaCache.get(item.id);
+ const token=localStorage.getItem('vv_token');
+ if(!token||token!==accountToken)return null;
+ if(item.localBlob){
+  const url=URL.createObjectURL(item.localBlob);
+  state.mediaCache.set(item.id,url);
+  return url;
+ }
  try{
   // Fetches use the same existing authenticated Studio API. A missing media endpoint never fabricates a result.
   const response=await fetch('/api/studio/jobs/'+encodeURIComponent(item.id)+'/media',{headers:{Authorization:authHeaders().Authorization||''},credentials:'same-origin'});
   if(!response.ok)throw Error('MEDIA_NOT_AVAILABLE');
   const blob=await response.blob();
+  if(token!==localStorage.getItem('vv_token')||token!==accountToken)return null;
   if(!/^(image\/|video\/|audio\/)/.test(blob.type))throw Error('UNSUPPORTED_MEDIA');
   const url=URL.createObjectURL(blob);state.mediaCache.set(item.id,url);
   return url;
- }catch{state.mediaCache.set(item.id,null);return null}
+ }catch{return null}
 }
 function compactBtn(title,svg,onClick,pressed=false){
  const b=document.createElement('button');b.type='button';b.className='mc-icon-btn';b.title=title;b.setAttribute('aria-label',title);
@@ -119,8 +171,10 @@ function buildCard(item){
  const media=document.createElement('button');media.type='button';media.className='mc-card-image';media.setAttribute('aria-label','View '+nameOf(item));
  const imageBox=thumb(item);while(imageBox.firstChild)media.append(imageBox.firstChild);
  media.addEventListener('click',()=>showOne(item));
- if(item.kind==='own'&&!item.preview&&!state.mediaCache.has(item.id)){
+ if(item.kind==='own'&&item.status==='completed'&&!item.preview&&!state.mediaCache.has(item.id)&&(item.type==='image'||item.key===state.selectedId&&!$('mcDetail').hidden)){
+  const request=cardsRequest;
   tryOwnMedia(item).then(url=>{
+   if(request!==cardsRequest||localStorage.getItem('vv_token')!==accountToken)return;
    if(url){const original=state.userItems.find(x=>x.id===item.id);if(original&&original.preview!==url){original.preview=url;render()}}
   });
  }
@@ -146,10 +200,12 @@ function render(){
 function renderDetail(){
  const d=$('mcDetail');if(d.hidden)return;
  const item=selected();if(!item){d.hidden=true;return}
- const visual=$('mcDetailTop');visual.querySelectorAll('img,video').forEach(n=>n.remove());
+ const visual=$('mcDetailTop');visual.querySelectorAll('img,video,audio').forEach(n=>n.remove());
  if(item.preview){
   if(item.kind==='own'&&item.type==='video'){
    const v=document.createElement('video');v.controls=true;v.preload='metadata';v.src=item.preview;visual.prepend(v);
+  }else if(item.kind==='own'&&item.type==='audio'){
+   const audio=document.createElement('audio');audio.controls=true;audio.preload='metadata';audio.src=item.preview;visual.prepend(audio);
   }else{
    const img=new Image();img.src=item.preview;img.alt=nameOf(item);visual.prepend(img);
   }
@@ -166,7 +222,10 @@ async function copyPrompt(item){
  try{await navigator.clipboard.writeText(item.prompt);say('Prompt copied.')}catch{say('Cannot access clipboard in this browser.')}
 }
 async function download(item){
- let url=item.preview||await tryOwnMedia(item);
+ if(!item||(item.kind==='own'&&localStorage.getItem('vv_token')!==accountToken))return;
+ const request=cardsRequest;
+ const url=item.preview||await tryOwnMedia(item);
+ if(item.kind==='own'&&(request!==cardsRequest||localStorage.getItem('vv_token')!==accountToken))return;
  if(!url){say('Download is not available yet. Open this creation in Studio.');return}
  if(item.kind==='sample'&&item.type!=='image')say('Downloading the showcase cover image; no audio/video was generated for this sample.');
  const link=document.createElement('a');link.href=url;link.download=(item.title||'deepsyq-creation').toLowerCase().replace(/[^a-z0-9]+/g,'-')+(item.kind==='sample'?'.webp':'');
@@ -181,6 +240,17 @@ async function favorite(item){
  catch(e){say('Could not update favorite.')}
 }
 async function patchOwn(id,payload){
+ const item=state.userItems.find(x=>x.id===id);
+ if(!item||localStorage.getItem('vv_token')!==accountToken)throw Error('ACCOUNT_CHANGED');
+ if(!item.serverRecord&&item.localScope){
+  const {conversationStore}=await import('./jarvix-conversations.js');
+  const store=await conversationStore();
+  if(store.scope!==item.localScope||localStorage.getItem('vv_token')!==accountToken)throw Error('ACCOUNT_CHANGED');
+  const flags=await localFlags(store);
+  flags[id]={...flags[id],...(payload.action==='archive'?{archived:true}:{favorite:payload.isFavorite})};
+  store.guard();localStorage.setItem('deepsyq_creation_flags_'+store.scope,JSON.stringify(flags));
+  await fetchMyCards();return;
+ }
  const resp=await fetch('/api/studio/workspace/cards/'+encodeURIComponent(id),{method:'PATCH',headers:authHeaders(),credentials:'same-origin',body:JSON.stringify(payload)});
  if(!resp.ok)throw Error('Workspace update: '+resp.status);
  await fetchMyCards();
@@ -217,4 +287,6 @@ $('mcReference').addEventListener('click',()=>useReference(selected()));
 $('mcRemove').addEventListener('click',()=>remove(selected()));
 document.addEventListener('keydown',event=>{if(event.key==='Escape')$('mcDetail').hidden=true});
 if(window.matchMedia('(max-width:820px)').matches)$('mcDetail').hidden=true;
+window.addEventListener('storage',event=>{if(event.key==='vv_token'||event.key===null)void fetchMyCards();});
+window.addEventListener('pageshow',event=>{if(event.persisted)void fetchMyCards();});
 render();void loadSamples();void fetchMyCards();
