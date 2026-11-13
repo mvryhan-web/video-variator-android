@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {emailStorageReady,performEmailAuth,_emailAuthTest} from '../server/edge-email-auth.js';
+import {emailStorageReady,emailStorageDiagnostic,performEmailAuth,_emailAuthTest} from '../server/edge-email-auth.js';
 
 const env={
   DATABASE_URL:'postgresql://test-only:never-use@ep-example.eu-central-1.aws.neon.tech/neondb',
@@ -86,4 +86,14 @@ test('invalid email/origin rejected and per-IP throttling is enforced',async()=>
   for(let i=0;i<10;i++)await performEmailAuth(req('login','none@example.org','StrongPass123#','203.0.113.250'),env,'login',{fetcher:db.fetcher});
   const blocked=await performEmailAuth(req('login','none@example.org','StrongPass123#','203.0.113.250'),env,'login',{fetcher:db.fetcher});
   assert.equal(blocked.status,429);
+});
+
+test('Neon HTTP failures return only a fixed diagnostic reason without credentials',async()=>{
+  for(const http of [400,401,403,404,422,429,500,503]){
+    const response=await emailStorageDiagnostic(env,{fetcher:async()=>({ok:false,status:http})});
+    assert.deepEqual(response,{configured:false,reason:'DATABASE_HTTP_'+http});
+    assert.equal(JSON.stringify(response).includes('test-only'),false);
+  }
+  const response=await emailStorageDiagnostic(env,{fetcher:async()=>{throw new Error('secret password leaked');}});
+  assert.deepEqual(response,{configured:false,reason:'DATABASE_NETWORK_FAILED'});
 });
