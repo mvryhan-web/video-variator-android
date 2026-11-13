@@ -1,7 +1,7 @@
 import {saveStudioHandoff} from './studio-handoff.js';
 import {extractAction} from './jarvix-action-plan.js';
-import {recordedConversationReply as recordedReply} from './jarvix-new-recorded-dialog.js';
-import {helloRecording,smalltalkReply,smalltalkTextReply} from './jarvix-new-smalltalk.js';
+import {recordedConversationReply as recordedReply,recordedExact} from './jarvix-new-recorded-dialog.js';
+import {helloRecording,smalltalkReply,smalltalkTextReply,isGreetingOnly} from './jarvix-new-smalltalk.js';
 /* JARVIX NEW — voice-only mode on the OWNER'S EXISTING sphere, TEST host only.
    No new page, code form, paid API or simulated model answer. */
 const HOST='jarvis-new.deepsyq.pages.dev';
@@ -576,20 +576,17 @@ async function respond(message,id){
   location.assign(new URL(destination,location.origin+'/'));
   return;
  }
- if(lang==='ru'&&/^\s*(?:привет|здравствуй(?:те)?)(?:[,.!\s]+(?:джарвис|джарвикс|jarvix))?[.!\s]*$/iu.test(message)){
-  const greeting={text:'Привет! Я JARVIX.',
-   audioUrl:'/media/jarvix/conversation/hello_ru.mp3',source:'owner-tour-recording'};
-  if(await playResponse(greeting,id,message))return;
-  if(!on||seq!==id)return;
+ if(isGreetingOnly(message,lang)){
+  listen(id);
+  return;
  }
-
 
  const recorded=await recordedReply(command,lang,turns).catch(()=>null);
  if(!on||seq!==id)return;
  if(await playResponse(recorded,id,message))return;
  if(!on||seq!==id)return;
 
- const smalltalk=await smalltalkReply(message,lang).catch(()=>null);
+ const smalltalk=await smalltalkReply(message,lang,{findRecording:recordedExact}).catch(()=>null);
  if(!on||seq!==id)return;
  if(await playResponse(smalltalk,id,message))return;
  if(!on||seq!==id)return;
@@ -610,15 +607,13 @@ async function respond(message,id){
  if(await playResponse(local,id,message))return;
  if(!on||seq!==id)return;
 
- // No approved voice MP3 exists for this question. For known everyday
- // replies, show a meaningful prepared answer as TEXT, never simulate audio.
+ // Keep the prepared text available when its spoken equivalent is unavailable.
  const prepared=await smalltalkTextReply(message,lang).catch(()=>null);
  if(!on||seq!==id)return;
- ui('missing');
  if(prepared?.text){
-  // The reply is never printed: only the user's own words are shown.
+  showTextResponse(prepared.text);
   rememberTurn(message,prepared.text);
- }
+ }else ui('missing');
  const delay=prepared?.text?3800:1400;
  pending=setTimeout(()=>{pending=null;if(on&&seq===id)listen(id);},delay);
 }

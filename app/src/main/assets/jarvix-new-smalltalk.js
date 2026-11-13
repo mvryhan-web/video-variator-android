@@ -100,6 +100,19 @@ function classify(q,lang){
  }
  return null;
 }
+export function isGreetingOnly(question,language='ru'){
+ const words=normalize(question).split(' ')
+  .filter(word=>!['джарвис','джарвикс','jarvis','jarvix'].includes(word)).join(' ');
+ const greeting=(TOPICS[language]||TOPICS.ru).hello.source
+  .replace(/^\\b/,'^').replace(/\\b$/,'$');
+ return new RegExp(greeting,'u').test(words);
+}
+const WELLBEING_RECORDING={
+ ru:'Я на связи. Чем могу помочь прямо сейчас?',
+ en:'I am online. How can I assist you right now?',
+ fr:"Je suis en ligne. Comment puis-je vous aider aujourd'hui ?",
+ es:'Estoy en línea. ¿En qué puedo ayudarte ahora mismo?'
+};
 function recorded(clip){
  return {id:clip.id,text:clip.text,audioUrl:clip.url,source:'smalltalk',purpose:clip.purpose};
 }
@@ -151,24 +164,23 @@ export async function promptRecording(language='ru'){
  // failed, return no audio rather than unrelated full tour narration.
  return null;
 }
-export async function smalltalkReply(question,language='ru'){
+export async function smalltalkReply(question,language='ru',{findRecording}={}){
  const lang=LANGUAGE.has(language)?language:'ru';
  const kind=classify(question,lang);
  if(!kind)return null;
- if(kind==='hello')return helloRecording(lang);
+ if(kind==='hello')return null;
  const clips=await catalog();
  // Prefer the fully-recorded matching phrase when Antigravity uploads it.
  // In particular: wellbeing ("Хорошо") and hearing/activity ("Слушаю тебя").
  const direct=fromStored(clips[kind+'_'+lang],lang);
  if(direct)return direct;
+ if(kind==='wellbeing'&&findRecording)return findRecording(WELLBEING_RECORDING[lang],lang);
  if(kind==='identity')return helloRecording(lang);
  if(['image','video','audio'].includes(kind)){
   const [name,text]=EXISTING[lang][kind];
   return recorded({id:name,text,url:'/media/jarvix/tour-v3/'+name,purpose:kind});
  }
- // Never answer "How are you?" with "Tell me what you want to create".
- // Missing human-approved smalltalk recordings are not fictional voice.
- // Let the caller check the other approved catalog or show mic status.
+
  return null;
 }
 // Until the owner records the 25×4 short responses, the corresponding

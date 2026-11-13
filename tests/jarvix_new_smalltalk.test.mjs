@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 
 const file=readFileSync('app/src/main/assets/jarvix-new-smalltalk.js','utf8');
 const url='data:text/javascript;base64,'+Buffer.from(file).toString('base64');
-const {classifySmalltalk,helloRecording,smalltalkReply,promptRecording,smalltalkTextReply}=await import(url);
+const {isGreetingOnly,classifySmalltalk,helloRecording,smalltalkReply,promptRecording,smalltalkTextReply}=await import(url);
 
 test('RU speech matching uses Unicode-aware boundaries',()=>{
   assert.equal(classifySmalltalk('Привет, Джарвис!','ru'),'hello');
@@ -69,4 +69,13 @@ test('prepared 25x4 conversation provides correct actual text for everyday quest
     assert.match((await smalltalkTextReply('How are you?','en')).text,/good/);
     assert.equal(await smalltalkTextReply('Сколько сейчас стоит тариф?','ru'),null);
   }finally{global.fetch=previous;}
+});
+
+test('greeting is not repeated and wellbeing can use the matching existing recording',async()=>{
+  assert.equal(isGreetingOnly('Привет, Джарвис!','ru'),true);
+  assert.equal(isGreetingOnly('Привет, Джарвис, как дела?','ru'),false);
+  assert.equal(isGreetingOnly('Hey Jarvis','en'),true);
+  assert.equal(await smalltalkReply('Привет, Джарвис!','ru'),null);
+  const clip=await smalltalkReply('Как дела?','ru',{findRecording:async(text,lang)=>({text,lang})});
+  assert.deepEqual(clip,{text:'Я на связи. Чем могу помочь прямо сейчас?',lang:'ru'});
 });

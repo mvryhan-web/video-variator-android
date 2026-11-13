@@ -85,7 +85,7 @@ function fixture({recognition=true,meter=false,smalltalkAudio=true,rejectAudio=f
     },
     setTimeout,clearTimeout,setInterval,clearInterval,queueMicrotask,
     recordedReply:async()=>null,ownerLibraryReply:undefined,
-    extractAction,
+    extractAction,isGreetingOnly:message=>/^привет(?:[, ]+джарвис)?[!.]?$/iu.test(message),recordedExact:async()=>null,
     helloRecording:async()=>({audioUrl:'/media/jarvix/conversation/hello_ru.mp3',text:'Привет! Я JARVIX.'}),
     smalltalkReply:async(message)=>{lastSpeech=message;return smalltalkAudio?
       {audioUrl:'/media/jarvix/conversation/smalltalk_ru.mp3',text:'Спасибо!'}:null;},
@@ -136,7 +136,7 @@ test('when mobile browser does not deliver final result, end event processes int
     r.emit('Привет Джарвис',false);
     r.onend();
     await f.flush();
-    assert.ok(f.played.includes('/media/jarvix/conversation/hello_ru.mp3'));
+    assert.deepEqual(f.played,['/media/jarvix/conversation/hello_ru.mp3']);
     assert.ok(f.recognizers.length>=2);
   }finally{f.stop();}
 });
@@ -243,7 +243,8 @@ test('recognized "Как дела?" receives honest visible TEXT response when v
     await f.flush();
     const bot=f.elements.find(x=>x.id==='jv-new-transcript-reply');
     assert.ok(bot);
-    assert.equal(bot.hidden,true,'Bot reply text is never printed under the sphere');
+    assert.equal(bot.hidden,false);
+    assert.equal(bot.textContent,'JARVIX: Всё хорошо, спасибо! А у тебя?');
     assert.equal(f.played.length,1,'No fabricated spoken MP3 for missing response');
     assert.equal(transcript.textContent,'Как дела?');
   }finally{f.stop();}
@@ -264,7 +265,7 @@ test('original recorded voice plays using user-unlocked Web Audio when mobile Au
     f.clickSphere();await f.flush();
     assert.ok(f.recognizers.length>=1,'Mic starts after greeting');
     const recognition=f.recognizers.at(-1);
-    recognition.emit('Привет',true);
+    recognition.emit('Как дела?',true);
     await f.flush();
     assert.equal(f.played[0],'/media/jarvix/conversation/hello_ru.mp3');
     assert.equal(f.webAudioPlayCount,2,'Owner-recorded reply uses Web Audio when Audio.play is blocked');
