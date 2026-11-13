@@ -359,7 +359,7 @@ function generationPlanNotice(mode){
 }
 async function processMessage(message){
  let mode;
- const greeting=localGreeting(message,getJarvixLanguage());
+ const greeting=localStorage.getItem('vv_token')?localGreeting(message,getJarvixLanguage()):null;
  if(!greeting){message.status='processing';await save();render();}
  try{
   if(greeting){

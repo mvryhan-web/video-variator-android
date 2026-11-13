@@ -1555,12 +1555,30 @@ export default {
 
     if (pathname === '/api/jarvix/chat' && request.method === 'POST') {
       const jarvixAccount = await getAuthenticatedUser(request, env);
-      if (!jarvixAccount) return json({ error: 'AUTH_REQUIRED' }, 401);
       const body = await request.json().catch(() => ({}));
       const message = typeof body.message === 'string' ? body.message.trim() : '';
       if (!message || message.length > 3000) return json({ error: 'INVALID_MESSAGE' }, 400);
       const language = ['ru', 'en', 'es', 'fr'].includes(body.language) ? body.language : 'ru';
-      const sid = JSON.stringify([jarvixAccount.id, body.sessionId || body.conversationId || crypto.randomUUID()]);
+      let guestKey, reservedTurn, replied=false;
+      if (!jarvixAccount) {
+        const ip=request.headers.get('CF-Connecting-IP');
+        const secret=env.JARVIX_QUOTA_HASH_SECRET || env.APP_JWT_SECRET;
+        if(!ip||!secret||!env.R2_BUCKET)return json({error:'GUEST_CHAT_UNAVAILABLE'},503);
+        const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),
+          {name:'HMAC',hash:'SHA-256'},false,['sign']);
+        const digest=new Uint8Array(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(ip)));
+        guestKey=Array.from(digest,b=>b.toString(16).padStart(2,'0')).join('');
+        try {
+          for(let turn=1;turn<=5;turn++){
+            const path='deepsyq/jarvix-guest/v1/'+guestKey+'/'+turn;
+            const slot=await env.R2_BUCKET.put(path,'1',{onlyIf:new Headers({'If-None-Match':'*'})});
+            if(slot){reservedTurn=path;break;}
+          }
+        }catch{return json({error:'GUEST_CHAT_UNAVAILABLE'},503);}
+        if(!reservedTurn)return json({error:'AUTH_REQUIRED',limitReached:true},401);
+      }
+      try {
+      const sid = JSON.stringify([jarvixAccount?.id || 'guest:'+guestKey, body.sessionId || body.conversationId || crypto.randomUUID()]);
       let sessionData = jarvixSessions.get(sid);
       if (!sessionData || Array.isArray(sessionData)) {
         sessionData = { history: Array.isArray(sessionData) ? sessionData : [], image: null };
@@ -1702,6 +1720,7 @@ export default {
       sessionData.history = history;
       jarvixSessions.set(sid, sessionData);
 
+      replied=true;
       return json({
         ok: true,
         reply: replyText,
@@ -1718,6 +1737,9 @@ export default {
         remaining: 14,
         limitReached: false
       });
+      } finally {
+        if(reservedTurn&&!replied)await env.R2_BUCKET.delete(reservedTurn).catch(()=>{});
+      }
     }
 
     if (pathname === '/api/jarvix/reset' && request.method === 'POST') {
@@ -1812,9 +1834,9 @@ export default {
       if (!assetRes.ok) return assetRes;
       let html = await assetRes.text();
       if (['/jarvix-chat', '/free-tools', '/ai-apps'].includes(assetKey)) {
-        html = html.replace('</body>', '<script defer src="/action-sign-in.js"></script></body>');
+        html = html.replace('</body>', '<script defer src="/action-sign-in.js?v=guest-chat-1"></script></body>');
       }
-      if (assetKey === '/jarvix-chat') html = html.replace('jarvix-chat.js?v=action-auth-1', 'jarvix-chat.js?v=action-auth-2');
+      if (assetKey === '/jarvix-chat') html = html.replace('jarvix-chat.js?v=action-auth-1', 'jarvix-chat.js?v=guest-chat-1');
       if (assetKey === '/deepsyq') {
         html = html.replace('<title>Deepsyq — Your creative workspace</title>',
           '<title>DEEPSYQ — AI Video, Image and Creative Tools</title>');

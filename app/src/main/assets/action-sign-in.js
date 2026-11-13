@@ -79,12 +79,6 @@
     dialog.showModal();
     void setupGoogle(errorText);
   }
-  document.addEventListener('submit', event => {
-    if (path !== '/jarvix-chat' || event.target.id !== 'jChatForm' || signedIn()) return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    open();
-  }, true);
   document.addEventListener('click', event => {
     if (signedIn()) return;
     const tool = path === '/free-tools' && event.target.closest(tools);
