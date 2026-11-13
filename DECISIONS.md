@@ -300,3 +300,11 @@ Remove **Favorites** and **Challenges** from the Home sidebar and all shared sid
 - GitHub Actions guarded Cloudflare run 43459404765 PASSED. Verified Cloudflare Pages deployment 542e763c-feb8-4d6f-9312-53f18f904c02, previous 5545b5aa-bee0-4f0c-bf8d-d3cb14b29ea5.
 - Exact published assets: /auth-email.css, /auth-email.js, /jarvix-chat.js. Remaining 1245 assets unchanged; Worker SHA and bindings preserved. Result: PUBLISHED_VERIFIED, published=true.
 - Email service backend remains disabled on Cloudflare Worker (the /api/auth/email/status response is configured:false); email form visual exposure is not proof that actual email account login or registration works. Do not alter Google OAuth.
+
+
+## 2026-11-13 — Owner reference V3 auth layout release
+
+- Owner reported live auth UI still resembled a compact generic modal, unlike provided vertical DEEPSYQ reference. Full-width fullscreen CSS-only V2 correction in commit d91d034ab6e8d1bad88520f6a331ec0cce79e72e published as Cloudflare deployment 55ea4f9b-bf38-4289-acc4-4a28b10459ca (one CSS file changed). Follow-up external visual check still reported mismatch.
+- V3 adds a PRESENTATION-ONLY wrapper .authRegistrationPanel holding the original Google GIS DOM node, Email disclosure and form, and legal text. Auth API routes, Google OAuth and email submission handlers remain unchanged. Commits 6dd30e5d3f52f28af816041682f819b18b5eddf9 (DOM grouping) and ffa2e458716e88745562add5c1395e347f182394 (isolated CSS).
+- V3 guarded GitHub Actions run 43462211422: PUBLISHED_VERIFIED to Cloudflare Pages deployment 0a21736f-721a-47be-ae77-b81d246b1d98, only auth-email.css and auth-email.js changed, other 1246 files and Worker/bindings preserved.
+- Browser QA confirmed .authRegistrationPanel exists, unique original #googleButton nested in the panel, #authTitle outside, Email reveal works. **Visual fidelity remains unconfirmed:** external inspection still reports no visibly colored border/solid full-screen background, mobile viewport not exercised. Do not claim pixel match with user image. Email backend still configured:false.
