@@ -70,7 +70,7 @@ test('Deepsyq keeps a collapsible left rail and shows only selectable configured
  }}));
  await home(page);
  await expect(page.locator('#sidebar nav a').first()).toHaveAttribute('aria-label','Home');
- await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
+ await expect(page.locator('#sidebar nav a[href="deepsyq.html"]')).toBeVisible();
  // Desktop uses icon-only collapse; mobile keeps its drawer inert until
  // the visible top navigation button opens it. Exercise the real control.
  const mobile=await page.evaluate(()=>matchMedia('(max-width:760px)').matches);
@@ -111,88 +111,65 @@ test('Deepsyq keeps a collapsible left rail and shows only selectable configured
  await expect(page.locator('#modelFlyout')).toBeHidden();
 });
 
-test('dashboard quick-create prepares a local image draft without any paid request',async({page})=>{
- await fixtures(page);let jobPosts=0;
- page.on('request',request=>{if(request.url().includes('/api/studio/jobs')&&request.method()==='POST')jobPosts++;});
- await home(page); await page.goto('/canvas.html');
- await page.locator('#quickCreatePrompt').fill('A watercolor greenhouse filled with sunlight');
- await page.locator('#quickCreateKind').selectOption('image');
- await page.locator('#quickCreateSubmit').click();
+// Canvas Workspace replaced Quick Create; do not restore old UI just for tests.
+test('Canvas Workspace prepares an image draft without any paid request',async({page})=>{
+ await fixtures(page);let posts=0;
+ page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
+ await page.goto('/canvas.html');
+ await expect(page.locator('#canvasWorkspace')).toBeVisible();
+ await expect(page.locator('#cwImageMode')).toHaveAttribute('aria-pressed','true');
+ await page.locator('#cwPrompt').fill('A watercolor greenhouse filled with sunlight');
+ await page.locator('#cwGenerate').click();
  await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=canvas/);
- await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await expect(page.locator('[data-kind="image"]')).toHaveAttribute('aria-pressed','true');
  await expect(page.locator('#prompt')).toHaveValue('A watercolor greenhouse filled with sunlight');
  await expect(page.locator('#consent')).not.toBeChecked();
- expect(jobPosts).toBe(0);
-});
-
-test('Canvas starter prompts are editable, preserve existing drafts on cancel, and do not call paid AI',async({page})=>{
- await fixtures(page);
- let posts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
- await home(page); await page.goto('/canvas.html');
- await page.locator('[data-quick-starter="social-video"]').click();
- await expect(page.locator('#quickCreateKind')).toHaveValue('video');
- await expect(page.locator('#quickCreatePrompt')).toHaveValue(/short, engaging social video/);
- await page.locator('#quickCreatePrompt').fill('My own carefully written prompt');
- page.once('dialog',dialog=>dialog.dismiss());
- await page.locator('[data-quick-starter="portrait"]').click();
- await expect(page.locator('#quickCreatePrompt')).toHaveValue('My own carefully written prompt');
  expect(posts).toBe(0);
 });
 
-test('Canvas saves only text and kind within this tab; refresh drops photos and clear requires confirmation',async({page})=>{
- await fixtures(page);
- let jobPosts=0;page.on('request',req=>{if(req.url().includes('/api/studio/jobs')&&req.method()==='POST')jobPosts++;});
- const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
- await home(page); await page.goto('/canvas.html');
- await page.locator('#quickCreatePrompt').fill('A very specific personal video idea');
- await page.locator('#quickCreateKind').selectOption('video');
- await page.locator('#quickCreateFiles').setInputFiles({name:'private-photo.png',mimeType:'image/png',buffer:png});
- await expect(page.locator('.quick-reference')).toHaveCount(1);
- // The account-specific SHA-256 storage key is resolved asynchronously; wait
- // for the real local write before testing a hard refresh.
- await expect.poll(()=>page.evaluate(()=>Object.keys(sessionStorage)
-  .filter(key=>key.startsWith('deepsyq_quick_canvas_draft_v2_'))
-  .some(key=>JSON.parse(sessionStorage.getItem(key)||'null')?.prompt==='A very specific personal video idea'))).toBe(true);
- await page.reload();
- await expect(page.locator('#quickCreatePrompt')).toHaveValue('A very specific personal video idea');
- await expect(page.locator('#quickCreateKind')).toHaveValue('video');
- await expect(page.locator('.quick-reference')).toHaveCount(0);
- const dismissed=new Promise((resolve,reject)=>page.once('dialog',d=>d.dismiss().then(resolve,reject)));
- await Promise.all([dismissed,page.locator('#quickCreateClear').click()]);
- await expect(page.locator('#quickCreatePrompt')).toHaveValue('A very specific personal video idea');
- const accepted=new Promise((resolve,reject)=>page.once('dialog',d=>d.accept().then(resolve,reject)));
- await Promise.all([accepted,page.locator('#quickCreateClear').click()]);
- await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
- await expect(page.locator('#quickCreateKind')).toHaveValue('image');
- expect(await page.evaluate(()=>sessionStorage.getItem('deepsyq_quick_canvas_draft_v1'))).toBeNull();
- await expect.poll(()=>page.evaluate(()=>Object.keys(sessionStorage)
-  .filter(key=>key.startsWith('deepsyq_quick_canvas_draft_v2_')).length)).toBe(0);
- expect(jobPosts).toBe(0);
+test('Canvas quick ideas respect the custom prompt and never call paid AI',async({page})=>{
+ await fixtures(page);let posts=0;
+ page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
+ await page.goto('/canvas.html');
+ await page.locator('[data-cw-prompt="social"]').click();
+ await expect(page.locator('#cwVideoMode')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#cwPrompt')).toHaveValue(/short social video/i);
+ await page.locator('#cwPrompt').fill('My own carefully written prompt');
+ page.once('dialog',d=>d.dismiss());
+ await page.locator('[data-cw-prompt="portrait"]').click();
+ await expect(page.locator('#cwPrompt')).toHaveValue('My own carefully written prompt');
+ expect(posts).toBe(0);
 });
 
-test('Canvas quick-create accepts local reference photos, allows removal and never auto-generates',async({page})=>{
- await fixtures(page);
- await page.route('**/api/studio/config',route=>route.fulfill({json:{
-  enabled:true,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:2,enabled:true}],
-  catalog:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:2,enabled:true,adapter:true,provider:'Google'}]
- }}));
- let jobPosts=0;page.on('request',req=>{if(req.url().includes('/api/studio/jobs')&&req.method()==='POST')jobPosts++;});
+test('Canvas uploaded reference photo stays local and disappears after reload',async({page})=>{
+ await fixtures(page);let posts=0;
+ page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
- await home(page); await page.goto('/canvas.html');
- await page.locator('#quickCreatePrompt').fill('Natural product photograph with soft light');
- await page.locator('#quickCreateFiles').setInputFiles([
-  {name:'reference-1.png',mimeType:'image/png',buffer:png},
-  {name:'reference-2.png',mimeType:'image/png',buffer:png}
- ]);
- await expect(page.locator('.quick-reference')).toHaveCount(2);
- await page.getByRole('button',{name:'Remove reference 2'}).click();
- await expect(page.locator('.quick-reference')).toHaveCount(1);
- await page.locator('#quickCreateSubmit').click();
- await expect(page).toHaveURL(/studio=image&from=canvas/);
+ await page.goto('/canvas.html');
+ await page.locator('#cwUpload').setInputFiles({name:'private-photo.png',mimeType:'image/png',buffer:png});
+ await expect(page.locator('#cwStatus')).toContainText('loaded locally');
+ await expect(page.locator('#cwGallery [data-cw-photo^="user-"]')).toHaveCount(1);
+ expect(await page.evaluate(()=>JSON.stringify({local:{...localStorage},session:{...sessionStorage}}).includes('private-photo.png'))).toBe(false);
+ await page.reload();
+ await expect(page.locator('#canvasWorkspace')).toBeVisible();
+ await expect(page.locator('#cwGallery [data-cw-photo^="user-"]')).toHaveCount(0);
+ expect(posts).toBe(0);
+});
+
+test('Canvas hands one local reference to Studio without submitting paid AI job',async({page})=>{
+ await fixtures(page);let posts=0;
+ page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ await page.goto('/canvas.html');
+ await page.locator('#cwUpload').setInputFiles({name:'reference.png',mimeType:'image/png',buffer:png});
+ await expect(page.locator('#cwStatus')).toContainText('loaded locally');
+ await page.locator('#cwRatioQuick').selectOption('1:1');
+ await page.locator('#cwPrompt').fill('Natural product photograph with soft light');
+ await page.locator('#cwGenerate').click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=canvas/);
  await expect(page.locator('#prompt')).toHaveValue('Natural product photograph with soft light');
  await expect(page.locator('#refPreview img')).toHaveCount(1);
  await expect(page.locator('#consent')).not.toBeChecked();
- expect(jobPosts).toBe(0);
+ expect(posts).toBe(0);
 });
 
 test('featured AI Apps render from approved API data and disappear when no templates exist',async({page})=>{
@@ -629,7 +606,7 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
  expect(inDocumentOrder).toBe(true);
  await expect(page.locator('#homeQuickForm .home-compose-modes')).toBeVisible();
  await expect(page.locator('#homeQuickForm [data-home-kind]')).toHaveCount(4);
- await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
+ await expect(page.locator('#sidebar nav a[href="deepsyq.html"]')).toBeVisible();
 });
 test('homepage inspiration All Video Image filters only owned API cards',async({page})=>{
  await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:true,inspiration:true,onboarding:false}}}));
