@@ -583,8 +583,24 @@ async function respond(message,id){
  // 1. Human conversation first — not a broken 500-scenario manifest.
  // Matching existing V3 owner MP3 is instant and does not use local network.
  if(lang==='ru'&&/^\s*(?:что|как|зачем|для чего|расскажи|объясни)(?:[\s,.!?]|$)/iu.test(message)){
-  const answer=SITE_ANSWERS_RU.find(([topic])=>topic.test(message));
-  if(answer&&await playResponse({text:answer[1],audioUrl:answer[2],source:'deepsyq-tour'},id,message))return;
+  const questions=message.trim().split(/\?\s*(?=\S)/u);
+  const matches=questions.length===2
+   ? questions.map(question=>SITE_ANSWERS_RU.find(([topic])=>topic.test(question)))
+   : [SITE_ANSWERS_RU.find(([topic])=>topic.test(message))];
+  if(matches.every(Boolean)){
+   const parts=[...new Set(matches)].map(([,text,audioUrl])=>({text,audioUrl}));
+   if(await playResponse({parts,text:parts.map(part=>part.text).join(' ')},id,message))return;
+  }
+  if(!on||seq!==id)return;
+ }
+ if(lang==='ru'&&/^\s*(?:а дальше|что дальше|подробнее|продолжай)[.?!\s]*$/iu.test(message)){
+  const previous=turns.at(-1)?.content;
+  const next={
+   'Собирайте идеи из текста и фотографий.':['Готовую идею переносите в Студию.','t3_ru_d3eeb273cee7.mp3'],
+   'Каталог творческих шаблонов.':['Выбирайте доступный шаблон и продолжайте в Студии.','t3_ru_d62b7ee5699f.mp3'],
+   'Идеи для новых проектов.':['Выбирайте пример, изучайте промпт и создавайте своё.','t3_ru_7fd91e38c5ce.mp3']
+  }[previous];
+  if(next&&await playResponse({text:next[0],audioUrl:'/media/jarvix/tour-v3/'+next[1]},id,message))return;
   if(!on||seq!==id)return;
  }
  const smalltalk=await smalltalkReply(message,lang).catch(()=>null);
