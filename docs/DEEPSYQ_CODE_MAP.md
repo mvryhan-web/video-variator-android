@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `d538c41fde4da9304ce9535fc7740588ffa52627`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `85f19924158d06051df10b2c8c5d1000f6804291`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 121 | Named symbols: 419 | Checked relations: 80
 
 ## Topic finder (matching filenames)
@@ -66,7 +66,7 @@ quickCreateForm (L5) · quickCreateDropzone (L6) · quickPromptStarters (L18) ·
 
 ### `app/src/main/assets/canvas-workspace.js`
 
-section (L5) · canvas (L7) · ctx (L7) · photoLabels (L8) · photos (L18) · srcMap (L19) · imgCache (L20) · transparentCache (L20) · objectUrls (L20) · clean (L24) · state (L25) · history (L25) · future (L25) · sequence (L26) · ratios (L27) · touchMoveButton (L293)
+section (L5) · canvas (L7) · ctx (L7) · photoLabels (L8) · photos (L18) · srcMap (L19) · imgCache (L20) · transparentCache (L20) · objectUrls (L20) · clean (L24) · state (L25) · history (L25) · future (L25) · sequence (L26) · ratios (L27) · touchMoveButton (L297)
 
 ### `app/src/main/assets/deepsyq-admin.js`
 
@@ -130,7 +130,7 @@ ACTION_ROUTES (L2)
 
 ### `app/src/main/assets/jarvix-chat.js`
 
-modeHeaderLabels (L40) · urls (L46) · composer (L536) · pendingMsg (L586) · pending (L614) · composerInput (L649) · wpPane (L723) · expandBtn (L742)
+modeHeaderLabels (L40) · urls (L46) · composer (L592) · pendingMsg (L642) · pending (L670) · composerInput (L705) · wpPane (L779) · expandBtn (L798)
 
 ### `app/src/main/assets/jarvix-clip-library.js`
 
@@ -218,7 +218,7 @@ lng (L6) · input (L8) · scan (L8) · preview (L9) · text (L9) · textLine (L9
 
 ### `app/src/main/assets/simple-background-remover.js`
 
-source (L3) · result (L3) · srcCtx (L3) · outCtx (L3) · selected (L4)
+source (L4) · result (L4) · srcCtx (L4) · outCtx (L4) · selected (L5)
 
 ### `app/src/main/assets/smart-reminders.js`
 
