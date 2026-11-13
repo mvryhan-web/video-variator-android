@@ -39,3 +39,7 @@ Local resolver checks passed for approved and pending scenario fixtures, two- an
 ## Greeting and wellbeing
 
 TEST commit `992e3cb`: greeting-only turns rearm listening without playing the introduction again. The casual catalog contains the prepared wellbeing text, and the voice path can use the existing numbered recording with the transcript «Я на связи. Чем могу помочь прямо сейчас?» when no dedicated wellbeing clip is available. The exact prepared reply is visible when audio is unavailable. Twenty tests passed locally; TEST JS and the Russian MP3 format were verified over HTTPS. A real microphone was not used in this check.
+
+## Reply rotation and photo questions
+
+Published TEST commit `9a1ecd4` and verified both updated JS files over HTTPS. Recorded matching skips phrases already used within retained recent conversation history. Playback also checks other reply sources and component clips for repetition. Russian photo-choice questions try three relevant existing recordings in order. Local checks confirmed three distinct responses followed by no repeated response, two/three-clip assembly, follow-up and 21 voice/smalltalk tests. Physical microphone and broader free-form dialogue were not verified. The 1,540 imported scenario recordings still await transcript review.
