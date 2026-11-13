@@ -676,7 +676,12 @@ async function processMessage(message){
 
    // Google Gemini is the default conversational model across all chat modes
    const textFiles=await Promise.all((message.files||[]).filter(f=>f.type==='text/plain').map(f=>f.text()));store.guard();
-   const text=(message.text+(textFiles.length?'\n'+textFiles.join('\n'):'')).slice(0,3000);
+   const prior=message.voiceFollowUp?conversation.messages.slice(0,conversation.messages.indexOf(message))
+    .filter(item=>item.role==='assistant'&&item.text&&!item.jobId&&!item.limitReached&&!item.toolAction).at(-1):null;
+   const followUp=/^(?:(?:слушай|джарвис|джарвикс|jarvis|jarvix)[,\s:]+)*(?:сделай короче|сократи|покажи пример|приведи пример|объясни проще|продолжи|make it shorter|give an example)(?=\s|[,.!?]|$)/iu.test(message.text);
+   const text=(prior&&followUp
+    ? 'Previous assistant answer (context): '+JSON.stringify(prior.text.slice(0,1400))+'\nUser follow-up: '+message.text
+    : message.text+(textFiles.length?'\n'+textFiles.join('\n'):'')).slice(0,3000);
    const d=await api('/api/jarvix/chat',{sessionId:conversation.sessionId,message:text,images,language:getJarvixLanguage()});
    answer={id:makeId(),role:'assistant',text:d.reply||'No answer received.',limitReached:false,createdAt:Date.now()};
   }else{
@@ -963,6 +968,21 @@ if(imageIntakeEnabled&&!conversation.imageIntake){
  conversation.messages.push(imageIntakeReply('Да, конечно. Какое изображение вы хотите создать? Опишите сюжет и укажите формат, например 1:1, 16:9 или 9:16.'));
  void save().then(render).catch(error=>status(error.message));
  }else if(!imageIntakeEnabled&&!imageIntakeQuery.has('jarvixBuiltin'))void applyIncomingHandoffOrTemplate();
+window.addEventListener('jarvix:voice-question',event=>{
+ const text=event.detail?.text;
+ if(typeof text!=='string'||!text.trim()||!conversation)return;
+ event.preventDefault();
+ if(busy){
+  status(({ru:'Дождитесь ответа, затем повторите уточнение.',fr:'Attendez la réponse avant de préciser.',es:'Espera la respuesta antes de continuar.'})[getJarvixLanguage()]||'Wait for the reply, then ask your follow-up.');
+  return;
+ }
+ void run(async()=>{
+  store.guard();
+  const message={id:makeId(),role:'user',text:text.trim().slice(0,1200),mode:'text',voiceFollowUp:true,files:[],status:'pending',createdAt:Date.now()};
+  conversation.messages.push(message);
+  await processMessage(message);
+ });
+});
 const incomingTool=imageIntakeQuery.get('jarvixBuiltin');
 let incomingCommand={'latest-image':'Открой последнюю картинку в Canvas','latest-video':'Покажи последнее видео'}[incomingTool];
 let incomingVoiceQuestion=false;
@@ -982,7 +1002,7 @@ if(typeof incomingCommand==='string'){
  imageIntakeQuery.delete('jarvixBuiltin');
  history.replaceState(null,'',location.pathname+(imageIntakeQuery.size?'?'+imageIntakeQuery:'')+location.hash);
  void run(async()=>{
-  const message={id:makeId(),role:'user',text:incomingCommand,mode:incomingVoiceQuestion?'text':'auto',files:[],status:'pending',createdAt:Date.now()};
+  const message={id:makeId(),role:'user',text:incomingCommand,mode:incomingVoiceQuestion?'text':'auto',voiceFollowUp:incomingVoiceQuestion,files:[],status:'pending',createdAt:Date.now()};
   conversation.messages.push(message);
   await processMessage(message);
  });

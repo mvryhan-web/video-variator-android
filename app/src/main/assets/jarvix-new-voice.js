@@ -561,6 +561,12 @@ async function playResponse(record,id,message){
  return true;
 }
 async function openVoiceQuestion(message,id){
+ if(/^\/jarvix-chat(?:\.html)?$/.test(location.pathname)){
+  const accepted=!window.dispatchEvent(new CustomEvent('jarvix:voice-question',{
+   cancelable:true,detail:{text:message.slice(0,1200)}
+  }));
+  if(accepted){listen(id);return true;}
+ }
  try{
   const token=localStorage.getItem('vv_token')||'';
   const owner=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token))));
@@ -624,6 +630,9 @@ async function respond(message,id){
   return;
  }
 
+ if(production&&/^\/jarvix-chat(?:\.html)?$/.test(location.pathname)&&/^(?:сделай короче|сократи|покажи пример|приведи пример|объясни проще|продолжи|make it shorter|give an example)(?=\s|[,.!?]|$)/iu.test(requestText)){
+  if(await openVoiceQuestion(message,id))return;
+ }
  if(production&&/^(?:(?:слушай|джарвис|джарвикс|jarvis|jarvix|пожалуйста)[,\s:]+)*(?:объясни|расскажи|подскажи|где|как|какие|сколько|что такое|explain|tell me|how|where)(?=\s|[,.!?]|$)/iu.test(message.trim())&&!/^(?:как дела|как ты|how are you)[?.!]*$/iu.test(command.trim())){
   if(await openVoiceQuestion(message,id))return;
  }
