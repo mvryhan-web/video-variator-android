@@ -4,11 +4,19 @@ on:
     branches: [deepsyq-platform]
     paths:
       - 'server/edge-email-auth.js'
+      - 'app/src/main/assets/_worker.js'
+      - 'scripts/email_worker_scope.py'
+      - 'scripts/deepsyq_surgical_publish.py'
+      - 'tests/test_email_worker_scope.py'
       - 'tests/edge-email-auth.test.mjs'
       - '.github/workflows/email-auth-edge-tests.yml'
   pull_request:
     paths:
       - 'server/edge-email-auth.js'
+      - 'app/src/main/assets/_worker.js'
+      - 'scripts/email_worker_scope.py'
+      - 'scripts/deepsyq_surgical_publish.py'
+      - 'tests/test_email_worker_scope.py'
       - 'tests/edge-email-auth.test.mjs'
       - '.github/workflows/email-auth-edge-tests.yml'
 permissions:
@@ -19,9 +27,16 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Enforce exact Email Worker diff and unchanged Google route
+        run: PYTHONPATH=scripts python -m unittest discover -s tests -p 'test_email_worker_scope.py' -v
       - name: Check isolated code syntax
         run: node --check server/edge-email-auth.js
       - name: Test storage, legacy password compatibility and rate guard
