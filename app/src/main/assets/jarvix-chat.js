@@ -459,8 +459,8 @@ async function processMessage(message){
    window.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode}}));
    try{sessionStorage.setItem('jarvix_composer_mode',mode);}catch(_){}
    if(mediaCommand&&!command.raw_prompt.replace(/[.!?…]/gu,'').trim()){
-    const balance=await api('/api/ai-wallet/balance');
-    if(balance.available===0)throw Object.assign(Error('INSUFFICIENT_AI_CREDITS'),{code:'INSUFFICIENT_AI_CREDITS'});
+    const access=await api('/api/studio/access');
+    if(access.scope!=='owner'&&(await api('/api/ai-wallet/balance')).available===0)throw Object.assign(Error('INSUFFICIENT_AI_CREDITS'),{code:'INSUFFICIENT_AI_CREDITS'});
     const copy={
      ru:mode==='video'?'Какое видео создать? Опишите, что должно быть в кадре.':'Какое изображение создать? Опишите, что должно быть на нём.',
      en:mode==='video'?'What video should I make? Describe the scene.':'What image should I make? Describe what it should show.',
@@ -491,23 +491,10 @@ async function processMessage(message){
    if(walletQuote){
     if(quote.walletQuote!==walletQuote||quote.kind!==kind||quote.model!==model.id||quote.quantity!==1||
        !Number.isSafeInteger(quote.credits)||quote.credits<1)throw Error('AI_CREDIT_QUOTE_INVALID');
-    if(mode==='image'||mode==='video'){
+    if(quote.ownerAccess!==true){
      const balance=await api('/api/ai-wallet/balance');
      if(balance.available<quote.credits)throw Object.assign(Error('INSUFFICIENT_AI_CREDITS'),{code:'INSUFFICIENT_AI_CREDITS'});
     }
-    const language=getJarvixLanguage();
-    const confirmation=kind==='video'?{
-     ru:`Создать видео 5 секунд за ${quote.credits} AI‑кредитов?`,
-     en:`Generate a 5-second video for ${quote.credits} AI credits?`,
-     fr:`Générer une vidéo de 5 secondes pour ${quote.credits} crédits IA ?`,
-     es:`¿Generar un vídeo de 5 segundos por ${quote.credits} créditos de IA?`
-    }:{
-     ru:`Создать изображение за ${quote.credits} AI‑кредитов?`,
-     en:`Generate an image for ${quote.credits} AI credits?`,
-     fr:`Générer une image pour ${quote.credits} crédits IA ?`,
-     es:`¿Generar una imagen por ${quote.credits} créditos de IA?`
-    };
-    if(!window.confirm(confirmation[language]||confirmation.en))throw new DOMException('Generation cancelled','AbortError');
    }else if(quote.previewOnly!==true||Number(quote.cost)!==0)throw Error('Zero-cost TEST estimate could not be verified.');
    const d=await api('/api/studio/jobs',{kind,model:model.id,prompt:mediaCommand?command.raw_prompt:message.text,quantity:1,requestId:message.id,
     consent:Boolean(walletQuote),...(walletQuote?{walletQuote,expectedCredits:quote.credits}:{}),...parameters});

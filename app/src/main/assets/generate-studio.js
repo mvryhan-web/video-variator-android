@@ -1042,10 +1042,6 @@ async function createImageBatch(){
  const perImage=Number(estimate.perImageCredits),total=Number(estimate.credits);
  if(estimate.quantity!==quantity||estimate.kind!=='image'||estimate.model!==params.model||!Number.isSafeInteger(perImage)||perImage<1||
     !Number.isSafeInteger(total)||total!==perImage*quantity)throw Error('AI_PRICING_NOT_APPROVED');
- if(!confirm(say(
-  'Generate '+quantity+' images as '+quantity+' separate AI jobs? Each costs '+perImage+' credits; total up to '+total+' credits. Jobs run one at a time. If one fails, the batch stops; no job retries automatically. Completed jobs remain in History.',
-  'Создать '+quantity+' изображения отдельными AI-задачами? Каждая стоит '+perImage+' кредитов; всего до '+total+' кредитов. Задачи выполняются по очереди. При ошибке пакет остановится, автоматических повторов не будет. Готовые результаты останутся в Истории.'
- ))){$('status').textContent=say('Batch cancelled; no images were submitted.','Пакет отменён, изображения не отправлялись.');return;}
  const epoch=++generation;
  let submitted=0,ready=0;
  setHistory(false);clearResult();
@@ -1114,17 +1110,11 @@ $('creator').onsubmit=async e=>{
   const freePreview=config.enabled===true&&config.freeTier===true&&config.previewOnly===true&&quote.freeTier===true&&quote.previewOnly===true&&quote.credits===0;
   const paidQuote=config.freeTier!==true&&quote.freeTier!==true&&Number.isSafeInteger(quote.credits)&&quote.credits>=1;
   if(quote.kind!==original.kind||quote.model!==original.model||quote.quantity!==1||!(freePreview||paidQuote)||!stillAccepted()){abortPrice();return;}
-  const quotedModel=catalog.find(m=>m.id===quote.model);
-  const label=ru&&quotedModel?.labelRu?quotedModel.labelRu:quotedModel?.label||quote.model;
-  const accepted=confirm(freePreview?say(
-   'Free TEST preview: this creates a local demo SVG image, NOT a real AI photograph or MP4. No provider is contacted and no credits are charged. Continue?',
-   'Бесплатный тест: создаётся локальная SVG-демонстрация, а НЕ настоящая AI-фотография или MP4. Провайдер не вызывается, кредиты не списываются. Продолжить?'
-  ):say(
-   'Your prompt and attached reference photos, if any, will be sent to the selected AI service using '+label+'. Cost: '+quote.credits.toLocaleString()+' AI credits. Continue?',
-   'Запрос и прикреплённые фотографии будут переданы выбранному AI-сервису через модель «'+label+'». Стоимость: '+quote.credits.toLocaleString()+' AI-кредитов. Продолжить?'
-  ));
-  if(!accepted){
-   $('status').textContent=say('Generation cancelled. No credits were reserved.','Генерация отменена. Кредиты не резервировались.');
+  if(freePreview&&!confirm(say(
+   'Free TEST preview: this creates a local SVG image. No AI credits are charged. Continue?',
+   'Бесплатный тест: создаётся локальное SVG-изображение. AI-кредиты не списываются. Продолжить?'
+  ))){
+   $('status').textContent=say('Generation cancelled. No credits were reserved.','Генерация отменена, кредиты не резервировались.');
    busy=false;availability();return;
   }
   if(!stillAccepted()){abortPrice();return;}

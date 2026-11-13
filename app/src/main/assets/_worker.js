@@ -966,7 +966,7 @@ export default {
         const user=await getAuthenticatedUser(request,env);
         if(!user)return json({error:'AUTH_REQUIRED'},401);
         return json({ok:true,kind,model,quantity:1,credits:paidVideo?WAN_VIDEO_CREDITS:WAN_IMAGE_CREDITS,
-          walletQuote:paidVideo?WAN_VIDEO_QUOTE:WAN_PAID_QUOTE,previewOnly:false,freeTier:false});
+          walletQuote:paidVideo?WAN_VIDEO_QUOTE:WAN_PAID_QUOTE,ownerAccess:isOwnerEmail(user.email,env),previewOnly:false,freeTier:false});
       }
       const baseCredits = kind === 'video' ? 20 : kind === 'music' ? 10 : 5;
       return json({
@@ -992,12 +992,14 @@ export default {
          Number(body.quantity??1)!==1||body.references?.length))return json({error:'WAN_IMAGE_INVALID_INPUT'},400);
       const spendVideo=body.walletQuote===WAN_VIDEO_QUOTE;
       const spendImage=body.walletQuote===WAN_PAID_QUOTE;
-      const spendCredits=spendVideo?WAN_VIDEO_CREDITS:spendImage?WAN_IMAGE_CREDITS:0;
+      const quotedCredits=spendVideo?WAN_VIDEO_CREDITS:spendImage?WAN_IMAGE_CREDITS:0;
+      const ownerAccess=isOwnerEmail(user.email,env);
+      const spendCredits=ownerAccess?0:quotedCredits;
       if(spendVideo&&(!env.DASHSCOPE_API_KEY||!env.R2_BUCKET||kind!=='video'||model!==WAN_VIDEO_MODEL||
          !Object.hasOwn(WAN_VIDEO_SIZES,ratio)||typeof prompt!=='string'||!prompt.trim()||
          Number(body.quantity??1)!==1||Number(body.videoDuration??5)!==5||body.references?.length))
         return json({error:'WAN_VIDEO_INVALID_INPUT'},400);
-      if(spendCredits&&((spendImage&&!useWanImage)||!user||body.consent!==true||body.expectedCredits!==spendCredits||
+      if(quotedCredits&&((spendImage&&!useWanImage)||body.consent!==true||body.expectedCredits!==quotedCredits||
          typeof body.requestId!=='string'||!/^[a-zA-Z0-9_-]{12,100}$/.test(body.requestId)))
         return json({error:'AI_CREDIT_QUOTE_INVALID'},400);
       const guestId=user?null:studioGuestId(request);
