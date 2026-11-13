@@ -283,3 +283,12 @@ Remove **Favorites** and **Challenges** from the Home sidebar and all shared sid
 
 
 - **D19 / 2026-10-20 / owner product boundary — ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА:** Deepsyq — самостоятельное коммерческое предложение и главная AI-платформа. Video Uniquifier остаётся отдельным встроенным инструментом внутри экосистемы Deepsyq, а не вторым главным сайтом. Оба предложения используют **один существующий репозиторий, backend, авторизацию, PostgreSQL и Stripe**; новые дублирующие проекты и инфраструктура запрещены. Права на Deepsyq AI и Video Uniquifier должны быть явно разделены в существующей entitlement-модели: это решение само по себе **не объединяет старые кредиты/подписки**, не меняет цены/Stripe Price IDs, не переносит пользователей и не включает платные генерации, Trial или production. До изменения тарифов сохранить совместимость действующих Video Uniquifier подписок и принять отдельное явное решение о коммерческой карте Deepsyq.
+
+
+## 2026-11-13 — Owner-approved auth visual refresh; email service remains disabled
+
+- Scope: app/src/main/assets/auth-email.css and auth-email.js only; owner-selected dark navy/cyan/violet signup aesthetic for mobile and desktop. Existing Google GIS initializer/OAuth handlers and original email submit handling were not changed.
+- UX: Google-rendered button remains; progressive Email button opens the existing email/password form. Signup and existing-account sign-in toggle retained. Copy in RU/EN/FR/ES/UK. Real DEEPSYQ logo from existing site assets. No generated image deployed.
+- Commits: CSS 6c637a0959da753c39ed1a296fbb68c9cc42d930; JavaScript 51ede7c55b39c4b1476edc6e303a2de0ce2cfeb1.
+- QA: Github surgical tests PASS. The original email login/register POST handling remains byte-identical. Public Email status endpoint returned HTTP 200 and configured:false; current Cloudflare Worker explicitly hardcodes configured:false and has no Email login/register routes. Do not claim Email is operational without restoring secure persistent account storage and validating existing accounts.
+- Production: surgical workflow 43457773732 FAILED on initial and two retries with Cloudflare Pages project GET HTTP 503; no deployment was made or verified. Do not bypass live-manifest checks; verify public URL and real sign-in after recovery.
