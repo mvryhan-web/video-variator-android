@@ -42,11 +42,16 @@ async function query(store,statement,params=[],fetcher=fetch) {
       body:JSON.stringify({query:statement,params:params.map(v=>v===null?null:String(v))}),
       signal:AbortSignal.timeout(10000)
     });
-  } catch { throw new Error('ACCOUNT_STORAGE_UNAVAILABLE'); }
-  if(!response.ok)throw new Error('ACCOUNT_STORAGE_UNAVAILABLE');
+  } catch { throw new Error('DATABASE_NETWORK_FAILED'); }
+  if(!response.ok) {
+    const http=Number(response.status);
+    const safeStatuses=[400,401,403,404,409,422,429,500,502,503,504];
+    const code=safeStatuses.includes(http)?String(http):'OTHER';
+    throw new Error('DATABASE_HTTP_'+code);
+  }
   let result;
-  try { result=await response.json(); } catch { throw new Error('ACCOUNT_STORAGE_UNAVAILABLE'); }
-  if(!Array.isArray(result?.rows))throw new Error('ACCOUNT_STORAGE_UNAVAILABLE');
+  try { result=await response.json(); } catch { throw new Error('DATABASE_INVALID_RESPONSE'); }
+  if(!Array.isArray(result?.rows))throw new Error('DATABASE_INVALID_RESPONSE');
   return result.rows;
 }
 function truth(value){return value===true||value==='true'||value==='t'||value===1||value==='1';}
@@ -67,7 +72,11 @@ export async function emailStorageDiagnostic(env,{fetcher=fetch}={}){
     if(!truth(row.password_ready))return {configured:false,reason:'PASSWORD_COLUMN_MISSING'};
     if(!truth(row.unique_provider_ready))return {configured:false,reason:'ACCOUNT_INDEX_MISSING'};
     return {configured:true};
-  }catch{return {configured:false,reason:'DATABASE_QUERY_FAILED'};}
+  }catch(error){
+    const msg=String(error?.message||'');
+    const safe=/^(DATABASE_(NETWORK_FAILED|INVALID_RESPONSE|HTTP_(400|401|403|404|409|422|429|500|502|503|504|OTHER)))$/;
+    return {configured:false,reason:safe.test(msg)?msg:'DATABASE_QUERY_FAILED'};
+  }
 }
 export async function emailStorageReady(env,{fetcher=fetch,cache=true}={}){
   const store=getStore(env);
