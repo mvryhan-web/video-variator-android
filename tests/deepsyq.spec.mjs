@@ -230,8 +230,8 @@ test('comparison is crawlable and does not pretend AI chat exists',async({page})
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
 });
 test('legacy video history and profile deep links open actual views',async({page})=>{
- await fixtures(page);await page.goto('/index.html#history');await expect(page.locator('#historyView')).toHaveClass(/active/);
- await page.goto('/index.html#profile');await expect(page.locator('#profileView')).toHaveClass(/active/);
+ await fixtures(page);await page.goto('/video-uniquifier.html#history');await expect(page.locator('#historyView')).toHaveClass(/active/);
+ await page.goto('/video-uniquifier.html#profile');await expect(page.locator('#profileView')).toHaveClass(/active/);
 });
 
 test('owner sees AI control entry and admin page exposes only safe model controls',async({page})=>{
