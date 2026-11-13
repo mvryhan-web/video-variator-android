@@ -1115,6 +1115,15 @@ $('creator').onsubmit=async e=>{
   const freePreview=config.enabled===true&&config.freeTier===true&&config.previewOnly===true&&quote.freeTier===true&&quote.previewOnly===true&&quote.credits===0;
   const paidQuote=config.freeTier!==true&&quote.freeTier!==true&&Number.isSafeInteger(quote.credits)&&quote.credits>=1;
   if(quote.kind!==original.kind||quote.model!==original.model||quote.quantity!==1||!(freePreview||paidQuote)||!stillAccepted()){abortPrice();return;}
+  // Paid generation requires an explicit review of the current server quote.
+  // A new quote is fetched for each click; the backend still enforces credits.
+  if(paidQuote&&!confirm(say(
+   'Use the selected AI service ('+(currentModel()?.label||original.model)+') for '+quote.credits+' AI credits? No job starts until you confirm.',
+   'Создать с выбранной AI-моделью ('+(currentModel()?.label||original.model)+') за '+quote.credits+' AI-кредитов? Задание начнётся только после подтверждения.'
+  ))){
+   $('status').textContent=say('Generation cancelled. No credits were reserved.','Генерация отменена, кредиты не резервировались.');
+   busy=false;availability();return;
+  }
   if(freePreview&&!confirm(say(
    'Free TEST preview: this creates a local SVG image. No AI credits are charged. Continue?',
    'Бесплатный тест: создаётся локальное SVG-изображение. AI-кредиты не списываются. Продолжить?'
