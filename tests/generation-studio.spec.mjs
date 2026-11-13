@@ -15,6 +15,17 @@ async function setInternalVideoOption(page,id,value){
 }
 
 async function chooseStudio(page,kind){
+ // A first-time Studio session requires explicit Terms acceptance before using the dock.
+ // Follow the actual user consent flow instead of bypassing its overlay in fixtures.
+ const accepted=await page.evaluate(()=>localStorage.getItem('deepsyq_lumina_terms_accepted')==='true');
+ if(!accepted){
+  await expect(page.locator('#luminaTermsModal')).toBeVisible({timeout:4500});
+  await page.locator('#luminaAcceptCheckbox').uncheck();
+  await expect(page.locator('#luminaAcceptButton')).toBeDisabled();
+  await page.locator('#luminaAcceptCheckbox').check();
+  await page.locator('#luminaAcceptButton').click();
+  await expect(page.locator('#luminaTermsModal')).toHaveCount(0);
+ }
  const mode=kind==='music'?'audio':kind;
  await expect(page.locator('#jPlus')).toBeVisible();
  await page.locator('#jPlus').click();
