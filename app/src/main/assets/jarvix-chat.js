@@ -193,11 +193,11 @@ function openImageViewer(message, opener){
  imageViewer?.close();
  const lang=getJarvixLanguage();
  const labels=({
-  ru:['Просмотр изображения','Закрыть','Скачать','Изменить размер в Canvas','Удалить фон','Не удалось открыть изображение.'],
-  en:['Image preview','Close','Download','Resize in Canvas','Remove background','Could not open this image.'],
-  fr:['Aperçu de l’image','Fermer','Télécharger','Redimensionner dans Canvas','Supprimer le fond','Impossible d’ouvrir cette image.'],
-  es:['Vista de imagen','Cerrar','Descargar','Cambiar tamaño en Canvas','Eliminar fondo','No se pudo abrir la imagen.']
- })[lang]||['Image preview','Close','Download','Resize in Canvas','Remove background','Could not open this image.'];
+  ru:['Просмотр изображения','Закрыть','Скачать','Изменить размер в Canvas','Не удалось открыть изображение.'],
+  en:['Image preview','Close','Download','Resize in Canvas','Could not open this image.'],
+  fr:['Aperçu de l’image','Fermer','Télécharger','Redimensionner dans Canvas','Impossible d’ouvrir cette image.'],
+  es:['Vista de imagen','Cerrar','Descargar','Cambiar tamaño en Canvas','No se pudo abrir la imagen.']
+ })[lang]||['Image preview','Close','Download','Resize in Canvas','Could not open this image.'];
  const dialog=node('dialog','');
  dialog.className='j-image-viewer';dialog.setAttribute('aria-label',labels[0]);imageViewer=dialog;
  const picture=node('img','');picture.alt=labels[0];
@@ -218,7 +218,7 @@ function openImageViewer(message, opener){
   button.onclick=async()=>{
    button.disabled=true;notice.hidden=true;
    try{const image=await file();if(dialog.open)await run(image);}
-   catch{notice.textContent=labels[5];notice.hidden=false;}
+   catch{notice.textContent=labels[4];notice.hidden=false;}
    finally{button.disabled=false;}
   };
   toolbar.append(button);
@@ -228,7 +228,7 @@ function openImageViewer(message, opener){
   link.href=url;link.download=image.name;dialog.append(link);link.click();link.remove();
   setTimeout(()=>URL.revokeObjectURL(url),10000);
  });
- for(const [target,path,label] of [['canvas','canvas.html',labels[3]],['background','simple-background-remover.html',labels[4]]]){
+ for(const [target,path,label] of [['canvas','canvas.html',labels[3]]]){
   action(label,async image=>{
    await saveStudioHandoff({kind:'image',prompt:label,files:[image],target,source:'jarvix-chat'});
    store.guard();if(dialog.open)location.assign(path+'?from=jarvix-image');
