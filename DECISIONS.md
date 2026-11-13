@@ -292,3 +292,11 @@ Remove **Favorites** and **Challenges** from the Home sidebar and all shared sid
 - Commits: CSS 6c637a0959da753c39ed1a296fbb68c9cc42d930; JavaScript 51ede7c55b39c4b1476edc6e303a2de0ce2cfeb1.
 - QA: Github surgical tests PASS. The original email login/register POST handling remains byte-identical. Public Email status endpoint returned HTTP 200 and configured:false; current Cloudflare Worker explicitly hardcodes configured:false and has no Email login/register routes. Do not claim Email is operational without restoring secure persistent account storage and validating existing accounts.
 - Production: surgical workflow 43457773732 FAILED on initial and two retries with Cloudflare Pages project GET HTTP 503; no deployment was made or verified. Do not bypass live-manifest checks; verify public URL and real sign-in after recovery.
+
+
+## 2026-11-13 — Auth visual release verified on production
+
+- Approved design and original Google GIS behavior preserved; front-end assets: /auth-email.js and /auth-email.css. Existing /jarvix-chat.js included in the combined release due an independently approved prior change.
+- GitHub Actions guarded Cloudflare run 43459404765 PASSED. Verified Cloudflare Pages deployment 542e763c-feb8-4d6f-9312-53f18f904c02, previous 5545b5aa-bee0-4f0c-bf8d-d3cb14b29ea5.
+- Exact published assets: /auth-email.css, /auth-email.js, /jarvix-chat.js. Remaining 1245 assets unchanged; Worker SHA and bindings preserved. Result: PUBLISHED_VERIFIED, published=true.
+- Email service backend remains disabled on Cloudflare Worker (the /api/auth/email/status response is configured:false); email form visual exposure is not proof that actual email account login or registration works. Do not alter Google OAuth.
