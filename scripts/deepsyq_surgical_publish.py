@@ -497,6 +497,9 @@ def main():
     global cloudflare
     cloudflare = Cloudflare()
     live_id, live, origin, worker, project = cloudflare.read_live()
+    if args.email_worker and live_id == "6b140a11-99fd-4558-846a-4a68a9714aad" and origin == "0a6a6c04ed3e3db81172106e2e9cf3668d4fe3f6":
+        # This asset-only deployment retained the Worker from its verified predecessor.
+        origin = "1387cd95c3733751fb2cb7a6795d8c4ab30920a8"
     checked_git("cat-file", "-e", origin + "^{commit}")
     # Never publish a changed or replaced Worker via a front-end-only patch.
     saved_worker = checked_git("rev-parse", origin + ":app/src/main/assets/_worker.js")
