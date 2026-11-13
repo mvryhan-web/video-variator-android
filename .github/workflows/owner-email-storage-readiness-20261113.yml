@@ -45,4 +45,29 @@ jobs:
             console.log('EMAIL_READINESS_KEY',JSON.stringify({name,worker_binding:bindings.some(b=>b.name===name),project_env:Object.prototype.hasOwnProperty.call(envVars,name)}));
           }
           console.log('EMAIL_READINESS_PUBLIC_STATUS',JSON.stringify(await (await fetch('https://deepsyq.app/api/auth/email/status',{cache:'no-store'})).json()));
+          // Read-only check of recent immutable deployment previews. No sign-in.
+          const recent=await read('/pages/projects/deepsyq/deployments?per_page=12');
+          const entries=Array.isArray(recent)?recent:[];
+          for(const deployment of entries.slice(0,8)){
+            const id=String(deployment.id||'').slice(0,50);
+            const meta=deployment.deployment_trigger?.metadata||{};
+            const url=String(deployment.url||'');
+            let host='';
+            try{host=new URL(url).hostname;}catch{}
+            if(!host.endsWith('.deepsyq.pages.dev'))continue;
+            const record={id,commit:String(meta.commit_hash||'').slice(0,12),
+              created_at:deployment.created_on||null,status:deployment.latest_stage?.status||null};
+            try {
+              const reply=await fetch(url+'/api/auth/email/status?email_audit='+encodeURIComponent(id),{
+                headers:{'Cache-Control':'no-store'},signal:AbortSignal.timeout(10000)});
+              record.http=reply.status;
+              if(reply.ok){
+                const body=await reply.json();
+                record.configured=body.configured;
+                record.reason=typeof body.reason==='string'?body.reason:'NOT_SPECIFIED';
+                record.keys=Object.keys(body).sort();
+              }
+            }catch(error){record.error=error.constructor.name;}
+            console.log('EMAIL_READINESS_RECENT_DEPLOYMENT',JSON.stringify(record));
+          }
           JS
