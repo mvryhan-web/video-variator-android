@@ -1,5 +1,14 @@
 # DEEPSYQ ROADMAP — approved next product phase
 
+## 2026-11-13 — CI-BROWSER-02 / LANG-STUDIO-01 / CI-BROWSER-03
+
+- **Canvas 4/4 CHROMIUM_VERIFIED:** [#43389123930](https://github.com/mvryhan-web/video-variator-android/actions/runs/43389123930) passes all four new scoped Canvas smoke tests; overall Playwright is still red (8 passed, 5 failed, rest not run). Do not rebuild completed Canvas.
+- **LANG-STUDIO-01 SOURCE_UPDATED / LIVE_PENDING:** [5c7816d](https://github.com/mvryhan-web/video-variator-android/commit/5c7816d888e7972225f5b9f8e10ec78f2e6fea32) fixes language fallback after stored preference and before static html lang. [CI #43394339303](https://github.com/mvryhan-web/video-variator-android/actions/runs/43394339303) reached correct RU H1/lang; other test assertions remained obsolete.
+- **CI-BROWSER-03 SOURCE_UPDATED / CI_PENDING:** [d3ca3ca](https://github.com/mvryhan-web/video-variator-android/commit/d3ca3caeb6718b7cad856199f486512d9724e462) and [3cda652](https://github.com/mvryhan-web/video-variator-android/commit/3cda6521cc3e4fe76ddeb5927d795a10185e168e) align test actions with the existing visible + menu and Settings Hub; [#43395063057](https://github.com/mvryhan-web/video-variator-android/actions/runs/43395063057) pending final status.
+- **Production BLOCKED_MAIN / NOT PUBLISHED:** HEAD Worker differs from last documented production Worker; surgical publisher fails closed on Worker SHA mismatch. No Cloudflare deploy or full-site rollback; Pricing, Home, JARVIX and Worker unchanged by these commits.
+- **Next:** evaluate browser failures and protected auth/billing concerns separately. AUD-001/002 remain open for durable subscription ledger/idempotency acceptance without real payments.
+
+---
 ## 2026-11-13 — CI-BROWSER-GUARD-01: ограничен незавершённый браузерный этап, без изменений сайта
 
 - **GitHub / исходники: ВНЕСЕНО:** [коммит `26f0d740`](https://github.com/mvryhan-web/video-variator-android/commit/26f0d7405618a6afb6338fc313714c3d89f99b08) меняет только `.github/workflows/deepsyq-platform.yml`: timeout 30m, fail-fast после 5 ошибок при сохранённом исходном наборе Playwright, малая выборка evidence и срок хранения 1 день. **Cloudflare production не менялся**, публикация рабочих активов не нужна для CI-only правки.
