@@ -18,6 +18,7 @@ import sys
 import tempfile
 import time
 from urllib.parse import quote
+from email_worker_scope import verify_email_worker_only
 
 ROOT = Path(__file__).resolve().parents[1] / "app/src/main/assets"
 API = "https://api.cloudflare.com/client/v4"
@@ -243,7 +244,7 @@ class Cloudflare:
             time.sleep(2)
         raise Blocked("AUTOMATIC_ROLLBACK_NOT_CONFIRMED")
 
-    def tour_manifest_deploy(self, candidate, assets, sha, worker, origin, chat_worker=None, voice_release=False):
+    def tour_manifest_deploy(self, candidate, assets, sha, worker, origin, chat_worker=None, voice_release=False, email_worker=False):
         """Tour-only Pages upload: unchanged routes reuse canonical LIVE hashes.
 
         Fetch the *currently deployed* Worker payload rather than recompiling
@@ -321,12 +322,22 @@ class Cloudflare:
                 insist(source.is_file(), "Canonical Worker source missing")
                 if chat_worker is not None:
                     source.write_bytes(chat_worker)
+                if email_worker:
+                    module = ROOT.parents[3] / "server/edge-email-auth.js"
+                    insist(module.is_file(), "Isolated Email auth module missing")
+                    module_dst = baseline / "server/edge-email-auth.js"
+                    shutil.copyfile(module, module_dst)
                 output = Path(work) / "canonical-worker.js"
-                bundle = subprocess.run(
-                    ["npx", "--yes", "esbuild@0.25.12", str(source),
-                     "--bundle", "--format=esm", "--platform=browser",
-                     "--target=es2022", "--outfile=" + str(output)],
-                    text=True, capture_output=True)
+                bundle_cmd = ["npx", "--yes", "esbuild@0.25.12", str(source),
+                              "--bundle", "--format=esm", "--platform=browser",
+                              "--target=es2022", "--outfile=" + str(output)]
+                if email_worker:
+                    # Cloudflare's 2026-11 Worker compatibility date supports node:crypto.
+                    # Keep the builtins external instead of bundling arbitrary polyfills.
+                    bundle_cmd.extend(["--external:node:crypto",
+                                       "--external:node:buffer",
+                                       "--external:node:util"])
+                bundle = subprocess.run(bundle_cmd, text=True, capture_output=True)
                 insist(bundle.returncode == 0 and output.is_file(),
                        "Canonical Worker bundling failed; no production deployment")
                 content = output.read_bytes()
@@ -460,11 +471,14 @@ def main():
     parser.add_argument("--files", required=True, help="Comma-separated EXACT asset paths")
     parser.add_argument("--commit", default=os.environ.get("GITHUB_SHA", ""))
     parser.add_argument("--chat-worker", action="store_true")
+    parser.add_argument("--email-worker", action="store_true")
     parser.add_argument("--new-voice", action="store_true")
     args = parser.parse_args()
     insist(not args.new_voice or not args.chat_worker and not args.files, "Voice release scope is fixed")
     insist(not args.chat_worker or not args.files, "Chat Worker release cannot include assets")
-    paths = [] if args.chat_worker or args.new_voice else allowed_paths(args.files)
+    insist(not args.email_worker or not args.chat_worker and not args.new_voice and not args.files,
+           "Email auth Worker release cannot include other Worker or asset changes")
+    paths = [] if args.chat_worker or args.email_worker or args.new_voice else allowed_paths(args.files)
     voice_sources = {}
     if args.new_voice:
         tracked = checked_git("ls-files", "app/src/main/assets/media/jarvix/clips", "app/src/main/assets/media/jarvix/conversation").splitlines()
@@ -503,10 +517,29 @@ def main():
         insist(old.split(start, 1)[0] == chat_worker.split(new_start, 1)[0] and
                old.split(end, 1)[1] == chat_worker.split(end, 1)[1],
                "Worker diff extends beyond chat provider handling")
+    elif args.email_worker:
+        # The candidate must reverse exactly to the canonical LIVE Worker;
+        # Google login route remains byte-for-byte identical.
+        source_path = "app/src/main/assets/_worker.js"
+        original_worker = subprocess.check_output(["git", "show", origin + ":" + source_path])
+        candidate_worker = (ROOT / "_worker.js").read_bytes()
+        try:
+            verify_email_worker_only(original_worker, candidate_worker)
+        except ValueError as error:
+            raise Blocked("EMAIL_WORKER_SCOPE_BLOCKED: " + str(error)) from error
+        chat_worker = candidate_worker
     else:
         insist(saved_worker == task_worker,
                "DEV Worker differs from the deployed Worker; use approved backend release")
     settings = cloudflare.worker_settings(worker)
+    if args.email_worker:
+        insist(str(settings.get("compatibility_date") or "") >= "2026-08-04",
+               "Email Worker requires supported node:crypto scrypt runtime")
+        required = {"DATABASE_URL":"secret_text", "JARVIX_QUOTA_HASH_SECRET":"secret_text"}
+        bindings = {entry.get("name"): entry.get("type") for entry in settings.get("bindings", [])
+                    if isinstance(entry, dict)}
+        for name,kind in required.items():
+            insist(bindings.get(name) == kind, "Email auth production secret missing: " + name)
     # Preserve existing auth/payment/storage bindings without inspecting secrets.
     cfg = project.get("deployment_configs", {}).get("production", {})
     bindings = cfg.get("env_vars") or {}
@@ -520,13 +553,13 @@ def main():
         # the tour-only escape hatch preserves the original LIVE manifest
         # by hash rather than guessing content or changing unrelated routes.
         try:
-            if args.chat_worker or args.new_voice:
+            if args.chat_worker or args.email_worker or args.new_voice:
                 raise Blocked("Use unchanged production asset manifest")
             stage, candidate, changed, from_live, expected_bytes = build_candidate(
                 live, paths, origin, work)
             direct_manifest = False
         except Blocked as error:
-            insist(args.chat_worker or args.new_voice or (allowed_hash_reuse(paths) and
+            insist(args.chat_worker or args.email_worker or args.new_voice or (allowed_hash_reuse(paths) and
                    str(error).startswith("Could not reproduce unchanged LIVE asset bytes:")),
                    str(error))
             expected_bytes = {rel: (ROOT / rel).read_bytes() for rel in paths}
@@ -538,7 +571,7 @@ def main():
             from_live = 0
             stage = None
             direct_manifest = True
-        if not changed and not args.chat_worker:
+        if not changed and not args.chat_worker and not args.email_worker:
             # A previous Pages deployment can have committed both new hashes
             # while its first public read was served from an older edge cache.
             # Verify the actual bytes for every requested asset before declaring
@@ -574,7 +607,7 @@ def main():
         insist(current_id == live_id and current_worker == worker,
                "Concurrent production update detected; no deploy")
         if direct_manifest:
-            deployed_id = cloudflare.tour_manifest_deploy(candidate, expected_bytes, sha, worker, origin, chat_worker, args.new_voice)
+            deployed_id = cloudflare.tour_manifest_deploy(candidate, expected_bytes, sha, worker, origin, chat_worker, args.new_voice, args.email_worker)
         else:
             run_wrangle(stage, sha)
             deployed_id = None
@@ -586,7 +619,7 @@ def main():
                 if now != live_id:
                     newest = now
                     insist(not deployed_id or newest == deployed_id, "Concurrent deployment detected")
-                    insist(not args.chat_worker or deployed_commit == sha, "Unexpected Worker release commit")
+                    insist(not (args.chat_worker or args.email_worker) or deployed_commit == sha, "Unexpected Worker release commit")
                     insist(actual == candidate, "NEW_DEPLOYMENT_ASSET_DIFFERS")
                     insist(script == worker, "NEW_DEPLOYMENT_WORKER_CHANGED")
                     new_settings = cloudflare.worker_settings(script)
@@ -672,7 +705,7 @@ def main():
         print(json.dumps({"status": "PUBLISHED_VERIFIED", "deployment": newest,
                           "previous": live_id, "files": sorted(changed),
                           "all_other_assets_unchanged": True,
-                          "worker_and_bindings_preserved": not args.chat_worker, "bindings_preserved": True, "published": True}))
+                          "worker_and_bindings_preserved": not (args.chat_worker or args.email_worker), "bindings_preserved": True, "published": True}))
     return 0
 
 if __name__ == "__main__":
