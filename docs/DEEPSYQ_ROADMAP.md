@@ -1,5 +1,14 @@
 # DEEPSYQ ROADMAP — approved next product phase
 
+## 2026-11-13 — JARVIX-IMAGE-BG-01 — REMOVE BACKGROUND TO EXISTING CHAT
+
+- **Scope:** ровно одно действие в существующем просмотре сгенерированного изображения на `jarvix-chat.html`: по нажатию «Удалить фон» прикрепить именно выбранную фотографию, установить локализованный текст «Удали фон с этой фотографии», отправить существующей формой JARVIX Chat; без нового окна чата или Canvas и без изменений остальных кнопок.
+- **Code:** [4fdd1be](https://github.com/mvryhan-web/video-variator-android/commit/4fdd1bebd10bfe03931382774204762f85e10783), только `jarvix-chat.js`. **Test:** [7982d07](https://github.com/mvryhan-web/video-variator-android/commit/7982d07b81e0ec2e446482e9114a54f5e0888c81) два сценария: выбранный File + один send, busy + zero sends. [CI #43422149121](https://github.com/mvryhan-web/video-variator-android/actions/runs/43422149121) success (Node viewer + publisher allowlist tests). Прямой внешний AI-тест не запускался.
+- **Release gate:** хирургический издатель с буквальным scope `jarvix-chat.js`, live hashes и без изменения Worker/bindings: [f35be375](https://github.com/mvryhan-web/video-variator-android/commit/f35be3753425d1ac2e0afd7ee2a49a426790d81a) + [70df73ea](https://github.com/mvryhan-web/video-variator-android/commit/70df73ea87783695071607fcf33b03b84f7ebe49). При записи **MAIN PENDING**, status `SOURCE_VERIFIED / RELEASE_PENDING`; Cloudflare ID и реальный live asset verification внести только по доказательствам выпуска. Подробности в [журнале](DEEPSYQ_WORK_LOG.md).
+- **Не входит в задание:** улучшения фонового AI-алгоритма, тарифов, нового редактора, остальных кнопок, JARVIX voice и полная браузерная регрессия.
+
+---
+
 
 ## 2026-11-13 — JARVIX-TEMPLATE-01 / STUDIO-QUOTE-01 / CI-BROWSER-05/06 — частичная приёмка, MAIN заблокирован
 
