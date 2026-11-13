@@ -307,6 +307,9 @@ function renderCredits(config){
   const content=node('div','price-credit-content');
   card.setAttribute('aria-describedby','priceCreditDisclosure');
   const info=node('div','price-credit-bonus price-credit-breakdown');
+  const gift=node('div','price-credit-gift');
+  gift.append(node('strong','','Bonus gift'),node('span','price-credit-gift-time','Limited time'));
+
   for(const [label,number] of [
    ['Base',numeral.format(p.credits)],
    ['Bonus','+ '+numeral.format(p.bonus)],
@@ -317,6 +320,7 @@ function renderCredits(config){
                   node('strong','price-credit-segment-value',number));
    info.append(segment);
   }
+  info.prepend(gift);
   const foot=node('div','price-credit-bottom');
   const badge=node('h3','price-credit-badge');
   badge.append(node('span','price-credit-badge-sparkle','✦'),

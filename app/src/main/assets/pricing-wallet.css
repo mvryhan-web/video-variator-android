@@ -48,7 +48,7 @@ body.deepsyq-pricing-page .price-credit-segment-value{
  font-size:clamp(12px,1.2vw,18px);line-height:1.2;font-weight:850;
  font-variant-numeric:tabular-nums;color:#f5fbff;overflow-wrap:anywhere;
 }
-body.deepsyq-pricing-page .price-credit-segment:nth-child(2) .price-credit-segment-value{color:#bed0e0}
+body.deepsyq-pricing-page .price-credit-segment:nth-child(3) .price-credit-segment-value{color:#bed0e0}
 body.deepsyq-pricing-page .price-credit-breakdown-note{
  grid-column:1/-1;font-size:11px;line-height:1.4;color:#c7ddf3;
  border-top:1px solid #6086b877;padding-top:8px;
@@ -79,7 +79,7 @@ body.deepsyq-pricing-page .price-credit-segment{
  display:flex;flex-direction:column;justify-content:center;gap:8px;min-width:0;
  padding:0 8px;
 }
-body.deepsyq-pricing-page .price-credit-segment:first-child{padding-left:0}
+body.deepsyq-pricing-page .price-credit-segment:nth-child(2){padding-left:0}
 body.deepsyq-pricing-page .price-credit-segment+.price-credit-segment{
  border-left:1px solid #8aa6d367;padding-left:12px;
 }
@@ -91,7 +91,6 @@ body.deepsyq-pricing-page .price-credit-segment-value{
  line-height:1.2;white-space:nowrap;letter-spacing:-.025em;
  font-variant-numeric:tabular-nums;color:#fff;
 }
-body.deepsyq-pricing-page .price-credit-segment:nth-child(2) .price-credit-segment-value{color:#d0e6ff}
 body.deepsyq-pricing-page .price-credit-bottom{
  display:grid;grid-template-columns:minmax(0,1fr) auto auto;
  align-items:center;column-gap:11px;row-gap:8px;
@@ -187,3 +186,23 @@ body.deepsyq-pricing-page .price-credit-bottom .price-credit-purchase{
   flex:1 1 100%;width:100%;
  }
 }
+
+body.deepsyq-pricing-page .price-credit-card{border-color:transparent;box-shadow:none}
+body.deepsyq-pricing-page .price-credit-badge,
+body.deepsyq-pricing-page .price-credit-bottom{
+ border:0;background:none;box-shadow:none;
+}
+body.deepsyq-pricing-page .price-credit-breakdown{
+ border-color:#e5a350;
+ background:linear-gradient(110deg,#382113f5,#24160ff2);
+ box-shadow:0 5px 18px #02071599;
+}
+body.deepsyq-pricing-page .price-credit-gift{
+ grid-column:1/-1;display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;
+ color:#ffdc9d;font-size:13px;
+}
+body.deepsyq-pricing-page .price-credit-gift-time{
+ border-radius:999px;background:#ffd08a;color:#44260e;
+ padding:3px 8px;font-size:10px;font-weight:800;text-transform:uppercase;
+}
+body.deepsyq-pricing-page .price-credit-segment:nth-child(3) .price-credit-segment-value{color:#ffca79}

@@ -368,11 +368,12 @@ body.deepsyq-pricing-page .price-offer-badge{display:inline-flex;align-items:cen
 
 /* Keep the four portals and the full figure inside the Pricing banner crop. */
 body.deepsyq-pricing-page .price-hero,
-body.deepsyq-pricing-page .price-hero-copy{min-height:clamp(330px,34vw,580px)}
+body.deepsyq-pricing-page .price-hero-copy{min-height:clamp(285px,28vw,480px)}
 body.deepsyq-pricing-page .price-hero-art{background-position:center,right 55%}
 @media(max-width:700px){
  body.deepsyq-pricing-page .price-hero,
- body.deepsyq-pricing-page .price-hero-copy{min-height:clamp(360px,100vw,520px)}
+ body.deepsyq-pricing-page .price-hero-copy{min-height:clamp(245px,68vw,365px)}
+ body.deepsyq-pricing-page .price-hero-copy{padding-block:16px}
  body.deepsyq-pricing-page .price-hero-art{
   background-size:cover,auto 95%;
   background-position:center,right center;
