@@ -569,6 +569,13 @@ async function respond(message,id){
  const extra=NAVIGATION_COMMAND.test(message)
   ? EXTRA_NAVIGATION.find(([,pattern])=>pattern.test(message))?.[0] : null;
  const command=message.replace(/^\s*(?:джарвис|джарвикс|jarvix|jarvis)[,\s:]+/iu,'');
+ const requestText=command.replace(/^(?:(?:слушай|джарвис|джарвикс|jarvis|jarvix|пожалуйста)[,\s:]+)+/iu,'').trim();
+ const builtin=/^(?:открой\s+(?:мою\s+)?последн(?:юю|ее)\s+(?:картинку|фотографию|изображение)\s+в\s+(?:canvas|canva|канва)|open (?:my )?latest image in canvas)[.!?]?$/iu.test(requestText)?'latest-image':
+  /^(?:(?:найди|покажи|открой)\s+(?:моё\s+|мое\s+)?последнее\s+видео|(?:find|open|show) (?:my )?latest video)[.!?]?$/iu.test(requestText)?'latest-video':null;
+ if(builtin){
+  location.assign('/jarvix-chat.html?jarvixBuiltin='+builtin);
+  return;
+ }
  const action=extra?null:extractAction(command.replace(/^(?:я\s+хочу|можешь)\s+(?:создать|сделать|сгенерировать|нарисовать)\s+/iu,'Создай '))||(extra?null:extractAction(command.replace(/\bcanva\b/giu,'Canvas')));
  const imageRequest=command.replace(/^(?:(?:слушай|эй|джарвис|джарвикс|jarvix|jarvis|пожалуйста)[,\s:]+)+/iu,'').trim();
  if(/^(?:(?:ты\s+)?можешь\s+(?:создать|сделать|сгенерировать|нарисовать)|создай|сделай|сгенерируй|нарисуй)\s+(?:мне\s+)?(?:изображение|картинку|фото)[.!?…]*$/iu.test(imageRequest)){

@@ -476,6 +476,56 @@ async function prepareImageIntake(message, intake){
  return {prompt,ratio:intake.ratio,confirmed:false};
 }
 
+function builtinTool(text){
+ const command=text.trim().replace(/^(?:(?:слушай|джарвис|джарвикс|jarvis|jarvix|пожалуйста)[,\s:]+)+/iu,'');
+ if(/^(?:открой\s+(?:м[ою]{2}\s+)?последн(?:юю|ее)\s+(?:картинку|фотографию|изображение)\s+в\s+(?:canvas|canva|канва)|open (?:my )?latest image in canvas)[.!?]?$/iu.test(command))return 'latest-image';
+ if(/^(?:(?:найди|покажи|открой)\s+(?:моё\s+|мое\s+)?последнее\s+видео|(?:find|open|show) (?:my )?latest video)[.!?]?$/iu.test(command))return 'latest-video';
+ if(/^(?:(?:открой|запусти)\s+объединение\s+(?:pdf|пдф)|объедини\s+(?:pdf|пдф)|(?:open )?merge pdf)[.!?]?$/iu.test(command))return 'merge-pdf';
+ return null;
+}
+
+async function runBuiltinTool(tool){
+ store.guard();
+ if(tool==='merge-pdf'){
+  location.assign('/mobile-utility.html?tool=pdf-merge');
+  return null;
+ }
+ if(!localStorage.getItem('vv_token'))throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED'});
+ const kind=tool==='latest-image'?'image':'video';
+ const rows=await store.list();
+ store.guard();
+ let flags={};
+ try{flags=JSON.parse(localStorage.getItem('deepsyq_creation_flags_'+store.scope)||'{}')||{};}catch{}
+ const local=rows.flatMap(row=>row.messages||[])
+  .filter(item=>item.role==='assistant'&&item.kind===kind&&item.status==='ready'&&item.jobId&&!flags[item.jobId]?.archived&&item.resultFile instanceof Blob)
+  .map(item=>({id:item.jobId,createdAt:item.createdAt,blob:item.resultFile,prompt:item.imageRecipe?.description}));
+ const response=await fetch('/api/studio/workspace/cards?',{headers:headers(),signal:controller?.signal,cache:'no-store'}).catch(error=>{
+  if(error.name==='AbortError'||!local.length)throw error;
+  return null;
+ });
+ store.guard();
+ const payload=response?.ok?await response.json():null;
+ store.guard();
+ const recent=Array.isArray(payload?.sections?.recent)?payload.sections.recent:[];
+ const items=new Map(local.map(item=>[item.id,item]));
+ for(const item of recent){
+  if(!item||item.type!==kind||item.status!=='completed'||typeof item.id!=='string'||flags[item.id]?.archived)continue;
+  items.set(item.id,{...items.get(item.id),id:item.id,createdAt:item.createdAt,prompt:item.prompt});
+ }
+ const latest=[...items.values()].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))[0];
+ if(!latest)return imageIntakeReply(kind==='image'?'В «Моих работах» пока нет готового изображения.':'В «Моих работах» пока нет готового видео.');
+ const mediaUrl='/api/studio/jobs/'+encodeURIComponent(latest.id)+'/media';
+ if(kind==='video'){
+  return {...imageIntakeReply('Последнее видео из «Моих работ».'),jobId:latest.id,kind,status:'ready',mediaUrl,resultFile:latest.blob||await downloadResult(mediaUrl,{origin:location.origin,kind,headers:headers(),signal:controller?.signal,guard:store.guard})};
+ }
+ const image=latest.blob||await downloadResult(mediaUrl,{origin:location.origin,kind,headers:headers(),signal:controller?.signal,guard:store.guard});
+ store.guard();
+ await saveStudioHandoff({kind:'image',prompt:latest.prompt||'Canvas',files:[image],target:'canvas',source:'jarvix-chat'});
+ store.guard();
+ location.assign('/canvas.html?from=jarvix-image');
+ return null;
+}
+
 async function processMessage(message){
  let mode, textChat=false;
  const greeting=!conversation.imageIntake&&localStorage.getItem('vv_token')?localGreeting(message,getJarvixLanguage()):null;
@@ -494,6 +544,14 @@ async function processMessage(message){
    store.guard();
    await saveStudioHandoff({kind:'image',prompt:lastImage.imageRecipe?.description||'Canvas',files:[image],target:'canvas',source:'jarvix-chat'});
    store.guard();message.status='sent';await save();location.assign('canvas.html?from=jarvix-image');return;
+  }
+  const tool=builtinTool(message.text);
+  if(tool){
+   textChat=true;
+   message.status='sent';await save();
+   const reply=await runBuiltinTool(tool);
+   if(reply){conversation.messages.push(reply);await save();render();}
+   return;
   }
   let preparedImage;
   if(!conversation.imageIntake&&lastImage?.imageRecipe&&/^(?:сделай (?:её|ее|картинку) (?:светлее|темнее)|оставь тот же стиль|добавь)(?=\s|[.!?]|$)/iu.test(message.text.trim())){
@@ -881,7 +939,18 @@ if(imageIntakeEnabled&&!conversation.imageIntake){
  conversation.imageIntake={};
  conversation.messages.push(imageIntakeReply('Да, конечно. Какое изображение вы хотите создать? Опишите сюжет и укажите формат, например 1:1, 16:9 или 9:16.'));
  void save().then(render).catch(error=>status(error.message));
-}else if(!imageIntakeEnabled)void applyIncomingHandoffOrTemplate();
+ }else if(!imageIntakeEnabled&&!imageIntakeQuery.has('jarvixBuiltin'))void applyIncomingHandoffOrTemplate();
+const incomingTool=imageIntakeQuery.get('jarvixBuiltin');
+const incomingCommand={'latest-image':'Открой последнюю картинку в Canvas','latest-video':'Покажи последнее видео'}[incomingTool];
+if(typeof incomingCommand==='string'){
+ imageIntakeQuery.delete('jarvixBuiltin');
+ history.replaceState(null,'',location.pathname+(imageIntakeQuery.size?'?'+imageIntakeQuery:'')+location.hash);
+ void run(async()=>{
+  const message={id:makeId(),role:'user',text:incomingCommand,mode:'auto',files:[],status:'pending',createdAt:Date.now()};
+  conversation.messages.push(message);
+  await processMessage(message);
+ });
+}
 
 const wpPane=$('jWorkspacePane');
 if(wpPane){
