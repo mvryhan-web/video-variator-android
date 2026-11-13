@@ -44,6 +44,7 @@ HASH_REUSE_RELEASE_SETS = (
     frozenset({"deepsyq-i18n.js"}),
     frozenset({"jarvix-chat.js"}),
     frozenset({"auth-email.js", "auth-email.css"}),
+    frozenset({"auth-email.css"}),
     frozenset({"auth-email.js", "auth-email.css", "jarvix-chat.js"}),
 )
 

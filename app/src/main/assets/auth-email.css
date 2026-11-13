@@ -556,3 +556,58 @@ html body #authModal .modalClose {
     font-size:clamp(21px,5.7vw,27px)!important;
   }
 }
+
+
+/* Login reference: luminous arcs and a centered, readable registration panel. */
+html body #authModal:not([hidden]) {
+  isolation:isolate;
+  background:
+    radial-gradient(ellipse at 100% 0%,#321365 0%,transparent 40%),
+    radial-gradient(ellipse at 0% 100%,#003f6a 0%,transparent 38%),
+    radial-gradient(ellipse at 100% 100%,#31165e 0%,transparent 34%),
+    #0b0e23!important;
+}
+html body #authModal:not([hidden])::before,
+html body #authModal:not([hidden])::after {
+  content:"";position:fixed;z-index:-1;pointer-events:none;
+  width:max(75vw,570px);height:250px;border-radius:50%;opacity:.82;
+}
+html body #authModal:not([hidden])::before {
+  inset:-132px -240px auto auto;transform:rotate(36deg);
+  border-bottom:2px solid #47dbff;
+  box-shadow:0 10px 34px #4d40f4,inset 0 -16px 40px #9a36fc88;
+}
+html body #authModal:not([hidden])::after {
+  inset:auto auto -206px -120px;transform:rotate(-4deg);
+  border-top:2px solid #5feaff;
+  box-shadow:0 -8px 32px #196deb,inset 0 12px 40px #6438df99;
+}
+html body #authModal .authCard {z-index:1;width:min(100% - 40px,580px)!important;box-sizing:border-box;}
+html body #authModal .authCard > .authBrand {margin-bottom:clamp(32px,6dvh,62px)!important;}
+html body #authModal .authCard > #authTitle {font-size:clamp(32px,6.4vw,58px)!important;}
+html body #authModal .authCard > #authTitle + p {margin-bottom:clamp(25px,5dvh,46px)!important;}
+html body #authModal .authRegistrationPanel {
+  box-sizing:border-box;
+  background:linear-gradient(145deg,#0b203a,#10132f 48%,#211044) padding-box,
+    linear-gradient(115deg,#45faff,#458fe8 41%,#ba48ff 77%,#ec9bff) border-box!important;
+  box-shadow:0 0 22px #10d8ff50,0 0 34px #a53eff42,inset 0 0 22px #4575d52b!important;
+}
+html body #authModal .authRegistrationPanel > #googleButton {
+  border:1.5px solid transparent;
+  background:linear-gradient(105deg,#0a3048,#101932 53%,#271649) padding-box,
+    linear-gradient(110deg,#26efff,#39a3ee 55%,#d58aff) border-box;
+  box-shadow:0 0 14px #06d5f440,inset 0 0 15px #08cbe536;
+}
+html body #authModal .authRegistrationPanel .emailAuthOpen {
+  border:1.5px solid transparent;
+  background:linear-gradient(105deg,#18254c,#21163f 60%,#38105c) padding-box,
+    linear-gradient(105deg,#7789ff,#bf58ff 65%,#f08fff) border-box;
+  box-shadow:0 0 16px #a53eff47,inset 0 0 14px #9c5df132;
+}
+html body #authModal .authLegal a:last-child {color:#df9dff;}
+@media (max-width:600px) {
+  html body #authModal .authCard {width:100%!important;padding:clamp(45px,8dvh,75px) 0 42px!important;}
+  html body #authModal .authRegistrationPanel {width:calc(100% - 32px)!important;margin:0 16px!important;padding:28px clamp(14px,5vw,26px) 30px!important;}
+  html body #authModal .authRegistrationPanel > #googleButton {padding-inline:4px;}
+  html body #authModal .authRegistrationPanel .authDivider {margin:18px 0!important;}
+}
