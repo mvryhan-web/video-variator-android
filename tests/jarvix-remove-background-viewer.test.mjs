@@ -68,7 +68,7 @@ test('Image preview keeps download, Canvas, and both close controls',()=>{
 
 test('Image mode sends questions to chat and explicit requests to generation',()=>{
  const start=source.indexOf('  const rawText =');
- const end=source.indexOf('  if(!shouldGenerateMedia)',start);
+ const end=source.indexOf('  if(!shouldGenerateMedia',start);
  assert.ok(start>0&&end>start);
  const classify=new vm.Script(source.slice(start,end)+'\nshouldGenerateMedia;');
  const generates=(text,mode='image')=>classify.runInNewContext({
