@@ -1,5 +1,13 @@
 # DEEPSYQ ROADMAP — approved next product phase
 
+## 2026-11-13 — CI-BROWSER-04 — PARTIAL_VERIFIED
+
+- **Confirmed Chromium:** [#43396308271](https://github.com/mvryhan-web/video-variator-android/actions/runs/43396308271): 15 passed / 5 failed / 354 not run; scoped mobile Studio, RU language, private draft, email Terms login/logout and four Canvas checks passed. Full CI NOT GREEN.
+- **Fixed only obsolete browser URL expectations:** [e6be617](https://github.com/mvryhan-web/video-variator-android/commit/e6be617db9ca4687dec393b1c57e545531607011) uses existing /video-uniquifier.html#history/#profile rather than unrelated Home /index.html; [#43396914231](https://github.com/mvryhan-web/video-variator-android/actions/runs/43396914231) browser pending.
+- **Open under separate safety gates:** Pricing/Lifetime checkout must not be modified without D31 permission; Studio quote/credit contract needs real acceptance, Settings Hub mobile legacy assertions need isolated verification; owner design-lock CSS mismatch remains unchanged.
+- **Cloudflare BLOCKED_MAIN — NOT PUBLISHED:** live Worker identity/bindings not proven identical to DEV; no unsafe Pages full redeploy. Only GitHub code/tests/docs commits published.
+
+---
 ## 2026-11-13 — STUDIO-DOCK-01 / AUTH-TEST-01 — SOURCE_UPDATED, ACCEPTANCE_PENDING
 
 - **Mount missing + menu:** one-condition fix [31457b2](https://github.com/mvryhan-web/video-variator-android/commit/31457b27f1c00e80a5656f1bdfe83458150e283f) excludes only Studio creator from the quick-chat bypass; preserves Home/JARVIX Chat. Browser [#43395652282](https://github.com/mvryhan-web/video-variator-android/actions/runs/43395652282) confirmed #jPlus exists, but Terms modal was intercepting clicks before explicit consent.
