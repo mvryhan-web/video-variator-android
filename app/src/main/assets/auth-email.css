@@ -417,3 +417,142 @@
   #authModal .authCard > .emailAuthWrap {margin-left:25px!important;margin-right:25px!important;}
   #authModal .authCard::before {margin:0 8px!important;}
 }
+
+
+/* 2026-11-13 V3: real DOM registration panel for owner reference fidelity. */
+html body #authModal:not([hidden]) {
+  position:fixed!important;inset:0!important;
+  height:100dvh!important;width:100vw!important;
+  display:block!important;overflow:auto!important;
+  padding:0!important;
+  background:radial-gradient(ellipse 70% 36% at 95% 7%,#361071b0,transparent 80%),
+    radial-gradient(ellipse 65% 30% at 0 85%,#004b9299,transparent 75%),
+    linear-gradient(155deg,#070a1a 10%,#08112c 65%,#130a2d 100%)!important;
+}
+html body #authModal .authCard {
+  width:min(100% - 36px,750px)!important;
+  max-width:750px!important;min-height:100dvh!important;
+  max-height:none!important;overflow:visible!important;
+  display:flex!important;flex-direction:column!important;
+  align-items:stretch!important;justify-content:center!important;
+  gap:0!important;
+  padding:clamp(38px,6vh,65px) 0!important;
+  border:0!important;border-radius:0!important;
+  background:none!important;box-shadow:none!important;
+  margin:auto!important;
+  position:relative!important;
+}
+html body #authModal .authCard::before {display:none!important;content:none!important;}
+html body #authModal .authCard > .authBrand {
+  display:grid!important;align-self:flex-start!important;
+  margin:0 0 clamp(35px,6vh,64px)!important;
+  max-width:100%!important;
+}
+html body #authModal .authCard > #authTitle {
+  display:block!important;
+  margin:0 0 12px!important;
+  font-size:clamp(33px,6vw,68px)!important;
+  line-height:1.16!important;
+  text-align:center!important;
+  letter-spacing:-.036em!important;
+}
+html body #authModal .authCard > #authTitle .authTitleAccent{
+  display:block!important;
+  margin-top:5px!important;
+}
+html body #authModal .authCard > #authTitle + p {
+  display:block!important;
+  margin:0 0 clamp(36px,6vh,60px)!important;
+  text-align:center!important;
+  color:#b9c0df!important;
+  font-size:clamp(15px,2vw,19px)!important;
+}
+html body #authModal .authRegistrationPanel {
+  display:flex!important;flex-direction:column!important;
+  gap:0!important;
+  position:relative!important;isolation:isolate!important;
+  width:100%!important;
+  padding:clamp(38px,5vw,53px) clamp(24px,6vw,58px) clamp(32px,5vw,48px)!important;
+  border:2px solid transparent!important;
+  border-radius:clamp(32px,5vw,53px)!important;
+  background:linear-gradient(130deg,rgba(7,22,47,.96),rgba(14,15,47,.97) 50%,rgba(39,12,67,.96)) padding-box,
+    linear-gradient(115deg,#00e5f1 0%,#3189f7 46%,#b545ff 100%) border-box!important;
+  box-shadow:0 24px 88px #0007,0 0 18px #00ccea27,0 0 20px #a942ea22!important;
+}
+html body #authModal .authRegistrationPanel > .authActionTitle {
+  margin:0 0 28px!important;
+  padding:0!important;text-align:center!important;
+  font-size:clamp(22px,3vw,31px)!important;
+  font-weight:750!important;
+}
+html body #authModal .authRegistrationPanel > #googleButton {
+  display:flex!important;
+  min-height:72px!important;margin:0!important;
+  border-radius:999px!important;
+  align-items:center!important;justify-content:center!important;
+}
+html body #authModal .authRegistrationPanel > .emailAuthWrap {
+  margin:0!important;
+  width:100%!important;
+}
+html body #authModal .authRegistrationPanel .authDivider {
+  margin:23px 0 23px!important;
+}
+html body #authModal .authRegistrationPanel .emailAuthOpen{
+  min-height:70px!important;
+  width:100%!important;
+  border-radius:999px!important;
+}
+html body #authModal .authRegistrationPanel > .authLegal {
+  margin:26px auto 0!important;
+  padding:0!important;
+  max-width:530px!important;
+  color:#adb6d8!important;
+  text-align:center!important;
+}
+html body #authModal .authCard > .authSetupStatus{display:none!important;}
+html body #authModal .authRegistrationPanel .emailAuthForm[hidden]{display:none!important;}
+html body #authModal .authRegistrationPanel .emailAuthForm:not([hidden]){
+  display:grid!important;
+}
+html body #authModal .modalClose {
+  position:fixed!important;
+  top:max(12px,env(safe-area-inset-top))!important;
+  right:max(12px,env(safe-area-inset-right))!important;
+}
+@media(max-width:600px) {
+  html body #authModal .authCard {
+    width:100%!important;
+    min-height:100dvh!important;
+    justify-content:flex-start!important;
+    padding:max(55px,env(safe-area-inset-top) + 40px) 0 45px!important;
+  }
+  html body #authModal .authCard > .authBrand {
+    margin:0 24px clamp(45px,8vh,65px)!important;
+    align-self:flex-start!important;
+  }
+  html body #authModal .authCard > #authTitle {
+    padding:0 13px!important;
+    margin-bottom:16px!important;
+    font-size:clamp(33px,8.5vw,45px)!important;
+  }
+  html body #authModal .authCard > #authTitle + p {
+    margin:0 20px clamp(40px,7vh,65px)!important;
+    font-size:clamp(15px,4vw,18px)!important;
+  }
+  html body #authModal .authRegistrationPanel {
+    width:calc(100% - 26px)!important;
+    margin:0 13px!important;
+    padding:clamp(36px,7vw,50px) clamp(20px,5.5vw,34px) 34px!important;
+    border-radius:clamp(32px,9vw,48px)!important;
+  }
+  html body #authModal .authRegistrationPanel > #googleButton {
+    min-height:64px!important;
+  }
+  html body #authModal .authRegistrationPanel .emailAuthOpen {
+    min-height:63px!important;
+  }
+  html body #authModal .authRegistrationPanel .authActionTitle{
+    font-size:clamp(21px,5.7vw,27px)!important;
+  }
+}
