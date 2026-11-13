@@ -1,4 +1,4 @@
-import test from 'node:test';
+import test,{after} from 'node:test';
 import assert from 'node:assert/strict';
 
 // All MP3 texts below are test fixtures; they do NOT approve any unreviewed
@@ -41,7 +41,8 @@ globalThis.fetch=async(url)=>{
   return {ok:value!==undefined,json:async()=>value||{}};
 };
 const {recordedConversationReply}=await import('../app/src/main/assets/jarvix-new-recorded-dialog.js');
-globalThis.fetch=originalFetch;
+// Physical index and reviewed-transcript loaders fetch lazily, inside the tests.
+after(()=>{globalThis.fetch=originalFetch;});
 
 for(const lang of langs){
   test('JARVIX NEW '+lang+' rephrases with another VERIFIED MP3, never invented text',async()=>{
