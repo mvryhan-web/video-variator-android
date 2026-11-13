@@ -345,15 +345,19 @@ body.deepsyq-pricing-page .price-plan-carousel-controls{display:none}
   font-variant-numeric:tabular-nums;white-space:nowrap;
  }
  body.deepsyq-pricing-page .price-five-grid{
-  display:flex;flex-wrap:nowrap;gap:12px;
+  display:flex;flex-wrap:nowrap;gap:6px;
   overflow-x:auto;overflow-y:hidden;
   overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
-  scroll-snap-type:x mandatory;scroll-padding-inline:2px;
-  scrollbar-width:none;padding:3px 2px 16px;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:none;padding:3px 0 16px;
+ }
+ body.deepsyq-pricing-page .price-five-grid::before,
+ body.deepsyq-pricing-page .price-five-grid::after{
+  content:'';flex:0 0 calc(7% - 6px);
  }
  body.deepsyq-pricing-page .price-five-grid::-webkit-scrollbar{display:none}
  body.deepsyq-pricing-page .price-five-grid>.price-plan{
-  flex:0 0 calc(100% - 4px);scroll-snap-align:start;
+  flex:0 0 86%;scroll-snap-align:center;
   scroll-snap-stop:always;min-width:0;
  }
 }
@@ -361,3 +365,16 @@ body.deepsyq-pricing-page .price-plan-carousel-controls{display:none}
 /* Owner: one small offer badge beside Monthly / Yearly; no other plan edits. */
 body.deepsyq-pricing-page .price-offer-badge{display:inline-flex;align-items:center;padding:6px 11px;border:1px solid rgba(245,180,93,.55);border-radius:999px;color:#ffdd9a;background:rgba(65,36,13,.58);font:800 13px/1.1 Inter,ui-sans-serif,system-ui,sans-serif;white-space:nowrap}
 @media(max-width:700px){body.deepsyq-pricing-page .price-offer-badge{font-size:12px;padding:6px 9px}}
+
+/* Keep the four portals and the full figure inside the Pricing banner crop. */
+body.deepsyq-pricing-page .price-hero,
+body.deepsyq-pricing-page .price-hero-copy{min-height:clamp(330px,34vw,580px)}
+body.deepsyq-pricing-page .price-hero-art{background-position:center,right 55%}
+@media(max-width:700px){
+ body.deepsyq-pricing-page .price-hero,
+ body.deepsyq-pricing-page .price-hero-copy{min-height:clamp(260px,78vw,430px)}
+ body.deepsyq-pricing-page .price-hero-art{
+  background-size:cover,auto 95%;
+  background-position:center,right center;
+ }
+}

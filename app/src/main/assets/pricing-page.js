@@ -60,23 +60,26 @@ function currentPricingLanguage(){
  try{return window.DeepsyqI18n?.language||localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang')||document.documentElement.lang;}
  catch{return document.documentElement.lang;}
 }
-function trialCreditLabel(limit,language){
- const suffix={
-  ru:'кредитов на пробный период',en:'tool credits for the trial',
-  fr:'crédits outils pour la période d’essai',es:'créditos de herramientas para el período de prueba'
+function planFeatureLabel(type,value,language){
+ const copy={
+  ru:{trial:n=>n+' кредитов на пробный период',monthly:n=>n+' кредитов в месяц',lifetime:()=> 'Кредиты по действующим условиям',unavailable:()=> 'Лимит кредитов недоступен',variants:n=>'До '+n+' вариантов видео за один запуск в Video Uniquifier',quality:q=>'Разрешение экспорта в Video Uniquifier: '+q},
+  en:{trial:n=>n+' credits for the trial',monthly:n=>n+' credits per month',lifetime:()=> 'Credits: see current terms',unavailable:()=> 'Credit allowance unavailable',variants:n=>'Up to '+n+' video variants per run in Video Uniquifier',quality:q=>'Video Uniquifier export resolution: '+q},
+  fr:{trial:n=>n+' crédits pour la période d’essai',monthly:n=>n+' crédits par mois',lifetime:()=> 'Crédits selon les conditions en vigueur',unavailable:()=> 'Crédits inclus indisponibles',variants:n=>'Jusqu’à '+n+' variantes vidéo par lancement dans Video Uniquifier',quality:q=>'Résolution d’export dans Video Uniquifier : '+q},
+  es:{trial:n=>n+' créditos para el período de prueba',monthly:n=>n+' créditos al mes',lifetime:()=> 'Créditos según las condiciones vigentes',unavailable:()=> 'Límite de créditos no disponible',variants:n=>'Hasta '+n+' variantes de vídeo por ejecución en Video Uniquifier',quality:q=>'Resolución de exportación en Video Uniquifier: '+q}
  };
- return numeral.format(limit)+' '+(suffix[language]||suffix.en);
+ const locale=copy[language]||copy.en;
+ return locale[type](value);
 }
 window.addEventListener('deepsyq:lang',event=>{
- for(const label of document.querySelectorAll('[data-trial-credits]')){
-  label.textContent=trialCreditLabel(Number(label.dataset.trialCredits),event.detail?.lang);
+ for(const label of document.querySelectorAll('[data-plan-feature]')){
+  label.textContent=planFeatureLabel(label.dataset.planFeature,label.dataset.planFeatureValue,event.detail?.lang);
  }
 });
 const verifiedQuality={
- basic:[['▣','750 tool credits / month'],['⊞','Up to 5 variants'],['⚙','Gentle mode'],['▣','720p quality'],['✓','Included Basic tools']],
- pro:[['▣','2,250 tool credits / month'],['⊞','Up to 10 variants'],['⚙','Gentle + Balance modes'],['▣','1080p quality'],['✓','Included Pro tools']],
- business:[['▣','15,000 tool credits / month'],['⊞','Up to 15 variants'],['⚙','Gentle, Balance + Dynamic'],['▣','4K quality'],['✓','Included Business tools']],
- lifetime:[['▣','Tool credits: see current terms'],['⊞','Up to 15 variants'],['⚙','Gentle, Balance + Dynamic'],['▣','Up to 4K quality'],['∞','Video Uniquifier access for life']]
+ basic:[['▣',''],['⊞','5','variants'],['⚙','Gentle mode'],['⛶','720p','quality'],['✓','Included Basic tools']],
+ pro:[['▣',''],['⊞','10','variants'],['⚙','Gentle + Balance modes'],['⛶','1080p','quality'],['✓','Included Pro tools']],
+ business:[['▣',''],['⊞','15','variants'],['⚙','Gentle, Balance + Dynamic'],['⛶','4K','quality'],['✓','Included Business tools']],
+ lifetime:[['▣',''],['⊞','15','variants'],['⚙','Gentle, Balance + Dynamic'],['⛶','720p / 1080p / 4K','quality'],['∞','Video Uniquifier access for life']]
 };
 const sharedAccess=[
  ['✓','Video Uniquifier and tools included in this plan'],
@@ -89,7 +92,7 @@ const sharedAccess=[
 const monthlyDetails=[['✓','Monthly subscription; manage in your account']];
 const planned=[
  {key:'trial',name:'Trial',suffix:'one time',label:'Start Trial',summary:'3-day trial pass for DeepSyQ tools',
-  benefits:[['▣','100 tool credits for the trial'],['✓','3-day trial pass for DeepSyQ tools'],['✓','One-time payment: no automatic renewal'],['✓','Explore the Canvas workspace; paid AI requires credits'],['✓','Watermark-free exports during trial'],['✓','One account for your plan, credits and history']],proposed:false},
+  benefits:[['▣',''],['✓','3-day trial pass for DeepSyQ tools'],['✓','One-time payment: no automatic renewal'],['✓','Explore the Canvas workspace; paid AI requires credits'],['✓','Watermark-free exports during trial'],['✓','One account for your plan, credits and history']],proposed:false},
  {key:'basic',name:'Basic',suffix:'/ month',label:'Choose Basic',summary:'For everyday video variations and essential tools',
   benefits:[...verifiedQuality.basic,...sharedAccess,...monthlyDetails]},
  {key:'pro',name:'Pro',suffix:'/ month',label:'Choose Pro',summary:'For regular creators needing higher quality and more variants',
@@ -144,10 +147,12 @@ const planPrev=byId('pricePlanPrev'),planNext=byId('pricePlanNext'),planPosition
 function planCarouselIndex(){
  const cards=Array.from(planTrack.children);
  if(!cards.length)return 0;
- const left=planTrack.getBoundingClientRect().left;
+ const track=planTrack.getBoundingClientRect();
+ const center=track.left+track.width/2;
  let index=0,closest=Infinity;
  cards.forEach((card,i)=>{
-  const delta=Math.abs(card.getBoundingClientRect().left-left);
+  const bounds=card.getBoundingClientRect();
+  const delta=Math.abs(bounds.left+bounds.width/2-center);
   if(delta<closest){closest=delta;index=i;}
  });
  return index;
@@ -163,7 +168,7 @@ function movePlanCarousel(direction){
  if(!cards.length)return;
  const index=Math.max(0,Math.min(cards.length-1,planCarouselIndex()+direction));
  const target=cards[index];
- const left=planTrack.scrollLeft+target.getBoundingClientRect().left-planTrack.getBoundingClientRect().left;
+ const left=planTrack.scrollLeft+target.getBoundingClientRect().left-planTrack.getBoundingClientRect().left-(planTrack.clientWidth-target.offsetWidth)/2;
  planTrack.scrollTo({left,behavior:'smooth'});
 }
 planPrev.addEventListener('click',()=>movePlanCarousel(-1));
@@ -199,24 +204,22 @@ function renderPlans(config){
   button.addEventListener('click',()=>void checkoutPlan(p.key));
   const caption=node('p','price-feature-caption','Plan features');
   const list=node('ul','price-features');
-  const benefitRows=p.proposed?p.benefits:p.benefits.map(([icon,copy],index)=>{
-   if(index!==0)return[icon,copy];
+  const benefitRows=p.benefits.map(([icon,copy,type],index)=>{
+   if(index!==0)return[icon,copy,type];
    const limit=validToolLimit(currentPlan);
-   if(p.key==='lifetime')return[icon,'Tool credits: see current terms'];
-   if(p.key==='trial')return[icon,limit===null?'Tool allowance unavailable':numeral.format(limit)+' tool credits for the trial'];
-   return[icon,limit===null?'Tool allowance unavailable':numeral.format(limit)+' tool credits / month'];
+   if(p.key==='lifetime')return[icon,'','lifetime'];
+   if(limit===null)return[icon,'','unavailable'];
+   return[icon,numeral.format(limit),p.key==='trial'?'trial':'monthly'];
   });
-  for(const [icon,copy] of benefitRows){
+  for(const [icon,copy,type] of benefitRows){
    const li=node('li');
    const sym=node('span','price-feature-icon'+(icon==='✓'?' is-included':icon==='✕'?' is-excluded':icon==='ⓘ'?' is-info':''),icon);sym.setAttribute('aria-hidden','true');
    const label=node('span','',copy);
-   if(p.key==='trial'&&list.childElementCount===0){
-    const limit=validToolLimit(currentPlan);
-    if(limit!==null){
-     label.dataset.noTranslate='';
-     label.dataset.trialCredits=String(limit);
-     label.textContent=trialCreditLabel(limit,currentPricingLanguage());
-    }
+   if(type){
+    label.dataset.noTranslate='';
+    label.dataset.planFeature=type;
+    label.dataset.planFeatureValue=copy;
+    label.textContent=planFeatureLabel(type,copy,currentPricingLanguage());
    }
    li.append(sym,label);list.append(li);
   }
@@ -232,7 +235,7 @@ function renderPlans(config){
  if(window.matchMedia('(max-width:700px)').matches){
   requestAnimationFrame(()=>{
    const selected=host.children[Math.min(previousPlan,host.children.length-1)];
-   if(selected)host.scrollLeft=selected.offsetLeft-host.firstElementChild.offsetLeft;
+   if(selected)host.scrollLeft=host.scrollLeft+selected.getBoundingClientRect().left-host.getBoundingClientRect().left-(host.clientWidth-selected.offsetWidth)/2;
    refreshPlanCarousel();
   });
  }else refreshPlanCarousel();
