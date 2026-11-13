@@ -25,6 +25,29 @@ export async function conversationStore(){
   async list(){guard();const rows=await transaction('readonly',s=>s.index('owner').getAll(scope));guard();return rows.filter(r=>r.owner===scope).sort((a,b)=>b.updatedAt-a.updatedAt);},
   async get(id){guard();if(!id)return null;const r=await transaction('readonly',s=>s.get(id));guard();return r?.owner===scope?r:null;},
   async save(record){guard();if(record.owner&&record.owner!==scope)throw Error('ACCOUNT_CHANGED');const next={...record,owner:scope,updatedAt:Date.now()};await transaction('readwrite',s=>s.put(next));guard();return next;},
+  async removeCachedResult(jobId){
+   guard();
+   await transaction('readwrite',s=>{
+    const cursor=s.index('owner').openCursor(scope);
+    cursor.onsuccess=()=>{
+     guard();
+     const row=cursor.result;
+     if(!row)return;
+     const record=row.value;
+     let changed=false;
+     for(const message of record.messages||[]){
+      if(message.jobId!==jobId||!(message.resultFile instanceof Blob))continue;
+      delete message.resultFile;
+      message.mediaExpired=true;
+      message.mediaUrl=null;
+      changed=true;
+     }
+     if(changed)row.update(record);
+     row.continue();
+    };
+   });
+   guard();
+  },
   create(sessionId){guard();return {id:makeId(),sessionId,owner:scope,title:'New conversation',messages:[],updatedAt:Date.now()};}
  };
 }

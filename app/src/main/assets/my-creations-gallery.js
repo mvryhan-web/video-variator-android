@@ -119,7 +119,11 @@ async function fetchMyCards(){
  state.userItems=[...rows.values()].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
   .map(x=>({...x,kind:'own',model:x.model||'DEEPSYQ Studio',preview:state.mediaCache.get(x.id)||null}));
  render();
- if(server.status==='rejected')say('Серверная история пока недоступна. Показаны работы, сохранённые в этом браузере.');
+ const usage=await navigator.storage?.estimate?.().catch(()=>null);
+ if(request!==cardsRequest||localStorage.getItem('vv_token')!==token)return;
+ if(usage?.quota>0&&usage.usage/usage.quota>=0.85){
+  say('Память браузера почти заполнена. Скачайте нужные работы и удалите локальные копии старых видео, чтобы освободить место.');
+ }else if(server.status==='rejected')say('Серверная история пока недоступна. Показаны работы, сохранённые в этом браузере.');
 }
 function thumb(item){
  const node=document.createElement('div');node.className='mc-card-image';
@@ -214,7 +218,7 @@ function renderDetail(){
  $('mcDetailType').textContent=item.type==='audio'?'♫  Audio':item.type==='video'?'▷  Video':'▧  Image';
  $('mcDetailPrompt').textContent=item.prompt||'Open this creation in Studio to view its original prompt.';
  $('mcDetailModel').textContent=item.model||'DEEPSYQ Studio';
- $('mcRemove').textContent=item.kind==='sample'?'♧  Hide sample':'▤  Archive';
+ $('mcRemove').textContent=item.kind==='sample'?'♧  Hide sample':item.localBlob?'Удалить локальную копию':'▤  Archive';
  $('mcReference').textContent=item.type==='audio'?'♫  Create similar audio':item.type==='video'?'▷  Create similar video':'▧  Use as reference';
 }
 async function copyPrompt(item){
@@ -256,6 +260,22 @@ async function patchOwn(id,payload){
  await fetchMyCards();
 }
 async function remove(item){
+ if(!item)return;
+ if(item.localBlob){
+  if(!confirm('Удалить копию с этого устройства? Сначала скачайте файл, если хотите сохранить его.'))return;
+  try{
+   const {conversationStore}=await import('./jarvix-conversations.js');
+   const store=await conversationStore();
+   if(store.scope!==item.localScope||localStorage.getItem('vv_token')!==accountToken)throw Error('ACCOUNT_CHANGED');
+   await store.removeCachedResult(item.id);
+   const url=state.mediaCache.get(item.id);
+   if(url)URL.revokeObjectURL(url);
+   state.mediaCache.delete(item.id);
+   await fetchMyCards();
+   say('Копия удалена из памяти этого браузера.');
+  }catch{say('Не удалось удалить копию из памяти браузера.');}
+  return;
+ }
  if(item.kind==='sample'){
   if(!confirm('Hide this showcase example from this browser?'))return;
   state.hiddenSamples.add(item.id);persist('deepsyq_showcase_hidden_v1',state.hiddenSamples);render();say('Example hidden on this device.');return;
