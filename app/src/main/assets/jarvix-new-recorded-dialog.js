@@ -50,11 +50,13 @@ const NUMBERED_FILE=/^jarvix_(ru|en|fr|es)_\d{2}\.mp3$/;
 const TOUR_FILE=/^t3_(ru|en|fr|es)_[a-f0-9]{12}\.mp3$/;
 const UNVERIFIED_PROMISE=/гарант(?:ия|ируем)|все функции работают прямо из коробки|кредиты вернутся мгновенно|guaranteed results|instant credit refund/i;
 function allowedText(text){return typeof text==='string' && !!text.trim() && !UNVERIFIED_PROMISE.test(text);}
-const audioRecord=(record,lang,available)=>{
+const audioRecord=(record,lang,available,reviewed)=>{
  if (!record || !FILE.test(record.audio?.[lang]||''))return null;
  const filename=record.audio[lang];
  if (!available.has(filename))return null;
- const text=record.qa?.[lang]?.answer || record.phrases?.[lang];
+ const review=reviewed.get(filename);
+ if(review?.scenarioId!==record.id)return null;
+ const text=review.spokenText;
  if (!allowedText(text))return null;
  return {id:record.id,text,audioUrl:'/media/jarvix/clips/'+filename,source:'scenario'};
 };
@@ -80,19 +82,32 @@ function loadNumberedPhrases(){
    return response.json().then(data=>data.phrases || {});
   }).catch(()=>({}));
 }
+// Review entries contain what was actually heard, independently of the script.
+let reviewPromise;
+function reviewedScenarios(){
+ return reviewPromise ||= fetch('/media/jarvix/clips/reviewed-scenarios.json',
+  {cache:'no-store',signal:AbortSignal.timeout(6000)}).then(async response=>{
+   if(!response.ok)return new Map();
+   const data=await response.json();
+   if(data.schema!=='jarvix-reviewed-scenarios/v1'||!Array.isArray(data.clips))return new Map();
+   return new Map(data.clips.filter(clip=>clip && clip.approved===true &&
+    FILE.test(clip.filename) && typeof clip.scenarioId==='string' &&
+    allowedText(clip.spokenText)).map(clip=>[clip.filename,clip]));
+  }).catch(()=>new Map());
+}
 const catalogs=new Map();
 function catalog(lang){
  if(!catalogs.has(lang))catalogs.set(lang,buildCatalog(lang));
  return catalogs.get(lang);
 }
 async function buildCatalog(lang){
- const [data,physical,phrases]=await Promise.all([
-  prepareStaticClips(),verifiedPhysicalPaths(),loadNumberedPhrases()
+ const [data,physical,phrases,reviewed]=await Promise.all([
+  prepareStaticClips(),verifiedPhysicalPaths(),loadNumberedPhrases(),reviewedScenarios()
  ]);
  const available=new Set(data.clips.filter(c=>c.language===lang &&
   physical.has('/media/jarvix/clips/'+c.filename)).map(c=>c.filename));
  const clips=data.scenarios.flatMap(item=>{
-  const answer=audioRecord(item,lang,available);
+  const answer=audioRecord(item,lang,available,reviewed);
   return answer?[{...answer,question:item.qa?.[lang]?.question,triggers:item.triggers?.[lang]||[]}]:[];
  });
  for(const {id,text} of phrases[lang]||[]){

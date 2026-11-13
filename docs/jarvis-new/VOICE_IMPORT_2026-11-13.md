@@ -30,3 +30,8 @@ The verified 1900 MP3 are physically stored and indexed; this does **not** mean 
 - Physical index updated: **DONE**
 - JARVIX NEW TEST deployment: **DONE**
 - Every scenario transcript independently confirmed: **NOT CLAIMED**
+
+## Scenario playback review gate
+The 1,540 imported scenario clips are indexed, with no individual listening approval recorded yet. JARVIX uses a scenario clip only when its filename and scenario ID match an approved entry in the TEST runtime manifest `app/src/main/assets/media/jarvix/clips/reviewed-scenarios.json`. Each entry requires `filename`, `scenarioId`, `spokenText` transcribed from the audio, and `approved: true`. The expected master answer is never used as the transcript for a scenario MP3. Existing numbered and tour paths are unchanged.
+
+Local resolver checks passed for approved and pending scenario fixtures, two- and three-part replies, and a follow-up. Listening approval is still pending for the imported scenario batch.
