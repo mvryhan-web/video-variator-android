@@ -12,6 +12,11 @@ const resolveStudioLang=()=>{
   try{
     const s=localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang');
     if(s&&['ru','en','fr','es'].includes(s))return s;
+    // The static en-US HTML default is not an explicit user language choice.
+    // Prefer the browser language unless an existing saved preference overrides it.
+    const device=(navigator.languages?.[0]||navigator.language||'').slice(0,2).toLowerCase();
+    if(device==='uk'||device==='be')return 'ru';
+    if(['ru','en','fr','es'].includes(device))return device;
     const doc=document.documentElement.lang?.slice(0,2);
     if(doc&&['ru','en','fr','es'].includes(doc))return doc;
   }catch(_){}
