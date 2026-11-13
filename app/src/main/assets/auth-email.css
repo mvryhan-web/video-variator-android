@@ -613,3 +613,42 @@ html body #authModal .authLegal a:last-child {color:#df9dff;}
 }
 
 /* Publish with the text/css media type. */
+
+
+/* Compact desktop dialog. The mobile sign-in retains its full-height layout. */
+html body #authModal:not([hidden]) {color-scheme:dark;}
+html body #authModal .authRegistrationPanel > #googleButton {
+  color-scheme:dark;
+  min-width:0;
+  overflow:hidden;
+}
+@media (min-width:601px) and (hover:hover) and (pointer:fine) {
+  html body #authModal:not([hidden]) {
+    display:grid!important;place-items:center;box-sizing:border-box;
+    padding:20px!important;background:#050818bf!important;
+  }
+  html body #authModal:not([hidden])::before,
+  html body #authModal:not([hidden])::after {display:none;}
+  html body #authModal .authCard {
+    width:min(100%,470px)!important;min-height:0!important;
+    max-height:calc(100dvh - 40px)!important;overflow:auto!important;
+    justify-content:flex-start!important;box-sizing:border-box;
+    padding:24px 24px 22px!important;
+    border:1px solid #6357a7!important;border-radius:24px!important;
+    background:linear-gradient(150deg,#0c1c36,#12112e 60%,#241443)!important;
+    box-shadow:0 20px 64px #0009,0 0 30px #694de044!important;
+  }
+  html body #authModal .authCard > .authBrand {margin:0 44px 18px 0!important;}
+  html body #authModal .authCard > #authTitle {
+    font-size:clamp(23px,3vw,30px)!important;line-height:1.12!important;margin:0 0 7px!important;
+  }
+  html body #authModal .authCard > #authTitle .authTitleAccent {font-size:1.1em!important;}
+  html body #authModal .authCard > #authTitle + p {font-size:14px!important;margin:0 0 18px!important;}
+  html body #authModal .authRegistrationPanel {padding:18px!important;border-radius:20px!important;}
+  html body #authModal .authRegistrationPanel > .authActionTitle {font-size:20px!important;margin:0 0 14px!important;}
+  html body #authModal .authRegistrationPanel > #googleButton,
+  html body #authModal .authRegistrationPanel .emailAuthOpen {min-height:48px!important;}
+  html body #authModal .authRegistrationPanel .authDivider {margin:10px 0!important;}
+  html body #authModal .authRegistrationPanel > .authLegal {margin:14px auto 0!important;font-size:12px!important;}
+  html body #authModal .authCard > .modalClose {position:absolute!important;top:9px!important;right:9px!important;}
+}
