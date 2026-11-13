@@ -29,7 +29,7 @@ class EmailWorkerScopeTests(unittest.TestCase):
             verify_email_worker_only(self.original,self.candidate+b"\n// unrelated change\n")
 
     def test_partial_email_patch_is_rejected(self):
-        removed=self.candidate.replace(b"import {emailStorageReady,performEmailAuth} from '../../../../server/edge-email-auth.js';\n",b"",1)
+        removed=self.candidate.replace(b"import {emailStorageReady,emailStorageDiagnostic,performEmailAuth} from '../../../../server/edge-email-auth.js';\n",b"",1)
         with self.assertRaises(ValueError):
             verify_email_worker_only(self.original,removed)
 
