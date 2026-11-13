@@ -60,7 +60,18 @@ function currentPricingLanguage(){
  try{return window.DeepsyqI18n?.language||localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang')||document.documentElement.lang;}
  catch{return document.documentElement.lang;}
 }
+const storagePlanNotes={
+ trial:[500_000_000,'До 500 МБ облачного хранения на время пробного доступа','Up to 500 MB of cloud storage during the trial','Jusqu’à 500 Mo de stockage cloud pendant l’essai','Hasta 500 MB de almacenamiento en la nube durante la prueba'],
+ basic:[2_000_000_000,'До 2 ГБ облачного хранения на оплаченный период','Up to 2 GB of cloud storage for the paid period','Jusqu’à 2 Go de stockage cloud pendant la période payée','Hasta 2 GB de almacenamiento en la nube durante el período pagado'],
+ pro:[10_000_000_000,'До 10 ГБ облачного хранения на оплаченный период','Up to 10 GB of cloud storage for the paid period','Jusqu’à 10 Go de stockage cloud pendant la période payée','Hasta 10 GB de almacenamiento en la nube durante el período pagado'],
+ business:[50_000_000_000,'До 50 ГБ облачного хранения на оплаченный период','Up to 50 GB of cloud storage for the paid period','Jusqu’à 50 Go de stockage cloud pendant la période payée','Hasta 50 GB de almacenamiento en la nube durante el período pagado'],
+ lifetime:[1_000_000_000_000,'До 1 ТБ облачного хранения на 12 месяцев с даты покупки','Up to 1 TB of cloud storage for 12 months from purchase','Jusqu’à 1 To de stockage cloud pendant 12 mois après l’achat','Hasta 1 TB de almacenamiento en la nube durante 12 meses desde la compra']
+};
+function storagePlanLabel(plan,language){
+ return storagePlanNotes[plan][({ru:1,en:2,fr:3,es:4})[language]||2];
+}
 function planFeatureLabel(type,value,language){
+ if(type==='storage')return storagePlanLabel(value,language);
  const copy={
   ru:{trial:n=>n+' кредитов на пробный период',monthly:n=>n+' кредитов в месяц',lifetime:()=> 'Кредиты по действующим условиям',unavailable:()=> 'Лимит кредитов недоступен',variants:n=>'До '+n+' вариантов видео за один запуск в Video Uniquifier',quality:q=>'Разрешение экспорта в Video Uniquifier: '+q},
   en:{trial:n=>n+' credits for the trial',monthly:n=>n+' credits per month',lifetime:()=> 'Credits: see current terms',unavailable:()=> 'Credit allowance unavailable',variants:n=>'Up to '+n+' video variants per run in Video Uniquifier',quality:q=>'Video Uniquifier export resolution: '+q},
@@ -211,6 +222,9 @@ function renderPlans(config){
    if(limit===null)return[icon,'','unavailable'];
    return[icon,numeral.format(limit),p.key==='trial'?'trial':'monthly'];
   });
+  if(config?.creationStorage?.enabled===true&&currentPlan?.storageLimitBytes===storagePlanNotes[p.key][0]){
+   benefitRows.splice(1,0,['✓',p.key,'storage']);
+  }
   for(const [icon,copy,type] of benefitRows){
    const li=node('li');
    const sym=node('span','price-feature-icon'+(icon==='✓'?' is-included':icon==='✕'?' is-excluded':icon==='ⓘ'?' is-info':''),icon);sym.setAttribute('aria-hidden','true');
