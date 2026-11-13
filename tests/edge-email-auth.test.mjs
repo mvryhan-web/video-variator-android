@@ -16,7 +16,7 @@ function req(kind,email,password,ip='198.51.100.22',origin='https://deepsyq.app'
 function fakeDb(){
   const users=new Map(),calls=[];
   async function fetcher(_url,options){
-    assert.match(_url,/^https:\/\/api\.eu-central-1\.aws\.neon\.tech\/sql$/);
+    assert.equal(_url,'https://ep-example.eu-central-1.aws.neon.tech/sql');
     assert.equal(options.headers['Neon-Connection-String'],env.DATABASE_URL);
     const {query,params}=JSON.parse(options.body);
     calls.push({query,params:query.includes('INSERT')?params.slice(0,3):params});
