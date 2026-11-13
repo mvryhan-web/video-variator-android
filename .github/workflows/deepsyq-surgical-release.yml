@@ -175,14 +175,15 @@ jobs:
         (github.event.head_commit.message == 'release(JARVIX Tour): publish tour-only fix' ||
          github.event.head_commit.message == 'release(JARVIX Chat): publish remove-background command' ||
          github.event.head_commit.message == 'release(Auth): restore original sign-in' ||
-         github.event.head_commit.message == 'release(Chat): publish Trial offer only')))
+         github.event.head_commit.message == 'release(Chat): publish Trial offer only' ||
+         github.event.head_commit.message == 'release(Auth and Chat): publish latest approved assets')))
     needs: tests
     runs-on: ubuntu-latest
     timeout-minutes: 12
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
-      SCOPE_FILES: "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Chat): publish Trial offer only' && 'jarvix-chat.js' || github.event_name == 'push' && github.event.head_commit.message == 'release(Auth): restore original sign-in' && 'auth-email.js,auth-email.css' || github.event_name == 'push' && github.event.head_commit.message == 'release(JARVIX Chat): publish remove-background command' && 'jarvix-chat.js' || github.event_name == 'push' && 'jarvix-guided-tour.js,jarvix-tour-choreography.js' || inputs.files }}"
+      SCOPE_FILES: "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Auth and Chat): publish latest approved assets' && 'auth-email.js,auth-email.css,jarvix-chat.js' || github.event_name == 'push' && github.event.head_commit.message == 'release(Chat): publish Trial offer only' && 'jarvix-chat.js' || github.event_name == 'push' && github.event.head_commit.message == 'release(Auth): restore original sign-in' && 'auth-email.js,auth-email.css' || github.event_name == 'push' && github.event.head_commit.message == 'release(JARVIX Chat): publish remove-background command' && 'jarvix-chat.js' || github.event_name == 'push' && 'jarvix-guided-tour.js,jarvix-tour-choreography.js' || inputs.files }}"
       RELEASE_MODE: ${{ github.event_name == 'push' && 'publish' || inputs.mode }}
     steps:
       - uses: actions/checkout@v4

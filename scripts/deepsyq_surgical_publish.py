@@ -159,10 +159,15 @@ class Cloudflare:
         self.session.headers["Authorization"] = "Bearer " + self.token
 
     def call(self, method, url, **kwargs):
-        try:
-            response = self.session.request(method, url, timeout=30, **kwargs)
-        except Exception as error:
-            raise Blocked("Cloudflare request failed: " + type(error).__name__) from error
+        attempts = 5 if method == "GET" else 1
+        for attempt in range(attempts):
+            try:
+                response = self.session.request(method, url, timeout=30, **kwargs)
+            except Exception as error:
+                raise Blocked("Cloudflare request failed: " + type(error).__name__) from error
+            if response.status_code not in (502, 503, 504) or attempt == attempts - 1:
+                break
+            time.sleep(2 ** (attempt + 1))
         insist(response.ok, "HTTP " + str(response.status_code) + " on Cloudflare/live " +
                method + " " + url.split("?")[0])
         return response
