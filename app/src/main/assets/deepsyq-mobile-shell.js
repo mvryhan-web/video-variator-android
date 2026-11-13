@@ -1,3 +1,4 @@
+import './deepsyq-action-auth-gate.js'; // Owner: guest generation/send actions show existing Home login
 import {applyCanonicalNavIcons} from './deepsyq-canonical-nav-icons.js';
 import {installApprovedJarvixOrb} from './jarvix-approved-orb.js';
 import {installUnifiedPlatformHeader} from './deepsyq-unified-platform-header.js';
