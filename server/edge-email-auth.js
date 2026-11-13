@@ -35,7 +35,7 @@ async function query(store,statement,params=[],fetcher=fetch) {
         'Neon-Raw-Text-Output':'true',
         'Neon-Array-Mode':'false'
       },
-      body:JSON.stringify({query:statement,params:params.map(v=>String(v))}),
+      body:JSON.stringify({query:statement,params:params.map(v=>v===null?null:String(v))}),
       signal:AbortSignal.timeout(10000)
     });
   } catch { throw new Error('ACCOUNT_STORAGE_UNAVAILABLE'); }
