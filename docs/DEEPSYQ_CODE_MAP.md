@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `a07e6ca83fca7a3d94dd66576727ec0557285ab4`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 126 | Named symbols: 446 | Checked relations: 80
+Source commit: `3578937459df02333923c766c6691dced6968b59`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 126 | Named symbols: 447 | Checked relations: 80
 
 ## Topic finder (matching filenames)
 
@@ -130,7 +130,7 @@ ACTION_ROUTES (L2)
 
 ### `app/src/main/assets/jarvix-chat.js`
 
-modeHeaderLabels (L40) · urls (L46) · chatTrialCopy (L409) · imageIntakeQuery (L450) · composer (L753) · pendingMsg (L803) · pending (L831) · composerInput (L866) · incomingTool (L943) · wpPane (L955) · expandBtn (L974)
+modeHeaderLabels (L40) · urls (L46) · siteAnswers (L242) · chatTrialCopy (L426) · imageIntakeQuery (L467) · composer (L781) · pendingMsg (L831) · pending (L859) · composerInput (L894) · incomingTool (L986) · wpPane (L1011) · expandBtn (L1030)
 
 ### `app/src/main/assets/jarvix-clip-library.js`
 
