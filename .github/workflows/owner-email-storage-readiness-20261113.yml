@@ -1,0 +1,47 @@
+name: DEEPSYQ email account storage readiness (read-only)
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/owner-email-storage-readiness-20261113.yml'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Inspect only production binding names and types; never output values
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          assert.match(process.env.CF_ACCOUNT||'',/^[a-f0-9]{32}$/);
+          assert.ok(process.env.CF_TOKEN);
+          const prefix='https://api.cloudflare.com/client/v4/accounts/'+process.env.CF_ACCOUNT;
+          async function read(path) {
+            const response=await fetch(prefix+path,{headers:{Authorization:'Bearer '+process.env.CF_TOKEN},signal:AbortSignal.timeout(15000)});
+            if(!response.ok)throw Error('Cloudflare API request failed with status '+response.status);
+            const data=await response.json();
+            if(data.success!==true)throw Error('Cloudflare API success flag false');
+            return data.result;
+          }
+          const project=await read('/pages/projects/deepsyq');
+          assert.equal(project.name,'deepsyq');
+          const source=String(project.production_script_name||'');
+          assert.match(source,/^pages-worker--[a-z0-9-]+-production$/);
+          const settings=await read('/workers/scripts/'+encodeURIComponent(source)+'/settings');
+          const bindings=Array.isArray(settings.bindings)?settings.bindings:[];
+          const envVars=project.deployment_configs?.production?.env_vars||{};
+          const names=bindings.map(({name,type})=>({name,type})).filter(x=>x.name).sort((a,b)=>a.name.localeCompare(b.name));
+          console.log('EMAIL_READINESS_PRODUCTION_BRANCH',project.production_branch);
+          console.log('EMAIL_READINESS_BOUND_BINDING_NAMES_AND_TYPES',JSON.stringify(names));
+          console.log('EMAIL_READINESS_PROJECT_ENV_KEYS',JSON.stringify(Object.keys(envVars).sort()));
+          for(const name of ['DATABASE_URL','DEEPSYQ_EMAIL_DATABASE_URL','DEEPSYQ_WALLET_DATABASE_URL','APP_JWT_SECRET','GOOGLE_CLIENT_ID']) {
+            console.log('EMAIL_READINESS_KEY',JSON.stringify({name,worker_binding:bindings.some(b=>b.name===name),project_env:Object.prototype.hasOwnProperty.call(envVars,name)}));
+          }
+          console.log('EMAIL_READINESS_PUBLIC_STATUS',JSON.stringify(await (await fetch('https://deepsyq.app/api/auth/email/status',{cache:'no-store'})).json()));
+          JS
