@@ -17,15 +17,59 @@ function openTarget(item,mode,feedback){
   return;
  }
  const settings=mode==='prompt'?{}:{...(item.defaultSettings||{}),ratio:item.aspectRatio};
- const payload={id:item.id,title:item.title,generationType:item.kind,promptTemplate:item.prompt||'',defaultModel:mode==='clone'?item.defaultModel||null:null,requiredInputTypes:Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[],defaultSettings:settings,source:'inspiration',action:mode};
+ const payload={id:item.id,title:item.title,generationType:item.kind,promptTemplate:studioDraftPrompt(item.prompt,item.aspectRatio),defaultModel:mode==='clone'?item.defaultModel||null:null,requiredInputTypes:Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[],defaultSettings:settings,source:'inspiration',action:mode};
  let key,destination;
- if(item.actionTarget==='studio'){key='deepsyq_template_start';destination='jarvix-chat.html?mode='+studioKind(item)+'&from=inspiration&action='+mode;}
+ if(item.actionTarget==='studio'){key='deepsyq_template_start';destination='jarvix-chat.html?mode='+studioKind(item)+'&from=template&action='+mode;}
  else if(item.actionTarget==='agent'&&item.actionPath){key='deepsyq_agent_inspiration_start';destination=item.actionPath+'?from=inspiration&action='+encodeURIComponent(mode);}
  else{if(feedback){feedback.textContent='This inspiration action is not available yet.';feedback.hidden=false;}return;}
  try{sessionStorage.setItem(key,JSON.stringify(payload));}
  catch(_){if(feedback){feedback.textContent='Your browser could not prepare this inspiration. Check storage permissions and try again.';feedback.hidden=false;}return;}
  if(feedback){feedback.textContent='';feedback.hidden=true;}
  location.assign(destination);
+}
+function studioDraftPrompt(prompt,ratio){
+ const text=String(prompt||'').trim();
+ return text&&/^(?:1:1|16:9|9:16|4:3|3:4|4:5|3:2|2:3|21:9)$/.test(ratio||'')&&!text.includes(ratio)
+  ? text+'\n\nAspect ratio: '+ratio+'.' : text;
+}
+const studioLabels={
+ ru:['Быстрый старт','Обложка YouTube','Вертикальный ролик','Фото товара','Создать свою версию'],
+ en:['Quick start','YouTube thumbnail','Vertical video','Product photo','Create your version'],
+ fr:['Démarrage rapide','Miniature YouTube','Vidéo verticale','Photo produit','Créer votre version'],
+ es:['Inicio rápido','Miniatura de YouTube','Vídeo vertical','Foto de producto','Crear tu versión']
+};
+const quickStarts=[
+ {id:'youtube-thumbnail',kind:'image',image:'media/home/owner-20261018/01-close-up-woman.jpg',aspectRatio:'16:9',prompt:'Create a YouTube thumbnail about [topic]. Feature [main subject] with a clear focal point, strong contrast and space for a short title.'},
+ {id:'vertical-video',kind:'video',image:'media/home/owner-20261018/04-neon-motorcycle.jpg',aspectRatio:'9:16',prompt:'Create a vertical short video about [topic]. Start with a strong visual hook, show [key action] clearly and finish with a memorable final frame.'},
+ {id:'product-photo',kind:'image',image:'media/home/neon-20261018/canvas.webp',aspectRatio:'1:1',prompt:'Create a studio product photo of [product]. Use soft directional lighting, a clean background and realistic materials. Keep the product centered with room around it.'}
+];
+function studioCopy(){
+ const lang=(localStorage.getItem('deepsyq_lang')||document.documentElement.lang||'en').slice(0,2);
+ return studioLabels[lang]||studioLabels.en;
+}
+function renderQuickStarts(section){
+ if(document.getElementById('homeStudioQuickStarts'))return;
+ const root=detailEl('section','home-creative-tools');
+ root.id='homeStudioQuickStarts';
+ root.setAttribute('aria-labelledby','homeStudioQuickStartsTitle');
+ const labels=studioCopy();
+ const title=detailEl('h2','',labels[0]);
+ title.id='homeStudioQuickStartsTitle';
+ const grid=detailEl('div','home-create-grid');
+ quickStarts.forEach((item,index)=>{
+  const link=detailEl('a','home-create-card tile-'+item.kind);
+  link.href='jarvix-chat.html?'+new URLSearchParams({mode:item.kind,from:'template',prompt:studioDraftPrompt(item.prompt,item.aspectRatio)});
+  const image=detailEl('img');
+  image.src=item.image;image.alt='';image.loading='lazy';image.width=720;image.height=405;
+  const copy=detailEl('span','home-create-copy');
+  copy.append(detailEl('strong','',labels[index+1]),detailEl('span','',item.aspectRatio));
+  const arrow=detailEl('span','home-card-arrow','›');
+  arrow.setAttribute('aria-hidden','true');
+  link.append(image,copy,arrow);
+  grid.append(link);
+ });
+ root.append(title,grid);
+ section.before(root);
 }
 let inspirationDetail=null;
 function detailEl(tag,className,text){
@@ -111,7 +155,7 @@ function openInspirationDetail(item,opener,{minimal=false}={}){
  const note=detailEl('p','inspiration-detail-note','An example, not a ready-to-run AI model. Opening Studio prepares your prompt; no generation or payment starts automatically.');
  const feedback=detailEl('p','inspiration-detail-feedback');feedback.hidden=true;feedback.setAttribute('role','alert');
  const actions=detailEl('div','inspiration-detail-actions');
- const clone=detailEl('button','inspiration-detail-clone',minimal?'Clone & Try':'✦ Clone & try');clone.setAttribute('aria-label','Clone & Try');
+ const clone=detailEl('button','inspiration-detail-clone',minimal?studioCopy()[4]:'✦ Clone & try');
  const use=detailEl('button','inspiration-detail-secondary','Use this prompt');
  const create=detailEl('button','inspiration-detail-secondary','Create yours');
  const copy=detailEl('button','inspiration-detail-secondary','Copy prompt');
@@ -286,6 +330,7 @@ export function renderHomeInspiration(feed,onRender=()=>{}){
  items=feed.filter(item=>item.actionTarget==='studio'&&['video','image'].includes(item.kind)&&!item.previewUrl?.includes('logo')&&!item.previewPosterUrl?.includes('logo'));
  const section=document.getElementById('inspirationPreview');
  section.hidden=false;
+ renderQuickStarts(section);
  section.querySelectorAll('[data-inspiration-kind]').forEach(button=>button.onclick=()=>{
   activeKind=button.dataset.inspirationKind;
   section.querySelectorAll('[data-inspiration-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
