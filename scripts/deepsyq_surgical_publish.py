@@ -40,6 +40,7 @@ HASH_REUSE_RELEASE_SETS = (
     frozenset({"generate-studio.html"}),
     frozenset({"smart-reminders.html", "mobile-utility.html"}),
     frozenset({"mobile-utility.js", "my-creations-gallery.js"}),
+    frozenset({"my-creations-gallery.js"}),
     frozenset({"design-gallery.html", "telegram-free-mini.html"}),
     frozenset({"audio-studio.html", "avatar-studio.html"}),
     frozenset({"jarvix.html"}),

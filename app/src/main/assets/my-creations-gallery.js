@@ -365,10 +365,61 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')$('mcDetail'
 if(window.matchMedia('(max-width:820px)').matches)$('mcDetail').hidden=true;
 window.addEventListener('storage',event=>{if(event.key==='vv_token'||event.key===null)void fetchMyCards();});
 window.addEventListener('pageshow',event=>{if(event.persisted)void fetchMyCards();});
+const storyCard=document.createElement('section');
+storyCard.setAttribute('aria-label','Stories project');
+const storyTitle=document.createElement('h2');
+const storySummary=document.createElement('p');
 const storyLink=document.createElement('a');
 storyLink.className='mc-filter';
 storyLink.href='/mobile-utility.html?tool=video-trim&story=1';
-storyLink.textContent=(localStorage.getItem('deepsyq_lang')||document.documentElement.lang).startsWith('ru')
- ?'Создать или продолжить ролик для сторис':'Create or resume a Story video';
-$('mcGrid')?.before(storyLink);
+storyCard.append(storyTitle,storySummary,storyLink);
+$('mcGrid')?.before(storyCard);
+
+async function readStoryDraft(scope){
+ if(typeof indexedDB.databases==='function'){
+  const databases=await indexedDB.databases();
+  if(!databases.some(database=>database.name==='deepsyq-story-project'))return null;
+ }
+ const db=await new Promise((resolve,reject)=>{
+  const request=indexedDB.open('deepsyq-story-project',1);
+  request.onupgradeneeded=()=>request.transaction.abort();
+  request.onsuccess=()=>resolve(request.result);
+  request.onerror=()=>reject(request.error);
+ });
+ try{
+  return await new Promise((resolve,reject)=>{
+   const request=db.transaction('drafts').objectStore('drafts').get(scope);
+   request.onsuccess=()=>resolve(request.result);
+   request.onerror=()=>reject(request.error);
+  });
+ }finally{db.close();}
+}
+
+let storyCardVersion=0;
+async function updateStoryCard(){
+ const version=++storyCardVersion;
+ const token=localStorage.getItem('vv_token')||'guest';
+ const ru=(localStorage.getItem('deepsyq_lang')||document.documentElement.lang).startsWith('ru');
+ storyTitle.textContent=ru?'Видео для сторис':'Story video';
+ storySummary.textContent='';
+ storySummary.hidden=true;
+ storyLink.textContent=ru?'Создать ролик':'Create a video';
+ try{
+  const {ownerScope}=await import('./jarvix-conversations.js');
+  const draft=await readStoryDraft(await ownerScope(token));
+  if(version!==storyCardVersion||token!==(localStorage.getItem('vv_token')||'guest'))return;
+  if(!(draft?.file instanceof File)||!draft.file.size||
+     !Number.isFinite(draft.start)||!Number.isFinite(draft.end)||draft.start<0||draft.end<=draft.start)return;
+  const format=new Intl.NumberFormat(ru?'ru':'en',{maximumFractionDigits:1});
+  const range=format.format(draft.start)+'–'+format.format(draft.end)+(ru?' с':' s');
+  storySummary.textContent=draft.file.name+' · '+range+' · 9:16. '+(ru?'Проверьте фрагмент и экспортируйте ролик.':'Review the clip and export your video.');
+  storySummary.hidden=false;
+  storyLink.textContent=ru?'Продолжить ролик':'Resume video';
+ }catch{}
+}
+window.addEventListener('storage',event=>{
+ if(event.key==='vv_token'||event.key===null)void updateStoryCard();
+});
+window.addEventListener('pageshow',event=>{if(event.persisted)void updateStoryCard();});
+void updateStoryCard();
 render();void loadSamples();void fetchMyCards();
