@@ -1,0 +1,58 @@
+name: JARVIX NEW import owner's 1900 MP3 from draft release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [jarvis-new]
+    paths:
+      - '.github/workflows/jarvis-new-import-owner-release-1900.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: jarvis-new-owner-release-mp3
+  cancel-in-progress: false
+
+jobs:
+  import-owner-recordings:
+    if: github.ref == 'refs/heads/jarvis-new'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      JARVIX_RELEASE_ASSET_ID: '743206293'
+    steps:
+      - name: Checkout strictly jarvis-new
+        uses: actions/checkout@v4
+        with:
+          ref: jarvis-new
+          fetch-depth: 1
+          persist-credentials: true
+      - name: Download existing original ZIP from owner's private draft Release
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${GH_TOKEN}"
+          curl --fail --show-error --silent --location --retry 3 \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header "Accept: application/octet-stream" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/assets/${JARVIX_RELEASE_ASSET_ID}" \
+            --output /tmp/JARVIX_OWNER_1900.zip
+          python - <<'PY'
+          import pathlib,zipfile
+          p=pathlib.Path('/tmp/JARVIX_OWNER_1900.zip')
+          assert p.stat().st_size == 310923328, f'Unexpected GitHub draft asset size: {p.stat().st_size}'
+          with zipfile.ZipFile(p) as z:
+            assert sum(x.filename.endswith('.mp3') for x in z.infolist()) == 1900
+          print('OWNER_RELEASE_ASSET_VERIFIED: 1900 MP3, 310923328 ZIP bytes')
+          PY
+      - name: Copy missing original MP3 only, commit and push to jarvis-new
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/import_jarvix_release_asset_1900.py --zip /tmp/JARVIX_OWNER_1900.zip --batch-size 200
+      - name: Write summary
+        if: always()
+        run: echo "JARVIX NEW owner MP3 source is draft release ID 444087010, asset 743206293. See import log for per-batch commits and final 1900-count verification." >> "$GITHUB_STEP_SUMMARY"
