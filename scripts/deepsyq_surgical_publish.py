@@ -43,6 +43,7 @@ HASH_REUSE_RELEASE_SETS = (
     frozenset({"jarvix.html"}),
     frozenset({"deepsyq-i18n.js"}),
     frozenset({"jarvix-chat.js"}),
+    frozenset({"auth-email.js", "auth-email.css"}),
 )
 
 def allowed_hash_reuse(paths):
