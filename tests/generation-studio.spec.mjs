@@ -63,7 +63,7 @@ test('mocked contract result confirms selected service and current credits befor
  let jobPosts=0,estimatePosts=0,jobBody;
  await page.route('**/api/studio/estimate',async r=>{estimatePosts++;return r.fulfill({json:{kind:'image',model:'fixture',credits:7,quantity:1,perImageCredits:7,unit:'AI credits'}});});
  await page.route('**/api/studio/jobs',async r=>{if(r.request().method()==='POST'){jobPosts++;jobBody=r.request().postDataJSON();return r.fulfill({status:202,json:{id:'fixture',status:'ready'}});}return r.fulfill({json:{items:[]}});});
- await page.route('**/api/studio/jobs/fixture',r=>r.fulfill({json:r.request().method()==='DELETE'?{ok:true}:{id:'fixture',status:'ready',mime:'image/png'}}));
+ await page.route('**/api/studio/jobs/fixture',r=>r.fulfill({json:r.request().method()==='DELETE'?{ok:true}:{id:'fixture',kind:'image',model:'fixture',status:'ready',mime:'image/png'}}));
  await page.route('**/api/studio/jobs/fixture/media',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));
  await page.goto('/generate-studio.html');await chooseStudio(page,'image');await page.locator('#prompt').fill('Fixture');await page.locator('#consent').check();
  page.once('dialog',d=>d.dismiss());await page.locator('#generate').click();await expect(page.locator('#status')).toContainText('cancelled');expect(estimatePosts).toBe(1);expect(jobPosts).toBe(0);
@@ -77,7 +77,10 @@ test('Android bridge uses configured backend without loading FFmpeg',async({page
 test('three direct studio links and model/settings dialogs work on small phones',async({page})=>{
  await page.setViewportSize({width:320,height:740});
  for(const [studio,title] of [['image','Light up your creation with Deepsyq'],['audio','Light up your creation with Deepsyq'],['video','Light up your creation with Deepsyq']]){await page.goto('/generate-studio.html?studio='+studio);await expect(page.locator('#taskTitle')).toHaveText(title);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
- await page.locator('#modelButton').click();await expect(page.getByRole('dialog')).toBeVisible();await expect(page.locator('#modelDialog')).toContainText('Seedance 2.0 Mini');await page.getByRole('button',{name:/^Seedance 2\.0 Text or up to/}).click();await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');await expect(page.locator('#availability')).toContainText('not enabled');await expect(page.locator('[data-t=consent]')).toContainText('selected model and its service');await expect(page.locator('[data-t=consent]')).not.toContainText('BytePlus');await page.locator('#prompt').fill('Video');await page.locator('#consent').check();await expect(page.locator('#generate')).toBeDisabled();
+ await chooseStudio(page,'video'); // Existing visible + menu also completes explicit Terms acceptance.
+ await page.locator('#studioSettingsToggle').click();
+ await expect(page.locator('#studioSettingsHub')).toBeVisible();
+ await page.locator('#modelButton').click();await expect(page.locator('#modelDialog')).toBeVisible();await expect(page.locator('#modelDialog')).toContainText('Seedance 2.0 Mini');await page.getByRole('button',{name:/^Seedance 2\.0 Text or up to/}).click();await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');await expect(page.locator('#availability')).toContainText('not enabled');await expect(page.locator('#consent')).toBeChecked();await page.locator('#prompt').fill('Video');await page.locator('#consent').check();await expect(page.locator('#generate')).toBeDisabled();
  await page.locator('#settingsButton').click();await page.getByRole('button',{name:'1:1',exact:true}).click();await expect(page.locator('#ratio')).toHaveValue('1:1');await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#settingsButton')).toContainText('1:1');
  await page.locator('#modelButton').click();await page.keyboard.press('Escape');await expect(page.locator('#modelDialog')).not.toBeVisible();
 });
