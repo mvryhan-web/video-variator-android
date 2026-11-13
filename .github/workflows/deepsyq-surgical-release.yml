@@ -90,6 +90,66 @@ jobs:
           print("PRODUCTION_ROLLBACK_VERIFIED")
           PY
 
+  restore-original-sign-in:
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/deepsyq-platform' &&
+      github.event.head_commit.message == 'rollback(Auth): restore original sign-in on production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Roll back to the untouched production deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, json, time, urllib.request
+          base = ("https://api.cloudflare.com/client/v4/accounts/"
+                  + os.environ["CLOUDFLARE_ACCOUNT_ID"]
+                  + "/pages/projects/deepsyq")
+          target = "4f5d98f6-bf78-4a28-ac98-1130292cba98"
+          def api(path="", method="GET"):
+              req = urllib.request.Request(base + path, method=method,
+                  headers={"Authorization": "Bearer " + os.environ["CLOUDFLARE_API_TOKEN"]})
+              with urllib.request.urlopen(req, timeout=30) as res:
+                  payload = json.load(res)
+              if payload.get("success") is not True or payload.get("result") is None:
+                  raise RuntimeError("Cloudflare rollback API did not confirm success")
+              return payload["result"]
+          old = api("/deployments/" + target)
+          baseline_manifest = old.get("files")
+          if not isinstance(baseline_manifest, dict) or len(baseline_manifest) < 100:
+              raise RuntimeError("Verified previous deployment manifest not available")
+          project = api()
+          current = project.get("canonical_deployment", {}).get("id")
+          if current != target:
+              live = api("/deployments/" + current)
+              files = live.get("files") or {}
+              diff = {k for k in files.keys() | baseline_manifest.keys() if files.get(k) != baseline_manifest.get(k)}
+              if current != "5545b5aa-bee0-4f0c-bf8d-d3cb14b29ea5" or diff != {"/auth-email.js", "/auth-email.css"} or live.get("uses_functions") is not True or old.get("uses_functions") is not True:
+                  raise RuntimeError("Current deployment is not the verified two-file sign-in release")
+              api("/deployments/" + target + "/rollback", "POST")
+          for attempt in range(24):
+              project = api()
+              current = project.get("canonical_deployment", {}).get("id")
+              actual = api("/deployments/" + current) if current else {}
+              if actual.get("files") == baseline_manifest:
+                  print("RESTORED_BASELINE_ASSETS", current)
+                  break
+              time.sleep(3)
+          else:
+              raise RuntimeError("Production rollback did not restore verified baseline manifest")
+          health_req = urllib.request.Request("https://deepsyq.app/api/config",
+                                               headers={"Cache-Control": "no-cache"})
+          with urllib.request.urlopen(health_req, timeout=20) as health:
+              if health.status != 200:
+                  raise RuntimeError("Production API health not restored")
+          print("PRODUCTION_ROLLBACK_VERIFIED")
+          PY
+
   tests:
     runs-on: ubuntu-latest
     timeout-minutes: 5
