@@ -28,8 +28,9 @@ SPECIAL = ("_worker.js", "_worker.bundle", "_headers", "_redirects", "_routes.js
 FINANCIAL = ("pricing.html", "pricing-page.js", "pricing-page.css",
              "pricing-wallet.js", "pricing-wallet.css")
 MAX_FILE_BYTES = 25 * 1024 * 1024
-# Only the already-approved JARVIX tour and this explicit SEO audit patch may
-# bypass non-reproducible live /404.html bytes by reusing canonical LIVE hashes.
+# For each explicitly approved release scope below, reuse canonical LIVE hashes
+# for all untouched assets when Cloudflare cannot reproduce a live /404.html byte-for-byte.
+# This never permits changing more assets than the exact requested allowlist.
 HASH_REUSE_RELEASE_SETS = (
     frozenset({"jarvix-guided-tour.js", "jarvix-tour-choreography.js"}),
     frozenset({"ai-apps.html", "canvas.html", "free-tools.html", "sitemap.xml"}),
@@ -41,6 +42,7 @@ HASH_REUSE_RELEASE_SETS = (
     frozenset({"audio-studio.html", "avatar-studio.html"}),
     frozenset({"jarvix.html"}),
     frozenset({"deepsyq-i18n.js"}),
+    frozenset({"jarvix-chat.js"}),
 )
 
 def allowed_hash_reuse(paths):
