@@ -10,7 +10,7 @@ def once(source: str, before: str, after: str, name: str) -> str:
         raise ValueError(f"Email worker scope mismatch ({name}): expected exactly one anchor")
     return source.replace(before, after, 1)
 
-NEW_IMPORT = "import {emailStorageReady,performEmailAuth} from '../../../../server/edge-email-auth.js';\n"
+NEW_IMPORT = "import {emailStorageReady,emailStorageDiagnostic,performEmailAuth} from '../../../../server/edge-email-auth.js';\n"
 NEW_OWNER = """\n\nfunction isVerifiedOwnerAccount(user, env) {
   // Email address alone is unverified; Google owner privileges remain unchanged.
   return Boolean(user && user.provider === 'google' && isOwnerEmail(user.email, env));
@@ -19,7 +19,7 @@ OLD_STATUS = """    if (pathname === '/api/auth/email/status') {
       return json({ configured: false });
     }"""
 NEW_STATUS = """    if (pathname === '/api/auth/email/status' && request.method === 'GET') {
-      return json({ supported: true, configured: await emailStorageReady(env) });
+      return json({ supported: true, ...(await emailStorageDiagnostic(env)) });
     }
     if ((pathname === '/api/auth/email/register' || pathname === '/api/auth/email/login') &&
         request.method === 'POST') {
