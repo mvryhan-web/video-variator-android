@@ -375,7 +375,7 @@ body.deepsyq-pricing-page .price-hero-art{background-position:center,right 55%}
  body.deepsyq-pricing-page .price-hero-copy{min-height:clamp(245px,68vw,365px)}
  body.deepsyq-pricing-page .price-hero-copy{padding-block:16px}
  body.deepsyq-pricing-page .price-hero-art{
-  background-size:cover,auto 95%;
+  background-size:cover,auto 133%;
   background-position:center,right center;
  }
 }
