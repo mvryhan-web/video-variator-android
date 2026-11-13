@@ -9,3 +9,6 @@ Release guard: deploy only the approved Email route additions inside the existin
 
 
 Retry 2: sanitized backend diagnostic, unchanged Google code. Previous release rolled back verified baseline 47b9d222-5243-4a67-8c6d-b0b3b5eb20dc because Email account database was not ready. Release must fail-closed and automatically restore baseline again if so.
+
+
+Retry 3: fix Neon SQL HTTP endpoint to regional API host (the serverless driver default). One more guarded production release; Google route byte-identical, all non-Email resources preserved, automatic rollback enabled if account readiness fails.
