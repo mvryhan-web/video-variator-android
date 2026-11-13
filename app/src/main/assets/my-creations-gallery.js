@@ -64,6 +64,18 @@ async function loadSamples(){
  render();
 }
 
+const selectedPhotos=new Set();
+let deletingPhotos=false;
+const batchDelete=document.createElement('button');
+batchDelete.type='button';batchDelete.className='mc-icon-btn';batchDelete.hidden=true;
+batchDelete.innerHTML=icons.trash;
+batchDelete.onclick=()=>void deletePhotos(state.userItems.filter(item=>selectedPhotos.has(item.id)));
+function updateBatchDelete(){
+ batchDelete.hidden=!selectedPhotos.size;
+ batchDelete.disabled=deletingPhotos;
+ batchDelete.title='Удалить выбранные фото ('+selectedPhotos.size+')';
+ batchDelete.setAttribute('aria-label',batchDelete.title);
+}
 let accountToken;
 let cardsRequest=0;
 const localFlags=async store=>{
@@ -76,6 +88,8 @@ async function fetchMyCards(){
  const request=++cardsRequest;
  if(accountToken!==token){
   accountToken=token;
+  selectedPhotos.clear();
+  updateBatchDelete();
   for(const url of state.mediaCache.values())if(url)URL.revokeObjectURL(url);
   state.mediaCache.clear();
   state.userItems=[];
@@ -187,10 +201,23 @@ function buildCard(item){
  const type=document.createElement('span');type.className='mc-type';type.innerHTML='<span class="mc-type-icon" aria-hidden="true">'+(icons[item.type]||'✦')+'</span>';type.append(document.createTextNode(item.type==='audio'?'Audio':item.type==='video'?'Video':'Image'));
  const actions=document.createElement('div');actions.className='mc-card-actions';
  actions.append(compactBtn('Download',icons.download,()=>download(item)),compactBtn('Copy prompt',icons.copy,()=>copyPrompt(item)),compactBtn(item.isFavorite?'Remove favorite':'Add favorite',icons.star,()=>favorite(item),item.isFavorite));
+ if(item.kind==='own'&&item.type==='image'&&item.status==='completed'){
+  const pick=document.createElement('input');
+  pick.type='checkbox';pick.checked=selectedPhotos.has(item.id);pick.disabled=deletingPhotos;
+  pick.setAttribute('aria-label','Выбрать фото '+nameOf(item));
+  el.style.position='relative';
+  Object.assign(pick.style,{position:'absolute',top:'10px',left:'10px',zIndex:'2',width:'20px',height:'20px'});
+  pick.onchange=()=>{if(pick.checked)selectedPhotos.add(item.id);else selectedPhotos.delete(item.id);updateBatchDelete();};
+  el.append(pick);
+  const trash=compactBtn('Удалить фото',icons.trash,()=>void deletePhotos([item]));
+  trash.disabled=deletingPhotos;actions.append(trash);
+ }
  foot.append(title,type,actions);el.append(media,foot);return el;
 }
 function render(){
  const grid=$('mcGrid');if(!grid)return;
+ if(!batchDelete.isConnected)grid.before(batchDelete);
+ updateBatchDelete();
  state.items=filteredItems();grid.replaceChildren();
  const current=state.items.find(x=>x.key===state.selectedId);
  if(!current&&state.items.length)state.selectedId=state.items[0].key;
@@ -258,6 +285,35 @@ async function patchOwn(id,payload){
  const resp=await fetch('/api/studio/workspace/cards/'+encodeURIComponent(id),{method:'PATCH',headers:authHeaders(),credentials:'same-origin',body:JSON.stringify(payload)});
  if(!resp.ok)throw Error('Workspace update: '+resp.status);
  await fetchMyCards();
+}
+async function deletePhotos(items){
+ const token=accountToken;
+ if(deletingPhotos||!token||token!==localStorage.getItem('vv_token')||!items.length)return;
+ deletingPhotos=true;render();
+ let removed=0;
+ try{
+  for(const item of items){
+   if(token!==accountToken||token!==localStorage.getItem('vv_token'))break;
+   try{
+    if(item.localBlob){
+     const {conversationStore}=await import('./jarvix-conversations.js');
+     const store=await conversationStore();
+     if(store.scope!==item.localScope||token!==localStorage.getItem('vv_token'))break;
+     await store.removeCachedResult(item.id);
+    }
+    if(token!==localStorage.getItem('vv_token'))break;
+    if(item.serverRecord)await patchOwn(item.id,{action:'archive'});
+    if(token!==accountToken||token!==localStorage.getItem('vv_token'))break;
+    const url=state.mediaCache.get(item.id);
+    if(url)URL.revokeObjectURL(url);
+    state.mediaCache.delete(item.id);selectedPhotos.delete(item.id);removed++;
+   }catch{/* Keep failed items selected for retry. */}
+  }
+  if(token===accountToken&&token===localStorage.getItem('vv_token')){
+   await fetchMyCards();
+   say(removed===items.length?'Фото удалены из галереи.':'Удалено '+removed+' из '+items.length+' фото.');
+  }
+ }finally{deletingPhotos=false;render();}
 }
 async function remove(item){
  if(!item)return;
