@@ -202,7 +202,14 @@ test('existing email component logs in and logout clears session and latest resu
  if(await page.locator('#menu').isVisible())await page.locator('#menu').click();
  await page.locator('#accountButton').click();
  await page.locator('#emailAuthEmail').fill('creator@example.test');await page.locator('#emailAuthPassword').fill('fixture-only-password');await page.locator('#emailAuthSubmit').click();
- await expect(page.locator('#accountButton')).toHaveText('Account settings');
+ // New email sessions complete only after the existing required Terms dialog is accepted.
+ // The test must exercise that actual user step, not bypass the consent control.
+ await expect(page.locator('#luminaTermsModal')).toBeVisible();
+ await page.locator('#luminaAcceptCheckbox').uncheck();
+ await expect(page.locator('#luminaAcceptButton')).toBeDisabled();
+ await page.locator('#luminaAcceptCheckbox').check();
+ await page.locator('#luminaAcceptButton').click();
+ await expect(page.locator('#accountButton')).toHaveText('Account settings',{timeout:15000});
  expect(payload.email).toBe('creator@example.test');
  expect(await page.evaluate(()=>localStorage.getItem('vv_token'))).toBe('test-session');
  if(await page.locator('#menu').isVisible()&&!(await page.locator('body').evaluate(el=>el.classList.contains('menu-open'))))await page.locator('#menu').click();
