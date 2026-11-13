@@ -118,9 +118,9 @@ export async function recordedConversationReply(question,language,history=[]){
  if(direct)return direct;
  if(RECORDED_DIALOG_FLAGS.combineReplies){
   const parts=question.trim().split(/\?\s*(?=\S)/u);
-  if(parts.length===2&&parts.every(part=>part.trim().length>3)){
+  if(parts.length>=2&&parts.length<=3&&parts.every(part=>part.trim().length>3)){
    const clips=await Promise.all(parts.map(part=>recordedReply(part,language)));
-   if(clips.every(Boolean)&&clips[0].audioUrl!==clips[1].audioUrl)
+   if(clips.every(Boolean)&&new Set(clips.map(clip=>clip.audioUrl)).size===clips.length)
     return {parts:clips,text:clips.map(clip=>clip.text).join(' '),source:'combined-recordings'};
   }
  }

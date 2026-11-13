@@ -39,6 +39,19 @@ const SITE_ANSWERS_RU = [
  [/(?:inspiration|вдохновени)/iu,"Идеи для новых проектов.",
   "/media/jarvix/tour-v3/t3_ru_70e7f65e6a88.mp3"]
 ];
+// Curated continuations from the same tour section. Each part is a complete sentence.
+const SITE_DETAILS_RU = [
+ [/(?:canvas|canva|канва|холст)/iu,[
+  ['Собирайте идеи из текста и фотографий.','t3_ru_cc451dff495e.mp3'],
+  ['Готовую идею переносите в Студию.','t3_ru_d3eeb273cee7.mp3']]],
+ [/(?:ai\s*apps?|шаблон)/iu,[
+  ['Каталог творческих шаблонов.','t3_ru_17ad4c84e62d.mp3'],
+  ['Выбирайте доступный шаблон и продолжайте в Студии.','t3_ru_d62b7ee5699f.mp3']]],
+ [/(?:uniquifier|уникализатор)/iu,[
+  ['Создавайте варианты собственного видео.','t3_ru_eb5198a625f8.mp3'],
+  ['Выберите режим Gentle, Balance или Dynamic.','t3_ru_390fad5b4fe8.mp3'],
+  ['Настройте формат и качество.','t3_ru_8cd01ce443f9.mp3']]]
+];
 const VOICE_LIBRARY='http://127.0.0.1:8770/v1/find';
 const PAID_ROUTE='/api/jarvix-new/paid/';
 let paidStatusOnce=null;
@@ -584,7 +597,14 @@ async function respond(message,id){
  // Matching existing V3 owner MP3 is instant and does not use local network.
  if(lang==='ru'&&/^\s*(?:что|как|зачем|для чего|расскажи|объясни)(?:[\s,.!?]|$)/iu.test(message)){
   const questions=message.trim().split(/\?\s*(?=\S)/u);
-  const matches=questions.length===2
+  const details=questions.length===1&&/(?:как\s|подробнее|how\s)/iu.test(message)
+   ? SITE_DETAILS_RU.find(([topic])=>topic.test(message))?.[1] : null;
+  if(details){
+   const parts=details.map(([text,file])=>({text,audioUrl:'/media/jarvix/tour-v3/'+file}));
+   if(await playResponse({parts,text:parts.map(part=>part.text).join(' ')},id,message))return;
+   if(!on||seq!==id)return;
+  }
+  const matches=questions.length>=2&&questions.length<=3
    ? questions.map(question=>SITE_ANSWERS_RU.find(([topic])=>topic.test(question)))
    : [SITE_ANSWERS_RU.find(([topic])=>topic.test(message))];
   if(matches.every(Boolean)){
