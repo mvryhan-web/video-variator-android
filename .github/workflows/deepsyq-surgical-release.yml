@@ -105,6 +105,7 @@ jobs:
   surgical:
     # Push publishes ONLY the exact owner-approved Tour or Chat asset with its guarded release commit.
     # Other pushes run tests only. Manual dispatch remains available and unchanged.
+    # One-file owner release: JARVIX image viewer Remove background -> same chat.
     if: >-
       github.ref == 'refs/heads/deepsyq-platform' &&
       (github.event_name == 'workflow_dispatch' ||
