@@ -44,6 +44,7 @@ HASH_REUSE_RELEASE_SETS = (
     frozenset({"jarvix.html"}),
     frozenset({"deepsyq-i18n.js"}),
     frozenset({"jarvix-chat.js"}),
+    frozenset({"deepsyq-mobile-shell.js"}),  # guest-action login, one existing public asset only
     frozenset({"auth-email.js", "auth-email.css"}),
     frozenset({"auth-email.css"}),
     frozenset({"auth-email.js", "auth-email.css", "jarvix-chat.js"}),
