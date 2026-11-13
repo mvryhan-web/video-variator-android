@@ -103,12 +103,12 @@ function fixture({recognition=true,meter=false,smalltalkAudio=true,rejectAudio=f
     get webAudioPlayCount(){return webAudioPlayCount;},
     get speech(){return lastSpeech;},get spoken(){return spoken;},stop:context.__exports.stop};
 }
-test('phone-style sphere click requests microphone and starts listening at once without a blocking greeting',async()=>{
+test('phone-style sphere click requests microphone and plays the short greeting before listening',async()=>{
   const f=fixture();
   try{
     f.clickSphere();
     await f.flush();
-    assert.equal(f.played.length,0,'No blocking greeting before recognition');
+    assert.equal(f.played[0],'/media/jarvix/conversation/hello_ru.mp3');
     assert.ok(f.recognizers.length>=1);
     assert.equal(f.buttons.length,1);
     assert.match(f.buttons[0].textContent,/Слушаю вас/);
@@ -136,7 +136,7 @@ test('when mobile browser does not deliver final result, end event processes int
     r.emit('Привет Джарвис',false);
     r.onend();
     await f.flush();
-    assert.ok(f.played.includes('/media/jarvix/tour-v3/t3_ru_5c4572bce29c.mp3'));
+    assert.ok(f.played.includes('/media/jarvix/conversation/hello_ru.mp3'));
     assert.ok(f.recognizers.length>=2);
   }finally{f.stop();}
 });
@@ -244,7 +244,7 @@ test('recognized "Как дела?" receives honest visible TEXT response when v
     const bot=f.elements.find(x=>x.id==='jv-new-transcript-reply');
     assert.ok(bot);
     assert.equal(bot.hidden,true,'Bot reply text is never printed under the sphere');
-    assert.equal(f.played.length,0,'No fabricated spoken MP3 for missing response');
+    assert.equal(f.played.length,1,'No fabricated spoken MP3 for missing response');
     assert.equal(transcript.textContent,'Как дела?');
   }finally{f.stop();}
 });
@@ -262,12 +262,12 @@ test('original recorded voice plays using user-unlocked Web Audio when mobile Au
   const f=fixture({meter:true,rejectAudio:true});
   try{
     f.clickSphere();await f.flush();
-    assert.ok(f.recognizers.length>=1,'Mic starts immediately');
+    assert.ok(f.recognizers.length>=1,'Mic starts after greeting');
     const recognition=f.recognizers.at(-1);
     recognition.emit('Привет',true);
     await f.flush();
-    assert.equal(f.played[0],'/media/jarvix/tour-v3/t3_ru_5c4572bce29c.mp3');
-    assert.equal(f.webAudioPlayCount,1,'Owner-recorded reply uses Web Audio when Audio.play is blocked');
+    assert.equal(f.played[0],'/media/jarvix/conversation/hello_ru.mp3');
+    assert.equal(f.webAudioPlayCount,2,'Owner-recorded reply uses Web Audio when Audio.play is blocked');
   }finally{f.stop();}
 });
 
@@ -293,7 +293,7 @@ test('no approved MP3: never switches to a system voice and never prints a reply
     f.recognizers.at(-1).emit('Расскажи что-нибудь новое',true);
     await f.flush();
     assert.deepEqual(f.spoken,[],'No system/female voice');
-    assert.equal(f.played.length,0);
+    assert.equal(f.played.length,1);
     const bot=f.elements.find(x=>x.id==='jv-new-transcript-reply');
     assert.equal(bot.hidden,true);
   }finally{f.stop();}

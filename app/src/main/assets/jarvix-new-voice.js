@@ -347,7 +347,7 @@ async function playOwnerUsingUnlockedAudio(record,id){
   if(playbackAbort===controller)playbackAbort=null;
  }
 }
-async function playOwnerRecording(record,id,timeoutMs=0){
+async function playOwnerRecording(record,id,timeoutMs=0,allowFallback=!timeoutMs){
  if(!record?.audioUrl||!on||seq!==id)return false;
  return new Promise(resolve=>{
   // The original hosted MP3 is used unchanged. Never synthesize or substitute text.
@@ -382,7 +382,7 @@ async function playOwnerRecording(record,id,timeoutMs=0){
    };
   }
   ui('speaking',getLang().speak);
-  try{Promise.resolve(audio.play()).catch(()=>finish(false,!timeoutMs));}catch{finish(false,!timeoutMs);}
+  try{Promise.resolve(audio.play()).catch(()=>finish(false,allowFallback));}catch{finish(false,allowFallback);}
  });
 }
 const recordedLanguage=()=>getLang().lang.slice(0,2);
@@ -573,8 +573,8 @@ async function respond(message,id){
   return;
  }
  if(lang==='ru'&&/^\s*(?:привет|здравствуй(?:те)?)(?:[,.!\s]+(?:джарвис|джарвикс|jarvix))?[.!\s]*$/iu.test(message)){
-  const greeting={text:'Привет! Я JARVIX. Смотрите, что я умею.',
-   audioUrl:'/media/jarvix/tour-v3/t3_ru_5c4572bce29c.mp3',source:'owner-tour-recording'};
+  const greeting={text:'Привет! Я JARVIX.',
+   audioUrl:'/media/jarvix/conversation/hello_ru.mp3',source:'owner-tour-recording'};
   if(await playResponse(greeting,id,message))return;
   if(!on||seq!==id)return;
  }
@@ -642,7 +642,7 @@ async function respond(message,id){
  const delay=prepared?.text?3800:1400;
  pending=setTimeout(()=>{pending=null;if(on&&seq===id)listen(id);},delay);
 }
-async function start(){
+async function start({greet=true}={}){
  if(on){stop();return;}
  if(!Recognition()){on=true;ui('unsupported');return;}
  if(!navigator.mediaDevices?.getUserMedia){on=true;ui('error');return;}
@@ -655,8 +655,11 @@ async function start(){
   startMicMonitor(stream);
  }catch{if(on&&seq===id)ui('error');return;}
  if(!on||seq!==id)return;
- // No blocking greeting: recognition starts immediately so the first
- // words are not lost and "I'm listening" is not repeated on each click.
+ if(greet){
+  const language=recordedLanguage();
+  const greeting=await helloRecording(language).catch(()=>null);
+  if(on&&seq===id)await playOwnerRecording(greeting,id,3000,true);
+ }
  if(on&&seq===id)listen(id);
 }
 export function installJarvixNewVoice(){
@@ -737,7 +740,7 @@ export function installJarvixNewVoice(){
   try{
    const expires=Number(sessionStorage.getItem(RESUME_KEY));
    sessionStorage.removeItem(RESUME_KEY);
-   if(expires>Date.now())void start();
+   if(expires>Date.now())void start({greet:false});
   }catch{}
  };
  window.addEventListener('pagehide',()=>{
