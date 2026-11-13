@@ -1,3 +1,4 @@
+import {takeStudioHandoff} from './studio-handoff.js?v=image-viewer';
 import {eraseConnectedColor} from './simple-background-remover-core.mjs';
 const $=id=>document.getElementById(id);
 const source=$('original'),result=$('result'),srcCtx=source.getContext('2d',{willReadFrequently:true}),outCtx=result.getContext('2d');
@@ -29,8 +30,8 @@ function clearCurrent({clearInput=false}={}){
  }
 }
 $('clearPhoto').onclick=()=>clearCurrent({clearInput:true});
-$('photo').addEventListener('change',async()=>{
- const file=$('photo').files?.[0];
+$('photo').addEventListener('change',()=>void loadPhoto($('photo').files?.[0]));
+async function loadPhoto(file){
  clearCurrent();$('clearPhoto').disabled=!file;
  const epoch=generation;
  if(!file){setStatus('Choose a photo to begin.');return;}
@@ -53,7 +54,7 @@ $('photo').addEventListener('change',async()=>{
   setStatus('Tap the original photo to select a background color, then remove it. Your file stays here.');
  }catch(_){if(epoch===generation)setStatus('Could not load this photo. Use an image with no more than 8 million pixels.');}
  finally{if(url)URL.revokeObjectURL(url);}
-});
+}
 source.addEventListener('click',event=>{
  if(!original)return;
  const bounds=source.getBoundingClientRect();
@@ -129,3 +130,6 @@ window.addEventListener('pagehide',()=>{
  // customer's image, even though its Blob URL and CPU buffer were released.
  clearCurrent({clearInput:true});
 });
+if(new URLSearchParams(location.search).get('from')==='jarvix-image'){
+ takeStudioHandoff('background').then(draft=>loadPhoto(draft?.files[0])).catch(()=>setStatus('Could not open the image from JARVIX.'));
+}

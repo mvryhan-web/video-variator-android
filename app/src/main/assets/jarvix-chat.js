@@ -35,7 +35,7 @@ import {bindComposer,trackViewport} from './jarvix-composer.js';
 import {getJarvixSessionId,getJarvixLanguage,speakJarvis} from './jarvis-core.js';
 import {findCatalogReply} from './jarvix-clip-library.js';
 import {hasVerifiedJarvixSubscription} from './jarvix-access.js';
-import {saveStudioHandoff, takeStudioHandoff} from './studio-handoff.js';
+import {saveStudioHandoff, takeStudioHandoff} from './studio-handoff.js?v=image-viewer';
 const $=id=>document.getElementById(id),status=text=>$('jStatus').textContent=text;
 const modeHeaderLabels={
   ru:{text:'Чат',auto:'Чат',image:'Изображения',video:'Видео',audio:'Аудио',music:'Аудио'},
@@ -187,6 +187,57 @@ function appendGenerationFrame(bubble,kind,ratio){
  }
  bubble.append(frame);
 }
+let imageViewer;
+function openImageViewer(message, opener){
+ store.guard();
+ imageViewer?.close();
+ const lang=getJarvixLanguage();
+ const labels=({
+  ru:['Просмотр изображения','Закрыть','Скачать','Изменить размер в Canvas','Удалить фон','Не удалось открыть изображение.'],
+  en:['Image preview','Close','Download','Resize in Canvas','Remove background','Could not open this image.'],
+  fr:['Aperçu de l’image','Fermer','Télécharger','Redimensionner dans Canvas','Supprimer le fond','Impossible d’ouvrir cette image.'],
+  es:['Vista de imagen','Cerrar','Descargar','Cambiar tamaño en Canvas','Eliminar fondo','No se pudo abrir la imagen.']
+ })[lang]||['Image preview','Close','Download','Resize in Canvas','Remove background','Could not open this image.'];
+ const dialog=node('dialog','');
+ dialog.className='j-image-viewer';dialog.setAttribute('aria-label',labels[0]);imageViewer=dialog;
+ const picture=node('img','');picture.alt=labels[0];
+ const previewUrl=message.resultFile instanceof Blob?URL.createObjectURL(message.resultFile):null;
+ picture.src=previewUrl||opener.querySelector('img').src;
+ const toolbar=node('div','');toolbar.className='j-image-viewer-actions';
+ const notice=node('p','');notice.setAttribute('role','status');notice.hidden=true;
+ const close=node('button',labels[1]);close.type='button';close.autofocus=true;close.onclick=()=>dialog.close();
+ const file=async()=>{
+  store.guard();
+  const blob=message.resultFile instanceof Blob?message.resultFile:
+   await downloadResult(message.mediaUrl,{origin:location.origin,kind:'image',headers:headers(),guard:store.guard});
+  store.guard();
+  return new File([blob],'deepsyq-'+message.jobId+'.'+mediaExtension(blob.type),{type:blob.type});
+ };
+ const action=(label,run)=>{
+  const button=node('button',label);button.type='button';
+  button.onclick=async()=>{
+   button.disabled=true;notice.hidden=true;
+   try{const image=await file();if(dialog.open)await run(image);}
+   catch{notice.textContent=labels[5];notice.hidden=false;}
+   finally{button.disabled=false;}
+  };
+  toolbar.append(button);
+ };
+ action(labels[2],image=>{
+  const link=node('a',''),url=URL.createObjectURL(image);
+  link.href=url;link.download=image.name;dialog.append(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),10000);
+ });
+ for(const [target,path,label] of [['canvas','canvas.html',labels[3]],['background','simple-background-remover.html',labels[4]]]){
+  action(label,async image=>{
+   await saveStudioHandoff({kind:'image',prompt:label,files:[image],target,source:'jarvix-chat'});
+   store.guard();if(dialog.open)location.assign(path+'?from=jarvix-image');
+  });
+ }
+ toolbar.append(close);dialog.append(picture,toolbar,notice);document.body.append(dialog);
+ dialog.addEventListener('close',()=>{if(previewUrl)URL.revokeObjectURL(previewUrl);dialog.remove();if(imageViewer===dialog)imageViewer=null;opener.focus();},{once:true});
+ dialog.showModal();
+}
 function render(){
  for(const url of urls)URL.revokeObjectURL(url);
  urls=[];
@@ -253,7 +304,12 @@ function render(){
     const el=node(m.kind==='video'?'video':m.kind==='audio'?'audio':'img');
     el.src=mediaSrc;
     if(el.tagName==='IMG')el.alt=m.text||'Media';else el.controls=true;
-    bubble.append(el);
+    if(el.tagName==='IMG'){
+     const preview=node('button','');preview.type='button';preview.className='j-image-preview';
+     preview.setAttribute('aria-haspopup','dialog');preview.append(el);
+     preview.onclick=()=>openImageViewer(m,preview);
+     bubble.append(preview);
+    }else bubble.append(el);
     const download=node('a',({ru:'Скачать',en:'Download'}[getJarvixLanguage()]||'Download'));
     download.href=mediaSrc;
     download.download='deepsyq-'+m.jobId+(m.resultFile?.type?('.'+mediaExtension(m.resultFile.type)):'');
@@ -580,7 +636,7 @@ window.addEventListener('jarvix:reset-chat', () => resetToDefaultChat(true, fals
 
 $('jNew').onclick = () => resetToDefaultChat(true, false);
 $('jHistory').onchange=async()=>{if(busy)return;const next=await store.get($('jHistory').value);if(!next)return;conversation=next;sessionStorage.setItem('jarvix_session_id',conversation.sessionId);sessionStorage.setItem('jarvix_active_conversation',conversation.id);render();await restoreResults();};
-function freeze(){try{store.guard();}catch{++epoch;controller?.abort();composer.stop();for(const u of urls)URL.revokeObjectURL(u);$('jMessages').replaceChildren();$('jChatForm').hidden=true;status('Account changed. Reload to open the correct private conversations.');}}
+function freeze(){try{store.guard();}catch{imageViewer?.close();++epoch;controller?.abort();composer.stop();for(const u of urls)URL.revokeObjectURL(u);$('jMessages').replaceChildren();$('jChatForm').hidden=true;status('Account changed. Reload to open the correct private conversations.');}}
 window.addEventListener('storage',freeze);window.addEventListener('focus',freeze);window.addEventListener('pageshow',freeze);
 conversation=await store.get(sessionStorage.getItem('jarvix_active_conversation'))||store.create(getJarvixSessionId());sessionStorage.setItem('jarvix_active_conversation',conversation.id);if(conversation.messages.length)await save();else await historyList();render();trackViewport();watchChatViewport();await restoreResults();
 const pendingMsg = conversation.messages.find(m => m.role === 'user' && m.status === 'pending');

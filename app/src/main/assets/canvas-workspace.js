@@ -1,4 +1,4 @@
-import { saveStudioHandoff } from './studio-handoff.js';
+import { saveStudioHandoff, takeStudioHandoff } from './studio-handoff.js?v=image-viewer';
 /* Canvas workspace scope: browser-local editing + existing Studio handoff only.
    No Cloudflare Worker, credit, billing or global DEEPSYQ shell changes. */
 const $=id=>document.getElementById(id);
@@ -138,15 +138,19 @@ function renderFrames(){
 }
 function openUpload(){if(accountGuard())$('cwUpload').click();}
 $('cwUpload').addEventListener('change',async event=>{
- const file=event.target.files?.[0];event.target.value='';if(!file||!accountGuard())return;
+ const file=event.target.files?.[0];event.target.value='';await loadCanvasPhoto(file);
+});
+async function loadCanvasPhoto(file){
+ if(!file||!accountGuard())return;
  if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>10*1024*1024||file.size===0){note('Upload a PNG, JPG or WebP photo under 10 MB.');return;}
  const url=URL.createObjectURL(file),id='user-'+Date.now()+'-'+Math.random().toString(36).slice(2);
  objectUrls.add(url);const item={id,name:file.name.slice(0,90),tags:'user',src:url,thumb:url,uploaded:true};
  try{const im=await waitForImage(item);if(im.naturalWidth>12000||im.naturalHeight>12000)throw Error('too large');
+  if(!accountGuard()){objectUrls.delete(url);URL.revokeObjectURL(url);return;}
   photos.unshift(item);srcMap.set(id,item);renderGallery();switchPhoto(id,{addToFrames:true});
   $('cwGallerySearch').value='';document.querySelector('[data-cw-filter="all"]')?.click();note('Your photo is loaded locally. It was not uploaded to the server.');
  }catch(_){objectUrls.delete(url);URL.revokeObjectURL(url);note('The photo could not be decoded. Try another JPG, PNG or WebP file.');}
-});
+}
 function addLayer(type){if(!accountGuard())return;mark();const base={x:canvas.width/2,y:canvas.height/2,opacity:1,locked:false};
  if(type==='text')state.layers.push({...base,type,text:'Your text',size:60,color:'#ffffff'});
  else state.layers.push({...base,type,w:190,h:150,color:type==='star'?'#ffc45c':'#bd60f8'});
@@ -365,3 +369,7 @@ document.addEventListener('keydown',e=>{
  if(e.key.toLowerCase()==='y'){e.preventDefault();$('cwRedo').click();}
 });
 dockToolPane();renderGallery();updateControls();void render();
+
+if(new URLSearchParams(location.search).get('from')==='jarvix-image'){
+ takeStudioHandoff('canvas').then(draft=>loadCanvasPhoto(draft?.files[0])).catch(()=>note('Could not open the image from JARVIX.'));
+}
