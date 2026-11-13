@@ -1,0 +1,28 @@
+name: JARVIX NEW verified MP3 rephrasing regression
+on:
+  push:
+    branches: [jarvis-new]
+    paths:
+      - 'app/src/main/assets/jarvix-new-recorded-dialog.js'
+      - 'tests/jarvix_new_rephrase_recordings.test.mjs'
+      - '.github/workflows/jarvis-new-verified-rephrase.yml'
+  pull_request:
+    paths:
+      - 'app/src/main/assets/jarvix-new-recorded-dialog.js'
+      - 'tests/jarvix_new_rephrase_recordings.test.mjs'
+      - '.github/workflows/jarvis-new-verified-rephrase.yml'
+permissions:
+  contents: read
+jobs:
+  zero-spend-dialog:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify source syntax
+        run: node --check app/src/main/assets/jarvix-new-recorded-dialog.js
+      - name: Verify four-language rephrasing with mock verified recordings
+        run: node --test tests/jarvix_new_rephrase_recordings.test.mjs
