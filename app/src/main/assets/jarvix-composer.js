@@ -1,4 +1,4 @@
-import {bindVoiceInput} from './jarvix-voice-input.js';
+import {bindVoiceInput} from './jarvix-voice-input.js?v=dictation-2';
 import {decorateComposer} from './jarvix-composer-design.js';
 import {openHomeStudioSettings} from './home-studio-settings.js';
 import {validateAttachments} from './jarvix-conversations.js';
@@ -201,7 +201,7 @@ export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
    }catch(err){onError(err.message);}
   }
  });
- const voice=bindVoiceInput({mic,input,form,onError,onStatus:onError});
+ const voice=bindVoiceInput({mic,input,form,onError:message=>{mic.title=message;mic.setAttribute('aria-label',message);}});
  form.addEventListener('submit',async e=>{e.preventDefault();await voice.stop();if(!input.value.trim()&&!files.length)return;await onSend({text:input.value.trim(),mode,files:[...files]});});
  input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();form.requestSubmit();}});
  input.addEventListener('input',()=>{
