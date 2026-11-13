@@ -47,22 +47,30 @@ async function query(store,statement,params=[],fetcher=fetch) {
 }
 function truth(value){return value===true||value==='true'||value==='t'||value===1||value==='1';}
 
-export async function emailStorageReady(env,{fetcher=fetch,cache=true}={}) {
+export async function emailStorageDiagnostic(env,{fetcher=fetch}={}){
   const store=getStore(env);
-  if(!store || !String(env?.JARVIX_QUOTA_HASH_SECRET||env?.APP_JWT_SECRET||'').trim())return false;
+  if(!store)return {configured:false,reason:'DATABASE_BINDING_INVALID'};
+  if(!String(env?.JARVIX_QUOTA_HASH_SECRET||env?.APP_JWT_SECRET||'').trim())
+    return {configured:false,reason:'AUTH_SECRET_MISSING'};
+  try {
+    const statement="SELECT to_regclass('public.vv_users') IS NOT NULL AS table_ready, "+
+      "EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='vv_users' "+
+      "AND column_name='password_hash') AS password_ready, "+
+      "EXISTS(SELECT 1 FROM pg_indexes WHERE schemaname='public' AND tablename='vv_users' "+
+      "AND indexdef LIKE '%UNIQUE INDEX%provider%provider_sub%') AS unique_provider_ready";
+    const [row={}]=await query(store,statement,[],fetcher);
+    if(!truth(row.table_ready))return {configured:false,reason:'ACCOUNT_TABLE_MISSING'};
+    if(!truth(row.password_ready))return {configured:false,reason:'PASSWORD_COLUMN_MISSING'};
+    if(!truth(row.unique_provider_ready))return {configured:false,reason:'ACCOUNT_INDEX_MISSING'};
+    return {configured:true};
+  }catch{return {configured:false,reason:'DATABASE_QUERY_FAILED'};}
+}
+export async function emailStorageReady(env,{fetcher=fetch,cache=true}={}){
+  const store=getStore(env);
+  if(!store)return false;
   const now=Date.now();
-  if(cache && availability && availability.url===store.url && availability.until>now)return availability.value;
-  const promise=(async()=>{
-    try {
-      const statement="SELECT to_regclass('public.vv_users') IS NOT NULL AS table_ready, "+
-        "EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='vv_users' "+
-        "AND column_name='password_hash') AS password_ready, "+
-        "EXISTS(SELECT 1 FROM pg_indexes WHERE schemaname='public' AND tablename='vv_users' "+
-        "AND indexdef LIKE '%UNIQUE INDEX%provider%provider_sub%') AS unique_provider_ready";
-      const [row={}]=await query(store,statement,[],fetcher);
-      return truth(row.table_ready)&&truth(row.password_ready)&&truth(row.unique_provider_ready);
-    } catch {return false;}
-  })();
+  if(cache&&availability&&availability.url===store.url&&availability.until>now)return availability.value;
+  const promise=emailStorageDiagnostic(env,{fetcher}).then(status=>status.configured);
   if(cache)availability={url:store.url,until:now+15000,value:promise};
   const value=await promise;
   if(cache)availability={url:store.url,until:Date.now()+15000,value};
