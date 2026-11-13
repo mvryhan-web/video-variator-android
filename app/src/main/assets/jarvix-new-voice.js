@@ -1,3 +1,4 @@
+import {saveStudioHandoff} from './studio-handoff.js';
 import {extractAction} from './jarvix-action-plan.js';
 import {recordedConversationReply as recordedReply} from './jarvix-new-recorded-dialog.js';
 import {helloRecording,smalltalkReply,smalltalkTextReply} from './jarvix-new-smalltalk.js';
@@ -575,7 +576,22 @@ async function respond(message,id){
  setTranscript(message,true);
  const extra=NAVIGATION_COMMAND.test(message)
   ? EXTRA_NAVIGATION.find(([,pattern])=>pattern.test(message))?.[0] : null;
- const action=extra?null:extractAction(message.replace(/\bcanva\b/giu,'Canvas'));
+ const command=message.replace(/^\s*(?:джарвис|джарвикс|jarvix|jarvis)[,\s:]+/iu,'');
+ const action=extra?null:extractAction(command.replace(/^(?:я\s+хочу|можешь)\s+(?:создать|сделать|сгенерировать|нарисовать)\s+/iu,'Создай '))||(extra?null:extractAction(command.replace(/\bcanva\b/giu,'Canvas')));
+ if(action?.intent==='GENERATE_MEDIA'&&action.raw_prompt){
+  try{
+   await saveStudioHandoff({
+    kind:action.media_type==='audio'?'music':action.media_type,
+    prompt:action.raw_prompt,source:'jarvix-new-voice',
+    settings:action.aspect_ratio?{ratio:action.aspect_ratio}:{}
+   });
+   if(on&&seq===id)location.assign(new URL(action.url,location.origin+'/'));
+   return;
+  }catch{
+   if(on&&seq===id)listen(id);
+   return;
+  }
+ }
  const destination=extra||(action?.intent==='NAVIGATE'
   ? (action.target==='uniquifier'?'video-uniquifier.html':action.url) : null);
  if(destination){
