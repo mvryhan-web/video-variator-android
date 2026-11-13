@@ -1,0 +1,26 @@
+const fs=require('node:fs'), vm=require('node:vm'), assert=require('node:assert/strict');
+const src=fs.readFileSync(require('node:path').join(__dirname,'../app/src/main/assets/_worker.js'),'utf8');
+const code=src.slice(src.indexOf('const JARVIX_FREE_CHAT_LIMIT'),src.indexOf('function selectThematicVideo'))+'\nasync(request, env)=>{const pathname="/api/jarvix/chat";'+src.slice(src.indexOf("    if (pathname === '/api/jarvix/chat'"),src.indexOf('        if(reservedTurn&&!replied)'))+'if(reservedTurn&&!replied)await env.R2_BUCKET.delete(reservedTurn);} }}';
+const slots=new Set(), sessions=new Map();
+let providerCalls=0;
+const user=(id,plan='trial',subscription_status='inactive')=>({id,plan,subscription_status});
+let account;
+const run=vm.runInNewContext(code,{getAuthenticatedUser:async()=>account,isOwnerEmail:email=>email==='owner@example.com',json:(body,status=200)=>({body,status}),jarvixSessions:sessions,fetch:async()=>{providerCalls++;return {ok:true,json:async()=>({candidates:[{content:{parts:[{text:'Gemini reply'}]}}]})}},crypto,TextEncoder,Headers,AbortSignal});
+const env={APP_JWT_SECRET:'test-only',GEMINI_API_KEY:'test-only',R2_BUCKET:{put:async key=>{if(slots.has(key))return null;slots.add(key);return {}},delete:async key=>slots.delete(key)}};
+const request=(message='Привет',i=0)=>new Request('https://example.test/api/jarvix/chat',{method:'POST',headers:{'CF-Connecting-IP':'192.0.2.'+(i%2+1)},body:JSON.stringify({message,language:'ru',sessionId:'session-'+i})});
+(async()=>{
+ const guest=await Promise.all(Array.from({length:7},()=>run(request(),env)));
+ assert.equal(guest.filter(r=>r.status===200).length,5);
+ assert.equal(guest.filter(r=>r.status===402).length,2);
+ account=user('unpaid');
+ const free=await Promise.all(Array.from({length:7},(_,i)=>run(request('Привет',i),env)));
+ assert.equal(free.filter(r=>r.status===200).length,5);
+ assert.equal(free.filter(r=>r.body.error==='CHAT_PLAN_REQUIRED').length,2);
+ assert.equal(providerCalls,0);
+ account=user('unpaid','trial','active');
+ assert.equal((await run(request('Объясни фотосинтез'),env)).body.reply,'Gemini reply');
+ assert.equal(providerCalls,1);
+ account={...user('admin'),email:'owner@example.com'};
+ for(let i=0;i<7;i++)assert.equal((await run(request(),env)).status,200);
+ console.log('5+2 guest/account, cross-session/IP account quota, greetings without provider, paid and admin passed');
+})().catch(e=>{console.error(e);process.exit(1)});

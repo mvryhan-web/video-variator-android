@@ -367,6 +367,14 @@ function createSvgImage(prompt, ratio = '1:1') {
   </svg>`;
 }
 
+const JARVIX_FREE_CHAT_LIMIT = 5;
+
+function jarvixGreeting(message, language) {
+  const words = message.toLowerCase().replace(/[,.!?¡¿…]+/gu, ' ').trim();
+  if (!/^(?:привет|хай|здравствуйте|здравствуй|салют|hello|hi|hey|bonjour|salut|hola)$/u.test(words)) return '';
+  return ({ru:'Привет! Чем помочь?',en:'Hi! How can I help?',fr:'Salut ! Comment puis-je vous aider ?',es:'¡Hola! ¿En qué puedo ayudarte?'})[language];
+}
+
 function mockJarvixReply(message, language) {
   const m = String(message || '').toLowerCase();
   if (language === 'ru') {
@@ -1559,26 +1567,33 @@ export default {
       const message = typeof body.message === 'string' ? body.message.trim() : '';
       if (!message || message.length > 3000) return json({ error: 'INVALID_MESSAGE' }, 400);
       const language = ['ru', 'en', 'es', 'fr'].includes(body.language) ? body.language : 'ru';
-      let guestKey, reservedTurn, replied=false;
-      if (!jarvixAccount) {
+      let quotaKey, reservedTurn, remaining, replied=false;
+      const paidAccess = jarvixAccount && (
+        isOwnerEmail(jarvixAccount.email, env) ||
+        (jarvixAccount.plan === 'lifetime' && jarvixAccount.subscription_status === 'lifetime') ||
+        (['trial','basic','pro','business'].includes(jarvixAccount.plan) &&
+          ['active','trialing'].includes(jarvixAccount.subscription_status))
+      );
+      if (!paidAccess) {
         const ip=request.headers.get('CF-Connecting-IP');
         const secret=env.JARVIX_QUOTA_HASH_SECRET || env.APP_JWT_SECRET;
-        if(!ip||!secret||!env.R2_BUCKET)return json({error:'GUEST_CHAT_UNAVAILABLE'},503);
+        const quotaIdentity = jarvixAccount ? 'account:' + jarvixAccount.id : ip;
+        if(!quotaIdentity||!secret||!env.R2_BUCKET)return json({error:'CHAT_QUOTA_UNAVAILABLE'},503);
         const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),
           {name:'HMAC',hash:'SHA-256'},false,['sign']);
-        const digest=new Uint8Array(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(ip)));
-        guestKey=Array.from(digest,b=>b.toString(16).padStart(2,'0')).join('');
+        const digest=new Uint8Array(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(quotaIdentity)));
+        quotaKey=Array.from(digest,b=>b.toString(16).padStart(2,'0')).join('');
         try {
-          for(let turn=1;turn<=5;turn++){
-            const path='deepsyq/jarvix-guest/v1/'+guestKey+'/'+turn;
+          for(let turn=1;turn<=JARVIX_FREE_CHAT_LIMIT;turn++){
+            const path='deepsyq/jarvix-guest/v1/'+quotaKey+'/'+turn;
             const slot=await env.R2_BUCKET.put(path,'1',{onlyIf:new Headers({'If-None-Match':'*'})});
-            if(slot){reservedTurn=path;break;}
+            if(slot){reservedTurn=path;remaining=JARVIX_FREE_CHAT_LIMIT-turn;break;}
           }
-        }catch{return json({error:'GUEST_CHAT_UNAVAILABLE'},503);}
-        if(!reservedTurn)return json({error:'AUTH_REQUIRED',limitReached:true},401);
+        }catch{return json({error:'CHAT_QUOTA_UNAVAILABLE'},503);}
+        if(!reservedTurn)return json({error:'CHAT_PLAN_REQUIRED',limitReached:true,remaining:0},402);
       }
       try {
-      const sid = JSON.stringify([jarvixAccount?.id || 'guest:'+guestKey, body.sessionId || body.conversationId || crypto.randomUUID()]);
+      const sid = JSON.stringify([jarvixAccount?.id || 'guest:'+quotaKey, body.sessionId || body.conversationId || crypto.randomUUID()]);
       let sessionData = jarvixSessions.get(sid);
       if (!sessionData || Array.isArray(sessionData)) {
         sessionData = { history: Array.isArray(sessionData) ? sessionData : [], image: null };
@@ -1596,8 +1611,8 @@ export default {
       // Ordinary chat uses Gemini directly; ground time-sensitive questions or explicit searches.
       const needsWebSearch = !activeImage?.data && /(?:сегодня|сейчас|завтра|вчера|на этой неделе|последние новости|актуальн|свежие новости|погода|прогноз|курс валют|курс евро|курс доллара|найди|найдите|поищи|проверь|\b(?:today|right now|currently|tomorrow|yesterday|this week|latest|current|recent|weather|forecast|exchange rate|search|look up|verify|météo|actuellement|demain|hier|aujourd['’]hui|dernières nouvelles|cherche|vérifie|hoy|ahora|mañana|ayer|últimas noticias|pronóstico|busca|verifica)\b)/iu.test(message);
 
-      let replyText = '';
-      let providerUsed = 'Google Gemini';
+      let replyText = activeImage?.data ? '' : jarvixGreeting(message, language);
+      let providerUsed = replyText ? 'Jarvix Local Assistant' : 'Google Gemini';
 
       const geminiRules = `Ты — умный, эрудированный, живой мультимодальный ассистент и собеседник платформы DeepSyQ. Общайся на языке ${language}.
 СТРОГИЕ ПРАВИЛА:
@@ -1608,7 +1623,7 @@ export default {
 5. НИКОГДА не навязывай генерацию картинок, видео или студии DeepSyQ, если пользователь прямо сам об этом не попросил. Если спросили про погоду в Париже — расскажи про погоду в Париже, без рекламных вставок и призывов "покреативить".`;
 
       // Google Gemini API is the default conversational model for all chat modes
-      if (env.GEMINI_API_KEY) {
+      if (!replyText && env.GEMINI_API_KEY) {
         try {
           const context = history.slice(-16).map(x => (x.role === 'user' ? 'User: ' : 'Assistant: ') + x.content).join('\n');
           const prompt = (context ? context + '\n' : '') + 'User: ' + message + '\nAssistant:';
@@ -1733,8 +1748,8 @@ export default {
         language,
         provider: providerUsed,
         audioUrl: null,
-        freeDailyLimit: 15,
-        remaining: 14,
+        freeDailyLimit: paidAccess ? null : JARVIX_FREE_CHAT_LIMIT,
+        remaining: paidAccess ? null : remaining,
         limitReached: false
       });
       } finally {

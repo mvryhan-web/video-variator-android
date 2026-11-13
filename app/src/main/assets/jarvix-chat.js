@@ -399,12 +399,6 @@ async function restoreResults(){
  }
  if(changed){await store.save(selected);if(conversation.id===selected.id){await historyList();render();}}
 }
-function localGreeting(message,language){
- if((message.files||[]).length||message.action)return null;
- const words=String(message.text||'').trim().toLowerCase().replace(/[,.!?¡¿…]+/g,' ').trim();
- if(!/^(?:привет|хай|здравствуйте|здравствуй|салют|hello|hi|hey|bonjour|salut|hola)(?:\s+(?:привет|хай|hello|hi|hey))?$/u.test(words))return null;
- return ({ru:'Привет! Чем помочь?',en:'Hi! How can I help?',fr:'Salut ! Comment puis-je t’aider ?',es:'¡Hola! ¿En qué puedo ayudarte?'})[language]||'Hi! How can I help?';
-}
 function generationPlanNotice(mode){
  const copy={
   ru:mode==='video'?'Недостаточно AI-кредитов. Чтобы создать видео, выберите подходящий тариф.':'Недостаточно AI-кредитов. Чтобы создать изображение, выберите подходящий тариф.',
@@ -416,14 +410,8 @@ function generationPlanNotice(mode){
 }
 async function processMessage(message){
  let mode;
- const greeting=localStorage.getItem('vv_token')?localGreeting(message,getJarvixLanguage()):null;
- if(!greeting){message.status='processing';await save();render();}
+ message.status='processing';await save();render();
  try{
-  if(greeting){
-   message.status='sent';
-   conversation.messages.push({id:makeId(),role:'assistant',text:greeting,createdAt:Date.now()});
-   await save();render();return;
-  }
   // Use the same allowlisted local tool router as the voice sphere.
   // Opening an existing page or preparing a Studio prompt costs 0 AI credits.
   const autoMode=!message.mode||['auto','text'].includes(message.mode);
@@ -582,6 +570,17 @@ async function processMessage(message){
    return;
   }
   pendingMediaFrame=null;message.status=message.status==='sent'?'sent':e.name==='AbortError'?'interrupted':'error';message.error=e.message;await save();if(e.name!=='AbortError'){
+   if(e.code==='CHAT_PLAN_REQUIRED'){
+    const copy={
+     ru:'Пять бесплатных ответов использованы. Чтобы продолжить, выберите пробный доступ за $0,99 или другой тариф.',
+     en:'You’ve used your five free replies. Choose the $0.99 trial or another plan to continue.',
+     fr:'Vous avez utilisé vos cinq réponses gratuites. Choisissez l’essai à 0,99 $ ou une autre offre.',
+     es:'Has usado tus cinco respuestas gratis. Elige la prueba de 0,99 $ u otro plan para continuar.'
+    };
+    conversation.messages.push({id:makeId(),role:'assistant',text:copy[getJarvixLanguage()]||copy.en,limitReached:true,createdAt:Date.now()});
+    await save();render();status('');
+    return;
+   }
    if(e.code==='AUTH_REQUIRED'){
     window.dispatchEvent(new Event('deepsyq:action-auth-required'));
     const copy={ru:'Войти, чтобы продолжить',en:'Sign in to continue',fr:'Se connecter pour continuer',es:'Inicia sesión para continuar'};
