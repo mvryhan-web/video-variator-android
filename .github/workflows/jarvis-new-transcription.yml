@@ -1,0 +1,57 @@
+name: JARVIX NEW voice transcription review
+on:
+  push:
+    branches: [jarvis-new]
+    paths:
+      - 'scripts/transcribe_jarvix_new_library.py'
+      - '.github/workflows/jarvis-new-transcription.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  transcribe:
+    if: github.ref == 'refs/heads/jarvis-new'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install faster-whisper==1.2.1
+      - run: python scripts/transcribe_jarvix_new_library.py --shard ${{ matrix.shard }} --shards 8 --output review/voice-${{ matrix.shard }}.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jarvix-voice-review-${{ matrix.shard }}
+          path: review/*.jsonl
+          if-no-files-found: error
+  verify:
+    needs: transcribe
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: jarvix-voice-review-*
+          path: review
+          merge-multiple: true
+      - run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          records = [json.loads(line) for path in Path("review").glob("*.jsonl") for line in path.read_text(encoding="utf-8").splitlines()]
+          assert len(records) == len({row["filename"] for row in records}) == 1900
+          print("Nonempty:", sum(bool(row["transcript"]) for row in records))
+          print("Expected-text matches:", sum(bool(row.get("matches_expected")) for row in records))
+          print("Errors:", sum("error" in row for row in records))
+          Path("jarvix-voice-review.jsonl").write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in sorted(records, key=lambda row: row["filename"])), encoding="utf-8")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jarvix-voice-review
+          path: jarvix-voice-review.jsonl
