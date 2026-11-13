@@ -1,0 +1,113 @@
+{
+  "schema": "jarvix-new-short-voice-v1",
+  "format": "mp3",
+  "engine": "VoxCPM2_original_tour_v3_crops",
+  "clipCount": 8,
+  "reviewed": false,
+  "clips": [
+    {
+      "id": "hello_ru",
+      "filename": "hello_ru.mp3",
+      "language": "ru",
+      "text": "Привет! Я JARVIX.",
+      "source": "t3_ru_5c4572bce29c.mp3",
+      "sourceStartSeconds": 0.0,
+      "sourceEndSeconds": 1.4,
+      "sha256": "6fa8071e19475aabbbc0b4f022083a0faa4f5159459f5d8d9a69e70a2983322c",
+      "durationSeconds": 1.4,
+      "previewOnly": true,
+      "listeningReviewRequired": true
+    },
+    {
+      "id": "prompt_ru",
+      "filename": "prompt_ru.mp3",
+      "language": "ru",
+      "text": "Просто скажите, что хотите создать.",
+      "source": "t3_ru_4077808843cd.mp3",
+      "sourceStartSeconds": 5.75,
+      "sourceEndSeconds": 8.36,
+      "sha256": "5de366dc9bf578d61e06a114e095c17c62fdfd767edd33b375952a40ff9e3aae",
+      "durationSeconds": 2.61,
+      "previewOnly": true,
+      "listeningReviewRequired": true
+    },
+    {
+      "id": "hello_en",
+      "filename": "hello_en.mp3",
+      "language": "en",
+      "text": "Hi! I'm JARVIX.",
+      "source": "t3_en_023784bec3bf.mp3",
+      "sourceStartSeconds": 0.0,
+      "sourceEndSeconds": 1.8,
+      "sha256": "c766679cd244a3da72f8d2de5449867115c5c3e0a3b5e12823b6000ad6926537",
+      "durationSeconds": 1.8,
+      "previewOnly": true,
+      "listeningReviewRequired": true
+    },
+    {
+      "id": "prompt_en",
+      "filename": "prompt_en.mp3",
+      "language": "en",
+      "text": "Just tell me what you want to make.",
+      "source": "t3_en_f8db53415b2e.mp3",
+      "sourceStartSeconds": 6.14,
+      "sourceEndSeconds": 8.02,
+      "sha256": "14f3365a1e6dc25c92cf141fbb6f806dcca94702b8116b6052ca71137b53e2fa",
+      "durationSeconds": 1.88,
+      "previewOnly": true,
+      "listeningReviewRequired": true
+    },
+    {
+      "id": "hello_fr",
+      "filename": "hello_fr.mp3",
+      "language": "fr",
+      "text": "Salut ! Je suis JARVIX.",
+      "source": "t3_fr_8b174811bfee.mp3",
+      "sourceStartSeconds": 0.0,
+      "sourceEndSeconds": 1.16,
+      "sha256": "6552752f4cc7097dbaa72905975b26830bd2ff174f44de4901850ae0dbda1bc8",
+      "durationSeconds": 1.16,
+      "previewOnly": true,
+      "listeningReviewRequired": true
+    },
+    {
+      "id": "prompt_fr",
+      "filename": "prompt_fr.mp3",
+      "language": "fr",
+      "text": "Dites-moi ce que vous voulez créer.",
+      "source": "t3_fr_d9b4e9a208d8.mp3",
+      "sourceStartSeconds": 4.38,
+      "sourceEndSeconds": 5.405,
+      "sha256": "ca9b957493cc997c4d7a64701c84127739817bbc2b53d26a3cb811a1c2893f64",
+      "durationSeconds": 1.025,
+      "previewOnly": true,
+      "listeningReviewRequired": true
+    },
+    {
+      "id": "hello_es",
+      "filename": "hello_es.mp3",
+      "language": "es",
+      "text": "¡Hola! Soy JARVIX.",
+      "source": "t3_es_8d5f3b1ff6c2.mp3",
+      "sourceStartSeconds": 0.0,
+      "sourceEndSeconds": 1.65,
+      "sha256": "8facaa31aceaa1b130b9298618c09aaeee91f9161356cb115d54d51f1ce63a48",
+      "durationSeconds": 1.65,
+      "previewOnly": true,
+      "listeningReviewRequired": true
+    },
+    {
+      "id": "prompt_es",
+      "filename": "prompt_es.mp3",
+      "language": "es",
+      "text": "Dime qué quieres crear.",
+      "source": "t3_es_9808ef233d8f.mp3",
+      "sourceStartSeconds": 5.04,
+      "sourceEndSeconds": 6.38,
+      "sha256": "b682be637e256afa3fbae05307314be5e9dba5deed12eb3eadf027f03dc667ce",
+      "durationSeconds": 1.34,
+      "previewOnly": true,
+      "listeningReviewRequired": true
+    }
+  ]
+}

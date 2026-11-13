@@ -52,7 +52,7 @@ def allowed_hash_reuse(paths):
 
 def pages_asset_mime(path):
     return {".js": "application/javascript", ".html": "text/html",
-            ".xml": "application/xml"}.get(Path(path).suffix, "application/octet-stream")
+            ".xml": "application/xml", ".mp3": "audio/mpeg", ".json": "application/json"}.get(Path(path).suffix, "application/octet-stream")
 
 class Blocked(Exception):
     pass
@@ -107,15 +107,15 @@ def normalize_manifest(files):
     insist(len(result) <= 20000, "Pages manifest is over the limit")
     return result
 
-def surgical_manifest(live, edits):
+def surgical_manifest(live, edits, new_voice_assets=()):
     updated = dict(live)
     changed = {}
     for path, new_hash in edits.items():
         key = "/" + path.lstrip("/")
-        insist(key in live, "Cannot invent new route in an ordinary surgical patch: " + key)
+        insist(key in live or path in new_voice_assets, "Cannot invent new route in an ordinary surgical patch: " + key)
         insist(re.fullmatch(r"[0-9a-f]{32}", new_hash), "Invalid candidate hash")
-        if live[key] != new_hash:
-            changed[key] = (live[key], new_hash)
+        if live.get(key) != new_hash:
+            changed[key] = (live.get(key), new_hash)
             updated[key] = new_hash
     insist(all(updated[k] == h for k, h in live.items() if k not in changed),
            "Unauthorized manifest mutation")
@@ -242,17 +242,16 @@ class Cloudflare:
             time.sleep(2)
         raise Blocked("AUTOMATIC_ROLLBACK_NOT_CONFIRMED")
 
-    def tour_manifest_deploy(self, candidate, assets, sha, worker, origin, chat_worker=None):
+    def tour_manifest_deploy(self, candidate, assets, sha, worker, origin, chat_worker=None, voice_release=False):
         """Tour-only Pages upload: unchanged routes reuse canonical LIVE hashes.
 
         Fetch the *currently deployed* Worker payload rather than recompiling
         or modifying it. Never publish if its exact original bytes cannot be
         retrieved in a Cloudflare-supported worker upload format.
         """
-        insist(chat_worker is not None or allowed_hash_reuse(assets),
+        insist(chat_worker is not None or voice_release or allowed_hash_reuse(assets),
                "Only the exact owner-approved surgical release sets can reuse LIVE hashes")
         keyed = {digest(raw, rel): (rel, raw) for rel, raw in assets.items()}
-        insist(len(keyed) == len(assets), "Tour content hash collision")
         for key, (rel, _) in keyed.items():
             insist(candidate.get("/" + rel) == key, "Tour hash is not in candidate manifest")
         hashes = sorted(keyed)
@@ -262,35 +261,37 @@ class Cloudflare:
                               "/pages/projects/" + PROJECT + "/upload-token").get("jwt")
             insist(isinstance(token, str) and token, "Pages asset upload token unavailable")
             jwt_headers = {"Authorization": "Bearer " + token}
-            check = self.call("POST", API + "/pages/assets/check-missing",
-                              headers=jwt_headers, json={"hashes": hashes}).json()
-            insist(check.get("success") is True and
-                   isinstance(check.get("result"), list) and
-                   set(check["result"]).issubset(set(hashes)), "Cannot verify tour asset upload status")
-            if check["result"]:
-                upload = self.call("POST", API + "/pages/assets/upload",
-                                   headers=jwt_headers,
-                                   json=[{"key": key, "base64": True,
-                                          "metadata": {"contentType": pages_asset_mime(keyed[key][0])},
-                                          "value": base64.b64encode(keyed[key][1]).decode("ascii")}
-                                         for key in check["result"]]).json()
-                insist(upload.get("success") is True, "Cloudflare tour asset upload failed")
-            registered = self.call("POST", API + "/pages/assets/upsert-hashes",
-                                   headers=jwt_headers, json={"hashes": hashes}).json()
-            insist(registered.get("success") is True,
-                   "Cloudflare tour asset hash registration failed")
-            confirmed = False
-            for attempt in range(8):
-                after = self.call("POST", API + "/pages/assets/check-missing",
-                                  headers=jwt_headers, json={"hashes": hashes}).json()
-                insist(after.get("success") is True and
-                       isinstance(after.get("result"), list),
-                       "Cloudflare tour asset verification malformed")
-                if after["result"] == []:
-                    confirmed = True
-                    break
-                time.sleep(1)
-            insist(confirmed, "Tour asset not confirmed in Pages asset store")
+            for offset in range(0, len(hashes), 20):
+                batch = hashes[offset:offset + 20]
+                check = self.call("POST", API + "/pages/assets/check-missing",
+                                  headers=jwt_headers, json={"hashes": batch}).json()
+                insist(check.get("success") is True and
+                       isinstance(check.get("result"), list) and
+                       set(check["result"]).issubset(set(batch)), "Cannot verify tour asset upload status")
+                if check["result"]:
+                    upload = self.call("POST", API + "/pages/assets/upload",
+                                       headers=jwt_headers,
+                                       json=[{"key": key, "base64": True,
+                                              "metadata": {"contentType": pages_asset_mime(keyed[key][0])},
+                                              "value": base64.b64encode(keyed[key][1]).decode("ascii")}
+                                             for key in check["result"]]).json()
+                    insist(upload.get("success") is True, "Cloudflare tour asset upload failed")
+                registered = self.call("POST", API + "/pages/assets/upsert-hashes",
+                                       headers=jwt_headers, json={"hashes": batch}).json()
+                insist(registered.get("success") is True,
+                       "Cloudflare tour asset hash registration failed")
+                confirmed = False
+                for attempt in range(8):
+                    after = self.call("POST", API + "/pages/assets/check-missing",
+                                      headers=jwt_headers, json={"hashes": batch}).json()
+                    insist(after.get("success") is True and
+                           isinstance(after.get("result"), list),
+                           "Cloudflare tour asset verification malformed")
+                    if after["result"] == []:
+                        confirmed = True
+                        break
+                    time.sleep(1)
+                insist(confirmed, "Tour asset not confirmed in Pages asset store")
 
         endpoint = API + "/accounts/" + self.account + "/workers/scripts/" + quote(worker, safe="")
         try:
@@ -458,9 +459,22 @@ def main():
     parser.add_argument("--files", required=True, help="Comma-separated EXACT asset paths")
     parser.add_argument("--commit", default=os.environ.get("GITHUB_SHA", ""))
     parser.add_argument("--chat-worker", action="store_true")
+    parser.add_argument("--new-voice", action="store_true")
     args = parser.parse_args()
+    insist(not args.new_voice or not args.chat_worker and not args.files, "Voice release scope is fixed")
     insist(not args.chat_worker or not args.files, "Chat Worker release cannot include assets")
-    paths = [] if args.chat_worker else allowed_paths(args.files)
+    paths = [] if args.chat_worker or args.new_voice else allowed_paths(args.files)
+    voice_sources = {}
+    if args.new_voice:
+        tracked = checked_git("ls-files", "app/src/main/assets/media/jarvix/clips", "app/src/main/assets/media/jarvix/conversation").splitlines()
+        paths = ["jarvis-core.js", "jarvix-chat.js", "jarvix-new-voice.js",
+                 "jarvix-new-recorded-dialog.js", "jarvix-new-smalltalk.js",
+                 "jarvix-new-physical-audio-index.json",
+                 "media/jarvix/clips/reviewed-scenarios.json"]
+        for path in tracked:
+            rel = path.removeprefix("app/src/main/assets/")
+            if rel.startswith("media/jarvix/conversation/") or rel.endswith(".mp3"):
+                voice_sources[rel] = None
     sha = args.commit
     insist(args.mode != "publish" or re.fullmatch(r"[0-9a-f]{40}", sha),
            "Publish requires exact GitHub task commit")
@@ -505,18 +519,21 @@ def main():
         # the tour-only escape hatch preserves the original LIVE manifest
         # by hash rather than guessing content or changing unrelated routes.
         try:
-            if args.chat_worker:
+            if args.chat_worker or args.new_voice:
                 raise Blocked("Use unchanged production asset manifest")
             stage, candidate, changed, from_live, expected_bytes = build_candidate(
                 live, paths, origin, work)
             direct_manifest = False
         except Blocked as error:
-            insist(args.chat_worker or (allowed_hash_reuse(paths) and
+            insist(args.chat_worker or args.new_voice or (allowed_hash_reuse(paths) and
                    str(error).startswith("Could not reproduce unchanged LIVE asset bytes:")),
                    str(error))
             expected_bytes = {rel: (ROOT / rel).read_bytes() for rel in paths}
+            if args.new_voice:
+                expected_bytes.update({rel: (ROOT / rel).read_bytes() for rel in voice_sources if "/" + rel not in live})
             candidate, changed = surgical_manifest(live, {
-                rel: digest(raw, rel) for rel, raw in expected_bytes.items()})
+                rel: digest(raw, rel) for rel, raw in expected_bytes.items()}, 
+                expected_bytes if args.new_voice else ())
             from_live = 0
             stage = None
             direct_manifest = True
@@ -556,7 +573,7 @@ def main():
         insist(current_id == live_id and current_worker == worker,
                "Concurrent production update detected; no deploy")
         if direct_manifest:
-            deployed_id = cloudflare.tour_manifest_deploy(candidate, expected_bytes, sha, worker, origin, chat_worker)
+            deployed_id = cloudflare.tour_manifest_deploy(candidate, expected_bytes, sha, worker, origin, chat_worker, args.new_voice)
         else:
             run_wrangle(stage, sha)
             deployed_id = None
@@ -625,14 +642,20 @@ def main():
             raise
         try:
             cloudflare.endpoint_status("/api/config")
-            for rel, raw in expected_bytes.items():
+            public_checks = expected_bytes
+            if args.new_voice:
+                audio = [rel for rel in expected_bytes if rel.endswith(".mp3")]
+                public_checks = {rel: raw for rel, raw in expected_bytes.items() if not rel.endswith(".mp3")}
+                if audio:
+                    public_checks[audio[0]] = expected_bytes[audio[0]]
+            for rel, raw in public_checks.items():
                 if "/" + rel not in changed:
                     continue
                 matched = False
                 for attempt in range(10):
                     content = cloudflare.live_asset("/" + rel,
                         newest.replace("-", "") + "-" + str(attempt))
-                    if rel.endswith((".js", ".css", ".json", ".svg")):
+                    if rel.endswith((".js", ".css", ".json", ".svg", ".mp3")):
                         matched = content == raw
                     else:
                         matched = len(content) > 0

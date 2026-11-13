@@ -1,3 +1,4 @@
+import {installJarvixNewVoice} from './jarvix-new-voice.js';
 import {extractAction} from './jarvix-action-plan.js';
 import { stopJarvixGuidedTour, isTourActive } from './jarvix-guided-tour.js?v=20261111-v4b';
 import {navigationReply} from './jarvix-navigation-reply.js';
@@ -1216,6 +1217,7 @@ function resetSilenceTimer() {
 
 // 11. Activation & Deactivation (Smart Conversational Memory)
 export function suspendJarvisForTour() {
+  window.__jarvixNewVoiceStop?.();
   isJarvisActive=false;keepListening=false;
   try{sessionStorage.removeItem('jarvix_active');}catch{}
   announceJarvisVoiceState();
@@ -1413,6 +1415,15 @@ export function initJarvis() {
   setupBtn();
   setTimeout(setupBtn, 200);
   setTimeout(setupBtn, 600);
+
+  if (['deepsyq.app','www.deepsyq.app'].includes(location.hostname)) {
+    window.__jarvixBeforeNewVoice = () => {
+      stopJarvixGuidedTour();
+      if (isJarvisActive) deactivateJarvisVoice();
+    };
+    installJarvixNewVoice();
+    return;
+  }
 
   // Cross-page persistence: restore JARVIX if active prior to navigation
   let wasActive = false;

@@ -177,10 +177,11 @@ jobs:
          github.event.head_commit.message == 'release(Auth): restore original sign-in' ||
          github.event.head_commit.message == 'release(Chat): publish Trial offer only' ||
          github.event.head_commit.message == 'release(Auth and Chat): publish latest approved assets' ||
-         github.event.head_commit.message == 'release(Chat): publish Gemini latency fix')))
+         github.event.head_commit.message == 'release(Chat): publish Gemini latency fix' ||
+         github.event.head_commit.message == 'release(Voice): publish JARVIX NEW')))
     needs: tests
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 25
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
@@ -200,6 +201,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${{ github.event.head_commit.message == 'release(Voice): publish JARVIX NEW' }}" == "true" ]]; then
+            python scripts/deepsyq_surgical_publish.py --mode publish --files "" --commit "$GITHUB_SHA" --new-voice
+            exit
+          fi
           if [[ "${{ github.event.head_commit.message == 'release(Chat): publish Gemini latency fix' }}" == "true" ]]; then
             python scripts/deepsyq_surgical_publish.py --mode publish --files "" --commit "$GITHUB_SHA" --chat-worker
             exit
