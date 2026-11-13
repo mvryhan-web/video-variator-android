@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `3578937459df02333923c766c6691dced6968b59`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 126 | Named symbols: 447 | Checked relations: 80
+Source commit: `6ab3c01b2a71a7b09454d8ce17c3ab6925a2bafd`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 126 | Named symbols: 448 | Checked relations: 80
 
 ## Topic finder (matching filenames)
 
@@ -186,11 +186,11 @@ langs (L2)
 
 ### `app/src/main/assets/mobile-utility.js`
 
-mode (L7) · fileTypes (L21) · timeModes (L30) · redactRects (L31) · redactPreviewUrls (L33)
+mode (L8) · fileTypes (L22) · timeModes (L31) · redactRects (L32) · redactPreviewUrls (L34)
 
 ### `app/src/main/assets/my-creations-gallery.js`
 
-showcase (L6) · icons (L16) · state (L23) · selectedPhotos (L67) · batchDelete (L69)
+showcase (L6) · icons (L16) · state (L23) · selectedPhotos (L67) · batchDelete (L69) · storyLink (L368)
 
 ### `app/src/main/assets/onboarding-options.js`
 
