@@ -703,7 +703,14 @@ def main():
                                 continue
                             approved = ("DATABASE_BINDING_INVALID", "AUTH_SECRET_MISSING",
                                         "ACCOUNT_TABLE_MISSING", "PASSWORD_COLUMN_MISSING",
-                                        "ACCOUNT_INDEX_MISSING", "DATABASE_QUERY_FAILED")
+                                        "ACCOUNT_INDEX_MISSING", "DATABASE_QUERY_FAILED",
+                                        "DATABASE_NETWORK_FAILED", "DATABASE_INVALID_RESPONSE",
+                                        "DATABASE_HTTP_400", "DATABASE_HTTP_401",
+                                        "DATABASE_HTTP_403", "DATABASE_HTTP_404",
+                                        "DATABASE_HTTP_409", "DATABASE_HTTP_422",
+                                        "DATABASE_HTTP_429", "DATABASE_HTTP_500",
+                                        "DATABASE_HTTP_502", "DATABASE_HTTP_503",
+                                        "DATABASE_HTTP_504", "DATABASE_HTTP_OTHER")
                             reason = data.get("reason")
                             reason = reason if reason in approved else "OLD_STATUS_OR_UNRECOGNIZED"
                             print("EMAIL_RUNTIME_PROBE", name, response.status_code,
