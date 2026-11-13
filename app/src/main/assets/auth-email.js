@@ -102,6 +102,15 @@
       legal.innerHTML=v.legal+' <a href="terms.html">'+v.terms+'</a> · <a href="cookie.html">'+v.privacy+'</a>.';
       card.appendChild(legal);
     }
+    // Presentation-only registration card. Move existing Google container intact:
+    // its element, SDK rendering target and OAuth callbacks are not replaced.
+    if(!card.querySelector('.authRegistrationPanel')){
+      const panel=document.createElement('div');
+      panel.className='authRegistrationPanel';
+      const parts=[card.querySelector('.authActionTitle'),google,wrap,card.querySelector('.authLegal')];
+      parts.filter(Boolean).forEach(el=>panel.appendChild(el));
+      card.appendChild(panel);
+    }
 
     let creating=true;
     const form=$('emailAuthForm'),nameLabel=$('emailNameLabel'),password=$('emailAuthPassword'),submit=$('emailAuthSubmit'),toggle=$('emailAuthToggle'),msg=$('emailAuthMessage');
