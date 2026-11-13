@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `0e947e06d9c7d6e97788272667b9b8d01280ff6c`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `19cd1af00783e6d53cb8ea6777a315e393f1756b`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 126 | Named symbols: 445 | Checked relations: 80
 
 ## Topic finder (matching filenames)
@@ -310,7 +310,7 @@ app (L20) · port (L21) · root (L22) · assets (L23) · ffmpegUmd (L24) · ffmp
 
 ### `server/edge-email-auth.js`
 
-scrypt (L10) · attempts (L14) · _emailAuthTest (L170)
+scrypt (L10) · attempts (L14) · _emailAuthTest (L178)
 
 ### `server/email-auth.js`
 
