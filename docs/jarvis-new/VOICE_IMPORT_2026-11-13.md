@@ -35,3 +35,7 @@ The verified 1900 MP3 are physically stored and indexed; this does **not** mean 
 The 1,540 imported scenario clips are indexed, with no individual listening approval recorded yet. JARVIX uses a scenario clip only when its filename and scenario ID match an approved entry in the TEST runtime manifest `app/src/main/assets/media/jarvix/clips/reviewed-scenarios.json`. Each entry requires `filename`, `scenarioId`, `spokenText` transcribed from the audio, and `approved: true`. The expected master answer is never used as the transcript for a scenario MP3. Existing numbered and tour paths are unchanged.
 
 Local resolver checks passed for approved and pending scenario fixtures, two- and three-part replies, and a follow-up. Listening approval is still pending for the imported scenario batch.
+
+## Greeting and wellbeing
+
+TEST commit `992e3cb`: greeting-only turns rearm listening without playing the introduction again. The casual catalog contains the prepared wellbeing text, and the voice path can use the existing numbered recording with the transcript «Я на связи. Чем могу помочь прямо сейчас?» when no dedicated wellbeing clip is available. The exact prepared reply is visible when audio is unavailable. Twenty tests passed locally; TEST JS and the Russian MP3 format were verified over HTTPS. A real microphone was not used in this check.
