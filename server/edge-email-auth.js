@@ -42,7 +42,20 @@ async function query(store,statement,params=[],fetcher=fetch) {
       body:JSON.stringify({query:statement,params:params.map(v=>v===null?null:String(v))}),
       signal:AbortSignal.timeout(10000)
     });
-  } catch { throw new Error('DATABASE_NETWORK_FAILED'); }
+  } catch(error) {
+    // Never expose exception text, URLs, headers, or connection strings.
+    const message=String(error?.message||'').toLowerCase();
+    const code=String(error?.cause?.code||'');
+    let category='DATABASE_NETWORK_FAILED';
+    if(error?.name==='TimeoutError'||error?.name==='AbortError')category='DATABASE_TIMEOUT';
+    else if(/redirect/.test(message))category='DATABASE_REDIRECT_REJECTED';
+    else if(/header/.test(message))category='DATABASE_HEADER_REJECTED';
+    else if(/unsupported|not implemented/.test(message))category='DATABASE_RUNTIME_UNSUPPORTED';
+    else if(['ENOTFOUND','EAI_AGAIN'].includes(code))category='DATABASE_DNS_FAILED';
+    else if(['ETIMEDOUT','ECONNREFUSED','ECONNRESET'].includes(code))category='DATABASE_SOCKET_FAILED';
+    else if(error?.name==='TypeError')category='DATABASE_FETCH_TYPE_ERROR';
+    throw new Error(category);
+  }
   if(!response.ok) {
     const http=Number(response.status);
     const safeStatuses=[400,401,403,404,409,422,429,500,502,503,504];
@@ -74,7 +87,7 @@ export async function emailStorageDiagnostic(env,{fetcher=fetch}={}){
     return {configured:true};
   }catch(error){
     const msg=String(error?.message||'');
-    const safe=/^(DATABASE_(NETWORK_FAILED|INVALID_RESPONSE|HTTP_(400|401|403|404|409|422|429|500|502|503|504|OTHER)))$/;
+    const safe=/^(DATABASE_(NETWORK_FAILED|TIMEOUT|REDIRECT_REJECTED|HEADER_REJECTED|RUNTIME_UNSUPPORTED|DNS_FAILED|SOCKET_FAILED|FETCH_TYPE_ERROR|INVALID_RESPONSE|HTTP_(400|401|403|404|409|422|429|500|502|503|504|OTHER)))$/;
     return {configured:false,reason:safe.test(msg)?msg:'DATABASE_QUERY_FAILED'};
   }
 }
