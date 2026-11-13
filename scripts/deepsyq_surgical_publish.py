@@ -676,6 +676,24 @@ def main():
             raise
         try:
             cloudflare.endpoint_status("/api/config")
+            if args.email_worker:
+                # Production must actually reach the existing account table.
+                # Fail closed and roll back the new Worker if credentials or schema
+                # are unavailable, rather than exposing a nonworking Email login.
+                ready = False
+                for attempt in range(8):
+                    response = cloudflare.session.get(
+                        DOMAIN + "/api/auth/email/status?email_release=" +
+                        newest.replace("-", "") + "-" + str(attempt),
+                        headers={"Cache-Control":"no-store"}, timeout=20)
+                    if response.ok:
+                        payload = response.json()
+                        if payload.get("configured") is True:
+                            ready = True
+                            break
+                    time.sleep(2)
+                insist(ready, "EMAIL_STORAGE_NOT_READY_POST_DEPLOY")
+                print("EMAIL_STORAGE_READY_POST_DEPLOY", newest)
             public_checks = expected_bytes
             if args.new_voice:
                 audio = [rel for rel in expected_bytes if rel.endswith(".mp3")]
