@@ -47,6 +47,131 @@ function studioCopy(){
  const lang=(localStorage.getItem('deepsyq_lang')||document.documentElement.lang||'en').slice(0,2);
  return studioLabels[lang]||studioLabels.en;
 }
+
+const creativeToolsCopy={
+ ru:{factory:'Контент-план',brand:'Фирменный стиль',plan:'30 публикаций из одной идеи',style:'Логотип, цвета и шрифты',idea:'Что вы хотите продвигать?',name:'Название бренда',colors:'Цвета бренда',font:'Шрифты',tone:'Тон и визуальный стиль',logo:'Логотип',remove:'Убрать логотип',save:'Сохранить стиль',saved:'Сохранено в этом браузере',open:'Подготовить план в JARVIX',close:'Закрыть',error:'Не удалось сохранить данные в браузере.',invalid:'Выберите PNG, JPEG или WebP до 1 МБ.',language:'Russian'},
+ en:{factory:'Content Factory',brand:'Brand DNA',plan:'30 posts from one idea',style:'Logo, colors and fonts',idea:'What would you like to promote?',name:'Brand name',colors:'Brand colors',font:'Fonts',tone:'Tone and visual style',logo:'Logo',remove:'Remove logo',save:'Save brand style',saved:'Saved in this browser',open:'Prepare plan in JARVIX',close:'Close',error:'Could not save data in this browser.',invalid:'Choose PNG, JPEG or WebP up to 1 MB.',language:'English'},
+ fr:{factory:'Plan de contenu',brand:'Identité de marque',plan:'30 publications à partir d’une idée',style:'Logo, couleurs et polices',idea:'Que souhaitez-vous promouvoir ?',name:'Nom de la marque',colors:'Couleurs de la marque',font:'Polices',tone:'Ton et style visuel',logo:'Logo',remove:'Retirer le logo',save:'Enregistrer le style',saved:'Enregistré dans ce navigateur',open:'Préparer le plan dans JARVIX',close:'Fermer',error:'Enregistrement impossible dans ce navigateur.',invalid:'Choisissez un PNG, JPEG ou WebP de 1 Mo maximum.',language:'French'},
+ es:{factory:'Plan de contenido',brand:'Identidad de marca',plan:'30 publicaciones a partir de una idea',style:'Logotipo, colores y tipografías',idea:'¿Qué quieres promocionar?',name:'Nombre de la marca',colors:'Colores de marca',font:'Tipografías',tone:'Tono y estilo visual',logo:'Logotipo',remove:'Quitar logotipo',save:'Guardar estilo',saved:'Guardado en este navegador',open:'Preparar plan en JARVIX',close:'Cerrar',error:'No se pudo guardar en este navegador.',invalid:'Elige un PNG, JPEG o WebP de hasta 1 MB.',language:'Spanish'}
+};
+function creativeCopy(){
+ const lang=(localStorage.getItem('deepsyq_lang')||document.documentElement.lang||'en').slice(0,2);
+ return creativeToolsCopy[lang]||creativeToolsCopy.en;
+}
+async function creativeStorage(){
+ const token=localStorage.getItem('vv_token')||'guest';
+ const {ownerScope}=await import('./jarvix-conversations.js');
+ const prefix='deepsyq.creative-tools.'+await ownerScope(token)+'.';
+ return {
+  get current(){return token===(localStorage.getItem('vv_token')||'guest');},
+  read(key){return JSON.parse(localStorage.getItem(prefix+key)||'null');},
+  write(key,value){localStorage.setItem(prefix+key,JSON.stringify(value));}
+ };
+}
+function brandPrompt(brand){
+ if(!brand)return '';
+ const settings=[['Brand',brand.name],['Palette',brand.colors],['Typography',brand.font],['Tone and visual style',brand.tone]]
+  .filter(([,value])=>value).map(([label,value])=>label+': '+value);
+ return settings.length?'\n\nBrand guidelines:\n'+settings.join('\n'):'';
+}
+function contentPlanPrompt(idea,brand,language){
+ return 'Write in '+language+'. Build a 30-publication content plan for this brief: '+JSON.stringify(idea)+
+  '. Number all 30 entries and organize them into weeks. Give each entry a platform, format, hook, short caption and call to action. '+
+  'For Reels give a short shot sequence. For visual posts include a cover concept and a ready-to-edit generation prompt. '+
+  'Keep each entry concise. Use reasonable assumptions where details are missing, and avoid inventing product claims.'+brandPrompt(brand);
+}
+function creativeField(form,label,tag,value='',max=160){
+ const wrapper=detailEl('label','inspiration-detail-heading',label);
+ const field=detailEl(tag,'inspiration-detail-prompt');
+ field.style.cssText='display:block;width:100%;box-sizing:border-box;margin-top:6px;color:inherit;font:inherit';
+ field.value=value;field.maxLength=max;
+ wrapper.append(field);form.append(wrapper);
+ return field;
+}
+async function openCreativeTool(tool,opener){
+ const copy=creativeCopy();
+ const dialog=detailEl('dialog','inspiration-detail-dialog');
+ dialog.style.cssText='width:min(520px,calc(100% - 24px));max-height:90dvh;overflow:auto';
+ const form=detailEl('form','inspiration-detail-sidebar');
+ form.style.cssText='display:grid;gap:14px;padding:20px;overflow:visible';
+ const close=detailEl('button','inspiration-detail-close','×');
+ close.type='button';close.style.position='static';close.style.justifySelf='end';
+ close.setAttribute('aria-label',copy.close);close.onclick=()=>dialog.close();
+ const title=detailEl('h2','inspiration-detail-heading',copy[tool]);
+ title.id='creativeToolTitle';dialog.setAttribute('aria-labelledby',title.id);
+ const status=detailEl('p','inspiration-detail-feedback');status.setAttribute('role','status');status.hidden=true;
+ const say=value=>{status.textContent=value;status.hidden=false;};
+ const actions=detailEl('div','inspiration-detail-actions');
+ const submit=detailEl('button','inspiration-detail-clone',tool==='brand'?copy.save:copy.open);
+ submit.type='submit';submit.disabled=true;actions.append(submit);
+ form.append(close,title);
+ dialog.append(form);document.body.append(dialog);
+ const onAccountChange=event=>{if(event.key==='vv_token'||event.key===null)dialog.close();};
+ window.addEventListener('storage',onAccountChange);
+ dialog.addEventListener('close',()=>{
+  window.removeEventListener('storage',onAccountChange);dialog.remove();
+  if(opener.isConnected)opener.focus();
+ },{once:true});
+ dialog.showModal();
+ try{
+  const storage=await creativeStorage();
+  if(!dialog.open||!storage.current){if(dialog.open)dialog.close();return;}
+  const brand=storage.read('brand')||{};
+  if(tool==='factory'){
+   const idea=creativeField(form,copy.idea,'textarea',storage.read('idea')||'',700);
+   idea.rows=4;idea.required=true;
+   form.onsubmit=event=>{
+    event.preventDefault();
+    const value=idea.value.trim();
+    if(!value||!storage.current)return;
+    try{
+     storage.write('idea',value);
+     sessionStorage.setItem('deepsyq_template_start',JSON.stringify({promptTemplate:contentPlanPrompt(value,brand,copy.language)}));
+     location.assign('jarvix-chat.html?from=template');
+    }catch{say(copy.error);}
+   };
+  }else{
+   const fields={};
+   for(const key of ['name','colors','font','tone'])fields[key]=creativeField(form,copy[key],'input',brand[key]||'');
+   const logo=creativeField(form,copy.logo,'input');
+   logo.type='file';logo.accept='image/png,image/jpeg,image/webp';
+   const preview=detailEl('img');
+   preview.alt=copy.logo;preview.width=64;preview.height=64;
+   preview.style.objectFit='contain';
+   const remove=detailEl('button','inspiration-detail-secondary',copy.remove);
+   remove.type='button';
+   let image=brand.logo||'';
+   const updatePreview=()=>{
+    preview.hidden=remove.hidden=!image;
+    if(image)preview.src=image;else preview.removeAttribute('src');
+   };
+   updatePreview();
+   remove.onclick=()=>{image='';logo.value='';updatePreview();};
+   form.append(preview,remove);
+   form.onsubmit=async event=>{
+    event.preventDefault();
+    if(!storage.current||submit.disabled)return;
+    const file=logo.files[0];
+    if(file&&(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>1024*1024)){say(copy.invalid);return;}
+    submit.disabled=true;
+    try{
+     const nextLogo=file?await new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);
+     }):image;
+     if(!storage.current||!dialog.open)return;
+     const values=Object.fromEntries(Object.entries(fields).map(([key,field])=>[key,field.value.trim()]));
+     storage.write('brand',{...values,logo:nextLogo});
+     image=nextLogo;logo.value='';updatePreview();say(copy.saved);
+    }catch{say(copy.error);}
+    finally{submit.disabled=false;}
+   };
+  }
+  submit.disabled=false;
+ }catch{say(copy.error);}
+ form.append(status,actions);
+}
+
 function renderQuickStarts(section){
  if(document.getElementById('homeStudioQuickStarts'))return;
  const root=detailEl('section','home-creative-tools');
@@ -59,6 +184,19 @@ function renderQuickStarts(section){
  quickStarts.forEach((item,index)=>{
   const link=detailEl('a','home-create-card tile-'+item.kind);
   link.href='jarvix-chat.html?'+new URLSearchParams({mode:item.kind,from:'template',prompt:studioDraftPrompt(item.prompt,item.aspectRatio)});
+  link.addEventListener('click',async event=>{
+   if(event.defaultPrevented||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+   event.preventDefault();
+   const destination=new URL(link.href,location.href);
+   try{
+    const storage=await creativeStorage();
+    if(!storage.current)return;
+    const prompt=destination.searchParams.get('prompt')+brandPrompt(storage.read('brand'));
+    sessionStorage.setItem('deepsyq_template_start',JSON.stringify({promptTemplate:prompt,generationType:item.kind}));
+    destination.searchParams.delete('prompt');
+   }catch{}
+   location.assign(destination.href);
+  });
   const image=detailEl('img');
   image.src=item.image;image.alt='';image.loading='lazy';image.width=720;image.height=405;
   const copy=detailEl('span','home-create-copy');
@@ -68,6 +206,21 @@ function renderQuickStarts(section){
   link.append(image,copy,arrow);
   grid.append(link);
  });
+ const copy=creativeCopy();
+ for(const [tool,subtitle,kind,imageSrc] of [
+  ['factory','plan','video','media/home/owner-20261018/04-neon-motorcycle.jpg'],
+  ['brand','style','image','media/home/neon-20261018/canvas.webp']
+ ]){
+  const button=detailEl('button','home-create-card tile-'+kind);
+  button.type='button';button.style.cssText='text-align:start;font:inherit;color:inherit;cursor:pointer';
+  const image=detailEl('img');image.src=imageSrc;image.alt='';image.loading='lazy';image.width=720;image.height=405;
+  const label=detailEl('span','home-create-copy');
+  label.append(detailEl('strong','',copy[tool]),detailEl('span','',copy[subtitle]));
+  const arrow=detailEl('span','home-card-arrow','›');arrow.setAttribute('aria-hidden','true');
+  button.append(image,label,arrow);
+  button.onclick=()=>void openCreativeTool(tool,button);
+  grid.append(button);
+ }
  root.append(title,grid);
  section.before(root);
 }
