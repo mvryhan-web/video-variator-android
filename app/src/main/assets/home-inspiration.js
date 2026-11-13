@@ -88,8 +88,93 @@ function creativeField(form,label,tag,value='',max=160){
  wrapper.append(field);form.append(wrapper);
  return field;
 }
+const characterRadarCopy={
+ ru:{characters:'Мои персонажи',cast:'Внешность, одежда и стиль',radar:'Радар идей',radarHint:'Сценарии по вашей теме',newCharacter:'Новый персонаж',appearance:'Внешность',outfit:'Одежда',characterStyle:'Визуальный стиль',saveCharacter:'Сохранить персонажа',deleteCharacter:'Удалить персонажа',useCharacter:'Подготовить сцену',scene:'Новая сцена',niche:'Ваша тема или ниша',examples:'Примеры из «Вдохновения»',radarOpen:'Подготовить идеи в JARVIX'},
+ en:{characters:'My Characters',cast:'Appearance, outfit and style',radar:'Trend Radar',radarHint:'Video ideas for your niche',newCharacter:'New character',appearance:'Appearance',outfit:'Outfit',characterStyle:'Visual style',saveCharacter:'Save character',deleteCharacter:'Delete character',useCharacter:'Prepare a scene',scene:'New scene',niche:'Your topic or niche',examples:'Examples from Inspiration',radarOpen:'Prepare ideas in JARVIX'},
+ fr:{characters:'Mes personnages',cast:'Apparence, tenue et style',radar:'Radar d’idées',radarHint:'Idées vidéo pour votre niche',newCharacter:'Nouveau personnage',appearance:'Apparence',outfit:'Tenue',characterStyle:'Style visuel',saveCharacter:'Enregistrer le personnage',deleteCharacter:'Supprimer le personnage',useCharacter:'Préparer une scène',scene:'Nouvelle scène',niche:'Votre sujet ou niche',examples:'Exemples d’Inspiration',radarOpen:'Préparer des idées dans JARVIX'},
+ es:{characters:'Mis personajes',cast:'Aspecto, ropa y estilo',radar:'Radar de ideas',radarHint:'Ideas de vídeo para tu nicho',newCharacter:'Nuevo personaje',appearance:'Aspecto',outfit:'Ropa',characterStyle:'Estilo visual',saveCharacter:'Guardar personaje',deleteCharacter:'Eliminar personaje',useCharacter:'Preparar una escena',scene:'Nueva escena',niche:'Tu tema o nicho',examples:'Ejemplos de Inspiración',radarOpen:'Preparar ideas en JARVIX'}
+};
+function openCreativeDraft(prompt,mode){
+ sessionStorage.setItem('deepsyq_template_start',JSON.stringify({promptTemplate:prompt,generationType:mode}));
+ location.assign('jarvix-chat.html?from=template'+(mode?'&mode='+mode:''));
+}
+function characterScenePrompt(profile,scene,brand){
+ return 'Create this scene: '+scene+'\n\nKeep this character consistent in the scene:\n'+
+  Object.entries(profile).filter(([key,value])=>key!=='id'&&value).map(([key,value])=>key+': '+value).join('\n')+brandPrompt(brand);
+}
+function radarDraftPrompt(niche,example,language){
+ return 'Write in '+language+'. Propose three original short-video concepts for '+JSON.stringify(niche)+
+  '. For each, give an opening hook, a three-shot sequence and an editable 9:16 generation prompt. '+
+  'Treat these as creative ideas. Do not claim they are currently trending or predict virality.'+
+  (example?' Use this editorial example only for its storytelling technique: '+JSON.stringify(example)+'.':'');
+}
+function characterEditor(form,storage,brand,copy,say){
+ let profiles=storage.read('characters')||[];
+ const picker=creativeField(form,copy.characters,'select');
+ const fields={};
+ for(const [key,label] of [['name',copy.characterName],['appearance',copy.appearance],['outfit',copy.outfit],['style',copy.characterStyle]]){
+  fields[key]=creativeField(form,label,'input','',240);
+ }
+ fields.name.required=fields.appearance.required=true;
+ const scene=creativeField(form,copy.scene,'textarea','',500);
+ scene.rows=2;
+ const mode=creativeField(form,copy.useCharacter,'select');
+ mode.append(new Option(copy.imageMode,'image'),new Option(copy.videoMode,'video'));
+ const use=detailEl('button','inspiration-detail-secondary',copy.useCharacter);
+ use.type='button';
+ const remove=detailEl('button','inspiration-detail-secondary',copy.deleteCharacter);
+ remove.type='button';
+ form.append(use,remove);
+ const refresh=(id='')=>{
+  picker.replaceChildren(new Option(copy.newCharacter,''),...profiles.map(profile=>new Option(profile.name,profile.id)));
+  picker.value=id;
+  const current=profiles.find(profile=>profile.id===id);
+  for(const [key,field] of Object.entries(fields))field.value=current?.[key]||'';
+  remove.hidden=!current;
+ };
+ const readFields=()=>Object.fromEntries(Object.entries(fields).map(([key,field])=>[key,field.value.trim()]));
+ picker.onchange=()=>refresh(picker.value);
+ refresh(profiles[0]?.id);
+ form.onsubmit=event=>{
+  event.preventDefault();
+  const fields=readFields();
+  if(!storage.current||!fields.name||!fields.appearance)return;
+  const id=picker.value||crypto.randomUUID();
+  const next=[{id,...fields},...profiles.filter(profile=>profile.id!==id)];
+  try{storage.write('characters',next);profiles=next;refresh(id);say(copy.saved);}catch{say(copy.error);}
+ };
+ remove.onclick=()=>{
+  if(!storage.current||!picker.value)return;
+  const next=profiles.filter(profile=>profile.id!==picker.value);
+  try{storage.write('characters',next);profiles=next;refresh(next[0]?.id);say(copy.saved);}catch{say(copy.error);}
+ };
+ use.onclick=()=>{
+  if(!storage.current||!form.reportValidity())return;
+  if(!scene.value.trim()){scene.focus();return;}
+  try{openCreativeDraft(characterScenePrompt(readFields(),scene.value.trim(),brand),mode.value);}catch{say(copy.error);}
+ };
+}
+function radarEditor(form,storage,copy,say){
+ const niche=creativeField(form,copy.niche,'input',storage.read('radarNiche')||'',200);
+ niche.required=true;
+ const choices=creativeField(form,copy.examples,'select');
+ const examples=items.filter(item=>item.kind==='video'&&item.prompt).slice(0,12);
+ choices.append(new Option('—',''),...examples.map((item,index)=>new Option(item.title,String(index))));
+ form.onsubmit=event=>{
+  event.preventDefault();
+  const value=niche.value.trim();
+  if(!storage.current||!value)return;
+  const example=choices.value===''?'':examples[Number(choices.value)]?.prompt;
+  try{storage.write('radarNiche',value);openCreativeDraft(radarDraftPrompt(value,example,copy.language));}catch{say(copy.error);}
+ };
+}
 async function openCreativeTool(tool,opener){
- const copy=creativeCopy();
+ const language=creativeCopy();
+ const lang=Object.keys(creativeToolsCopy).find(key=>creativeToolsCopy[key]===language)||'en';
+ const copy={...language,...characterRadarCopy[lang],
+  characterName:{ru:'Имя персонажа',en:'Character name',fr:'Nom du personnage',es:'Nombre del personaje'}[lang],
+  imageMode:{ru:'Изображение',en:'Image',fr:'Image',es:'Imagen'}[lang],
+  videoMode:{ru:'Видео',en:'Video',fr:'Vidéo',es:'Vídeo'}[lang]};
  const dialog=detailEl('dialog','inspiration-detail-dialog');
  dialog.style.cssText='width:min(520px,calc(100% - 24px));height:auto;max-height:90dvh;margin:auto;border:1px solid #7563b577;border-radius:20px;overflow:auto';
  const form=detailEl('form','inspiration-detail-sidebar');
@@ -102,7 +187,7 @@ async function openCreativeTool(tool,opener){
  const status=detailEl('p','inspiration-detail-feedback');status.setAttribute('role','status');status.hidden=true;
  const say=value=>{status.textContent=value;status.hidden=false;};
  const actions=detailEl('div','inspiration-detail-actions');
- const submit=detailEl('button','inspiration-detail-clone',tool==='brand'?copy.save:copy.open);
+ const submit=detailEl('button','inspiration-detail-clone',({brand:copy.save,characters:copy.saveCharacter,radar:copy.radarOpen,factory:copy.open})[tool]);
  submit.type='submit';submit.disabled=true;actions.append(submit);
  form.append(close,title);
  dialog.append(form);document.body.append(dialog);
@@ -117,7 +202,9 @@ async function openCreativeTool(tool,opener){
   const storage=await creativeStorage();
   if(!dialog.open||!storage.current){if(dialog.open)dialog.close();return;}
   const brand=storage.read('brand')||{};
-  if(tool==='factory'){
+  if(tool==='characters')characterEditor(form,storage,brand,copy,submit,say);
+  else if(tool==='radar')radarEditor(form,storage,copy,say);
+  else if(tool==='factory'){
    const idea=creativeField(form,copy.idea,'textarea',storage.read('idea')||'',700);
    idea.rows=4;idea.required=true;
    form.onsubmit=event=>{
@@ -206,10 +293,14 @@ function renderQuickStarts(section){
   link.append(image,copy,arrow);
   grid.append(link);
  });
- const copy=creativeCopy();
+ const language=creativeCopy();
+ const lang=Object.keys(creativeToolsCopy).find(key=>creativeToolsCopy[key]===language)||'en';
+ const copy={...language,...characterRadarCopy[lang]};
  for(const [tool,subtitle,kind,imageSrc] of [
   ['factory','plan','video','media/home/owner-20261018/04-neon-motorcycle.jpg'],
-  ['brand','style','image','media/home/neon-20261018/canvas.webp']
+  ['brand','style','image','media/home/neon-20261018/canvas.webp'],
+  ['characters','cast','image','media/home/owner-20261018/01-close-up-woman.jpg'],
+  ['radar','radarHint','video','media/home/neon-20261018/agent.webp']
  ]){
   const button=detailEl('button','home-create-card tile-'+kind);
   button.type='button';button.style.cssText='text-align:start;font:inherit;color:inherit;cursor:pointer';
