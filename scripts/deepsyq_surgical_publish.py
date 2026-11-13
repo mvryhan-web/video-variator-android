@@ -332,7 +332,7 @@ class Cloudflare:
                 bundle_cmd = ["npx", "--yes", "esbuild@0.25.12", str(source),
                               "--bundle", "--format=esm", "--platform=browser",
                               "--target=es2022", "--outfile=" + str(output)]
-                if email_worker:
+                if email_worker or b"server/edge-email-auth.js" in source.read_bytes():
                     # Cloudflare's 2026-11 Worker compatibility date supports node:crypto.
                     # Keep the builtins external instead of bundling arbitrary polyfills.
                     bundle_cmd.extend(["--external:node:crypto",
