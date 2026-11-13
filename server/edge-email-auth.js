@@ -30,7 +30,7 @@ async function query(store,statement,params=[],fetcher=fetch) {
   try {
     response=await fetcher(store.endpoint,{
       method:'POST',
-      redirect:'error',
+      redirect:'manual',
       headers:{
         'Content-Type':'application/json',
         'Neon-Connection-String':store.url,
@@ -54,6 +54,7 @@ async function query(store,statement,params=[],fetcher=fetch) {
     else if(error?.name==='TypeError')category='DATABASE_FETCH_TYPE_ERROR';
     throw new Error(category);
   }
+  if(response.status>=300&&response.status<400)throw new Error('DATABASE_REDIRECT_REJECTED');
   if(!response.ok) {
     const http=Number(response.status);
     const safeStatuses=[400,401,403,404,409,422,429,500,502,503,504];
