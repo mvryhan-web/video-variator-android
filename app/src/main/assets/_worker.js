@@ -1596,8 +1596,12 @@ export default {
       // Ordinary chat uses Gemini directly; ground time-sensitive questions or explicit searches.
       const needsWebSearch = !activeImage?.data && /(?:сегодня|сейчас|завтра|вчера|на этой неделе|последние новости|актуальн|свежие новости|погода|прогноз|курс валют|курс евро|курс доллара|найди|найдите|поищи|проверь|\b(?:today|right now|currently|tomorrow|yesterday|this week|latest|current|recent|weather|forecast|exchange rate|search|look up|verify|météo|actuellement|demain|hier|aujourd['’]hui|dernières nouvelles|cherche|vérifie|hoy|ahora|mañana|ayer|últimas noticias|pronóstico|busca|verifica)\b)/iu.test(message);
 
-      let replyText = '';
-      let providerUsed = 'Google Gemini';
+      const greeting = /^(?:привет|здравствуйте|здравствуй|хай|hello|hi|hey|bonjour|salut|hola)[!?.…]*$/iu.test(message);
+      let replyText = greeting && !activeImage?.data
+        ? {ru:'Привет! Чем помочь?',en:'Hi! How can I help?',fr:'Salut ! Comment puis-je vous aider ?',es:'¡Hola! ¿En qué puedo ayudarte?'}[language]
+        : '';
+      let providerUsed = replyText ? 'Jarvix Local Assistant' : 'Google Gemini';
+      const responseDeadline = AbortSignal.timeout(needsWebSearch || activeImage?.data ? 24000 : 12000);
 
       const geminiRules = `Ты — умный, эрудированный, живой мультимодальный ассистент и собеседник платформы DeepSyQ. Общайся на языке ${language}.
 СТРОГИЕ ПРАВИЛА:
@@ -1608,7 +1612,7 @@ export default {
 5. НИКОГДА не навязывай генерацию картинок, видео или студии DeepSyQ, если пользователь прямо сам об этом не попросил. Если спросили про погоду в Париже — расскажи про погоду в Париже, без рекламных вставок и призывов "покреативить".`;
 
       // Google Gemini API is the default conversational model for all chat modes
-      if (env.GEMINI_API_KEY) {
+      if (!replyText && env.GEMINI_API_KEY) {
         try {
           const context = history.slice(-16).map(x => (x.role === 'user' ? 'User: ' : 'Assistant: ') + x.content).join('\n');
           const prompt = (context ? context + '\n' : '') + 'User: ' + message + '\nAssistant:';
@@ -1633,7 +1637,7 @@ export default {
             'gemini-flash-latest'
           ];
           for (const mId of candidateModels) {
-            if (replyText) break;
+            if (replyText || responseDeadline.aborted) break;
             try {
               let requestBody = {
                 systemInstruction: { parts: [{ text: geminiRules }] },
@@ -1648,7 +1652,7 @@ export default {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
                 body: JSON.stringify(requestBody),
-                signal: AbortSignal.timeout(15000)
+                signal: AbortSignal.any([responseDeadline, AbortSignal.timeout(8000)])
               });
 
               // Fallback without tools if googleSearch is not enabled for the model/key
@@ -1658,7 +1662,7 @@ export default {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
                   body: JSON.stringify(requestBody),
-                  signal: AbortSignal.timeout(15000)
+                  signal: AbortSignal.any([responseDeadline, AbortSignal.timeout(8000)])
                 });
               }
 
@@ -1676,7 +1680,7 @@ export default {
       }
 
       // Try OpenAI if Gemini didn't return a reply and OPENAI_API_KEY is available
-      if (!replyText && env.OPENAI_API_KEY && env.JARVIX_AI_DISABLE !== 'true') {
+      if (!replyText && !responseDeadline.aborted && env.OPENAI_API_KEY && env.JARVIX_AI_DISABLE !== 'true') {
         try {
           const userContent = activeImage?.data
             ? [
@@ -1697,7 +1701,7 @@ export default {
               ],
               max_tokens: 1200
             }),
-            signal: AbortSignal.timeout(15000)
+            signal: AbortSignal.any([responseDeadline, AbortSignal.timeout(8000)])
           });
           if (oaRes.ok) {
             const oaData = await oaRes.json();
