@@ -567,6 +567,15 @@ async function respond(message,id){
   ? EXTRA_NAVIGATION.find(([,pattern])=>pattern.test(message))?.[0] : null;
  const command=message.replace(/^\s*(?:джарвис|джарвикс|jarvix|jarvis)[,\s:]+/iu,'');
  const action=extra?null:extractAction(command.replace(/^(?:я\s+хочу|можешь)\s+(?:создать|сделать|сгенерировать|нарисовать)\s+/iu,'Создай '))||(extra?null:extractAction(command.replace(/\bcanva\b/giu,'Canvas')));
+ const imageRequest=command.replace(/^(?:(?:слушай|эй|джарвис|джарвикс|jarvix|jarvis|пожалуйста)[,\s:]+)+/iu,'').trim();
+ if(/^(?:(?:ты\s+)?можешь\s+(?:создать|сделать|сгенерировать|нарисовать)|создай|сделай|сгенерируй|нарисуй)\s+(?:мне\s+)?(?:изображение|картинку|фото)[.!?…]*$/iu.test(imageRequest)){
+  const confirmation='Да, конечно.';
+  showTextResponse(confirmation);
+  const clip=await recordedExact(confirmation,lang).catch(()=>null);
+  if(clip&&on&&seq===id)await playOwnerRecording(clip,id,1500);
+  if(on&&seq===id)location.assign(new URL('/jarvix-chat.html?mode=image&jarvixImage=1',location.origin));
+  return;
+ }
  if(action?.intent==='GENERATE_MEDIA'&&action.raw_prompt){
   try{
    await saveStudioHandoff({

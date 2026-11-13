@@ -20,7 +20,8 @@ export default {
         url.pathname === '/jarvix-download') {
       return Response.redirect(new URL('/?download=jarvix', url.origin).href, 302);
     }
-    if (OLD_JARVIX_ROUTES.has(url.pathname)) {
+    const imageIntake = ['/jarvix-chat.html', '/jarvix-chat'].includes(url.pathname) && url.searchParams.get('mode') === 'image' && url.searchParams.get('jarvixImage') === '1';
+    if (OLD_JARVIX_ROUTES.has(url.pathname) && !imageIntake) {
       // No autoplay mic: browser requires a real click on the sphere.
       return Response.redirect(new URL('/', url.origin).href, 302);
     }
