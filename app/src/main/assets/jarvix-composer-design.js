@@ -6,7 +6,8 @@ export function decorateComposer(form,{settingsTarget=null}={}){
  const viewport=()=>{const v=window.visualViewport;document.documentElement.style.setProperty('--j-keyboard-inset',Math.max(0,innerHeight-(v?.height||innerHeight)-(v?.offsetTop||0))+'px');};window.visualViewport?.addEventListener('resize',viewport);window.visualViewport?.addEventListener('scroll',viewport);viewport();
  const ru=(localStorage.getItem('deepsyq_home_language')||document.documentElement.lang).startsWith('ru');
  const make=(tag,label)=>{const el=document.createElement(tag);el.textContent=label;return el;};
- const isQuickChat=['homeQuickForm','jChatForm','creator'].includes(form.id);
+ // The Studio creator form needs its rail for the existing universal dock; only real chat forms skip it.
+ const isQuickChat=['homeQuickForm','jChatForm'].includes(form.id);
  if(!isQuickChat){
   const rail=make('nav','');rail.className='j-mode-rail';rail.setAttribute('aria-label',ru?'Режимы и инструменты':'Creation modes and tools');
   const navItems=[['Image','generate-studio.html?studio=image','image'],['Video','generate-studio.html?studio=video','video'],['Audio','generate-studio.html?studio=audio','audio'],['Tools','free-tools.html','tools']];
