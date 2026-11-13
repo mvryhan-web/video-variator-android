@@ -21,7 +21,11 @@ function getStore(env) {
   if(!['postgres:','postgresql:'].includes(db.protocol) ||
     !/^[a-z0-9.-]+\.neon\.tech$/.test(db.hostname) ||
     !db.username || !db.password || !db.pathname || db.pathname==='/')return null;
-  return {url:raw,endpoint:'https://'+db.hostname.replace('-pooler.','.')+'/sql'};
+  // Neon's own serverless driver uses the regional API hostname, not the
+  // PostgreSQL endpoint hostname: ep-foo.region.aws.neon.tech -> api.region.aws.neon.tech.
+  const hostParts=db.hostname.split('.');
+  if(hostParts.length<5 || !hostParts[0].startsWith('ep-'))return null;
+  return {url:raw,endpoint:'https://api.'+hostParts.slice(1).join('.')+'/sql'};
 }
 async function query(store,statement,params=[],fetcher=fetch) {
   let response;
