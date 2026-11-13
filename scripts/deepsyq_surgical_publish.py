@@ -710,7 +710,11 @@ def main():
                                         "DATABASE_HTTP_409", "DATABASE_HTTP_422",
                                         "DATABASE_HTTP_429", "DATABASE_HTTP_500",
                                         "DATABASE_HTTP_502", "DATABASE_HTTP_503",
-                                        "DATABASE_HTTP_504", "DATABASE_HTTP_OTHER")
+                                        "DATABASE_HTTP_504", "DATABASE_HTTP_OTHER",
+                                        "DATABASE_TIMEOUT", "DATABASE_REDIRECT_REJECTED",
+                                        "DATABASE_HEADER_REJECTED", "DATABASE_RUNTIME_UNSUPPORTED",
+                                        "DATABASE_DNS_FAILED", "DATABASE_SOCKET_FAILED",
+                                        "DATABASE_FETCH_TYPE_ERROR")
                             reason = data.get("reason")
                             reason = reason if reason in approved else "OLD_STATUS_OR_UNRECOGNIZED"
                             print("EMAIL_RUNTIME_PROBE", name, response.status_code,
