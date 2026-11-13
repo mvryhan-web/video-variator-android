@@ -79,3 +79,9 @@ trigger Windows SmartScreen. No paid API usage is authorized.
    continue. Check wrong Origin cannot call local bridge.
 7. Only after this verified, discuss trusted MSIX/Store distribution.
    Never recommend bypassing Windows SmartScreen.
+
+## 2026-11-13 — unified recorded answers on TEST
+
+- Deployment `9b8c16d` completed in [Cloudflare preview workflow](https://github.com/mvryhan-web/video-variator-android/actions/runs/43390457419).
+- The JARVIX NEW resolver joins `manifest-500.json`, the physical MP3 index, the original transcript source (`jarvix-phrases.json`), scenario questions and the verified tour catalog. Existing media files are reused in place.
+- Tested single replies, two- and three-clip replies, a contextual continuation, and a compound request with a missing answer. The numbered transcript lookup matched all 344 language-specific entries. The manifest lists 1,900 entries, 360 of which are present in `clips/` at this revision.
