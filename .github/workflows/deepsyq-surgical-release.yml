@@ -103,7 +103,7 @@ jobs:
           node --test tests/jarvix-remove-background-viewer.test.mjs
 
   surgical:
-    # Push publishes ONLY the pre-approved JARVIX Tour asset with the exact release commit.
+    # Push publishes ONLY the exact owner-approved Tour or Chat asset with its guarded release commit.
     # Other pushes run tests only. Manual dispatch remains available and unchanged.
     if: >-
       github.ref == 'refs/heads/deepsyq-platform' &&
@@ -117,7 +117,7 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
-      SCOPE_FILES: ${{ github.event_name == 'push' && github.event.head_commit.message == 'release(JARVIX Chat): publish remove-background command' && 'jarvix-chat.js' || github.event_name == 'push' && 'jarvix-guided-tour.js,jarvix-tour-choreography.js' || inputs.files }}
+      SCOPE_FILES: "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(JARVIX Chat): publish remove-background command' && 'jarvix-chat.js' || github.event_name == 'push' && 'jarvix-guided-tour.js,jarvix-tour-choreography.js' || inputs.files }}"
       RELEASE_MODE: ${{ github.event_name == 'push' && 'publish' || inputs.mode }}
     steps:
       - uses: actions/checkout@v4
