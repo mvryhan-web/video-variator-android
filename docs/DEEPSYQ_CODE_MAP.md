@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `1558dddb2fc2d13aaa54469f2f8f9df97facfad5`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `bf3ecd6f41ee30979d4f09e1685912f35632f764`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 121 | Named symbols: 419 | Checked relations: 80
 
 ## Topic finder (matching filenames)
@@ -98,7 +98,7 @@ MODELS (L37) · RAW_MODEL_CATALOG (L42) · MODEL_CATALOG (L75)
 
 ### `app/src/main/assets/generate-studio.js`
 
-curLang (L20) · studioI18n (L27) · hintEl (L37) · requested (L40) · config (L42) · catalog (L42) · refs (L43) · historyThumbUrls (L62) · drafts (L64) · studioDocumentToken (L215) · studioRequests (L217) · walletKinds (L271) · imageEditPrompts (L494) · cropDialog (L509) · cropRatio (L512) · cropZoom (L512) · cropX (L512) · cropY (L512) · studioDialogAnchors (L721) · UNCERTAIN_VIDEO_ERRORS (L815) · targetJobId (L1492) · aiCheckoutState (L1495)
+curLang (L20) · studioI18n (L27) · hintEl (L37) · requested (L40) · config (L42) · catalog (L42) · refs (L43) · historyThumbUrls (L62) · drafts (L64) · studioDocumentToken (L215) · studioRequests (L217) · walletKinds (L271) · imageEditPrompts (L494) · cropDialog (L509) · cropRatio (L512) · cropZoom (L512) · cropX (L512) · cropY (L512) · studioDialogAnchors (L721) · UNCERTAIN_VIDEO_ERRORS (L815) · targetJobId (L1482) · aiCheckoutState (L1485)
 
 ### `app/src/main/assets/home-creative-examples.js`
 
@@ -130,7 +130,7 @@ ACTION_ROUTES (L2)
 
 ### `app/src/main/assets/jarvix-chat.js`
 
-modeHeaderLabels (L40) · urls (L46) · composer (L549) · pendingMsg (L599) · pending (L627) · composerInput (L662) · wpPane (L732) · expandBtn (L751)
+modeHeaderLabels (L40) · urls (L46) · composer (L536) · pendingMsg (L586) · pending (L614) · composerInput (L649) · wpPane (L719) · expandBtn (L738)
 
 ### `app/src/main/assets/jarvix-clip-library.js`
 
