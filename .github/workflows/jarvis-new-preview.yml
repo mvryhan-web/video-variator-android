@@ -30,7 +30,7 @@ jobs:
           node --check app/src/main/assets/jarvix-new-smalltalk.js
           node --test tests/jarvix_new_smalltalk.test.mjs
           node --test tests/jarvix_new_mobile_voice.test.mjs
-          python -c "import json; d=json.load(open('app/src/main/assets/jarvix-new-physical-audio-index.json')); assert d['schema']=='jarvix-new-physical-audio-index/v1' and d['count']==len(d['paths'])==552 and len(set(d['paths']))==552"
+          python -c "import json,pathlib; d=json.load(open('app/src/main/assets/jarvix-new-physical-audio-index.json')); roots=[pathlib.Path('app/src/main/assets/media/jarvix')/s for s in ('clips','tour-v3')]; p={'/'+x.relative_to('app/src/main/assets').as_posix() for root in roots for x in root.rglob('*.mp3')}; assert d['schema']=='jarvix-new-physical-audio-index/v1' and d['count']==len(d['paths'])==len(p) and set(d['paths'])==p"
           node --check app/src/main/assets/jarvix-new-download-menu.js
           node --check scripts/jarvix_new_preview_worker.js
           node --check scripts/jarvix_new_paid_gateway.js
