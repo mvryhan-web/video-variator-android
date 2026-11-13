@@ -234,18 +234,6 @@ function openImageViewer(message, opener){
    store.guard();if(dialog.open)location.assign(path+'?from=jarvix-image');
   });
  }
- // Return the selected image to this same JARVIX conversation; no new page or tool.
- const removeBgLabel=({ru:'Удалить фон',en:'Remove background',fr:'Supprimer le fond',es:'Quitar fondo'})[lang]||'Remove background';
- const removeBgPrompt=({ru:'Удали фон с этой фотографии',en:'Remove the background from this photo',fr:'Supprime le fond de cette photo',es:'Quita el fondo de esta foto'})[lang]||'Remove the background from this photo';
- action(removeBgLabel,image=>{
-  store.guard();
-  if(busy){status(({ru:'Дождитесь ответа Джарвиса.',en:'Wait for JARVIX to finish.',fr:'Attendez la réponse de JARVIX.',es:'Espere a que termine JARVIX.'})[lang]||'Wait for JARVIX to finish.');return;}
-  composer.add(image);
-  const input=$('jInput');input.value=removeBgPrompt;
-  input.dispatchEvent(new Event('input',{bubbles:true}));
-  dialog.close();
-  $('jChatForm').requestSubmit();
- });
  const closeText=node('button',labels[1]);closeText.type='button';closeText.onclick=()=>dialog.close();
  toolbar.append(closeText);dialog.append(picture,toolbar,notice,close);document.body.append(dialog);
  dialog.addEventListener('close',()=>{if(previewUrl)URL.revokeObjectURL(previewUrl);dialog.remove();if(imageViewer===dialog)imageViewer=null;opener.focus();},{once:true});
@@ -460,7 +448,12 @@ async function processMessage(message){
   const isExplicitGen = /^(?:сгенерируй|нарисуй|создай|сделай|запусти|generate|create|draw|make|render)(?=[^а-яёa-z0-9]|$)/iu.test(cleanedText);
   const isModification = /измен|сделай.*(ярче|темнее)|ещё/iu.test(rawText);
   const isModeSelected = ['image','video','audio'].includes(message.mode) && cleanedText.length > 2 && !/(?:^|[^a-zа-яё0-9])(как|дела|привет|хай|здравствуй|hello|hi)(?:[^a-zа-яё0-9]|$)/iu.test(cleanedText);
-  const shouldGenerateMedia = mediaCommand || isModeSelected || (!isAdviceOrQuestion && (
+  const imageIntentText = rawText.replace(/^(?:(?:слушай|смотри|эй|джарвис|джарвикс|jarvix|jarvis|пожалуйста|hey|please)[,\s:]+)+/iu, '').trim();
+  const explicitImageEdit = /^(?:измени|отредактируй|перерисуй|добавь|убери|удали|замени|осветли|затемни|edit|modify|change|add|remove|replace|ajoute|modifie|supprime|edita|cambia|quita)(?![\p{L}\p{N}_])/iu.test(imageIntentText);
+  const explicitImageRequest = explicitImageEdit || /^(?:сгенерируй|нарисуй|создай|сделай|generate|create|draw|make|render|хочу\s+(?:создать|сгенерировать|нарисовать)|(?:можешь|можете|можно)\s+(?:создать|сгенерировать|нарисовать|сделать|изменить)|(?:can|could|would)\s+you\s+(?:create|generate|draw|make|edit)|génère|crée|crea|genera)(?![\p{L}\p{N}_])/iu.test(imageIntentText);
+  const shouldGenerateMedia = mode==='image'
+   ? Boolean(mediaCommand || message.action?.intent==='GENERATE_MEDIA' || explicitImageRequest)
+   : mediaCommand || isModeSelected || (!isAdviceOrQuestion && (
    isExplicitGen ||
    isModification ||
    (message.action?.intent === 'GENERATE_MEDIA') ||

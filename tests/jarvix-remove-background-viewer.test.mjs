@@ -52,25 +52,34 @@ function harness({busy=false,lang='ru'}={}){
  return {buttons:toolbar.children,dialog,sent,attached,notices,handoffs,input};
 }
 
-test('Remove background sends only the selected image and command through existing chat',async()=>{
+
+test('Image preview keeps download, Canvas, and both close controls',()=>{
  const h=harness();
- assert.deepEqual(h.buttons.map(x=>x.textContent),['Скачать','Изменить размер в Canvas','Удалить фон','Закрыть']);
- await h.buttons[2].onclick();
- assert.equal(h.sent.length,1);
- assert.equal(h.sent[0].text,'Удали фон с этой фотографии');
- assert.equal(h.sent[0].files.length,1);
- assert.equal(h.sent[0].files[0].name,'deepsyq-selected-image.png');
- assert.equal(h.sent[0].files[0].type,'image/png');
- assert.equal(h.sent[0].files[0].size,16);
+ assert.deepEqual(h.buttons.map(x=>x.textContent),['Скачать','Изменить размер в Canvas','Закрыть']);
+ const close=h.dialog.children.find(x=>x.className==='j-image-viewer-close');
+ assert.equal(close.textContent,'×');
+ close.onclick();
  assert.equal(h.dialog.open,false);
- assert.equal(h.handoffs.length,0,'No navigation to Canvas or a duplicate chat');
+ h.dialog.showModal();
+ h.buttons[2].onclick();
+ assert.equal(h.dialog.open,false);
+ assert.equal(h.sent.length,0);
 });
 
-test('Remove background cannot queue a second request while JARVIX is busy',async()=>{
- const h=harness({busy:true});
- await h.buttons[2].onclick();
- assert.equal(h.sent.length,0);
- assert.equal(h.attached.length,0);
- assert.equal(h.dialog.open,true);
- assert.equal(h.notices.length,1);
+test('Image mode sends questions to chat and explicit requests to generation',()=>{
+ const start=source.indexOf('  const rawText =');
+ const end=source.indexOf('  if(!shouldGenerateMedia)',start);
+ assert.ok(start>0&&end>start);
+ const classify=new vm.Script(source.slice(start,end)+'\nshouldGenerateMedia;');
+ const generates=(text,mode='image')=>classify.runInNewContext({
+  message:{text,mode},mode,command:null,mediaCommand:false
+ });
+ for(const text of ['Привет','Какую фотографию лучше выбрать?', 'Посоветуй формат', 'Что ты думаешь', 'How can I change the size?']){
+  assert.equal(generates(text),false,text);
+ }
+ for(const text of ['Сделай мне фото', 'Слушай, Джарвис, нарисуй кота', 'Убери фон с фотографии','Create a photo','Crée une image','Genera una imagen']){
+  assert.equal(generates(text),true,text);
+ }
+ assert.equal(generates('A sailboat at sunset','video'),true);
+ assert.equal(generates('A piano melody','audio'),true);
 });
