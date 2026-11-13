@@ -22,6 +22,7 @@ on:
       - 'app/src/main/assets/jarvix-guided-tour.js'
       - 'app/src/main/assets/jarvix-tour-choreography.js'
       - 'app/src/main/assets/jarvix-chat.js'
+      - 'app/src/main/assets/home-inspiration.js'
       - 'app/src/main/assets/auth-email.js'
       - 'app/src/main/assets/auth-email.css'
       - 'app/src/main/assets/deepsyq-mobile-shell.js'

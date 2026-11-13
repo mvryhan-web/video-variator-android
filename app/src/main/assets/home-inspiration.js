@@ -91,7 +91,7 @@ function creativeField(form,label,tag,value='',max=160){
 async function openCreativeTool(tool,opener){
  const copy=creativeCopy();
  const dialog=detailEl('dialog','inspiration-detail-dialog');
- dialog.style.cssText='width:min(520px,calc(100% - 24px));max-height:90dvh;overflow:auto';
+ dialog.style.cssText='width:min(520px,calc(100% - 24px));height:auto;max-height:90dvh;margin:auto;border:1px solid #7563b577;border-radius:20px;overflow:auto';
  const form=detailEl('form','inspiration-detail-sidebar');
  form.style.cssText='display:grid;gap:14px;padding:20px;overflow:visible';
  const close=detailEl('button','inspiration-detail-close','×');
