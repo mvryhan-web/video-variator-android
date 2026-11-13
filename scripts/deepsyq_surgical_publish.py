@@ -242,14 +242,14 @@ class Cloudflare:
             time.sleep(2)
         raise Blocked("AUTOMATIC_ROLLBACK_NOT_CONFIRMED")
 
-    def tour_manifest_deploy(self, candidate, assets, sha, worker, origin):
+    def tour_manifest_deploy(self, candidate, assets, sha, worker, origin, chat_worker=None):
         """Tour-only Pages upload: unchanged routes reuse canonical LIVE hashes.
 
         Fetch the *currently deployed* Worker payload rather than recompiling
         or modifying it. Never publish if its exact original bytes cannot be
         retrieved in a Cloudflare-supported worker upload format.
         """
-        insist(allowed_hash_reuse(assets),
+        insist(chat_worker is not None or allowed_hash_reuse(assets),
                "Only the exact owner-approved surgical release sets can reuse LIVE hashes")
         keyed = {digest(raw, rel): (rel, raw) for rel, raw in assets.items()}
         insist(len(keyed) == len(assets), "Tour content hash collision")
@@ -257,42 +257,45 @@ class Cloudflare:
             insist(candidate.get("/" + rel) == key, "Tour hash is not in candidate manifest")
         hashes = sorted(keyed)
         api_prefix = API + "/accounts/" + self.account + "/pages/projects/" + PROJECT
-        token = self.json("/accounts/" + self.account +
-                          "/pages/projects/" + PROJECT + "/upload-token").get("jwt")
-        insist(isinstance(token, str) and token, "Pages asset upload token unavailable")
-        jwt_headers = {"Authorization": "Bearer " + token}
-        check = self.call("POST", API + "/pages/assets/check-missing",
-                          headers=jwt_headers, json={"hashes": hashes}).json()
-        insist(check.get("success") is True and
-               isinstance(check.get("result"), list) and
-               set(check["result"]).issubset(set(hashes)), "Cannot verify tour asset upload status")
-        if check["result"]:
-            upload = self.call("POST", API + "/pages/assets/upload",
-                               headers=jwt_headers,
-                               json=[{"key": key, "base64": True,
-                                      "metadata": {"contentType": pages_asset_mime(keyed[key][0])},
-                                      "value": base64.b64encode(keyed[key][1]).decode("ascii")}
-                                     for key in check["result"]]).json()
-            insist(upload.get("success") is True, "Cloudflare tour asset upload failed")
-        registered = self.call("POST", API + "/pages/assets/upsert-hashes",
-                               headers=jwt_headers, json={"hashes": hashes}).json()
-        insist(registered.get("success") is True,
-               "Cloudflare tour asset hash registration failed")
-        confirmed = False
-        for attempt in range(8):
-            after = self.call("POST", API + "/pages/assets/check-missing",
+        if hashes:
+            token = self.json("/accounts/" + self.account +
+                              "/pages/projects/" + PROJECT + "/upload-token").get("jwt")
+            insist(isinstance(token, str) and token, "Pages asset upload token unavailable")
+            jwt_headers = {"Authorization": "Bearer " + token}
+            check = self.call("POST", API + "/pages/assets/check-missing",
                               headers=jwt_headers, json={"hashes": hashes}).json()
-            insist(after.get("success") is True and
-                   isinstance(after.get("result"), list),
-                   "Cloudflare tour asset verification malformed")
-            if after["result"] == []:
-                confirmed = True
-                break
-            time.sleep(1)
-        insist(confirmed, "Tour asset not confirmed in Pages asset store")
+            insist(check.get("success") is True and
+                   isinstance(check.get("result"), list) and
+                   set(check["result"]).issubset(set(hashes)), "Cannot verify tour asset upload status")
+            if check["result"]:
+                upload = self.call("POST", API + "/pages/assets/upload",
+                                   headers=jwt_headers,
+                                   json=[{"key": key, "base64": True,
+                                          "metadata": {"contentType": pages_asset_mime(keyed[key][0])},
+                                          "value": base64.b64encode(keyed[key][1]).decode("ascii")}
+                                         for key in check["result"]]).json()
+                insist(upload.get("success") is True, "Cloudflare tour asset upload failed")
+            registered = self.call("POST", API + "/pages/assets/upsert-hashes",
+                                   headers=jwt_headers, json={"hashes": hashes}).json()
+            insist(registered.get("success") is True,
+                   "Cloudflare tour asset hash registration failed")
+            confirmed = False
+            for attempt in range(8):
+                after = self.call("POST", API + "/pages/assets/check-missing",
+                                  headers=jwt_headers, json={"hashes": hashes}).json()
+                insist(after.get("success") is True and
+                       isinstance(after.get("result"), list),
+                       "Cloudflare tour asset verification malformed")
+                if after["result"] == []:
+                    confirmed = True
+                    break
+                time.sleep(1)
+            insist(confirmed, "Tour asset not confirmed in Pages asset store")
 
         endpoint = API + "/accounts/" + self.account + "/workers/scripts/" + quote(worker, safe="")
         try:
+            if chat_worker is not None:
+                raise Blocked("Verified chat Worker update")
             worker_response = self.call("GET", endpoint)
             mime = worker_response.headers.get("Content-Type", "").lower()
             content = worker_response.content
@@ -307,13 +310,15 @@ class Cloudflare:
             # Pages-managed Workers may not expose their code through the
             # standard Workers download endpoint. Bundle ONLY the exact
             # canonical production commit, never current DEV imports.
-            insist("HTTP 404 on Cloudflare/live GET " + endpoint in str(error),
+            insist(chat_worker is not None or "HTTP 404 on Cloudflare/live GET " + endpoint in str(error),
                    "Worker download failed for an unexpected reason; no deployment")
             with tempfile.TemporaryDirectory(prefix="deepsyq-worker-original-") as work:
                 baseline = Path(work) / "baseline"
                 checked_git("worktree", "add", "--detach", str(baseline), origin)
                 source = baseline / "app/src/main/assets/_worker.js"
                 insist(source.is_file(), "Canonical Worker source missing")
+                if chat_worker is not None:
+                    source.write_bytes(chat_worker)
                 output = Path(work) / "canonical-worker.js"
                 bundle = subprocess.run(
                     ["npx", "--yes", "esbuild@0.25.12", str(source),
@@ -336,7 +341,7 @@ class Cloudflare:
                 insist(len(obj.stdout) <= MAX_FILE_BYTES, "Special config too large")
                 files[special] = (special, obj.stdout, "application/octet-stream")
         form = {"branch": BRANCH, "commit_hash": sha, "commit_dirty": "true",
-                "commit_message": "Tour-only manifest update, unchanged Worker",
+                "commit_message": "JARVIX chat latency Worker update" if chat_worker is not None else "Surgical asset update, unchanged Worker",
                 "manifest": json.dumps(candidate, separators=(",", ":"))}
         response = self.call("POST", api_prefix + "/deployments",
                              data=form, files=files).json()
@@ -452,8 +457,10 @@ def main():
     parser.add_argument("--mode", choices=("plan", "publish"), required=True)
     parser.add_argument("--files", required=True, help="Comma-separated EXACT asset paths")
     parser.add_argument("--commit", default=os.environ.get("GITHUB_SHA", ""))
+    parser.add_argument("--chat-worker", action="store_true")
     args = parser.parse_args()
-    paths = allowed_paths(args.files)
+    insist(not args.chat_worker or not args.files, "Chat Worker release cannot include assets")
+    paths = [] if args.chat_worker else allowed_paths(args.files)
     sha = args.commit
     insist(args.mode != "publish" or re.fullmatch(r"[0-9a-f]{40}", sha),
            "Publish requires exact GitHub task commit")
@@ -464,8 +471,26 @@ def main():
     # Never publish a changed or replaced Worker via a front-end-only patch.
     saved_worker = checked_git("rev-parse", origin + ":app/src/main/assets/_worker.js")
     task_worker = checked_git("rev-parse", "HEAD:app/src/main/assets/_worker.js")
-    insist(saved_worker == task_worker,
-           "DEV Worker differs from the deployed Worker; use approved backend release")
+    chat_worker = None
+    if args.chat_worker:
+        insist(live_id == "542e763c-feb8-4d6f-9312-53f18f904c02" or saved_worker == task_worker,
+               "Production baseline moved; verify the live Worker before release")
+        if saved_worker == task_worker:
+            insist(origin == sha, "Worker already matches an unexpected release")
+            print("CHAT_WORKER_ALREADY_PUBLISHED", live_id)
+            return 0
+        path = "app/src/main/assets/_worker.js"
+        old = subprocess.check_output(["git", "show", origin + ":" + path])
+        chat_worker = (ROOT / "_worker.js").read_bytes()
+        start = b"      let replyText = '';"
+        new_start = b"      const greeting = "
+        end = b"      let action = null;"
+        insist(old.split(start, 1)[0] == chat_worker.split(new_start, 1)[0] and
+               old.split(end, 1)[1] == chat_worker.split(end, 1)[1],
+               "Worker diff extends beyond chat provider handling")
+    else:
+        insist(saved_worker == task_worker,
+               "DEV Worker differs from the deployed Worker; use approved backend release")
     settings = cloudflare.worker_settings(worker)
     # Preserve existing auth/payment/storage bindings without inspecting secrets.
     cfg = project.get("deployment_configs", {}).get("production", {})
@@ -480,12 +505,14 @@ def main():
         # the tour-only escape hatch preserves the original LIVE manifest
         # by hash rather than guessing content or changing unrelated routes.
         try:
+            if args.chat_worker:
+                raise Blocked("Use unchanged production asset manifest")
             stage, candidate, changed, from_live, expected_bytes = build_candidate(
                 live, paths, origin, work)
             direct_manifest = False
         except Blocked as error:
-            insist(allowed_hash_reuse(paths) and
-                   str(error).startswith("Could not reproduce unchanged LIVE asset bytes:"),
+            insist(args.chat_worker or (allowed_hash_reuse(paths) and
+                   str(error).startswith("Could not reproduce unchanged LIVE asset bytes:")),
                    str(error))
             expected_bytes = {rel: (ROOT / rel).read_bytes() for rel in paths}
             candidate, changed = surgical_manifest(live, {
@@ -493,7 +520,7 @@ def main():
             from_live = 0
             stage = None
             direct_manifest = True
-        if not changed:
+        if not changed and not args.chat_worker:
             # A previous Pages deployment can have committed both new hashes
             # while its first public read was served from an older edge cache.
             # Verify the actual bytes for every requested asset before declaring
@@ -529,7 +556,7 @@ def main():
         insist(current_id == live_id and current_worker == worker,
                "Concurrent production update detected; no deploy")
         if direct_manifest:
-            deployed_id = cloudflare.tour_manifest_deploy(candidate, expected_bytes, sha, worker, origin)
+            deployed_id = cloudflare.tour_manifest_deploy(candidate, expected_bytes, sha, worker, origin, chat_worker)
         else:
             run_wrangle(stage, sha)
             deployed_id = None
@@ -537,9 +564,11 @@ def main():
         newest = None
         try:
             for _ in range(12):
-                now, actual, _, script, _ = cloudflare.read_live()
+                now, actual, deployed_commit, script, _ = cloudflare.read_live()
                 if now != live_id:
                     newest = now
+                    insist(not deployed_id or newest == deployed_id, "Concurrent deployment detected")
+                    insist(not args.chat_worker or deployed_commit == sha, "Unexpected Worker release commit")
                     insist(actual == candidate, "NEW_DEPLOYMENT_ASSET_DIFFERS")
                     insist(script == worker, "NEW_DEPLOYMENT_WORKER_CHANGED")
                     new_settings = cloudflare.worker_settings(script)
@@ -589,7 +618,7 @@ def main():
             insist(newest, "DEPLOYMENT_NOT_CONFIRMED_ON_MAIN")
         except (Blocked, Exception):
             current, _, _, _, _ = cloudflare.read_live()
-            if newest and current == newest:
+            if newest and current == newest and (not deployed_id or newest == deployed_id):
                 cloudflare.restore_baseline(live_id, live, newest)
             elif deployed_id and current == deployed_id:
                 cloudflare.restore_baseline(live_id, live, deployed_id)
@@ -619,7 +648,7 @@ def main():
         print(json.dumps({"status": "PUBLISHED_VERIFIED", "deployment": newest,
                           "previous": live_id, "files": sorted(changed),
                           "all_other_assets_unchanged": True,
-                          "worker_and_bindings_preserved": True, "published": True}))
+                          "worker_and_bindings_preserved": not args.chat_worker, "bindings_preserved": True, "published": True}))
     return 0
 
 if __name__ == "__main__":

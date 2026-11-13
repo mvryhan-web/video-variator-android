@@ -176,7 +176,8 @@ jobs:
          github.event.head_commit.message == 'release(JARVIX Chat): publish remove-background command' ||
          github.event.head_commit.message == 'release(Auth): restore original sign-in' ||
          github.event.head_commit.message == 'release(Chat): publish Trial offer only' ||
-         github.event.head_commit.message == 'release(Auth and Chat): publish latest approved assets')))
+         github.event.head_commit.message == 'release(Auth and Chat): publish latest approved assets' ||
+         github.event.head_commit.message == 'release(Chat): publish Gemini latency fix')))
     needs: tests
     runs-on: ubuntu-latest
     timeout-minutes: 12
@@ -199,6 +200,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${{ github.event.head_commit.message == 'release(Chat): publish Gemini latency fix' }}" == "true" ]]; then
+            python scripts/deepsyq_surgical_publish.py --mode publish --files "" --commit "$GITHUB_SHA" --chat-worker
+            exit
+          fi
           python scripts/deepsyq_surgical_publish.py \
             --mode "$RELEASE_MODE" \
             --files "$SCOPE_FILES" \
