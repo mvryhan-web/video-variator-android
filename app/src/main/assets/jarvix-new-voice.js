@@ -19,6 +19,14 @@ const EXTRA_NAVIGATION = [
  ['mobile-utility.html?tool=pdf-split', /(?:раздел[а-яё]*\s*(?:pdf|пдф)|split pdf)/iu]
 ];
 const NAVIGATION_COMMAND = /(?:^|\s)(?:открой|перейди|запусти|открыть|open|go to|navigate to|ouvre|abre|affiche|покажи|show)(?:\s|$)/iu;
+const NAVIGATION_RECORDINGS_RU = Object.freeze({
+ apps:'t3_ru_f559fae64a74.mp3',
+ canvas:'t3_ru_d099fcb88e6b.mp3',
+ tools:'t3_ru_1605028562a2.mp3',
+ uniquifier:'t3_ru_9fa5da660ff3.mp3',
+ inspiration:'t3_ru_2dade145e1b8.mp3',
+ pricing:'t3_ru_ec7fe5d85de4.mp3'
+});
 const SITE_ANSWERS_RU = [
  [/(?:canvas|canva|канва|холст)/iu,"Собирайте идеи из текста и фотографий.",
   "/media/jarvix/tour-v3/t3_ru_cc451dff495e.mp3"],
@@ -339,15 +347,16 @@ async function playOwnerUsingUnlockedAudio(record,id){
   if(playbackAbort===controller)playbackAbort=null;
  }
 }
-async function playOwnerRecording(record,id){
+async function playOwnerRecording(record,id,timeoutMs=0){
  if(!record?.audioUrl||!on||seq!==id)return false;
  return new Promise(resolve=>{
   // The original hosted MP3 is used unchanged. Never synthesize or substitute text.
   const audio=new Audio(record.audioUrl);
   ownerClip=audio;
-  let finished=false;
+  let finished=false,timer;
   const finish=(ok,blocked=false)=>{
    if(finished)return;
+   clearTimeout(timer);
    finished=true;audio.onended=null;audio.onerror=null;audio.ontimeupdate=null;
    if(ownerClip===audio)ownerClip=null;
    if(ownerClipDone===finish)ownerClipDone=null;
@@ -359,6 +368,7 @@ async function playOwnerRecording(record,id){
     void playOwnerUsingUnlockedAudio(record,id).then(settle,()=>settle(false));
    else settle(ok);
   };
+  if(timeoutMs)timer=setTimeout(()=>{audio.pause();finish(false);},timeoutMs);
   ownerClipDone=finish;
   audio.onended=()=>finish(true);
   audio.onerror=()=>finish(false);
@@ -372,7 +382,7 @@ async function playOwnerRecording(record,id){
    };
   }
   ui('speaking',getLang().speak);
-  try{Promise.resolve(audio.play()).catch(()=>finish(false,true));}catch{finish(false,true);}
+  try{Promise.resolve(audio.play()).catch(()=>finish(false,!timeoutMs));}catch{finish(false,!timeoutMs);}
  });
 }
 const recordedLanguage=()=>getLang().lang.slice(0,2);
@@ -555,6 +565,9 @@ async function respond(message,id){
  const destination=extra||(action?.intent==='NAVIGATE'
   ? (action.target==='uniquifier'?'video-uniquifier.html':action.url) : null);
  if(destination){
+  const clip=lang==='ru'&&action?.target?NAVIGATION_RECORDINGS_RU[action.target]:null;
+  if(clip)await playOwnerRecording({audioUrl:'/media/jarvix/tour-v3/'+clip},id,2500);
+  if(!on||seq!==id)return;
   location.assign(new URL(destination,location.origin+'/'));
   return;
  }
