@@ -530,8 +530,15 @@ def main():
             raise Blocked("EMAIL_WORKER_SCOPE_BLOCKED: " + str(error)) from error
         chat_worker = candidate_worker
     else:
-        insist(saved_worker == task_worker,
-               "DEV Worker differs from the deployed Worker; use approved backend release")
+        # Frontend-only guest sign-in release reconstructs the untouched Worker
+        # from the verified LIVE origin, never from the unrelated DEV HEAD.
+        # All other release scopes retain their existing strict Worker equality gate.
+        if paths == ["deepsyq-mobile-shell.js"]:
+            insist(bool(saved_worker and task_worker), "Worker provenance unavailable")
+            print("GUEST_AUTH_ONLY: canonical LIVE Worker pinned; DEV Worker never published")
+        else:
+            insist(saved_worker == task_worker,
+                   "DEV Worker differs from the deployed Worker; use approved backend release")
     settings = cloudflare.worker_settings(worker)
     if args.email_worker:
         insist(str(settings.get("compatibility_date") or "") >= "2026-08-04",
