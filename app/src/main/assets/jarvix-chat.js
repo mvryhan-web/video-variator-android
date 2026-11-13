@@ -707,11 +707,15 @@ async function applyIncomingHandoffOrTemplate() {
     composerInput.dispatchEvent(new Event('input', { bubbles: true }));
     composerInput.style.height = 'auto';
     composerInput.style.height = Math.min(composerInput.scrollHeight, 180) + 'px';
-    setTimeout(() => {
-      if (!conversation.messages.some(m => m.status === 'processing' || m.status === 'pending')) {
-        $('jChatForm')?.requestSubmit();
-      }
-    }, 100);
+    // AI Apps template handoffs only prepare a draft; do not auto-submit paid or free AI.
+    // Explicit non-template handoffs retain their existing behavior.
+    if (new URLSearchParams(location.search).get('from') !== 'template') {
+      setTimeout(() => {
+        if (!conversation.messages.some(m => m.status === 'processing' || m.status === 'pending')) {
+          $('jChatForm')?.requestSubmit();
+        }
+      }, 100);
+    }
   }
 }
 void applyIncomingHandoffOrTemplate();
