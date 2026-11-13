@@ -1,4 +1,4 @@
-/* JARVIX NEW TEST: use the owner's EXISTING 500-scenario / 1,900-file MP3 library.
+/* JARVIX NEW TEST: catalog of physically available owner recordings.
  * No voice cloning, new TTS, browser SpeechSynthesis, or audio downloads beyond the
  * already hosted owner recordings. The phrase spoken must match its transcript.
  */
@@ -46,6 +46,7 @@ export function scoreRecordedQuestion(query, reference, triggers=[]) {
 }
 const LANGS=new Set(['ru','en','fr','es']);
 const FILE=/^jarvix_(ru|en|fr|es)_s\d{3}\.mp3$/;
+const NUMBERED_FILE=/^jarvix_(ru|en|fr|es)_\d{2}\.mp3$/;
 const TOUR_FILE=/^t3_(ru|en|fr|es)_[a-f0-9]{12}\.mp3$/;
 const UNVERIFIED_PROMISE=/гарант(?:ия|ируем)|все функции работают прямо из коробки|кредиты вернутся мгновенно|guaranteed results|instant credit refund/i;
 function allowedText(text){return typeof text==='string' && !!text.trim() && !UNVERIFIED_PROMISE.test(text);}
@@ -70,71 +71,150 @@ async function verifiedPhysicalPaths(){
   }).catch(()=>new Set());
  return verifiedPhysicalPromise;
 }
-async function catalog(lang){
- const [data,physical]=await Promise.all([prepareStaticClips(),verifiedPhysicalPaths()]);
- const available=new Set((data.clips||[]).filter(c=>c.language===lang &&
-  FILE.test(c.filename) && physical.has('/media/jarvix/clips/'+c.filename)).map(c=>c.filename));
- return {available,scenarios:data.scenarios||[],tour:(data.tourClips||[]).filter(c=>
-  c.language===lang && TOUR_FILE.test(c.filename) && allowedText(c.text) &&
-  physical.has('/media/jarvix/tour-v3/'+c.filename))};
+// The numbered MP3 transcripts come from the source used by the clip generator.
+let phrasesPromise;
+function loadNumberedPhrases(){
+ return phrasesPromise ||= fetch('/media/jarvix/jarvix-phrases.json',
+  {signal:AbortSignal.timeout(6000)}).then(response=>{
+   if(!response.ok)return {};
+   return response.json().then(data=>data.phrases || {});
+  }).catch(()=>({}));
 }
-/** Exact previously recorded text, useful for the tour and LLaMA exact replies. */
-export async function recordedExact(text,language='ru'){
- const lang=LANGS.has(language)?language:'ru',q=normalize(text);
- if (!q)return null;
- const {scenarios,available,tour}=await catalog(lang);
- const clip=tour.find(c=>normalize(c.text)===q);
- if (clip)return {id:clip.filename,text:clip.text,audioUrl:clip.url,source:'tour'};
- for (const item of scenarios){
+const catalogs=new Map();
+function catalog(lang){
+ if(!catalogs.has(lang))catalogs.set(lang,buildCatalog(lang));
+ return catalogs.get(lang);
+}
+async function buildCatalog(lang){
+ const [data,physical,phrases]=await Promise.all([
+  prepareStaticClips(),verifiedPhysicalPaths(),loadNumberedPhrases()
+ ]);
+ const available=new Set(data.clips.filter(c=>c.language===lang &&
+  physical.has('/media/jarvix/clips/'+c.filename)).map(c=>c.filename));
+ const clips=data.scenarios.flatMap(item=>{
   const answer=audioRecord(item,lang,available);
-  if (answer && normalize(answer.text)===q)return answer;
+  return answer?[{...answer,question:item.qa?.[lang]?.question,triggers:item.triggers?.[lang]||[]}]:[];
+ });
+ for(const {id,text} of phrases[lang]||[]){
+  const filename=id+'.mp3';
+  if(NUMBERED_FILE.test(filename)&&available.has(filename)&&allowedText(text))
+   clips.push({id,text,audioUrl:'/media/jarvix/clips/'+filename,source:'numbered'});
  }
- return null;
-}
-/** Each user question checks the existing catalog BEFORE calling Ollama. */
-export async function recordedReply(question,language='ru'){
- const lang=LANGS.has(language)?language:'ru',q=normalize(question);
- if (!q)return null;
- const {scenarios,available,tour}=await catalog(lang);
- const exact=tour.find(c=>normalize(c.text)===q);
- if (exact)return {id:exact.filename,text:exact.text,audioUrl:exact.url,source:'tour'};
- let best=null,score=0;
- for (const item of scenarios){
-  const answer=audioRecord(item,lang,available);
-  if (!answer)continue;
-  const match=scoreRecordedQuestion(question,item.qa?.[lang]?.question,
-    item.triggers?.[lang]||[]);
-  if (match>score){score=match;best=answer;}
+ for(const clip of data.tourClips){
+  if(clip.language===lang&&TOUR_FILE.test(clip.filename)&&allowedText(clip.text)&&physical.has(clip.url))
+   clips.push({id:clip.filename,text:clip.text,audioUrl:clip.url,source:'tour'});
  }
- // Do not play an unrelated recording to make the voice appear functional.
- return score>=100?best:null;
+ return clips;
 }
+const SITE_ANSWERS_RU = [
+ [/(?:canvas|canva|канва|холст)/iu, 't3_ru_cc451dff495e.mp3'],
+ [/(?:ai\s*apps?|шаблон|приложени)/iu, 't3_ru_17ad4c84e62d.mp3'],
+ [/(?:everyday\s*tools|инструмент|утилит)/iu, 't3_ru_76c07a8f82b9.mp3'],
+ [/(?:uniquifier|уникализатор)/iu, 't3_ru_eb5198a625f8.mp3'],
+ [/(?:inspiration|вдохновени)/iu, 't3_ru_70e7f65e6a88.mp3']
+];
+// Curated continuations from the same tour section. Each part is a complete sentence.
+const SITE_DETAILS_RU = [
+ [/(?:canvas|canva|канва|холст)/iu,[
+  't3_ru_cc451dff495e.mp3',
+  't3_ru_d3eeb273cee7.mp3']],
+ [/(?:ai\s*apps?|шаблон)/iu,[
+  't3_ru_17ad4c84e62d.mp3',
+  't3_ru_d62b7ee5699f.mp3']],
+ [/(?:uniquifier|уникализатор)/iu,[
+  't3_ru_eb5198a625f8.mp3',
+  't3_ru_390fad5b4fe8.mp3',
+  't3_ru_8cd01ce443f9.mp3']]
+];
 
-const RECORDED_DIALOG_FLAGS=Object.freeze({followUps:true,combineReplies:true});
-const FOLLOW_UP=/^(?:а\s+)?(?:а дальше|что дальше|дальше|продолжай|подробнее|расскажи подробнее|и что дальше|what next|go on|tell me more|et ensuite|continue|y después|continúa)[\s.!?]*$/iu;
+// These prompts describe existing recordings. Event confirmations remain tied
+// to the actual action and must never be selected by a loose keyword match.
+const NUMBERED_QUESTIONS_RU=[
+ [51,'Можно ли использовать результат коммерчески?'],
+ [52,'Как составить промпт?'],
+ [53,'Как превратить фотографию в видео?'],
+ [54,'Как проходит оплата?'],
+ [55,'Как пополнить баланс?'],
+ [56,'Где посмотреть баланс кредитов?'],
+ [57,'Доступно ли разрешение 4K?'],
+ [58,'Сколько времени занимает генерация?'],
+ [59,'В каком формате можно скачать результат?'],
+ [61,'Какой формат выбрать для Reels или YouTube?'],
+ [62,'Как выбрать тариф?'],
+ [67,'Где посмотреть примеры для вдохновения?'],
+ [70,'Как улучшить описание для генерации?'],
+ [72,'Что ты умеешь?']
+];
+const FOLLOW_UP=/^(?:а\s+)?(?:что дальше|дальше|продолжай|подробнее|расскажи подробнее|и что дальше|what next|go on|tell me more|et ensuite|continue|y después|continúa)[\s.!?]*$/iu;
+const SITE_QUESTION=/^\s*(?:что|как|зачем|для чего|расскажи|объясни)(?:[\s,.!?]|$)/iu;
+
+function answerFromParts(parts){
+ if(!parts.length || parts.some(part=>!part))return null;
+ const unique=[...new Map(parts.map(part=>[part.audioUrl,part])).values()];
+ return unique.length===1?unique[0]:{
+  parts:unique,text:unique.map(part=>part.text).join(' '),source:'combined-recordings'
+ };
+}
+const languageKey=language=>LANGS.has(language)?language:'ru';
+const exactClip=(clips,text)=>clips.find(clip=>normalize(clip.text)===normalize(text))||null;
+const tourClip=(clips,file)=>clips.find(clip=>clip.source==='tour'&&clip.id===file)||null;
+export async function recordedExact(text,language='ru'){
+ return normalize(text)?exactClip(await catalog(languageKey(language)),text):null;
+}
+function findReply(clips,question,lang){
+ const exact=exactClip(clips,question);
+ if(exact)return exact;
+ let best=null,score=99;
+ for(const clip of clips){
+  const alias=lang==='ru'&&clip.source==='numbered'
+   ? NUMBERED_QUESTIONS_RU.find(([id])=>clip.id==='jarvix_ru_'+id)?.[1] : null;
+  const match=scoreRecordedQuestion(question,clip.question||alias,clip.triggers);
+  if(match>score){score=match;best=clip;}
+ }
+ if(best || lang!=='ru' || !SITE_QUESTION.test(question))return best;
+ const details=/(?:как\s|подробнее)/iu.test(question)
+  ? SITE_DETAILS_RU.find(([topic])=>topic.test(question))?.[1] : null;
+ if(details){
+  const composed=answerFromParts(details.map(file=>tourClip(clips,file)));
+  if(composed)return composed;
+ }
+ const entry=SITE_ANSWERS_RU.find(([topic])=>topic.test(question));
+ return entry?tourClip(clips,entry[1]):null;
+}
+export async function recordedReply(question,language='ru'){
+ const lang=languageKey(language);
+ return normalize(question)?findReply(await catalog(lang),question,lang):null;
+}
 
 export async function recordedConversationReply(question,language,history=[]){
- const direct=await recordedReply(question,language);
- if(direct)return direct;
- if(RECORDED_DIALOG_FLAGS.combineReplies){
-  const parts=question.trim().split(/\?\s*(?=\S)/u);
-  if(parts.length>=2&&parts.length<=3&&parts.every(part=>part.trim().length>3)){
-   const clips=await Promise.all(parts.map(part=>recordedReply(part,language)));
-   if(clips.every(Boolean)&&new Set(clips.map(clip=>clip.audioUrl)).size===clips.length)
-    return {parts:clips,text:clips.map(clip=>clip.text).join(' '),source:'combined-recordings'};
-  }
+ const lang=languageKey(language);
+ if(!normalize(question))return null;
+ const clips=await catalog(lang);
+ const exact=exactClip(clips,question);
+ if(exact)return exact;
+ const questions=question.trim().split(/\?\s*(?=\S)|\s+(?:и|and|et|y)\s+(?=(?:как|что|где|сколько|зачем|how|what|where|comment|cómo|dónde)\s)/iu);
+ if(questions.length>1){
+  if(questions.length>3)return null;
+  const parts=questions.flatMap(part=>{
+   const answer=findReply(clips,part,lang);
+   return answer?.parts||[answer];
+  });
+  return parts.length<=3?answerFromParts(parts):null;
  }
- if(!RECORDED_DIALOG_FLAGS.followUps||!FOLLOW_UP.test(question.trim()))return null;
+ if(!FOLLOW_UP.test(question.trim()))return findReply(clips,question,lang);
  const previous=[...history].reverse().find(turn=>turn.role==='user'&&!FOLLOW_UP.test(turn.content.trim()));
  if(!previous)return null;
- const {available,scenarios}=await catalog(language);
- const alreadySpoken=new Set(history.filter(turn=>turn.role==='assistant').map(turn=>normalize(turn.content)));
- let best=null,score=0;
- for(const item of scenarios){
-  const answer=audioRecord(item,language,available);
-  if(!answer||alreadySpoken.has(normalize(answer.text)))continue;
-  const match=scoreRecordedQuestion(previous.content,item.qa?.[language]?.question,item.triggers?.[language]||[]);
-  if(match>score){best=answer;score=match;}
+ const alreadySpoken=history.filter(turn=>turn.role==='assistant').map(turn=>normalize(turn.content));
+ const unused=clips.filter(clip=>!alreadySpoken.some(text=>
+  (' '+text+' ').includes(' '+normalize(clip.text)+' ')));
+ if(lang==='ru'){
+  const details=SITE_DETAILS_RU.find(([topic])=>topic.test(previous.content))?.[1];
+  const next=details?.map(file=>tourClip(unused,file)).filter(Boolean);
+  if(next?.length)return answerFromParts(next);
+  if(/(?:inspiration|вдохновени)/iu.test(previous.content)){
+   const nextInspiration=tourClip(unused,'t3_ru_7fd91e38c5ce.mp3');
+   if(nextInspiration)return nextInspiration;
+  }
  }
- return score>=100?best:null;
+ return findReply(unused,previous.content,lang);
 }
