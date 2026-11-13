@@ -38,6 +38,7 @@ jobs:
           const envVars=project.deployment_configs?.production?.env_vars||{};
           const names=bindings.map(({name,type})=>({name,type})).filter(x=>x.name).sort((a,b)=>a.name.localeCompare(b.name));
           console.log('EMAIL_READINESS_PRODUCTION_BRANCH',project.production_branch);
+          console.log('EMAIL_READINESS_COMPATIBILITY',JSON.stringify({date:settings.compatibility_date||null,flags:settings.compatibility_flags||[],project_date:project.deployment_configs?.production?.compatibility_date||null}));
           console.log('EMAIL_READINESS_BOUND_BINDING_NAMES_AND_TYPES',JSON.stringify(names));
           console.log('EMAIL_READINESS_PROJECT_ENV_KEYS',JSON.stringify(Object.keys(envVars).sort()));
           for(const name of ['DATABASE_URL','DEEPSYQ_EMAIL_DATABASE_URL','DEEPSYQ_WALLET_DATABASE_URL','APP_JWT_SECRET','GOOGLE_CLIENT_ID']) {
