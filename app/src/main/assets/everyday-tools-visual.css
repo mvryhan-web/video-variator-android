@@ -94,7 +94,7 @@ body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] 
 .et-hero-copy{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 @media(max-width:700px){.et-hero{height:clamp(125px,22vw,205px);min-height:125px}.et-hero .et-hero-art{min-width:650px;left:0}}
 
-/* Owner 2026-11-14: left-shift ONLY these seven tool illustration crops.
+/* Owner 2026-11-14: left-shift ONLY these seven tool illustration crops. Release v2.
    Previous revision widened art to 62% but kept it near the right edge;
    move the actual SVG windows toward their earlier visible position.
    No changes to card frames, routes, copy, CTAs, other tool art or global layout. */
