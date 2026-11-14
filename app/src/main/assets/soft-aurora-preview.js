@@ -217,7 +217,7 @@
     raf=requestAnimationFrame(drawSnow);
   }
   function syncSnowRidges(christmas){
-    for(const selector of ['#homeHeroCarousel','#homeQuickForm','#jChatForm']){
+    for(const selector of ['.hero-stage.hero-stage-cinematic','#homeHeroCarousel','#homeQuickForm','#jChatForm']){
       const element=document.querySelector(selector);
       if(!element)continue;
       const existing=element.querySelector(':scope > .ds-snow-ridge');
