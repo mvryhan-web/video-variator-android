@@ -554,3 +554,11 @@ Production `fc8fc614-bbe6-4c78-8aa9-f4a78a38020e`, [выпуск #43501433353](h
 - Live Cloudflare verification reported canonical production deployment remained `4e86c699-8692-486f-ba43-55da2d0ddad6` during final publish. **No production rollout permitted until owner approves.**
 - Screenshot QA spotted and corrected CSS specificity (all themes initially inherited Focus), mobile dropdown overlay intercept, hidden Christmas winter scene, absent carousel snow rim, and mobile chalet framing. Final screenshots manually inspected.
 - This is a design review milestone: pending owner's aesthetic acceptance; Christmas artwork photorealism and broader 33-page visual audits can be improved later, without changing layout or production.
+
+
+### 2026-11-14 — Themes V1 full-page QA follow-up (TEST)
+
+- Added automated desktop/mobile visual tests of **all 36 HTML pages** (`scripts/test_deepsyq_themes_all_pages.mjs`). Final guarded Cloudflare preview run [43600799618](https://github.com/mvryhan-web/video-variator-android/actions/runs/43600799618) **SUCCESS**: 72/72 tested page+device combinations, 0 failures, five themes and saved theme restored. Existing three-page interactive/motion acceptance also passed 36 checks.
+- Protected `generate-studio.html` opens its original authorization gate for guest users. Test verifies saved theme colors under that gate without bypassing login or clicking through protected dialogs. Added independent theme menu placement outside inert Studio body only in TEST preview. No auth changes.
+- Preview alias: https://soft-aurora-preview-20261114.deepsyq.pages.dev/deepsyq.html ; immutable verified deployment: https://51207b36.deepsyq.pages.dev/deepsyq.html . Production canonical Cloudflare deployment ID unchanged (`4e86c699-8692-486f-ba43-55da2d0ddad6`) in same run.
+- The Christmas scene remains a **vector illustration** rather than requested photorealistic architectural artwork; keep that visual refinement open for owner approval. Not approved for production. All core app/generation/payment functions remain disabled in demo as designed.
