@@ -5,11 +5,11 @@ assets, production, app logic or existing approved visual themes.
 
 Sources are independently documented free Unsplash photographs, not image-generation
 mockups with accidental interface text:
- - desktop: Fabian Kleiser, Feb 2026,
-   https://unsplash.com/photos/a-cozy-cabin-nestled-in-a-snowy-forest-landscape-ki5HQo7XwQQ
- - mobile: Dustin Bowdige, Jan 2022,
-   https://unsplash.com/photos/a-cabin-is-lit-up-at-night-in-the-snow-qF7CJLUJFvM
-See Unsplash License: https://unsplash.com/license
+ - desktop: Kate Shashina (Christmas-lit cabin at night), Unsplash 2021,
+   https://unsplash.com/photos/a-small-cabin-is-lit-up-with-christmas-lights-Dmczd2VgaHk
+ - mobile: Vika Kirillova (snowy Christmas cottage and evergreen), Pexels 2022,
+   https://www.pexels.com/photo/wooden-cabin-in-the-forest-decorated-for-christmas-10727609/
+Licenses: https://unsplash.com/license ; https://www.pexels.com/license/
 """
 from __future__ import annotations
 
@@ -27,24 +27,25 @@ TARGET.mkdir(parents=True, exist_ok=True)
 PHOTOS = [
     (
         "desktop",
-        "https://images.unsplash.com/photo-1769934788449-11e74d1da6aa?fm=jpg&fit=max&w=3200&q=90",
+        "https://images.unsplash.com/photo-1639162147668-a4b3599ba8e2?fm=jpg&fit=max&w=3200&q=90",
         (2560, 1440),
-        (.52, .54),
-        "Fabian Kleiser",
-        "https://unsplash.com/photos/a-cozy-cabin-nestled-in-a-snowy-forest-landscape-ki5HQo7XwQQ"
+        (.51, .54),
+        "Kate Shashina",
+        "https://unsplash.com/photos/a-small-cabin-is-lit-up-with-christmas-lights-Dmczd2VgaHk"
     ),
     (
         "mobile",
-        "https://images.unsplash.com/photo-1642829597575-16fae76cc2da?fm=jpg&fit=max&w=2500&q=88",
+        "https://images.pexels.com/photos/10727609/pexels-photo-10727609.jpeg?auto=compress&cs=tinysrgb&w=2300",
         (1080, 1920),
-        (.52, .55),
-        "Dustin Bowdige",
-        "https://unsplash.com/photos/a-cabin-is-lit-up-at-night-in-the-snow-qF7CJLUJFvM"
+        (.79, .51),
+        "Vika Kirillova",
+        "https://www.pexels.com/photo/wooden-cabin-in-the-forest-decorated-for-christmas-10727609/"
     )
 ]
 
 def load_photo(url: str) -> Image.Image:
-    if not url.startswith("https://images.unsplash.com/photo-"):
+    if not (url.startswith("https://images.unsplash.com/photo-") or
+            url.startswith("https://images.pexels.com/photos/10727609/")):
         raise ValueError("Unexpected upstream image source")
     req = urllib.request.Request(url, headers={
         "User-Agent": "DEEPSYQ-Preview-Asset-Build/1.0 (+https://deepsyq.app)",
@@ -94,9 +95,10 @@ for name, url, dims, focus, credit, page in PHOTOS:
 
 (TARGET / "PHOTO_CREDITS.txt").write_text(
     "DEEPSYQ TEST Christmas photographic backgrounds\n"
-    "The two background photographs are licensed for use under the Unsplash License.\n"
-    "Not AI-generated photographs. Cropped and optimized for the TEST design only.\n"
-    "License: https://unsplash.com/license\n\n"
+    "Backgrounds are real photographs, not AI-generated or cartoon illustrations.\n"
+    "Cropped and optimized for the TEST design only; not distributed as standalone stock photos.\n"
+    "Desktop: Unsplash License https://unsplash.com/license\n"
+    "Mobile: Pexels License https://www.pexels.com/license/\n\n"
     + "\n".join(f"{name}: {credit}\nSource: {page}" for name, _, _, _, credit, page in PHOTOS)
     + "\n", encoding="utf-8"
 )
