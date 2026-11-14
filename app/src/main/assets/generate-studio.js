@@ -1212,9 +1212,20 @@ async function applyLocalStudioHandoff(){
   if(h.defaultModel&&catalog.some(m=>m.id===h.defaultModel&&m.kind===target)){modelId=h.defaultModel;renderModel();}
   $('prompt').value=String(h.prompt||'').slice(0,2000);
   const ratio=h.settings?.ratio;if(ratio&&currentModel()?.ratios?.includes(ratio)){$('ratio').value=ratio;updateRatioSelection();}const resolution=h.settings?.resolution;if(kind==='image'&&currentModel()?.capabilities?.resolutions?.includes(resolution)){$('imageResolution').value=resolution;updateRatioSelection();}const outputFormat=h.settings?.outputFormat;if(kind==='image'&&currentModel()?.capabilities?.outputFormats?.includes(outputFormat)){$('imageOutputFormat').value=outputFormat;updateRatioSelection();}
+  if(h.source==='jarvix-media-intake'){
+   refs=[];renderRefs();
+   if(target==='image')$('imageQuantity').value='1';
+   if(target==='music'){
+    const audioMode=h.settings?.musicMode||'song';
+    if([...$('musicMode').options].some(option=>option.value===audioMode)&&$('musicMode').value!==audioMode){
+     $('musicMode').value=audioMode;modelId='';renderModel();
+    }
+   }
+  }
   const max=currentModel()?.references||0,files=(h.files||[]).slice(0,max);if(files.length)await acceptFiles(files);
   $('consent').checked=false;availability();const dropped=(h.files||[]).length-files.length;
   if(h.source==='jarvix-media-intake'){
+   if(dropped)throw Error('Requested reference is unavailable');
    if(ratio&&$('ratio').value!==ratio)throw Error('Requested ratio is unavailable');
    if(target==='video'&&h.settings?.videoDuration){
     const duration=String(h.settings.videoDuration);

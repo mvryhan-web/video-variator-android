@@ -1,4 +1,4 @@
-import {installJarvixNewVoice} from './jarvix-new-voice.js';
+import {installJarvixNewVoice,toggleJarvixNewVoice} from './jarvix-new-voice.js';
 import {extractAction} from './jarvix-action-plan.js';
 import { stopJarvixGuidedTour, isTourActive } from './jarvix-guided-tour.js?v=20261111-v4b';
 import {navigationReply} from './jarvix-navigation-reply.js';
@@ -1352,6 +1352,10 @@ export function deactivateJarvisVoice() {
 }
 
 export function toggleJarvisVoice() {
+  if (['deepsyq.app','www.deepsyq.app'].includes(location.hostname)) {
+    toggleJarvixNewVoice();
+    return;
+  }
   if (isTourActive()) {
     stopJarvixGuidedTour();
     activateJarvisVoice();
