@@ -80,6 +80,7 @@ HASH_REUSE_RELEASE_SETS = (
     QUICK_START_ART_V2_RELEASE,
     frozenset({"jarvix-guided-tour.js", "jarvix-tour-choreography.js"}),
     frozenset({"ai-apps.html", "canvas.html", "free-tools.html", "sitemap.xml"}),
+    frozenset({"free-tools.html", "everyday-tools-visual.css"}),  # owner 2026-11-14 Everyday Tools two-file visual repair
     frozenset({"compare-ai.html", "simple-background-remover.html", "teleprompter.html"}),
     frozenset({"photo-collage.html"}),
     frozenset({"generate-studio.html"}),
@@ -587,7 +588,7 @@ def main():
         # Frontend-only guest sign-in release reconstructs the untouched Worker
         # from the verified LIVE origin, never from the unrelated DEV HEAD.
         # All other release scopes retain their existing strict Worker equality gate.
-        if paths == ["deepsyq-mobile-shell.js"]:
+        if paths == ["deepsyq-mobile-shell.js"] or frozenset(paths) == frozenset({"free-tools.html", "everyday-tools-visual.css"}):
             insist(bool(saved_worker and task_worker), "Worker provenance unavailable")
             print("GUEST_AUTH_ONLY: canonical LIVE Worker pinned; DEV Worker never published")
         else:
