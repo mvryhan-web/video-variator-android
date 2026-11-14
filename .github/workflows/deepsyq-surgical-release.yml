@@ -230,5 +230,3 @@ jobs:
             --mode "$RELEASE_MODE" \
             --files "$SCOPE_FILES" \
             --commit "$GITHUB_SHA"
-
-# Account separation release verified through the exact asset scope above.
