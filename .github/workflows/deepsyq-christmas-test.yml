@@ -1,0 +1,199 @@
+name: DEEPSYQ Christmas isolated TEST — preserve existing Worker
+on:
+  push:
+    branches: [test]
+    paths:
+      - '.github/workflows/deepsyq-christmas-test.yml'
+      - 'app/src/main/assets/deepsyq-christmas.css'
+      - 'app/src/main/assets/deepsyq-christmas.js'
+      - 'app/src/main/assets/index.html'
+      - 'app/src/main/assets/deepsyq.html'
+permissions:
+  contents: write
+concurrency:
+  group: owner-test-canonical-routing
+  cancel-in-progress: false
+jobs:
+  publish-test:
+    if: github.ref == 'refs/heads/test'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate only Christmas scripts and unchanged original carousel
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = test
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          node --check app/src/main/assets/deepsyq-christmas.js
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          for(const name of ['index.html','deepsyq.html']){
+            const h=fs.readFileSync('app/src/main/assets/'+name,'utf8');
+            assert(h.includes('id="homeHeroCarousel"'),name+' original carousel absent');
+            assert(h.includes('id="homeHeroPrevious"')&&h.includes('id="homeHeroNext"'),name+' carousel arrows absent');
+            assert(h.includes('id="homeQuickBar"')&&h.includes('id="homeQuickPrompt"'),name+' original JARVIX composer absent');
+            assert(h.includes('deepsyq-christmas.css')&&h.includes('deepsyq-christmas.js'),name+' Christmas files not linked');
+          }
+          for(const file of ['_worker.js','generate-models.js','jarvix-chat.js']){
+            assert(fs.existsSync('app/src/main/assets/'+file),'Original Worker dependency missing: '+file);
+          }
+          const source=fs.readFileSync('app/src/main/assets/deepsyq-christmas.js','utf8');
+          assert(source.includes('test\\.deepsyq\\.pages\\.dev')&&source.includes("if(!(/^(localhost"),'TEST-only theme guard missing');
+          console.log('CHRISTMAS_TEST_LOCAL_STATIC_GATES_PASS');
+          NODE
+      - name: Verify exact LIVE TEST baseline and preserve Cloudflare production
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          import {execFileSync} from 'node:child_process';
+          const root='https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID+'/pages/projects/deepsyq';
+          const headers={Authorization:'Bearer '+process.env.CLOUDFLARE_API_TOKEN};
+          const get=async path=>{
+            const r=await fetch(root+path,{headers,signal:AbortSignal.timeout(18000)});
+            assert(r.ok,'Cloudflare preflight HTTP '+r.status);
+            const j=await r.json();assert.equal(j.success,true,'Cloudflare preflight failed');
+            return j.result;
+          };
+          const project=await get('');
+          assert.equal(project.name,'deepsyq');
+          assert.equal(project.production_branch,'deepsyq-platform');
+          const prodId=project.canonical_deployment?.id;
+          assert(prodId,'Cannot identify production deployment');
+          const previewKeys=Object.keys(project.deployment_configs?.preview?.env_vars||{});
+          assert(!previewKeys.includes('STRIPE_SECRET_KEY'),'TEST has configured live Stripe key');
+          const deployments=[];
+          for(let page=1;page<=4;page++){deployments.push(...await get('/deployments?per_page=20&page='+page));}
+          const live=deployments.find(d=>(d.aliases||[]).includes('https://test.deepsyq.pages.dev'));
+          assert(live&&live.environment==='preview','Stable TEST deployment missing');
+          assert.equal(live.deployment_trigger?.metadata?.branch,'test');
+          assert.equal(live.uses_functions,true,'Worker-enabled TEST baseline required');
+          const liveSha=live.deployment_trigger?.metadata?.commit_hash;
+          assert(/^[a-f0-9]{40}$/.test(liveSha||''),'Current TEST commit cannot be verified');
+          const oldWorker=execFileSync('git',['show',liveSha+':app/src/main/assets/_worker.js']);
+          const newWorker=fs.readFileSync('app/src/main/assets/_worker.js');
+          assert(oldWorker.equals(newWorker),'Current TEST Worker differs from candidate: do not overwrite');
+          // The published HTML must be identical to the source currently held in TEST,
+          // excluding only these two approved seasonal includes in the new commit.
+          for(const page of ['index.html','deepsyq.html']){
+            const previous=execFileSync('git',['show','HEAD^:app/src/main/assets/'+page],{encoding:'utf8'});
+            const r=await fetch('https://test.deepsyq.pages.dev/'+page,{headers:{'Cache-Control':'no-cache'},signal:AbortSignal.timeout(18000)});
+            assert(r.ok,'Live TEST HTML unavailable for '+page);
+            const actual=await r.text();
+            assert.equal(actual.trim(),previous.trim(),'Current TEST has newer or different '+page+'. Stop, do not publish stale files.');
+          }
+          const api=await fetch('https://test.deepsyq.pages.dev/api/config',{signal:AbortSignal.timeout(15000)});
+          assert.equal(api.status,200,'Current TEST Worker /api/config unavailable');
+          fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_DEPLOYMENT_BEFORE='+prodId+'\n');
+          console.log('PREFLIGHT_TEST_WORKER_SAME_SOURCE',JSON.stringify({liveId:live.id,liveSha,prodId,uses_functions:true,htmlMatchesCurrent:true}));
+          NODE
+      - name: Download owner-supplied artwork and generate full-resolution responsive backgrounds
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-cache-dir "Pillow==11.3.0"
+          mkdir -p app/src/main/assets/media/christmas
+          curl --fail --location --silent --show-error --retry 3 --max-time 90 \
+            "https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/69570076-a930-4091-8daf-401aecdce103.png" \
+            -o /tmp/deepsyq-christmas-source.png
+          python - <<'PY'
+          from PIL import Image,ImageOps
+          from pathlib import Path
+          source=Path('/tmp/deepsyq-christmas-source.png')
+          assert source.stat().st_size > 500_000, 'Source image missing or truncated'
+          with Image.open(source) as im:
+              im.load()
+              assert im.width >= 900 and im.height >= 1600, f'Unexpected source size {im.size}'
+              image=im.convert('RGB')
+          out=Path('app/src/main/assets/media/christmas')
+          # Widescreen crops only the cinematic top: house, snowy firs, lantern and mountains.
+          w,h=image.size
+          crop=image.crop((0,0,w,round(w*9/16)))
+          desktop=crop.resize((2560,1440),Image.Resampling.LANCZOS)
+          desktop.save(out/'christmas-desktop.webp','WEBP',quality=89,method=6)
+          mobile=image.resize((1080,1920),Image.Resampling.LANCZOS)
+          mobile.save(out/'christmas-mobile.webp','WEBP',quality=89,method=6)
+          for f,size in [('christmas-desktop.webp',(2560,1440)),('christmas-mobile.webp',(1080,1920))]:
+              with Image.open(out/f) as check:
+                  check.verify()
+              with Image.open(out/f) as check:
+                  assert check.size==size
+              assert (out/f).stat().st_size>50_000,f+' corrupt/blank'
+              print('CHRISTMAS_ASSET_VALIDATED',f,size,(out/f).stat().st_size)
+          PY
+      - name: Persist responsive images on TEST branch (no production commits)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = test
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/src/main/assets/media/christmas/christmas-desktop.webp app/src/main/assets/media/christmas/christmas-mobile.webp
+          if git diff --cached --quiet; then
+            echo 'All themed assets already match TEST branch';
+          else
+            git commit -m 'assets(TEST Christmas): persist owner scene at full output sizes [skip ci]'
+            git push origin HEAD:test
+          fi
+          echo "RELEASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Publish full existing Pages app with unchanged Worker to canonical TEST only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f app/src/main/assets/_worker.js
+          test -f app/src/main/assets/media/christmas/christmas-desktop.webp
+          test -f app/src/main/assets/media/christmas/christmas-mobile.webp
+          npx --yes wrangler@4 pages deploy app/src/main/assets \
+            --project-name=deepsyq --branch=test --commit-hash="$RELEASE_SHA"
+      - name: Verify published TEST assets, real Home carousel and Worker; MAIN unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          const base='https://test.deepsyq.pages.dev';
+          const root='https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID+'/pages/projects/deepsyq';
+          const getProject=async()=>{
+            const r=await fetch(root,{headers:{Authorization:'Bearer '+process.env.CLOUDFLARE_API_TOKEN},signal:AbortSignal.timeout(15000)});
+            assert(r.ok);const j=await r.json();assert(j.success);return j.result;
+          };
+          let verified=false;
+          for(let i=0;i<15;i++){
+            const checks=await Promise.all(['/deepsyq.html','/deepsyq-christmas.css','/deepsyq-christmas.js','/media/christmas/christmas-desktop.webp','/media/christmas/christmas-mobile.webp','/api/config'].map(p=>fetch(base+p,{headers:{'Cache-Control':'no-cache'},signal:AbortSignal.timeout(20000)})));
+            const status=checks.map(r=>r.status);
+            if(status.every(v=>v===200)){
+              const html=await checks[0].text(),css=await checks[1].text(),js=await checks[2].text();
+              assert(html.includes('id="homeHeroCarousel"')&&html.includes('id="homeHeroPrevious"')&&html.includes('id="homeHeroNext"'),'Real carousel controls missing');
+              assert(html.includes('id="homeQuickPrompt"'),'JARVIX form missing');
+              assert(html.includes('deepsyq-christmas.js')&&html.includes('deepsyq-christmas.css'),'Seasonal includes missing');
+              assert(css.includes('christmas-mobile.webp')&&js.includes('xmas-mini-stage'),'Wrong seasonal script or stylesheet served');
+              assert((checks[3].headers.get('content-type')||'').includes('image/'),'Desktop artwork MIME mismatch');
+              assert((checks[4].headers.get('content-type')||'').includes('image/'),'Mobile artwork MIME mismatch');
+              verified=true;console.log('LIVE_CHRISTMAS_TEST_PASS',JSON.stringify({status,carousel:true,jarvixComposer:true,artworks:true,workerApi:true}));break;
+            }
+            console.log('TEST_PENDING',i+1,status);
+            await new Promise(ok=>setTimeout(ok,4000));
+          }
+          assert(verified,'Stable TEST did not receive new theme while preserving Worker');
+          const p=await getProject();
+          assert.equal(p.canonical_deployment?.id,process.env.MAIN_DEPLOYMENT_BEFORE,'Production changed during TEST deployment');
+          console.log('MAIN_UNCHANGED_CHRISTMAS_TEST_PUBLISHED',process.env.RELEASE_SHA);
+          NODE

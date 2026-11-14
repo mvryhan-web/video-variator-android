@@ -628,3 +628,11 @@ For every block:
 - do not mark DONE until verified;
 - do not create duplicate systems when an existing system can be extended.
 
+
+## 2026-11-14 — Christmas: изолированная тема только для TEST
+
+- Три варианта на TEST: исходная тема, Soft Dark (`#000000`), Christmas.
+- Рождественский слой добавлен отдельно от оригинального `#homeHeroCarousel`, кнопок видео и формы `#homeQuickBar`: падающий снег, снежные кромки, дым, фонарь и маленькие бегущие персонажи со снежками.
+- Исходное изображение выбрано владельцем. Cloudflare Actions для TEST создаёт WebP 2560×1440 и 1080×1920 из исходника, сохраняет файлы в TEST и публикует с сохранением Worker.
+- Вход в тему: `https://test.deepsyq.pages.dev/?christmas=1`; кнопка «Тема» переключает три варианта на TEST; production `deepsyq.app` не менять.
+- Выпуск обязан остановиться до публикации при несоответствии текущего TEST Worker/HTML, недоступном источнике изображения, отсутствии Cloudflare API доступа или изменении MAIN. Завершённость фиксировать только после успешного LIVE TEST и сохранённого Worker.
