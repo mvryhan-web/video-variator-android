@@ -1,4 +1,5 @@
 name: DEEPSYQ Christmas live Chromium visual QA (no deploy)
+# Live rerun after switcher fix (2026-11-14).
 on:
   push:
     branches: [test]
