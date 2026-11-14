@@ -40,7 +40,7 @@ fs.rmSync(path.join(target,'_routes.json'),{force:true});
 fs.rmSync(path.join(target,'_worker.js'),{force:true});
 /* Static no-spend TEST: preserve real pages, but block backend actions.
    In particular, prevent payment, Google OAuth, account writes and AI calls. */
-fs.writeFileSync(path.join(target,'_worker.js'),String.raw\`
+fs.writeFileSync(path.join(target,'_worker.js'),String.raw`
 export default {
   async fetch(request,env){
     const url=new URL(request.url);
@@ -51,7 +51,7 @@ export default {
                             'cache-control':'no-store'}});
     return env.ASSETS.fetch(request);
   }
-};\`,'utf8');
+};`,'utf8');
 console.log(JSON.stringify({
   status:'SOFT_AURORA_PREVIEW_BUILD_PASS',
   pages:count,main:'deepsyq.html',chat:'jarvix-chat.html',
