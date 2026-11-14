@@ -280,7 +280,7 @@ function stop(){
  on=false;seq++;
  cancelRecognition();
  releaseLocalCapture();
- localWorker?.terminate();localWorker=null;
+ stopLocalRecognition();
  if(ownerClip){try{ownerClip.pause();ownerClip.currentTime=0;}catch{}ownerClip=null;}
  if(ownerWebSource){try{ownerWebSource.stop();}catch{}ownerWebSource=null;}
  if(playbackAbort){try{playbackAbort.abort();}catch{}playbackAbort=null;}
@@ -394,7 +394,13 @@ const recordedLanguage=()=>getLang().lang.slice(0,2);
 
 const useLocalRecognition=()=>navigator.maxTouchPoints>0&&
  (matchMedia('(pointer: coarse)').matches||/Android|iPhone|iPad/i.test(navigator.userAgent));
-let localWorker=null,localCapture=null;
+let localWorker=null,localCapture=null,localRecognitionTimeout=null;
+function stopLocalRecognition(){
+ clearTimeout(localRecognitionTimeout);
+ localRecognitionTimeout=null;
+ localWorker?.terminate();
+ localWorker=null;
+}
 function releaseLocalCapture(){
  if(!localCapture)return;
  const capture=localCapture;
@@ -448,15 +454,23 @@ async function listenLocally(id){
     localWorker??=new Worker('/transcribe-worker.js',{type:'module'});
     localWorker.onmessage=({data})=>{
      if(!on||seq!==id)return;
-     if(data.type==='error'){ui('error');return;}
+     if(data.type==='error'){stopLocalRecognition();ui('unsupported');return;}
      if(data.type!=='result')return;
+     clearTimeout(localRecognitionTimeout);
+     localRecognitionTimeout=null;
      const text=String(data.result?.text||'').trim();
      if(text){setTranscript(text,true);void respond(text,id);}
      else ui('ready');
     };
-    localWorker.onerror=()=>{if(on&&seq===id)ui('error');};
+    const recognitionFailed=()=>{
+     if(!on||seq!==id)return;
+     stopLocalRecognition();
+     ui('unsupported');
+    };
+    localWorker.onerror=recognitionFailed;
+    localRecognitionTimeout=setTimeout(recognitionFailed,45000);
     localWorker.postMessage({samples,language:recordedLanguage()},[samples.buffer]);
-   }catch{if(on&&seq===id)ui('error');}
+   }catch{if(on&&seq===id){stopLocalRecognition();ui('unsupported');}}
   };
   processor.onaudioprocess=event=>{
    if(localCapture!==capture)return;
@@ -728,7 +742,7 @@ async function respond(message,id){
   location.assign(new URL(destination,location.origin+'/'));
   return;
  }
- if(!useLocalRecognition()&&isGreetingOnly(message,lang)){
+ if(isGreetingOnly(message,lang)){
   listen(id);
   return;
  }
@@ -781,7 +795,14 @@ async function start({greet=true}={}){
  if(useLocalRecognition()){
   on=true;
   const id=++seq;
-  await listenLocally(id);
+  setTranscript('');
+  ui('starting');
+  ensureAudioContextFromGesture();
+  if(greet){
+   const greeting=await helloRecording(recordedLanguage()).catch(()=>null);
+   if(on&&seq===id)await playOwnerRecording(greeting,id,3000,true);
+  }
+  if(on&&seq===id)await listenLocally(id);
   return;
  }
  if(!Recognition()){on=true;ui('unsupported');return;}
