@@ -252,3 +252,46 @@ html[data-deepsyq-theme="soft-dark"] .ds-theme-button{
   .ds-snow-burst .ds-snow-fleck{animation:none!important;display:none!important;}
   html[data-deepsyq-theme="christmas"] #dsSnowfallCanvas{display:none!important;}
 }
+
+
+/* Christmas visual refinement: show winter landscape in an empty carousel,
+   preserve any real carousel video and its source without replacing media. */
+html[data-deepsyq-theme="christmas"] .hero-stage.hero-stage-cinematic{
+  background:
+    linear-gradient(90deg,rgba(8,20,32,.25),rgba(8,20,32,.05)),
+    url('/themes/christmas/winter-desktop.svg') center / cover no-repeat!important;
+}
+html[data-deepsyq-theme="christmas"] #homeHeroCarousel.is-empty{
+  background:
+    linear-gradient(90deg,rgba(8,20,32,.28),rgba(8,20,32,.04)),
+    url('/themes/christmas/winter-desktop.svg') center / cover no-repeat!important;
+}
+html[data-deepsyq-theme="christmas"] :is(#homeHeroCarousel,#homeQuickForm,#jChatForm)::before{
+  content:none!important;display:none!important;
+}
+html[data-deepsyq-theme="christmas"] :is(#homeHeroCarousel,#homeQuickForm,#jChatForm) > .ds-snow-ridge{
+  position:absolute!important;display:block!important;pointer-events:none!important;
+  left:0!important;right:0!important;top:0!important;height:20px!important;
+  background:url('/themes/christmas/snow-edge.svg') left top / 720px 46px repeat-x!important;
+  filter:drop-shadow(0 2px 3px rgba(18,50,69,.32));
+  z-index:60!important;opacity:.98!important;
+}
+html[data-deepsyq-theme="christmas"] :is(#homeQuickForm,#jChatForm) > .ds-snow-ridge{
+  top:0!important;height:13px!important;background-size:520px 32px!important;
+  opacity:.88!important;
+}
+@media(max-width:760px){
+  html[data-deepsyq-theme="christmas"] .hero-stage.hero-stage-cinematic,
+  html[data-deepsyq-theme="christmas"] #homeHeroCarousel.is-empty{
+    background-image:
+      linear-gradient(90deg,rgba(8,20,32,.28),rgba(8,20,32,.08)),
+      url('/themes/christmas/winter-mobile.svg')!important;
+    background-position:center center!important;background-size:cover!important;
+  }
+  html[data-deepsyq-theme="christmas"] #homeHeroCarousel > .ds-snow-ridge{
+    height:14px!important;background-size:420px 28px!important;
+  }
+  html[data-deepsyq-theme="christmas"] :is(#homeQuickForm,#jChatForm) > .ds-snow-ridge{
+    height:10px!important;background-size:400px 26px!important;
+  }
+}
