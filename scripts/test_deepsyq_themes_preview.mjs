@@ -9,7 +9,7 @@ const modes=['original','warm-light','focus','soft-dark','christmas'];
 const color={
   'warm-light':'rgb(244, 240, 232)',
   'focus':'rgb(21, 29, 39)',
-  'soft-dark':'rgb(5, 5, 5)',
+  'soft-dark':'rgb(0, 0, 0)',
   'christmas':'rgb(16, 29, 42)'
 };
 const pages=[
