@@ -1,0 +1,92 @@
+name: DEEPSYQ Christmas live Chromium visual QA (no deploy)
+on:
+  push:
+    branches: [test]
+    paths: ['.github/workflows/deepsyq-christmas-browser-qa.yml']
+permissions:
+  contents: read
+jobs:
+  visual-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Verify live Christmas DOM, theme switching, and screenshots (desktop + mobile)
+        shell: bash
+        run: |
+          mkdir -p artifacts/christmas-test
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          const errors=[];
+          for(const [name,viewport,isMobile] of [
+            ['desktop',{width:1440,height:900},false],
+            ['mobile',{width:390,height:844},true]
+          ]){
+            const ctx=await browser.newContext({viewport,isMobile,hasTouch:isMobile});
+            const page=await ctx.newPage();
+            page.on('pageerror',e=>errors.push(name+': '+e.message));
+            const base='https://christmas-preview-20261114.deepsyq.pages.dev/?christmas=1';
+            const r=await page.goto(base,{waitUntil:'domcontentloaded',timeout:30000});
+            assert.equal(r?.status(),200,name+' Home status');
+            await page.waitForTimeout(2000);
+            const state=async()=>page.evaluate(()=>{
+              const theme=document.documentElement.getAttribute('data-site-theme');
+              const body=getComputedStyle(document.body);
+              return {
+                host:location.hostname,
+                theme,
+                snowCanvas:!!document.querySelector('#xmas-weather-layer'),
+                snowcaps:document.querySelectorAll('.xmas-snowcap').length,
+                sprites:document.querySelectorAll('.xmas-person').length,
+                carousel:!!document.getElementById('homeHeroCarousel'),
+                previous:!!document.getElementById('homeHeroPrevious'),
+                next:!!document.getElementById('homeHeroNext'),
+                composer:!!document.getElementById('homeQuickBar'),
+                prompt:!!document.getElementById('homeQuickPrompt'),
+                bg:body.backgroundImage.slice(0,240),
+                toggle:!!document.querySelector('.xmas-theme-toggle')
+              };
+            });
+            const before=await state();
+            console.log('LIVE_XMAS_CHRISTMAS_INITIAL',name,JSON.stringify(before));
+            await page.screenshot({path:'artifacts/christmas-test/'+name+'-initial.png',fullPage:false});
+            assert(before.carousel && before.previous && before.next && before.composer && before.prompt,name+' original controls missing');
+            assert.equal(before.theme,'christmas',name+' theme not active on ?christmas=1');
+            assert(before.snowCanvas && before.snowcaps>=3 && before.sprites===5,name+' snow layers not initialized');
+            assert(before.bg.includes(name==='mobile'?'christmas-mobile.webp':'christmas-desktop.webp'),name+' responsive background not applied');
+            await page.locator('.xmas-theme-toggle').click({timeout:10000});
+            await page.locator('[data-xmas-theme="soft-dark"]').click({timeout:10000});
+            await page.waitForTimeout(180);
+            const soft=await state();
+            console.log('LIVE_XMAS_SOFT_DARK',name,JSON.stringify(soft));
+            assert.equal(soft.theme,'soft-dark',name+' soft dark switch failed');
+            assert(!soft.snowCanvas,name+' Christmas snow not removed in Soft Dark');
+            await page.locator('.xmas-theme-toggle').click({timeout:10000});
+            await page.locator('[data-xmas-theme="christmas"]').click({timeout:10000});
+            await page.waitForTimeout(600);
+            const back=await state();
+            console.log('LIVE_XMAS_RETURN_TO_CHRISTMAS',name,JSON.stringify(back));
+            await page.screenshot({path:'artifacts/christmas-test/'+name+'-back.png',fullPage:false});
+            assert.equal(back.theme,'christmas',name+' cannot return to Christmas');
+            assert(back.snowCanvas && back.snowcaps>=3 && back.sprites===5,name+' snow layers not restored');
+            await ctx.close();
+          }
+          await browser.close();
+          console.log('CHRISTMAS_BROWSER_ERRORS',JSON.stringify(errors.slice(0,15)));
+          assert(!errors.some(x=>/deepsyq-christmas|xmas/i.test(x)),'Christmas runtime JS errors');
+          console.log('ALL_CHRISTMAS_REAL_BROWSER_CHECKS_PASSED');
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deepsyq-christmas-desktop-mobile-qa
+          path: artifacts/christmas-test/*.png
+          if-no-files-found: ignore
+          retention-days: 7
