@@ -216,8 +216,22 @@
     }
     raf=requestAnimationFrame(drawSnow);
   }
+  function syncSnowRidges(christmas){
+    for(const selector of ['#homeHeroCarousel','#homeQuickForm','#jChatForm']){
+      const element=document.querySelector(selector);
+      if(!element)continue;
+      const existing=element.querySelector(':scope > .ds-snow-ridge');
+      if(christmas&&!existing){
+        const ridge=document.createElement('span');
+        ridge.className='ds-snow-ridge';
+        ridge.setAttribute('aria-hidden','true');
+        element.appendChild(ridge);
+      }else if(!christmas&&existing){existing.remove();}
+    }
+  }
   function updateSnow(){
     const christmas=mode==='christmas';
+    syncSnowRidges(christmas);
     let backdrop=document.getElementById('dsChristmasBackdrop');
     if(christmas&&!backdrop){
       backdrop=document.createElement('div');backdrop.id='dsChristmasBackdrop';
