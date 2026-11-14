@@ -802,3 +802,15 @@ For every block:
 - [ ] Owner aesthetic approval of the five themes, especially Christmas scene.
 - [ ] Optional photo-realistic winter artwork at desktop/mobile sizes if the owner wants to replace illustrated preview background; preserve existing snow behavior and all other themes.
 - [ ] No production rollout until explicit owner acceptance.
+
+
+
+### 2026-11-14 — Christmas and Soft Dark V2 TEST QA
+
+- [x] Photographic winter-chalet Christmas desktop photo plus decorated snowy-cabin mobile photo, optimized to exact dimensions (2560×1440 and 1080×1920).
+- [x] Local WebP with JPEG fallback, source/author/license attribution included in TEST deployment.
+- [x] Preserve existing snow animations, decorative snowcaps, carousel assets, JARVIX inputs and all layout sizing/placement.
+- [x] Soft Dark deep black: #000000 base, #050505 header/nav, #0B0B0B cards, #111111 fields; remove gold input frame glow only inside Soft Dark.
+- [x] TEST GitHub workflow 43627736514 successful: 36 primary, 12 theme-specific, and 72 multi-page desktop/mobile checks; production unchanged.
+- [x] TEST: https://soft-aurora-preview-20261114.deepsyq.pages.dev/deepsyq.html
+- [ ] Await owner visual approval. Never deploy or merge themes to live deepsyq.app without explicit authorization.
