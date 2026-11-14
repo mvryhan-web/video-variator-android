@@ -100,6 +100,23 @@ jobs:
           const liveSha=live.deployment_trigger?.metadata?.commit_hash;
           console.log('ACTIVE_TEST_WORKER_REVISION',JSON.stringify({deploymentId:live.id,commit:liveSha,dirty:live.deployment_trigger?.metadata?.commit_dirty,branch:live.deployment_trigger?.metadata?.branch,workerRequired:live.uses_functions}));
           assert(/^[a-f0-9]{40}$/.test(liveSha||''),'Current TEST commit cannot be verified');
+          const script=project.preview_script_name;
+          let scriptStatus='unavailable';
+          if(script){
+            const workerUrl='https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID+'/workers/scripts/'+encodeURIComponent(script)+'/content/v2';
+            const scriptRes=await fetch(workerUrl,{headers,signal:AbortSignal.timeout(16000)});
+            scriptStatus=String(scriptRes.status);
+            console.log('LIVE_TEST_WORKER_READABILITY',JSON.stringify({script,code:scriptRes.status}));
+          }else console.log('LIVE_TEST_WORKER_READABILITY',JSON.stringify({script:null,code:'preview_script_name missing'}));
+          for(const page of ['deepsyq.html','index.html']){
+            const liveResponse=await fetch('https://test.deepsyq.pages.dev/'+page,{headers:{'Cache-Control':'no-cache'},signal:AbortSignal.timeout(18000)});
+            if(liveResponse.ok){
+              const actual=(await liveResponse.text()).trim();
+              const fromActive=execFileSync('git',['show',liveSha+':app/src/main/assets/'+page],{encoding:'utf8'}).trim();
+              const fromTest=execFileSync('git',['show','HEAD^:app/src/main/assets/'+page],{encoding:'utf8'}).trim();
+              console.log('LIVE_TEST_HTML_BASELINE',JSON.stringify({page,liveStatus:liveResponse.status,activeCommitMatches:actual===fromActive,testBranchMatches:actual===fromTest,liveLength:actual.length,activeLength:fromActive.length,testLength:fromTest.length}));
+            }else console.log('LIVE_TEST_HTML_BASELINE',JSON.stringify({page,liveStatus:liveResponse.status}));
+          }
           const oldWorker=execFileSync('git',['show',liveSha+':app/src/main/assets/_worker.js']);
           const newWorker=fs.readFileSync('app/src/main/assets/_worker.js');
           assert(oldWorker.equals(newWorker),'Current TEST Worker differs from candidate: do not overwrite');
