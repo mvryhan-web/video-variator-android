@@ -47,8 +47,12 @@ QUICK_START_ART_V2 = frozenset(path.replace("/quick-start-v1/", "/quick-start-v2
 QUICK_START_ART_V2_RELEASE = QUICK_START_ART_V2 | {"home-inspiration.js"}
 
 
-def quick_start_new_assets(paths):
+ACCOUNT_AND_DIRECTOR_RELEASE = frozenset({"deepsyq.js", "deepsyq-mobile-shell.js", "deepsyq-unified-platform-header.js", "video-uniquifier-reference.js", "home-inspiration.js", "account-settings.html"})
+
+def approved_new_assets(paths):
     scope = frozenset(paths)
+    if scope == ACCOUNT_AND_DIRECTOR_RELEASE:
+        return frozenset({"account-settings.html"})
     if scope == QUICK_START_ART_RELEASE:
         return QUICK_START_ART
     if scope == QUICK_START_ART_V2_RELEASE:
@@ -56,6 +60,7 @@ def quick_start_new_assets(paths):
     return frozenset()
 
 HASH_REUSE_RELEASE_SETS = (
+    ACCOUNT_AND_DIRECTOR_RELEASE,
     QUICK_START_ART_RELEASE,
     QUICK_START_ART_V2_RELEASE,
     frozenset({"jarvix-guided-tour.js", "jarvix-tour-choreography.js"}),
@@ -456,7 +461,7 @@ def build_candidate(live, paths, production_commit, work):
 
     # Apply exactly the owner-requested files from the checked-out task revision.
     edited_bytes = {}
-    new_assets = quick_start_new_assets(paths)
+    new_assets = approved_new_assets(paths)
     for rel in paths:
         src = ROOT / rel
         dest = stage / rel

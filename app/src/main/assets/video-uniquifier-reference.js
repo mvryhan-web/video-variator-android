@@ -2,6 +2,8 @@
  * Presentation only: preserves all original media-processing, consent, credit,
  * account and history handlers. No network requests or video uploads. */
 (()=>{'use strict';
+if(location.hash==='#profile'){location.replace('/account-settings.html');return;}
+window.addEventListener('hashchange',()=>{if(location.hash==='#profile')location.replace('/account-settings.html');});
 const $=id=>document.getElementById(id);
 const R={
  hero:[525,66,340,232],preview:[805,372,610,268],

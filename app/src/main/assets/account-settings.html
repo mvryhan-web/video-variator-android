@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Account · Deepsyq</title>
+<link rel="stylesheet" href="/deepsyq-global-theme.css">
+<link rel="stylesheet" href="/jarvis-core.css">
+<link rel="stylesheet" href="/deepsyq-mobile-shell.css">
+<script defer src="/deepsyq-site-shell.js"></script>
+<script type="module" src="/deepsyq-mobile-shell.js"></script>
+<script type="module" src="/jarvis-core.js"></script>
+<style>
+body{margin:0;background:#101326;color:#edf0ff;font:16px system-ui,sans-serif}
+.account-main{width:min(680px,calc(100% - 32px));margin:48px auto;padding-bottom:28px}
+.account-main h1{margin:0 0 24px;font-size:clamp(28px,5vw,40px)}
+.account-panel{padding:20px;border:1px solid #595474;border-radius:17px;background:#1a1d35}
+.account-panel + .account-panel{margin-top:16px}
+.account-panel h2{margin:0 0 15px;font-size:19px}
+.account-panel dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;margin:0}
+.account-panel dd{margin:0;overflow-wrap:anywhere}
+.account-panel dt{color:#c7cae1}
+.account-actions{display:flex;flex-wrap:wrap;gap:10px}
+.account-actions a,.account-actions button{display:inline-flex;align-items:center;padding:10px 14px;min-height:44px;border:1px solid #8070af;border-radius:10px;background:#2b2547;color:#fff;font:inherit;text-decoration:none;cursor:pointer}
+.account-actions [hidden],[hidden]{display:none!important}
+.account-actions :focus-visible{outline:2px solid #b6eaff;outline-offset:3px}
+</style>
+</head>
+<body class="deepsyq-sitewide-shell">
+<header class="ds-platform-header" aria-label="Deepsyq">
+<button id="topJarvisBtn" type="button" class="top-jarvis-btn" aria-label="JARVIX"><span class="jarvis-mini-orb"></span></button>
+</header>
+<main class="account-main">
+<h1 id="accountTitle">Account</h1>
+<p id="accountMessage" role="status"></p>
+<section id="accountIdentity" class="account-panel" hidden aria-labelledby="identityTitle">
+<h2 id="identityTitle">Profile</h2>
+<dl><dt id="emailTitle">Email</dt><dd id="accountEmail"></dd><dt id="planTitle">Plan</dt><dd id="accountPlan"></dd><dt id="statusTitle">Status</dt><dd id="accountStatus"></dd></dl>
+</section>
+<section class="account-panel account-actions">
+<a id="accountHome" href="/">Home</a>
+<a id="accountLogin" href="/deepsyq.html?panel=login" hidden>Sign in</a>
+<a id="accountPricing" href="/pricing.html">Pricing</a>
+<button id="accountBilling" type="button" hidden>Manage billing</button>
+<button id="accountLogout" type="button" hidden>Sign out</button>
+</section>
+</main>
+<script type="module">
+const byId=id=>document.getElementById(id);
+const locales={
+ en:['Account','Profile','Email','Plan','Status','Home','Sign in','Pricing','Manage billing','Sign out','Loading profile…','Sign in to see your account.','Could not load the account. Try reloading.','Billing is currently unavailable.','Active','Inactive'],
+ ru:['Аккаунт','Профиль','Email','Тариф','Статус','Главная','Войти','Тарифы','Управление подпиской','Выйти','Загружаем профиль…','Войдите, чтобы открыть аккаунт.','Не удалось открыть аккаунт. Обновите страницу.','Управление подпиской сейчас недоступно.','Активен','Неактивен'],
+ fr:['Compte','Profil','E-mail','Offre','Statut','Accueil','Connexion','Tarifs','Gérer l’abonnement','Déconnexion','Chargement du profil…','Connectez-vous pour voir votre compte.','Impossible de charger le compte. Rechargez la page.','La gestion de l’abonnement est indisponible.','Actif','Inactif'],
+ es:['Cuenta','Perfil','Correo','Plan','Estado','Inicio','Iniciar sesión','Precios','Gestionar suscripción','Cerrar sesión','Cargando perfil…','Inicia sesión para ver tu cuenta.','No se pudo cargar la cuenta. Recarga la página.','La gestión de la suscripción no está disponible.','Activo','Inactivo']
+};
+const key=(localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang')||navigator.language||'en').slice(0,2);
+const copy=locales[key]||locales.en;
+document.documentElement.lang=locales[key]?key:'en';
+document.title=copy[0]+' · Deepsyq';
+['accountTitle','identityTitle','emailTitle','planTitle','statusTitle','accountHome','accountLogin','accountPricing','accountBilling','accountLogout']
+ .forEach((id,i)=>{byId(id).textContent=copy[i];});
+const token=localStorage.getItem('vv_token');
+const sameSession=()=>token===localStorage.getItem('vv_token');
+const message=byId('accountMessage');
+const identity=byId('accountIdentity');
+const login=byId('accountLogin');
+const billing=byId('accountBilling');
+const logout=byId('accountLogout');
+const clear=()=>{
+ identity.hidden=billing.hidden=logout.hidden=true;
+ for(const id of ['accountEmail','accountPlan','accountStatus'])byId(id).textContent='';
+};
+const refreshSession=()=>{if(!sameSession()){clear();location.reload();}};
+window.addEventListener('storage',refreshSession);
+window.addEventListener('pageshow',refreshSession);
+async function loadAccount(){
+ if(!token){login.hidden=false;message.textContent=copy[11];return;}
+ message.textContent=copy[10];
+ try{
+  const response=await fetch('/api/me',{cache:'no-store',headers:{Authorization:'Bearer '+token}});
+  if(!sameSession())return;
+  if(response.status===401){login.hidden=false;logout.hidden=false;message.textContent=copy[11];return;}
+  if(!response.ok)throw Error();
+  const {user}=await response.json();
+  if(!sameSession())return;
+  if(!user)throw Error();
+  byId('accountEmail').textContent=user.email||'—';
+  byId('accountPlan').textContent=({trial:'Trial',basic:'Basic',pro:'Pro',business:'Business',lifetime:'Lifetime'})[user.usage?.plan]||'—';
+  byId('accountStatus').textContent=user.usage?.active?copy[14]:copy[15];
+  identity.hidden=logout.hidden=false;
+  billing.hidden=!user.usage?.active||user.usage?.plan==='lifetime'||user.isAdmin;
+  message.textContent='';
+ }catch{if(sameSession()){logout.hidden=false;message.textContent=copy[12];}}
+}
+billing.onclick=async()=>{
+ if(!sameSession()||billing.disabled)return;
+ billing.disabled=true;
+ try{
+  const r=await fetch('/api/billing/portal',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}'});
+  if(!r.ok)throw Error();
+  const u=new URL((await r.json()).url);
+  if(u.origin!=='https://billing.stripe.com')throw Error();
+  if(sameSession())location.assign(u.href);
+ }catch{if(sameSession())message.textContent=copy[13];}
+ finally{billing.disabled=false;}
+};
+logout.onclick=()=>{
+ if(!sameSession())return;
+ clear();localStorage.removeItem('vv_token');sessionStorage.removeItem('vu_generation_job');location.replace('/');
+};
+void loadAccount();
+</script>
+</body>
+</html>

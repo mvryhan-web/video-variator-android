@@ -464,7 +464,7 @@ function renderQuickStarts(section){
  #homeStudioQuickStarts .quick-start-card:focus-visible{outline:2px solid #c7a0f9;outline-offset:2px}
  #homeStudioQuickStarts .quick-start-thumb{position:relative;min-width:0;min-height:0;overflow:hidden;background:#302447}
  #homeStudioQuickStarts .quick-start-thumb img{display:block;width:100%;height:100%;object-fit:cover}
- #homeStudioQuickStarts .quick-start-thumb .quick-start-orb{position:absolute;inset:50% auto auto 50%;transform:translate(-50%,-50%);width:127px;height:127px;object-fit:contain;mask-image:radial-gradient(circle closest-side,#000 78%,transparent 100%);pointer-events:none}
+ #homeStudioQuickStarts .quick-start-thumb .quick-start-orb{position:absolute;inset:37.3% auto auto calc(50% + 1px);transform:translate(-50%,-50%);width:108px;height:108px;object-fit:contain;clip-path:circle(49%);mask-image:radial-gradient(circle closest-side,#000 86%,transparent 100%);pointer-events:none}
  #homeStudioQuickStarts .quick-start-body{display:grid;gap:8px;min-width:0;padding:18px;overflow-wrap:anywhere}
  #homeStudioQuickStarts .quick-start-body strong{font-size:17px}
  #homeStudioQuickStarts .quick-start-body span{font-size:12px;line-height:1.6;color:var(--muted,#c5b9db)}
@@ -479,6 +479,7 @@ function renderQuickStarts(section){
   image.src=src;image.alt='';image.loading='lazy';image.width=720;image.height=405;
   visual.append(image);
   if(src.endsWith('/jarvix-director.webp')){
+   image.style.objectPosition='50% 37.3%';
    const orb=detailEl('img','quick-start-orb');
    orb.src='https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/760ea0b9-ba7d-4982-97f2-9bb59a6b0979.png';orb.alt='';orb.loading='lazy';orb.referrerPolicy='no-referrer';
    visual.append(orb);
