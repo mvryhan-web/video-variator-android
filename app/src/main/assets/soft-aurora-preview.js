@@ -110,7 +110,9 @@
       holder.appendChild(rec);
     }else{
       holder.classList.add('ds-theme-floating');
-      document.body.appendChild(holder);
+      // Place the TEST-only control outside body: some Studio pages set body.inert
+      // for guests, but appearance selection must stay keyboard/touch accessible.
+      document.documentElement.appendChild(holder);
     }
     const control=document.createElement('div');control.className='ds-theme-control';
     button=document.createElement('button');
@@ -153,7 +155,8 @@
     });
     control.append(button);holder.appendChild(control);
     // Portal: existing mobile creative-tools rails must never obscure theme choices.
-    document.body.appendChild(menu);
+    // Menu uses an independent visual layer and must not inherit body.inert.
+    document.documentElement.appendChild(menu);
     document.addEventListener('pointerdown',e=>{
       if(holder&&!holder.contains(e.target)&&menu&&!menu.contains(e.target))closeMenu();
     });
