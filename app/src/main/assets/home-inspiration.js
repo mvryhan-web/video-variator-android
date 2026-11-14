@@ -447,16 +447,43 @@ async function openCreativeTool(tool,opener){
 }
 
 function renderQuickStarts(section){
- if(document.getElementById('homeStudioQuickStarts'))return;
- const root=detailEl('section','home-creative-tools');
+ if(!document.getElementById('homeCreativeTools')||document.getElementById('homeStudioQuickStarts'))return;
+ const root=detailEl('section','inspiration-preview');
  root.id='homeStudioQuickStarts';
  root.setAttribute('aria-labelledby','homeStudioQuickStartsTitle');
  const labels=studioCopy();
  const title=detailEl('h2','',labels[0]);
  title.id='homeStudioQuickStartsTitle';
- const grid=detailEl('div','home-create-grid');
+ const grid=detailEl('div','quick-start-grid');
+ const style=detailEl('style');
+ style.textContent=`
+ #homeStudioQuickStarts .quick-start-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+ #homeStudioQuickStarts h2{margin:0 0 16px}
+ #homeStudioQuickStarts .quick-start-card{display:grid;grid-template-rows:170px auto;min-width:0;width:100%;padding:0;overflow:hidden;background:var(--panel,#191328);border:1px solid var(--line,#4c3b62);border-radius:17px;color:inherit;font:inherit;text-align:start;text-decoration:none;cursor:pointer;transition:border-color .15s}
+ #homeStudioQuickStarts .quick-start-card:hover{border-color:#8964c0}
+ #homeStudioQuickStarts .quick-start-card:focus-visible{outline:2px solid #c7a0f9;outline-offset:2px}
+ #homeStudioQuickStarts .quick-start-thumb{min-width:0;min-height:0;overflow:hidden;background:#302447}
+ #homeStudioQuickStarts .quick-start-thumb img{display:block;width:100%;height:100%;object-fit:cover}
+ #homeStudioQuickStarts .quick-start-body{display:grid;gap:8px;min-width:0;padding:18px;overflow-wrap:anywhere}
+ #homeStudioQuickStarts .quick-start-body strong{font-size:17px}
+ #homeStudioQuickStarts .quick-start-body span{font-size:12px;line-height:1.6;color:var(--muted,#c5b9db)}
+ @media(max-width:940px){#homeStudioQuickStarts .quick-start-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+ @media(max-width:640px){#homeStudioQuickStarts .quick-start-grid{grid-template-columns:minmax(0,1fr)}}
+ @media(prefers-reduced-motion:reduce){#homeStudioQuickStarts .quick-start-card{transition:none}}
+ `;
+ const addCard=(control,src,name,subtitle)=>{
+  control.className='quick-start-card';
+  const visual=detailEl('div','quick-start-thumb');
+  const image=detailEl('img');
+  image.src=src;image.alt='';image.loading='lazy';image.width=720;image.height=405;
+  visual.append(image);
+  const body=detailEl('div','quick-start-body');
+  body.append(detailEl('strong','',name),detailEl('span','',subtitle));
+  control.append(visual,body);
+  grid.append(control);
+ };
  quickStarts.forEach((item,index)=>{
-  const link=detailEl('a','home-create-card tile-'+item.kind);
+  const link=detailEl('a');
   link.href='jarvix-chat.html?'+new URLSearchParams({mode:item.kind,from:'template',prompt:studioDraftPrompt(item.prompt,item.aspectRatio)});
   link.addEventListener('click',async event=>{
    if(event.defaultPrevented||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
@@ -471,36 +498,24 @@ function renderQuickStarts(section){
    }catch{}
    location.assign(destination.href);
   });
-  const image=detailEl('img');
-  image.src=item.image;image.alt='';image.loading='lazy';image.width=720;image.height=405;
-  const copy=detailEl('span','home-create-copy');
-  copy.append(detailEl('strong','',labels[index+1]),detailEl('span','',item.aspectRatio));
-  const arrow=detailEl('span','home-card-arrow','›');
-  arrow.setAttribute('aria-hidden','true');
-  link.append(image,copy,arrow);
-  grid.append(link);
+  addCard(link,item.image,labels[index+1],item.aspectRatio);
  });
  const language=creativeCopy();
  const lang=Object.keys(creativeToolsCopy).find(key=>creativeToolsCopy[key]===language)||'en';
  const copy={...language,...characterRadarCopy[lang],director:'JARVIX Director',chain:lang==='ru'?'Изображение и видео по шагам':'Image and video, step by step'};
- for(const [tool,subtitle,kind,imageSrc] of [
-  ['factory','plan','video','media/home/owner-20261018/04-neon-motorcycle.jpg'],
-  ['brand','style','image','media/home/neon-20261018/canvas.webp'],
-  ['characters','cast','image','media/home/owner-20261018/01-close-up-woman.jpg'],
-  ['radar','radarHint','video','media/home/neon-20261018/agent.webp'],
-  ['director','chain','video','media/home/neon-20261018/agent.webp']
+ for(const [tool,subtitle,imageSrc] of [
+  ['factory','plan','media/home/owner-20261018/04-neon-motorcycle.jpg'],
+  ['brand','style','media/home/neon-20261018/canvas.webp'],
+  ['characters','cast','media/home/owner-20261018/01-close-up-woman.jpg'],
+  ['radar','radarHint','media/home/neon-20261018/agent.webp'],
+  ['director','chain','media/home/neon-20261018/agent.webp']
  ]){
-  const button=detailEl('button','home-create-card tile-'+kind);
-  button.type='button';button.style.cssText='text-align:start;font:inherit;color:inherit;cursor:pointer';
-  const image=detailEl('img');image.src=imageSrc;image.alt='';image.loading='lazy';image.width=720;image.height=405;
-  const label=detailEl('span','home-create-copy');
-  label.append(detailEl('strong','',copy[tool]),detailEl('span','',copy[subtitle]));
-  const arrow=detailEl('span','home-card-arrow','›');arrow.setAttribute('aria-hidden','true');
-  button.append(image,label,arrow);
+  const button=detailEl('button');
+  button.type='button';
   button.onclick=()=>void openCreativeTool(tool,button);
-  grid.append(button);
+  addCard(button,imageSrc,copy[tool],copy[subtitle]);
  }
- root.append(title,grid);
+ root.append(style,title,grid);
  section.before(root);
 }
 let inspirationDetail=null;
