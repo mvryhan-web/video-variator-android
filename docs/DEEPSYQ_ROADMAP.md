@@ -791,3 +791,14 @@ For every block:
 - [ ] Owner to inspect http(s) preview in desktop/mobile and approve, reject or request refinement.
 - [ ] Optional next refinement: photorealistic licensed/original winter art rendered at requested sizes, WebP/AVIF export, stronger Christmas material realism.
 - [ ] Only after explicit approval, plan separate scoped rollout of design tokens and assets to production; do not touch Google OAuth, Email auth, JARVIX voice/chat logic or payments.
+
+
+### 2026-11-14 — Themes V1 broad visual QA result
+
+- [x] TEST release includes five themes, persistent selection, Christmas snow overlay and reduced-motion behavior.
+- [x] Browser acceptance passed across all 36 HTML pages on desktop and mobile: 72/72 checks (run [43600799618](https://github.com/mvryhan-web/video-variator-android/actions/runs/43600799618)).
+- [x] Guarded Studio page retains authentication; theme persistence checks respect original guest gate.
+- [x] Production unchanged (canonical Cloudflare deployment ID `4e86c699-8692-486f-ba43-55da2d0ddad6` during release).
+- [ ] Owner aesthetic approval of the five themes, especially Christmas scene.
+- [ ] Optional photo-realistic winter artwork at desktop/mobile sizes if the owner wants to replace illustrated preview background; preserve existing snow behavior and all other themes.
+- [ ] No production rollout until explicit owner acceptance.
