@@ -1,0 +1,156 @@
+name: DEEPSYQ Soft Aurora owner review — TEST only
+on:
+  push:
+    branches:
+      - 'preview/soft-aurora-20261114'
+    paths:
+      - 'app/src/main/assets/soft-aurora-preview.css'
+      - 'app/src/main/assets/soft-aurora-preview.js'
+      - 'scripts/build_soft_aurora_preview.mjs'
+      - '.github/workflows/soft-aurora-test-preview-20261114.yml'
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  publish-isolated-design:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 28
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      TEST_BRANCH: soft-aurora-preview-20261114
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate preview-only sources and build isolated site
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/build_soft_aurora_preview.mjs
+          node --check app/src/main/assets/soft-aurora-preview.js
+          node scripts/build_soft_aurora_preview.mjs
+          node --check .soft-aurora-preview-build/_worker.js
+          test -f .soft-aurora-preview-build/deepsyq.html
+          test -f .soft-aurora-preview-build/jarvix-chat.html
+          if git status --porcelain -- app/src/main/assets | grep .; then
+            echo '::error::Source application assets were modified by the preview build'
+            exit 1
+          fi
+      - name: Preflight exact Cloudflare project; record production deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" > /tmp/soft-aurora-main-before.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const d=JSON.parse(fs.readFileSync('/tmp/soft-aurora-main-before.json','utf8'));
+          if(d.success!==true||d.result?.name!=='deepsyq'||
+             d.result?.production_branch!=='deepsyq-platform'||
+             !d.result?.canonical_deployment?.id||
+             d.result.production_branch===process.env.TEST_BRANCH)
+             throw Error('Production isolation preflight failed');
+          fs.appendFileSync(process.env.GITHUB_ENV,'PRODUCTION_DEPLOYMENT_BEFORE='+d.result.canonical_deployment.id+'\n');
+          console.log('ISOLATED_PREVIEW_PREFLIGHT_PASS',JSON.stringify({project:'deepsyq',production_branch:d.result.production_branch,test_branch:process.env.TEST_BRANCH}));
+          JS
+      - name: Publish disposable design preview ONLY on non-production branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 pages deploy .soft-aurora-preview-build --project-name=deepsyq --branch="$TEST_BRANCH" --commit-hash="$GITHUB_SHA" | tee /tmp/soft-aurora-pages-deploy.log
+          URL=$(grep -Eo 'https://[a-z0-9-]+\.deepsyq\.pages\.dev' /tmp/soft-aurora-pages-deploy.log | head -n1)
+          if [[ ! "$URL" =~ ^https://[a-z0-9-]+\.deepsyq\.pages\.dev$ ]]; then
+            echo '::error::Cannot verify non-production Pages deployment URL'
+            exit 1
+          fi
+          echo "SOFT_AURORA_DEPLOYMENT_URL=$URL" >> "$GITHUB_ENV"
+          echo "SOFT_AURORA_DEPLOYMENT_URL=$URL"
+      - name: Real Cloudflare smoke on desktop and mobile, 3 modes, 3 pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install chromium
+          mkdir -p artifacts/soft-aurora
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const base=process.env.SOFT_AURORA_DEPLOYMENT_URL;
+          assert.match(base,/^https:\/\/[a-z0-9-]+\.deepsyq\.pages\.dev$/);
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try{
+            for(const [device,viewport] of [['desktop',{width:1440,height:900}],['mobile',{width:390,height:844}]]){
+              const context=await browser.newContext({viewport,isMobile:device==='mobile',hasTouch:device==='mobile'});
+              try{
+                const page=await context.newPage();
+                for(const [name,route,form,input] of [
+                  ['home','deepsyq.html','#homeQuickForm','#homeQuickPrompt'],
+                  ['jarvix','jarvix-chat.html','#jChatForm','#jInput'],
+                  ['pricing','pricing.html',null,null]
+                ]){
+                  const res=await page.goto(base+'/'+route,{waitUntil:'domcontentloaded',timeout:40000});
+                  assert.equal(res?.status(),200,device+' '+route+' should load');
+                  await page.locator('#saThemeSwitch').waitFor({state:'visible',timeout:15000});
+                  assert.equal(await page.locator('html').getAttribute('data-sa-mode'),'dark');
+                  const stylesheet=await page.locator('link[href="/soft-aurora-preview.css"]').count();
+                  assert.equal(stylesheet,1,device+' '+route+' preview CSS injection');
+                  if(form){
+                    await page.locator(input).waitFor({state:'visible',timeout:15000});
+                    const layout=await page.locator(form).evaluate(el=>{
+                      const style=getComputedStyle(el),r=el.getBoundingClientRect();
+                      return {width:r.width,height:r.height,border:style.borderTopWidth,bg:style.backgroundColor,display:style.display};
+                    });
+                    assert.ok(layout.width>190&&layout.height>80,device+' '+name+' composer box');
+                    assert.ok(parseFloat(layout.border)>0,device+' '+name+' composer border');
+                    assert.equal(await page.locator(input).isVisible(),true);
+                    console.log('SOFT_AURORA_COMPOSER_VISIBLE',JSON.stringify({device,name,layout}));
+                  }
+                  await page.screenshot({path:'artifacts/soft-aurora/'+device+'-'+name+'-dark.png',animations:'disabled',fullPage:false});
+                  await page.locator('#saThemeSwitch').click();
+                  assert.equal(await page.locator('html').getAttribute('data-sa-mode'),'warm');
+                  if(name==='home'||name==='jarvix')
+                    await page.screenshot({path:'artifacts/soft-aurora/'+device+'-'+name+'-warm.png',animations:'disabled',fullPage:false});
+                  await page.locator('#saThemeSwitch').click();
+                  assert.equal(await page.locator('html').getAttribute('data-sa-mode'),'focus');
+                  await page.locator('#saThemeSwitch').click();
+                  assert.equal(await page.locator('html').getAttribute('data-sa-mode'),'dark');
+                  console.log('SOFT_AURORA_PAGE_PASS',JSON.stringify({device,name,status:res.status(),modes:3}));
+                }
+              }finally{await context.close();}
+            }
+            const res=await fetch(base+'/api/auth/email/status');
+            assert.equal(res.status,503,'Isolated preview cannot call real auth API');
+            console.log('SOFT_AURORA_ISOLATED_API_PASS',res.status);
+          }finally{await browser.close();}
+          JS
+      - name: Verify canonical production deployment unchanged
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${PRODUCTION_DEPLOYMENT_BEFORE:-}" ]; then exit 1; fi
+          curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" > /tmp/soft-aurora-main-after.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const d=JSON.parse(fs.readFileSync('/tmp/soft-aurora-main-after.json','utf8'));
+          if(d.success!==true||d.result?.production_branch!=='deepsyq-platform'||
+             d.result?.canonical_deployment?.id!==process.env.PRODUCTION_DEPLOYMENT_BEFORE)
+            throw Error('Production canonical deployment changed during preview');
+          console.log('SOFT_AURORA_PRODUCTION_UNCHANGED_VERIFIED',d.result.canonical_deployment.id);
+          JS
+      - name: Save real desktop and mobile Cloudflare preview screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: soft-aurora-real-preview-6-pages-3-modes
+          path: artifacts/soft-aurora/*.png
+          retention-days: 14
+          if-no-files-found: ignore
