@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `a3fee802c4a6b1c8a5b810cf8f8f70c3477d890b`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `f89567079bcb430d87f28965cc8ec0ced7bd92d3`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 126 | Named symbols: 456 | Checked relations: 80
 
 ## Topic finder (matching filenames)
@@ -114,7 +114,7 @@ neighborVideos (L10) · slides (L18) · failedSlides (L18) · ideas (L439) · mo
 
 ### `app/src/main/assets/home-inspiration.js`
 
-studioLabels (L35) · quickStarts (L41) · creativeToolsCopy (L51) · characterRadarCopy (L91) · directorModels (L172) · items (L714) · previewVideos (L715) · ownerVideoSource (L813) · OWNER_VIDEO_INSPIRATION (L835)
+studioLabels (L35) · quickStarts (L41) · creativeToolsCopy (L51) · characterRadarCopy (L91) · directorModels (L172) · items (L729) · previewVideos (L730) · ownerVideoSource (L828) · OWNER_VIDEO_INSPIRATION (L850)
 
 ### `app/src/main/assets/inspiration.js`
 
