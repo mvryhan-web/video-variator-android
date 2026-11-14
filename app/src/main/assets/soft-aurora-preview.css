@@ -115,7 +115,7 @@ html[data-deepsyq-theme="christmas"] #dsChristmasBackdrop{
   background-position:center;background-repeat:no-repeat;background-size:cover;
   transform:translateZ(0);
 }
-html[data-deepsyq-theme="christmas"] body > :is(.content,#sidebar,.ds-site-sidebar,header,main,aside){
+html[data-deepsyq-theme="christmas"] body > .content{
   position:relative;z-index:1;
 }
 html[data-deepsyq-theme="christmas"] :is(
