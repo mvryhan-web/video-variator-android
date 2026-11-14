@@ -88,6 +88,14 @@ try{
           }
           if(mode==='christmas'){
             await page.locator('#dsChristmasBackdrop').waitFor({state:'visible',timeout:5000});
+            // Screenshot only after the actual self-hosted photo is decoded:
+            // first theme selection may download WebP asynchronously on mobile.
+            await page.evaluate(async mobile=>{
+              const img=new Image();
+              img.src='/themes/christmas/winter-'+(mobile?'mobile':'desktop')+'.webp';
+              await img.decode();
+            },isMobile);
+            await page.waitForTimeout(180);
             const winter=await page.locator('#dsChristmasBackdrop').evaluate(el=>getComputedStyle(el).backgroundImage);
             assert.ok(winter.includes(isMobile?'winter-mobile.webp':'winter-desktop.webp'));
             if(name==='home'||name==='jarvix'){
