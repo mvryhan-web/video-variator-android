@@ -21,7 +21,7 @@ import urllib.request
 from PIL import Image, ImageOps, ImageEnhance, UnidentifiedImageError
 
 TARGET = pathlib.Path(".soft-aurora-preview-build/themes/christmas")
-assert TARGET.parent.parent.parent.name == ".soft-aurora-preview-build", "Output must stay isolated"
+assert TARGET.parents[1].name == ".soft-aurora-preview-build", "Output must stay isolated"
 TARGET.mkdir(parents=True, exist_ok=True)
 
 PHOTOS = [
