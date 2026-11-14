@@ -65,6 +65,7 @@ def approved_new_assets(paths):
     return frozenset()
 
 HASH_REUSE_RELEASE_SETS = (
+    QUICK_START_ART_V3 | {"home-inspiration.js"},
     QUICK_START_V3_RELEASE,
     frozenset({"account-settings.html"}),
     ACCOUNT_AND_DIRECTOR_RELEASE,
