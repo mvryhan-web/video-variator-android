@@ -195,7 +195,8 @@ html[data-soft-aurora] :is(
 ){transition-duration:.2s!important;transition-timing-function:ease-out!important;}
 /* Test-only appearance control. It does not interfere with existing navigation. */
 #saThemeSwitch{
-  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  position:fixed!important;top:88px;right:16px;z-index:9998!important;
+  display:inline-flex!important;visibility:visible!important;opacity:1!important;align-items:center;justify-content:center;gap:7px;
   flex-shrink:0;margin:0 8px;
   padding:7px 10px;border:1px solid var(--sa-border);border-radius:999px;
   color:var(--sa-text);background:var(--sa-card);
@@ -261,7 +262,7 @@ html[data-soft-aurora][data-sa-mode="focus"] :is(
     main.jarvix-chat .j-chat-bottom .jarvix-compose
   ){border-radius:21px!important;min-height:110px!important;padding:13px 14px 11px!important;}
   html[data-soft-aurora] :is(#homeQuickPrompt,#jInput){font-size:16px!important;}
-  #saThemeSwitch{padding:8px;min-width:44px;min-height:44px;font-size:0!important;margin:0 4px;}
+  #saThemeSwitch{top:max(69px,env(safe-area-inset-top) + 58px);right:12px;padding:8px;min-width:44px;min-height:44px;font-size:0!important;margin:0 4px;}
   #saThemeSwitch .sa-dot{width:12px;height:12px;}
 }
 @media(prefers-reduced-motion:reduce){
