@@ -39,11 +39,11 @@
 #profileView p{color:var(--account-muted);font-size:.88rem;line-height:1.45}
 #profileView i{font-style:normal}
 #profileView .account-tile{position:relative;min-width:0;overflow:hidden;padding:clamp(13px,1.4vw,22px);border:1px solid var(--account-line);border-radius:18px;background:radial-gradient(ellipse at 95% 0%,#33145c66,transparent 70%),var(--account-card);box-shadow:inset 0 0 20px #2365cb24}
-#profileView .account-hero{min-height:clamp(170px,13vw,240px);display:flex;align-items:center;border-color:#6b439a}
+#profileView .account-hero{min-height:clamp(170px,13vw,240px);display:flex;align-items:flex-start;border-color:#6b439a}
 #profileView .account-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:right center}
 #profileView .account-tile:has(.account-art)::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#041025 0%,#041025e8 27%,#04102580 56%,#04102512 100%);pointer-events:none}
 #profileView .account-layer{position:relative;z-index:1;width:100%;min-width:0}
-#profileView .account-hero h2{font-size:clamp(1.55rem,3.1vw,3.1rem);line-height:1.07;margin:.32em 0 .15em;letter-spacing:-.035em}
+#profileView .account-hero h2{font-size:clamp(1.55rem,3.1vw,3.1rem);line-height:1.07;margin:0;letter-spacing:-.035em}
 #profileView .account-hero h2 span{background:linear-gradient(90deg,#fff,#8bd9fd 45%,#fa79ef);color:transparent;background-clip:text}
 #profileView #accountHeroSignIn{margin-top:8px}
 #profileView .account-overview{display:grid;grid-template-columns:1fr 3.2fr;align-items:center;gap:12px}
@@ -118,7 +118,10 @@ html[data-theme=light] #profileView .account-overview dd{color:#562784}
 #profileView .account-overview dt{display:flex;align-items:center;gap:7px}
 #profileView .account-overview dt .account-icon{color:var(--account-text)}
 #profileView .account-preferences select{width:100%;text-align:start}
-#profileView .account-privacy .account-actions .account-control{border-radius:10px;flex:1}
+#profileView .account-privacy .account-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+#profileView .account-privacy .account-actions .account-control{box-sizing:border-box;width:100%;border-radius:10px;padding:5px 6px;gap:4px;font-size:.68rem;line-height:1.25;white-space:normal}
+#profileView .account-privacy .account-actions .account-control span{min-width:0;overflow-wrap:anywhere}
+#profileView .account-privacy .account-actions .account-icon{width:13px;height:13px}
 #profileView .account-compare .account-primary{padding-inline:clamp(14px,3vw,38px)}
 #profileView .account-hero .account-art{object-position:72% 47%}
 #profileView .account-membership .account-art{object-position:76% center}
@@ -151,10 +154,9 @@ html[data-theme=light] #profileView .account-overview dd{color:#562784}
 #profileView :is(#accountSummaryStatus,#profileStatus)[data-account-current]::before{content:'';display:inline-block;margin-inline-end:5px;width:7px;height:7px;border-radius:50%;background:#76ff99;box-shadow:0 0 8px #76ff9990;vertical-align:middle}
 html[data-theme=light] #profileView :is(#accountSummaryPlan,#accountSummaryStatus){color:#562784}
 @media(max-width:767px){
- #profileView .account-privacy .account-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
- #profileView .account-privacy .account-actions a{white-space:normal;padding-inline:6px}
- #profileView .account-privacy .account-actions a span{min-width:0;overflow-wrap:anywhere}
- #profileView .account-privacy .account-actions a svg{width:15px;height:15px}
+
+
+
 }
 </style>
 </head>
