@@ -87,7 +87,7 @@ jobs:
             deployments.push(...batch);
             if(batch.length<50)break;
           }
-          const aliasMatches = d => (d.aliases||[]).some(u => String(u).replace(/^https?:\\/\\//,'').replace(/\\/$/,'') === 'test.deepsyq.pages.dev');
+          const aliasMatches = d => (d.aliases||[]).some(u => String(u).replace('https://','').replace('http://','').split('/')[0] === 'test.deepsyq.pages.dev');
           const live=deployments.find(aliasMatches);
           console.log('PREVIEW_DEPLOYMENT_LOOKUP',JSON.stringify({
             count:deployments.length,matched:Boolean(live),
