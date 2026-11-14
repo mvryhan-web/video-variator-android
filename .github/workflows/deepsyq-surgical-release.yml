@@ -183,6 +183,7 @@ jobs:
          github.event.head_commit.message == 'release(Studio): connect composer sphere to JARVIX NEW' ||
          github.event.head_commit.message == 'release(Studio): restore YouTube cover and fit Director sphere' ||
          github.event.head_commit.message == 'release(Studio): use 16 by 9 covers and new composer voice' ||
+         github.event.head_commit.message == 'release(AI Credits): enable Checkout on production aliases' ||
          github.event.head_commit.message == 'release(Account): publish Account and Settings design' ||
          github.event.head_commit.message == 'release(Account): restore original profile on its own page' ||
          github.event.head_commit.message == 'release(Account): separate profile and align Director sphere' ||
@@ -228,6 +229,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(AI Credits): enable Checkout on production aliases' }}" == "true" ]]; then
+            python scripts/deepsyq_surgical_publish.py --mode publish --files "" --commit "$GITHUB_SHA" --credit-worker
+            exit
+          fi
           if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Account): publish Account and Settings design' }}" == "true" ]]; then
             SCOPE_FILES="account-settings.html,media/account-settings/account-hero.webp,media/account-settings/account-membership.webp,media/account-settings/account-android.webp,media/account-settings/account-pricing.webp"
           fi

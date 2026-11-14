@@ -549,7 +549,7 @@ export default {
 
     if (pathname === '/api/ai-billing/config') {
       const stripeKey = String(env.STRIPE_SECRET_KEY || '').trim();
-      const isLiveKey = url.hostname==='deepsyq.app' && /^(sk_live_|rk_live_)/.test(stripeKey);
+      const isLiveKey = ['deepsyq.app','www.deepsyq.app'].includes(url.hostname) && /^(sk_live_|rk_live_)/.test(stripeKey);
       const isTestKey = /^(sk_test_|rk_test_)/.test(stripeKey);
       let enabled=false;
       let reason='PAYMENTS_NOT_ACTIVATED';
@@ -577,7 +577,7 @@ export default {
     if (pathname === '/api/ai-billing/checkout' && request.method === 'POST') {
       const user = await getAuthenticatedUser(request, env);
       const stripeKey = String(env.STRIPE_SECRET_KEY || '').trim();
-      const expectedKey=url.hostname==='deepsyq.app'?/^(sk|rk)_live_/:/^(sk|rk)_test_/;
+      const expectedKey=['deepsyq.app','www.deepsyq.app'].includes(url.hostname)?/^(sk|rk)_live_/:/^(sk|rk)_test_/;
       if (!expectedKey.test(stripeKey)) {
         return json({ error: 'PAYMENTS_NOT_ACTIVATED' }, 503);
       }
