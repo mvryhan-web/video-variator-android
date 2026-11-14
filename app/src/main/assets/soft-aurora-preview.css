@@ -1,6 +1,6 @@
 /* DEEPSYQ Themes V1 — DESIGN PREVIEW ONLY. Existing page layouts/functions are preserved.
    Original intentionally has no palette override: render original production CSS. */
-html[data-deepsyq-theme]:not([data-deepsyq-theme="original"]){
+html:where([data-deepsyq-theme]:not([data-deepsyq-theme="original"])){
   color-scheme:dark;
   --dt-bg:#151d27; --dt-nav:#18212c; --dt-card:#202b37; --dt-field:#273442;
   --dt-text:#f1f2ee; --dt-muted:#bbc5cb; --dt-accent:#a5c7c3; --dt-border:#45515e;
