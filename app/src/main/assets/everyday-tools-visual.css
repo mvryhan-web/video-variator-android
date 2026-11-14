@@ -94,7 +94,7 @@ body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] 
 .et-hero-copy{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 @media(max-width:700px){.et-hero{height:clamp(125px,22vw,205px);min-height:125px}.et-hero .et-hero-art{min-width:650px;left:0}}
 
-/* Owner 2026-11-14: restore subject placement inside ONLY seven nominated tool cards.
+/* Owner 2026-11-14: restore subject placement inside ONLY seven nominated tool cards. Final visual tuning release.
    Four subjects needed the stronger left shift; Compress Video, Teleprompter and
    Video Uniquifier require a gentler shift to avoid empty right-side margins.
    Text, layout, links, tool functions and other illustrations remain unchanged. */
