@@ -93,7 +93,7 @@ function rememberTurn(message,reply){
 }
 let transcriptWrap=null,transcriptText=null,transcriptReply=null,heardText='',heardIsFinal=false,botReplyText='';
 let micPulseRms=0,recognizedPulseTimer=null;
-let monitorStream=null,monitorContext=null,monitorAnalyser=null,monitorTimer=null,monitorSamples=null;
+let monitorContext=null;
 let ownerWebSource=null,playbackAbort=null;
 const Recognition=()=>window.SpeechRecognition||window.webkitSpeechRecognition;
 const MICROPHONE_STATES={
@@ -184,7 +184,6 @@ function ensureAudioContextFromGesture(){
 // pulse on a REAL partial recognition result instead. Never pulse merely
 // because "listening" is shown or because a timer elapsed.
 function pulseOnRecognizedWords(){
- if(monitorAnalyser&&monitorContext?.state==='running')return;
  if(recognizedPulseTimer!==null){
   clearTimeout(recognizedPulseTimer);recognizedPulseTimer=null;
  }
@@ -202,46 +201,9 @@ function stopMicMonitor(){
   clearTimeout(recognizedPulseTimer);recognizedPulseTimer=null;
  }
  micPulseRms=0;
- if(monitorTimer!==null){clearInterval(monitorTimer);monitorTimer=null;}
- if(monitorStream){
-  try{monitorStream.getTracks().forEach(track=>track.stop());}catch{}
-  monitorStream=null;
- }
  try{monitorContext?.close?.();}catch{}
- monitorContext=null;monitorAnalyser=null;monitorSamples=null;
+ monitorContext=null;
  updateSphereFromMicrophone(0);
-}
-function startMicMonitor(stream){
- if(monitorTimer!==null){clearInterval(monitorTimer);monitorTimer=null;}
- if(monitorStream&&monitorStream!==stream){
-  try{monitorStream.getTracks().forEach(t=>t.stop());}catch{}
- }
- monitorStream=stream;
- if(!monitorContext)return;
- try{
-  const source=monitorContext.createMediaStreamSource(stream);
-  monitorAnalyser=monitorContext.createAnalyser();
-  monitorAnalyser.fftSize=512;
-  source.connect(monitorAnalyser); // NOT connected to speakers.
-  monitorSamples=new Uint8Array(monitorAnalyser.fftSize);
-  Promise.resolve(monitorContext.resume?.()).catch(()=>{});
-  monitorTimer=setInterval(()=>{
-   if(!on||micStage!=='listening'||!monitorAnalyser){
-    updateSphereFromMicrophone(0);
-    return;
-   }
-   monitorAnalyser.getByteTimeDomainData(monitorSamples);
-   let sum=0;
-   for(const value of monitorSamples){
-    const centered=(value-128)/128;
-    sum+=centered*centered;
-   }
-   updateSphereFromMicrophone(Math.sqrt(sum/monitorSamples.length));
-  },65);
- }catch{
-  try{monitorContext?.close?.();}catch{}
-  monitorContext=null;monitorAnalyser=null;monitorSamples=null;
- }
 }
 function ui(stage='idle'){
  micStage=stage;
@@ -279,6 +241,8 @@ function cancelRecognition(){
 function stop(){
  on=false;seq++;
  cancelRecognition();
+ releaseLocalCapture();
+ localWorker?.terminate();localWorker=null;
  if(ownerClip){try{ownerClip.pause();ownerClip.currentTime=0;}catch{}ownerClip=null;}
  if(ownerWebSource){try{ownerWebSource.stop();}catch{}ownerWebSource=null;}
  if(playbackAbort){try{playbackAbort.abort();}catch{}playbackAbort=null;}
@@ -291,7 +255,7 @@ function stop(){
 }
 function resumeMicrophone(){
  if(!on)return void start();
- if(micStage==='listening')return;
+ if(['listening','starting','thinking','speaking'].includes(micStage))return;
  ensureAudioContextFromGesture();
  if(ownerClip){try{ownerClip.pause();ownerClip.currentTime=0;}catch{}ownerClip=null;}
  if(ownerWebSource){try{ownerWebSource.stop();}catch{}ownerWebSource=null;}
@@ -350,6 +314,8 @@ async function playOwnerUsingUnlockedAudio(record,id){
 }
 async function playOwnerRecording(record,id,timeoutMs=0,allowFallback=!timeoutMs){
  if(!record?.audioUrl||!on||seq!==id)return false;
+ releaseLocalCapture();
+ cancelRecognition();
  return new Promise(resolve=>{
   // The original hosted MP3 is used unchanged. Never synthesize or substitute text.
   const audio=new Audio(record.audioUrl);
@@ -387,7 +353,96 @@ async function playOwnerRecording(record,id,timeoutMs=0,allowFallback=!timeoutMs
  });
 }
 const recordedLanguage=()=>getLang().lang.slice(0,2);
+
+const useLocalRecognition=()=>navigator.maxTouchPoints>0&&
+ (matchMedia('(pointer: coarse)').matches||/Android|iPhone|iPad/i.test(navigator.userAgent));
+let localWorker=null,localCapture=null;
+function releaseLocalCapture(){
+ if(!localCapture)return;
+ const capture=localCapture;
+ localCapture=null;
+ clearTimeout(capture.timeout);
+ capture.processor?.disconnect();
+ capture.source?.disconnect();
+ capture.stream?.getTracks().forEach(track=>track.stop());
+}
+async function listenLocally(id){
+ if(!on||seq!==id||localCapture)return;
+ const capture={};
+ localCapture=capture;
+ setTranscript('');
+ ui('starting');
+ try{
+  const ctx=ensureAudioContextFromGesture();
+  if(!ctx||!navigator.mediaDevices?.getUserMedia)throw Error('MIC_UNAVAILABLE');
+  const stream=await navigator.mediaDevices.getUserMedia({audio:{
+   echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  if(localCapture!==capture||!on||seq!==id){stream.getTracks().forEach(track=>track.stop());return;}
+  capture.stream=stream;
+  capture.timeout=setTimeout(()=>{
+   if(localCapture===capture){releaseLocalCapture();ui('ready');}
+  },20000);
+  await ctx.resume();
+  if(localCapture!==capture)return;
+  const source=ctx.createMediaStreamSource(stream);
+  const processor=ctx.createScriptProcessor(2048,1,1);
+  capture.source=source;
+  capture.processor=processor;
+  const chunks=[];
+  let duration=0,quiet=0,voiced=0;
+  const finish=async()=>{
+   releaseLocalCapture();
+   if(voiced<.18){ui('ready');return;}
+   ui('thinking');
+   try{
+    const count=chunks.reduce((n,chunk)=>n+chunk.length,0);
+    const pcm=new Float32Array(count);
+    let offset=0;
+    for(const chunk of chunks){pcm.set(chunk,offset);offset+=chunk.length;}
+    const Offline=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+    const resampler=new Offline(1,Math.ceil(count*16000/ctx.sampleRate),16000);
+    const buffer=resampler.createBuffer(1,count,ctx.sampleRate);
+    buffer.copyToChannel(pcm,0);
+    const node=resampler.createBufferSource();
+    node.buffer=buffer;node.connect(resampler.destination);node.start();
+    const samples=(await resampler.startRendering()).getChannelData(0);
+    if(!on||seq!==id)return;
+    localWorker??=new Worker('/transcribe-worker.js',{type:'module'});
+    localWorker.onmessage=({data})=>{
+     if(!on||seq!==id)return;
+     if(data.type==='error'){ui('error');return;}
+     if(data.type!=='result')return;
+     const text=String(data.result?.text||'').trim();
+     if(text){setTranscript(text,true);void respond(text,id);}
+     else ui('ready');
+    };
+    localWorker.onerror=()=>{if(on&&seq===id)ui('error');};
+    localWorker.postMessage({samples,language:recordedLanguage()},[samples.buffer]);
+   }catch{if(on&&seq===id)ui('error');}
+  };
+  processor.onaudioprocess=event=>{
+   if(localCapture!==capture)return;
+   const data=event.inputBuffer.getChannelData(0);
+   const seconds=data.length/ctx.sampleRate;
+   const rms=Math.sqrt(data.reduce((sum,x)=>sum+x*x,0)/data.length);
+   if(rms>.018){voiced+=seconds;quiet=0;}else quiet+=seconds;
+   duration+=seconds;
+   chunks.push(new Float32Array(data));
+   if(!voiced&&chunks.length>Math.ceil(.32/seconds))chunks.shift();
+   if(micStage!=='listening')ui('listening');
+   updateSphereFromMicrophone(rms);
+   if((voiced>=.18&&quiet>=.85)||duration>=18||(!voiced&&duration>=8))void finish();
+  };
+  source.connect(processor);
+  // The processor emits silence; microphone samples never reach the speakers.
+  processor.connect(ctx.destination);
+ }catch{
+  if(localCapture===capture){releaseLocalCapture();ui('error');}
+ }
+}
+
 function listen(id){
+ if(useLocalRecognition()){void listenLocally(id);return;}
  if(!on||seq!==id)return;
  const SR=Recognition();
  if(!SR){ui('unsupported');return;}
@@ -416,10 +471,7 @@ function listen(id){
    if(on&&seq===id)listen(id);
   },Math.min(1200,350+200*micFailures));
  };
- r.onstart=()=>{
-  if(!on||seq!==id||rec!==r)return;
-  ui('listening'); // Native recognition onstart, not just mic permission.
- };
+ r.onaudiostart=()=>{if(on&&seq===id&&rec===r)ui('listening');};
  r.onspeechstart=()=>{if(on&&seq===id&&rec===r)ui('listening');};
  r.onresult=event=>{
   if(!on||seq!==id||processed||rec!==r)return;
@@ -445,7 +497,7 @@ function listen(id){
   if(!hasFinal||!allFinal)return;
   processed=true;
   r.onend=null;
-  try{r.stop();}catch{}
+  try{r.abort();}catch{}
   if(rec===r)rec=null;
   void respond(combined,id);
  };
@@ -635,7 +687,7 @@ async function respond(message,id){
   location.assign(new URL(destination,location.origin+'/'));
   return;
  }
- if(isGreetingOnly(message,lang)){
+ if(!production&&isGreetingOnly(message,lang)){
   listen(id);
   return;
  }
@@ -685,20 +737,11 @@ async function respond(message,id){
 }
 async function start({greet=true}={}){
  if(on){stop();return;}
- if(!Recognition()){on=true;ui('unsupported');return;}
- if(!navigator.mediaDevices?.getUserMedia){on=true;ui('error');return;}
+ if(!useLocalRecognition()&&!Recognition()){on=true;ui('unsupported');return;}
  on=true;const id=++seq;setTranscript('');ui('starting');
- ensureAudioContextFromGesture(); // synchronous mobile click, before await
- try{
-  const stream=await navigator.mediaDevices.getUserMedia({audio:{
-   echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-  if(!on||seq!==id){stream.getTracks().forEach(track=>track.stop());return;}
-  startMicMonitor(stream);
- }catch{if(on&&seq===id)ui('error');return;}
- if(!on||seq!==id)return;
- if(greet){
-  const language=recordedLanguage();
-  const greeting=await helloRecording(language).catch(()=>null);
+ ensureAudioContextFromGesture();
+ if(greet&&!production){
+  const greeting=await helloRecording(recordedLanguage()).catch(()=>null);
   if(on&&seq===id)await playOwnerRecording(greeting,id,3000,true);
  }
  if(on&&seq===id)listen(id);
