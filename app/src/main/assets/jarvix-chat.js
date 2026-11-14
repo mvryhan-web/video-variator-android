@@ -467,7 +467,7 @@ function generationPlanNotice(mode){
 const imageIntakeQuery = new URLSearchParams(location.search);
 const intakeMode = imageIntakeQuery.get('mode');
 const imageIntakeEnabled = ['image','video'].includes(intakeMode) && imageIntakeQuery.get('jarvixImage') === '1';
-const imageRatios = /(?<!\d)(?:1\s*[:xх×]\s*1|16\s*[:xх×]\s*9|9\s*[:xх×]\s*16|4\s*[:xх×]\s*3|3\s*[:xх×]\s*4)(?!\d)/iu;
+const imageRatios = /(?<!\d)(?:1\s*[:xх×]\s*1|16\s*(?:[:xх×]|на)\s*9|9\s*[:xх×]\s*16|4\s*[:xх×]\s*3|3\s*[:xх×]\s*4)(?!\d)/iu;
 const imageIntakeReply = text => ({id:makeId(),role:'assistant',text,createdAt:Date.now()});
 async function prepareImageIntake(message, intake){
  const text=message.text.trim();
@@ -478,7 +478,7 @@ async function prepareImageIntake(message, intake){
  delete intake.approval;
  const format=text.match(imageRatios)?.[0];
  const stories=/(?:^|\s)для\s+сторис(?=\s|[,.!?]|$)/iu;
- if(format)intake.ratio=format.replace(/\s/g,'').replace(/[xх×]/giu,':');
+ if(format)intake.ratio=format.replace(/\s/g,'').replace(/на|[xх×]/giu,':');
  else if(stories.test(text))intake.ratio='9:16';
  const duration=intake.kind==='video'?text.match(/(?:^|\s)(\d{1,2})\s*(?:секунд[уы]?|сек\.?|seconds?)(?=\s|[,.!?]|$)/iu):null;
  if(duration)intake.duration=Number(duration[1]);
@@ -561,7 +561,14 @@ function requestedChatMedia(message){
 
 async function processMessage(message){
  let mode, textChat=false;
- const greeting=(!conversation.imageIntake||conversation.imageIntake.autoLaunch)&&localStorage.getItem('vv_token')?localGreeting(message,getJarvixLanguage()):null;
+ const production=['deepsyq.app','www.deepsyq.app'].includes(location.hostname);
+ const before=conversation.messages.slice(0,conversation.messages.indexOf(message));
+ const previousAnswer=before.at(-1),previousRequest=before.at(-2);
+ const copiedPrompt=previousAnswer?.role==='assistant'&&previousRequest?.role==='user'&&
+  message.text.trim().length>=16&&previousAnswer.text?.includes(message.text.trim())&&requestedChatMedia(previousRequest);
+ const request=production&&(requestedChatMedia(message)|| (copiedPrompt?{...copiedPrompt,text:message.text.trim()}:null));
+ const waitingForDetails=request&&/^(?:(?:я\s+)?хочу\s+(?:создать\s+)?|(?:мне\s+)?нужн[аоы]?\s+|(?:создай|сделай|сгенерируй|create|generate)\s+)(?:мне\s+)?(?:фото|фотографию|картинку|изображение|видео|ролик|аудио|mp3|музыку|трек|image|photo|video|audio|music)[.!?…]*$/iu.test(request.text);
+ const greeting=!request&&(!conversation.imageIntake||conversation.imageIntake.autoLaunch)&&localStorage.getItem('vv_token')?localGreeting(message,getJarvixLanguage()):null;
  if(!greeting){message.status='processing';await save();render();}
  try{
   if(greeting){
@@ -578,7 +585,7 @@ async function processMessage(message){
    await saveStudioHandoff({kind:'image',prompt:lastImage.imageRecipe?.description||'Canvas',files:[image],target:'canvas',source:'jarvix-chat'});
    store.guard();message.status='sent';await save();location.assign('canvas.html?from=jarvix-image');return;
   }
-  const knowledge=!(message.files||[]).length?siteKnowledge(message.text):null;
+  const knowledge=!request&&!(message.files||[]).length?siteKnowledge(message.text):null;
   if(knowledge){
    message.status='sent';
    conversation.messages.push({...imageIntakeReply(knowledge[1]),siteLink:knowledge[2]});
@@ -593,23 +600,22 @@ async function processMessage(message){
    return;
   }
   let preparedImage;
+  if(waitingForDetails){
+   conversation.imageIntake={kind:request.kind,autoLaunch:true};
+   setChatHeaderMode(request.kind);
+   window.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode:request.kind}}));
+   message.status='sent';
+   conversation.messages.push(imageIntakeReply(request.kind==='audio'?'Какое аудио создать?':request.kind==='video'?'Какое видео создать? Опишите сцену и формат.':'Какое изображение создать? Опишите сюжет и формат.'));
+   await save();return;
+  }
   if(!conversation.imageIntake&&lastImage?.imageRecipe&&/^(?:сделай (?:её|ее|картинку) (?:светлее|темнее)|оставь тот же стиль|добавь)(?=\s|[.!?]|$)/iu.test(message.text.trim())){
    conversation.imageIntake={...lastImage.imageRecipe};
   }
   const pendingTool=conversation.imageIntake?.autoLaunch&&extractAction(message.text.trim().replace(/^(?:(?:слушай|джарвис|джарвикс|jarvis|jarvix)[,\s:]+)+/iu,''));
-  if(conversation.imageIntake&&pendingTool?.intent!=='NAVIGATE'&&(message.voiceFollowUp||['auto','image','video','audio'].includes(message.mode)||lastImage?.imageRecipe)){
+  if(!request&&conversation.imageIntake&&pendingTool?.intent!=='NAVIGATE'&&(message.voiceFollowUp||['auto','image','video','audio'].includes(message.mode)||lastImage?.imageRecipe)){
    const result=await prepareImageIntake(message,conversation.imageIntake);
    if(typeof result==='string'){
     message.status='sent';conversation.messages.push(imageIntakeReply(result));await save();render();return;
-   }
-   if(conversation.imageIntake.autoLaunch){
-    const kind=conversation.imageIntake.kind;
-    await saveStudioHandoff({kind:kind==='audio'?'music':kind,prompt:result.prompt,settings:{...(result.ratio?{ratio:result.ratio}:{}),...(conversation.imageIntake.duration?{videoDuration:conversation.imageIntake.duration}:{})},source:'jarvix-media-intake'});
-    store.guard();
-    delete conversation.imageIntake;
-    message.status='sent';await save();
-    location.assign('/generate-studio.html?studio='+kind);
-    return;
    }
    preparedImage=result;
   }
@@ -623,34 +629,9 @@ async function processMessage(message){
    const response={id:makeId(),role:'assistant',text:label,toolAction:{kind:'navigate',target:command.target,url:command.url},createdAt:Date.now()};
    message.status='sent';conversation.messages.push(response);await save();render();store.guard();openWorkspace(command.url,command.target);return;
   }
-  if(!preparedImage&&!conversation.imageIntake&&['deepsyq.app','www.deepsyq.app'].includes(location.hostname)){
-   const before=conversation.messages.slice(0,conversation.messages.indexOf(message));
-   const previousAnswer=before.at(-1);
-   const previousRequest=before.at(-2);
-   const copiedPrompt=previousAnswer?.role==='assistant'&&previousRequest?.role==='user'&&
-    message.text.trim().length>=16&&previousAnswer.text?.includes(message.text.trim())&&requestedChatMedia(previousRequest);
-   const request=requestedChatMedia(message)||(copiedPrompt?{...copiedPrompt,text:message.text.trim()}:null);
-   if(request){
-    const {kind,text,ratio}=request;
-    if(!localStorage.getItem('vv_token'))throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED'});
-    setChatHeaderMode(kind);
-    window.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode:kind}}));
-    if(/^(?:(?:я\s+)?хочу\s+(?:создать\s+)?|(?:мне\s+)?нужн[аоы]?\s+|(?:создай|сделай|сгенерируй|create|generate)\s+)(?:мне\s+)?(?:фото|фотографию|картинку|изображение|видео|ролик|аудио|mp3|музыку|трек|image|photo|video|audio|music)[.!?…]*$/iu.test(text)){
-     conversation.imageIntake={kind,autoLaunch:true};
-     message.status='sent';
-     conversation.messages.push(imageIntakeReply(kind==='audio'?'Какое аудио создать? Опишите жанр и содержание.':kind==='video'?'Какое видео создать? Опишите сцену, стиль и формат.':'Какое изображение создать? Опишите сюжет, стиль и формат.'));
-     await save();render();return;
-    }
-    const duration=kind==='video'?text.match(/(?:^|\s)(\d{1,2})\s*(?:секунд[уы]?|сек\.?|seconds?)(?=\s|[,.!?]|$)/iu)?.[1]:null;
-    const target=kind==='audio'?'music':kind;
-    await saveStudioHandoff({kind:target,prompt:text.slice(0,2000),files:message.files||[],settings:{...(ratio&&kind!=='audio'?{ratio}:{}),...(duration?{videoDuration:Number(duration)}:{}),...(kind==='audio'?{musicMode:/озвуч|диктор|voiceover/iu.test(text)?'voice':/инструментал|без слов|instrumental/iu.test(text)?'instrumental':'song'}:{})},source:'jarvix-media-intake'});
-    store.guard();message.status='sent';await save();
-    location.assign('/generate-studio.html?studio='+kind);
-    return;
-   }
-  }
   const mediaCommand=command?.intent==='GENERATE_MEDIA'&&['image','video'].includes(command.target);
-  mode=preparedImage?'image':mediaCommand?command.target:resolveMode(message.text,message.mode);
+  const realMedia=production&&(request||(preparedImage&&conversation.imageIntake?.autoLaunch));
+  mode=request?.kind||(preparedImage?(conversation.imageIntake?.kind||'image'):mediaCommand?command.target:resolveMode(message.text,message.mode));
   if(message.mode==='auto'&&mode==='text'&&/измен|сделай.*(ярче|темнее)|ещё|change|brighter|darker|modifier|cambiar/i.test(message.text)){const previous=[...conversation.messages].reverse().find(m=>m.role==='assistant'&&m.jobId);if(previous)mode=previous.kind;}
   let answer;
   const rawText = String(message.text || '').trim();
@@ -666,7 +647,7 @@ async function processMessage(message){
   const imageIntentText = rawText.replace(/^(?:(?:слушай|смотри|эй|джарвис|джарвикс|jarvix|jarvis|пожалуйста|hey|please)[,\s:]+)+/iu, '').trim();
   const explicitImageEdit = /^(?:измени|отредактируй|перерисуй|добавь|убери|удали|замени|осветли|затемни|edit|modify|change|add|remove|replace|ajoute|modifie|supprime|edita|cambia|quita)(?![\p{L}\p{N}_])/iu.test(imageIntentText);
   const explicitImageRequest = explicitImageEdit || /^(?:сгенерируй|нарисуй|создай|сделай|generate|create|draw|make|render|хочу\s+(?:создать|сгенерировать|нарисовать)|(?:можешь|можете|можно)\s+(?:создать|сгенерировать|нарисовать|сделать|изменить)|(?:can|could|would)\s+you\s+(?:create|generate|draw|make|edit)|génère|crée|crea|genera)(?![\p{L}\p{N}_])/iu.test(imageIntentText);
-  const shouldGenerateMedia = message.mode==='text'?false:mode==='image'
+  const shouldGenerateMedia = realMedia || (message.mode==='text'?false:mode==='image'
    ? Boolean(mediaCommand || message.action?.intent==='GENERATE_MEDIA' || explicitImageRequest)
    : mediaCommand || isModeSelected || (!isAdviceOrQuestion && (
    isExplicitGen ||
@@ -674,7 +655,7 @@ async function processMessage(message){
    (message.action?.intent === 'GENERATE_MEDIA') ||
    (command?.intent === 'GENERATE_MEDIA' && !/(?:^|[^a-zа-яё0-9])(как|дела|привет|что)/iu.test(rawText)) ||
    /(?:картинку?|фото|изображени[ея]|рисунок|видео|клип|ролик|музык[уа]|трек|песн[юя]|soundtrack|song|track)\b/iu.test(cleanedText)
-  ));
+  )));
 
   if(!shouldGenerateMedia&&!preparedImage){
    textChat=true;
@@ -741,7 +722,7 @@ async function processMessage(message){
    setChatHeaderMode(mode);
    window.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode}}));
    try{sessionStorage.setItem('jarvix_composer_mode',mode);}catch(_){}
-   if(mediaCommand&&!command.raw_prompt.replace(/[.!?…]/gu,'').trim()){
+   if(!realMedia&&mediaCommand&&!command.raw_prompt.replace(/[.!?…]/gu,'').trim()){
     const access=await api('/api/studio/access');
     if(access.scope!=='owner'&&(await api('/api/ai-wallet/balance')).available===0)throw Object.assign(Error('INSUFFICIENT_AI_CREDITS'),{code:'INSUFFICIENT_AI_CREDITS'});
     const copy={
@@ -754,15 +735,22 @@ async function processMessage(message){
     conversation.messages.push({id:makeId(),role:'assistant',text:copy[getJarvixLanguage()]||copy.en,createdAt:Date.now()});
     await save();render();return;
    }
+   if(realMedia&&!localStorage.getItem('vv_token'))throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED'});
+   if(realMedia&&mode==='audio')throw Error(getJarvixLanguage()==='ru'?'Генерация аудио пока недоступна.':'Audio generation is currently unavailable.');
+   if(realMedia&&(message.files||[]).length)throw Error(getJarvixLanguage()==='ru'?'Эта модель принимает только текст. Для генерации уберите вложение.':'This model accepts text only. Remove the attachment to generate.');
    config=config||await api('/api/studio/config');
    // Fail closed outside the isolated zero-spend preview. Production launch remains in Studio's existing consent/payment flow.
-   if(config.previewOnly!==true||config.outputMode!=='local-demo')throw Error('Generation here is limited to TEST demo mode. Open the existing Studio to review model, consent and cost.');
-   const kind=mode==='audio'?'music':mode,model=message.action?resolveActionModel(message.action,config.models):(config.models||[]).find(m=>m.enabled&&m.kind===kind);
+   if(!realMedia&&(config.previewOnly!==true||config.outputMode!=='local-demo'))throw Error('Generation here is limited to TEST demo mode. Open the existing Studio to review model, consent and cost.');
+   const kind=mode==='audio'?'music':mode;
+   const liveModel=kind==='image'?'wan2.1-t2i-turbo':'wan2.1-t2v-turbo';
+   const model=realMedia?(config.models||[]).find(m=>m.enabled&&m.adapter&&m.kind===kind&&m.id===liveModel):message.action?resolveActionModel(message.action,config.models):(config.models||[]).find(m=>m.enabled&&m.kind===kind);
    if(!model)throw Error('No model is available for this mode.');
    const parameters=preparedImage?{ratio:preparedImage.ratio}:message.action?{...(message.action.aspect_ratio?{ratio:message.action.aspect_ratio}:{}),...(message.action.duration?{videoDuration:message.action.duration}:{})}:{};
    if(mode==='image'||mode==='video'){
-    const requestedRatio=parameters.ratio||String(message.text||'').match(/(?<!\d)(?:16:9|9:16|1:1|4:3|3:4|4:5|3:2|2:3|21:9)(?!\d)/)?.[0];
+    const requestedRatio=request?.ratio||parameters.ratio||String(message.text||'').match(/(?<!\d)(?:16:9|9:16|1:1|4:3|3:4|4:5|3:2|2:3|21:9)(?!\d)/)?.[0];
     parameters.ratio=generationRatio(mode,requestedRatio);
+    if(realMedia&&!model.ratios?.includes(parameters.ratio))throw Error(getJarvixLanguage()==='ru'?'Модель не поддерживает этот формат.':'This model does not support that aspect ratio.');
+    if(realMedia&&mode==='video')parameters.videoDuration=5;
     pendingMediaFrame={messageId:message.id,kind:mode,ratio:parameters.ratio};
     render();
    }
@@ -774,13 +762,18 @@ async function processMessage(message){
    if(walletQuote){
     if(quote.walletQuote!==walletQuote||quote.kind!==kind||quote.model!==model.id||quote.quantity!==1||
        !Number.isSafeInteger(quote.credits)||quote.credits<1)throw Error('AI_CREDIT_QUOTE_INVALID');
+    if(realMedia&&quote.ownerAccess!==true&&!window.confirm(getJarvixLanguage()==='ru'
+      ? 'Запустить генерацию за '+quote.credits+' AI-кредитов?'
+      : 'Start generation for '+quote.credits+' AI credits?')){
+     pendingMediaFrame=null;message.status='sent';await save();return;
+    }
     if(quote.ownerAccess!==true){
      const balance=await api('/api/ai-wallet/balance');
      if(balance.available<quote.credits)throw Object.assign(Error('INSUFFICIENT_AI_CREDITS'),{code:'INSUFFICIENT_AI_CREDITS'});
     }
    }else if(quote.previewOnly!==true||Number(quote.cost)!==0)throw Error('Zero-cost TEST estimate could not be verified.');
    const approval=JSON.stringify([model.id,parameters.ratio,walletQuote,quote.credits??0,quote.ownerAccess===true]);
-   if(preparedImage&&(!preparedImage.confirmed||preparedImage.approval!==approval)){
+   if(!realMedia&&preparedImage&&(!preparedImage.confirmed||preparedImage.approval!==approval)){
     conversation.imageIntake.approval=approval;
     pendingMediaFrame=null;
     message.status='sent';
@@ -789,9 +782,9 @@ async function processMessage(message){
     await save();render();return;
    }
    const imageRecipe=preparedImage?{description:conversation.imageIntake.description,ratio:parameters.ratio}:null;
-   const d=await api('/api/studio/jobs',{kind,model:model.id,prompt:preparedImage?.prompt||(mediaCommand?command.raw_prompt:message.text),quantity:1,requestId:message.id,
+   const d=await api('/api/studio/jobs',{kind,model:model.id,prompt:preparedImage?.prompt||request?.text||(mediaCommand?command.raw_prompt:message.text),quantity:1,requestId:message.id,
     consent:Boolean(walletQuote),...(walletQuote?{walletQuote,expectedCredits:quote.credits}:{}),...parameters});
-   if(preparedImage)delete conversation.imageIntake;
+   if(preparedImage||realMedia)delete conversation.imageIntake;
    if(message.voiceAction)speakJarvis({ru:'Запустил',en:'Started',fr:'Lancé',es:'Iniciado'}[getJarvixLanguage()]||'Started');
    const resultLabel = ({ru:'Результат генерации · ',en:'Generation result · ',fr:'Résultat de génération · ',es:'Resultado de generación · '}[getJarvixLanguage()]||'Generation result · ') + mode;
    answer={id:makeId(),role:'assistant',text:resultLabel,jobId:d.jobId||d.id,status:d.status,kind:mode,ratio:parameters.ratio,...(imageRecipe?{imageRecipe}:{}),demo:false,createdAt:Date.now()};
@@ -827,7 +820,7 @@ async function processMessage(message){
     $('jStatus').append(signIn);
     return;
    }
-   status(e.message);if(message.voiceAction)speakJarvis(/credit|balance/i.test(e.message)?'Недостаточно кредитов':'Уточните промпт');const link=node('button','Open request in Studio');link.type='button';link.onclick=async()=>{const mode=resolveMode(message.text,message.mode),kind=mode==='audio'?'music':mode==='text'?'image':mode;const files=(message.files||[]).filter(f=>['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024);try{await saveStudioHandoff({kind,prompt:message.text,files,source:'jarvix-chat'});location.assign('jarvix-chat.html?mode='+(kind==='music'?'audio':kind)+'&prompt='+encodeURIComponent(message.text||''));}catch(e){status(e.message);}};$('jStatus').append(link);
+   status(e.message);if(request||production&&conversation.imageIntake?.autoLaunch)return;if(message.voiceAction)speakJarvis(/credit|balance/i.test(e.message)?'Недостаточно кредитов':'Уточните промпт');const link=node('button','Open request in Studio');link.type='button';link.onclick=async()=>{const mode=resolveMode(message.text,message.mode),kind=mode==='audio'?'music':mode==='text'?'image':mode;const files=(message.files||[]).filter(f=>['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024);try{await saveStudioHandoff({kind,prompt:message.text,files,source:'jarvix-chat'});location.assign('jarvix-chat.html?mode='+(kind==='music'?'audio':kind)+'&prompt='+encodeURIComponent(message.text||''));}catch(e){status(e.message);}};$('jStatus').append(link);
   }if(e.name==='AbortError')throw e;}
 }
 const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onMode:(m)=>{
@@ -969,6 +962,7 @@ async function applyIncomingHandoffOrTemplate() {
   if (!incomingPrompt) {
     try {
       const handoff = await takeStudioHandoff();
+      if (handoff?.source === 'jarvix-media-intake') return;
       if (handoff) {
         if (handoff.prompt) incomingPrompt = String(handoff.prompt).trim();
         if (handoff.kind) incomingMode = handoff.kind;

@@ -71,6 +71,7 @@ def approved_new_assets(paths):
 
 HASH_REUSE_RELEASE_SETS = (
     frozenset({"jarvix-chat.js", "jarvis-core.js", "generate-studio.js"}),
+    frozenset({"jarvix-chat.js", "jarvix-chat.html"}),
     frozenset({"canvas.html", "canvas-workspace.js"}),
     frozenset({"jarvix-chat.js", "jarvix-new-voice.js", "generate-studio.js", "jarvix-guided-tour.js", "auth-email.js", "app-v4.js", "jarvix-action-plan.js"}),
     ACCOUNT_DESIGN_RELEASE,
