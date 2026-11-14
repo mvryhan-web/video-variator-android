@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `55103ef5e6e7b06c145f8cf5d1c1471bedded13c`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `20d8782104db1549e4a20b46b8fd40937d7d6999`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 126 | Named symbols: 456 | Checked relations: 80
 
 ## Topic finder (matching filenames)
@@ -20,7 +20,7 @@ Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code 
 
 ## Frontend page inventory (filenames only, not Graphify AST)
 
-`app/src/main/assets/404.html` · `app/src/main/assets/ai-agents.html` · `app/src/main/assets/ai-apps.html` · `app/src/main/assets/ai-pricing.html` · `app/src/main/assets/ai-privacy.html` · `app/src/main/assets/audio-studio.html` · `app/src/main/assets/avatar-studio.html` · `app/src/main/assets/canvas.html` · `app/src/main/assets/compare-ai.html` · `app/src/main/assets/contact.html` · `app/src/main/assets/cookie.html` · `app/src/main/assets/deepsyq-admin.html` · `app/src/main/assets/deepsyq-vs-deepseek.html` · `app/src/main/assets/deepsyq.html` · `app/src/main/assets/design-gallery.html` · `app/src/main/assets/free-tools.html` · `app/src/main/assets/generate-studio.html` · `app/src/main/assets/index.html` · `app/src/main/assets/jarvix-chat.html` · `app/src/main/assets/jarvix-studio.html` · `app/src/main/assets/jarvix.html` · `app/src/main/assets/mobile-utility.html` · `app/src/main/assets/my-creations.html` · `app/src/main/assets/photo-collage.html` · `app/src/main/assets/pricing.html` · `app/src/main/assets/product-watcher-admin.html` · `app/src/main/assets/refund.html` · `app/src/main/assets/simple-background-remover.html` · `app/src/main/assets/smart-reminders.html` · `app/src/main/assets/telegram-free-mini.html` · `app/src/main/assets/teleprompter.html` · `app/src/main/assets/terms.html` · `app/src/main/assets/video-uniquifier.html` · `app/src/main/assets/virtual-pet.html` · `app/src/main/assets/voice-agent-preview.html`
+`app/src/main/assets/404.html` · `app/src/main/assets/account-settings.html` · `app/src/main/assets/ai-agents.html` · `app/src/main/assets/ai-apps.html` · `app/src/main/assets/ai-pricing.html` · `app/src/main/assets/ai-privacy.html` · `app/src/main/assets/audio-studio.html` · `app/src/main/assets/avatar-studio.html` · `app/src/main/assets/canvas.html` · `app/src/main/assets/compare-ai.html` · `app/src/main/assets/contact.html` · `app/src/main/assets/cookie.html` · `app/src/main/assets/deepsyq-admin.html` · `app/src/main/assets/deepsyq-vs-deepseek.html` · `app/src/main/assets/deepsyq.html` · `app/src/main/assets/design-gallery.html` · `app/src/main/assets/free-tools.html` · `app/src/main/assets/generate-studio.html` · `app/src/main/assets/index.html` · `app/src/main/assets/jarvix-chat.html` · `app/src/main/assets/jarvix-studio.html` · `app/src/main/assets/jarvix.html` · `app/src/main/assets/mobile-utility.html` · `app/src/main/assets/my-creations.html` · `app/src/main/assets/photo-collage.html` · `app/src/main/assets/pricing.html` · `app/src/main/assets/product-watcher-admin.html` · `app/src/main/assets/refund.html` · `app/src/main/assets/simple-background-remover.html` · `app/src/main/assets/smart-reminders.html` · `app/src/main/assets/telegram-free-mini.html` · `app/src/main/assets/teleprompter.html` · `app/src/main/assets/terms.html` · `app/src/main/assets/video-uniquifier.html` · `app/src/main/assets/virtual-pet.html` · `app/src/main/assets/voice-agent-preview.html`
 
 ## Frontend CSS inventory (filenames only)
 
@@ -114,7 +114,7 @@ neighborVideos (L10) · slides (L18) · failedSlides (L18) · ideas (L439) · mo
 
 ### `app/src/main/assets/home-inspiration.js`
 
-studioLabels (L35) · quickStarts (L41) · creativeToolsCopy (L51) · characterRadarCopy (L91) · directorModels (L172) · items (L735) · previewVideos (L736) · ownerVideoSource (L834) · OWNER_VIDEO_INSPIRATION (L856)
+studioLabels (L35) · quickStarts (L41) · creativeToolsCopy (L51) · characterRadarCopy (L91) · directorModels (L172) · items (L736) · previewVideos (L737) · ownerVideoSource (L835) · OWNER_VIDEO_INSPIRATION (L857)
 
 ### `app/src/main/assets/inspiration.js`
 
