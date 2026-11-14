@@ -773,3 +773,21 @@ For every block:
 - do not mark DONE until verified;
 - do not create duplicate systems when an existing system can be extended.
 
+
+
+
+## 2026-11-14 — Themes V1: TEST review, production gated
+
+**State:** IMPLEMENTED ON TEST / AWAITING OWNER APPROVAL. Do not publish to `deepsyq.app` or merge into `deepsyq-platform` by default.
+
+- [x] Five modes Original, Warm Light, Focus, Soft Dark, Christmas / New Year implemented with dedicated theme menu next to Recommended on Home.
+- [x] Preference saved via `localStorage` and restored before paint in isolated preview build.
+- [x] Original exactly inherits existing site style without extra theme overrides; Focus and true black Soft Dark clearly distinct.
+- [x] Winter illustrated chalet backgrounds: desktop SVG 2560×1440, mobile SVG 1080×1920, responsive and present as non-interactive background/fallback for empty carousel. **Not yet a photorealistic photo or WebP export; owner's final design approval pending.**
+- [x] Snow caps above carousel and Home/JARVIX composer, pointer scatter effect; canvas snow respects reduced motion and visibility.
+- [x] Guarded Preview build with non-production Cloudflare branch; real backend and billing deliberately disabled.
+- [x] Playwright live TEST checks (36 main checks plus reduced-motion and isolation gate) passed 2026-11-14: https://github.com/mvryhan-web/video-variator-android/actions/runs/43594994963.
+- [x] Production canonical deployment verified unchanged in TEST release workflow.
+- [ ] Owner to inspect http(s) preview in desktop/mobile and approve, reject or request refinement.
+- [ ] Optional next refinement: photorealistic licensed/original winter art rendered at requested sizes, WebP/AVIF export, stronger Christmas material realism.
+- [ ] Only after explicit approval, plan separate scoped rollout of design tokens and assets to production; do not touch Google OAuth, Email auth, JARVIX voice/chat logic or payments.
