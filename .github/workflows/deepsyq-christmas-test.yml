@@ -98,6 +98,7 @@ jobs:
           assert.equal(live.deployment_trigger?.metadata?.branch,'test');
           assert.equal(live.uses_functions,true,'Worker-enabled TEST baseline required');
           const liveSha=live.deployment_trigger?.metadata?.commit_hash;
+          console.log('ACTIVE_TEST_WORKER_REVISION',JSON.stringify({deploymentId:live.id,commit:liveSha,dirty:live.deployment_trigger?.metadata?.commit_dirty,branch:live.deployment_trigger?.metadata?.branch,workerRequired:live.uses_functions}));
           assert(/^[a-f0-9]{40}$/.test(liveSha||''),'Current TEST commit cannot be verified');
           const oldWorker=execFileSync('git',['show',liveSha+':app/src/main/assets/_worker.js']);
           const newWorker=fs.readFileSync('app/src/main/assets/_worker.js');
