@@ -1,3 +1,4 @@
+import { CREATIVE_EXAMPLES } from './home-creative-examples.js';
 import { saveStudioHandoff, takeStudioHandoff } from './studio-handoff.js?v=image-viewer';
 /* Canvas workspace scope: browser-local editing + existing Studio handoff only.
    No Cloudflare Worker, credit, billing or global DEEPSYQ shell changes. */
@@ -102,7 +103,7 @@ function updateControls(){
  for(const [key,value,suffix] of [['cwSize',state.size,'%'],['cwRotation',state.rotation,'°'],['cwOpacity',state.opacity,'%'],['cwBrightness',state.brightness,'%'],['cwContrast',state.contrast,'%'],['cwSaturation',state.saturation,'%']]){
   $(key).value=String(value);const label=$(key+'Label');if(label)label.textContent=String(value)+suffix;
  }
- $('cwRatio').value=state.ratio;$('cwRatioQuick').value=state.ratio;$('cwSettingsRatio').value=state.ratio;$('cwSettingsMode').value=state.mode;
+ $('cwRatioQuick').value=state.ratio;$('cwSettingsMode').value=state.mode;
  $('cwModeInfo').hidden=state.mode!=='video';$('cwGenerate').textContent=state.mode==='video'?'✧ Generate Video ↗':'✧ Generate Image ↗';
  $('cwPrompt').placeholder=state.mode==='video'?'Describe the motion you want in your video…':'Describe what you want to create…';
  $('cwFitCover').classList.toggle('cw-option-active',state.fit!=='contain');$('cwFitContain').classList.toggle('cw-option-active',state.fit==='contain');
@@ -121,14 +122,12 @@ function switchPhoto(id,{addToFrames=false}={}){
 function renderGallery(){
  const query=$('cwGallerySearch').value.trim().toLowerCase();const category=document.querySelector('[data-cw-filter].cw-category-active')?.dataset.cwFilter||'all';
  const grid=$('cwGallery');grid.replaceChildren();
- const upload=document.createElement('button');upload.className='cw-upload-tile';upload.type='button';upload.title='Upload your photo';upload.setAttribute('aria-label','Upload your photo');
- const plus=document.createElement('span');plus.textContent='+';const txt=document.createElement('small');txt.textContent='Upload photo';upload.append(plus,txt);upload.onclick=()=>$('cwUpload').click();grid.append(upload);
  for(const item of photos){if(category!=='all'&&!item.tags.includes(category))continue;if(query&&!item.name.toLowerCase().includes(query)&&!item.tags.includes(query))continue;
   const button=document.createElement('button');button.type='button';button.dataset.cwPhoto=item.id;
   button.title=item.name;button.setAttribute('aria-label','Open '+item.name);button.setAttribute('aria-pressed',String(item.id===state.id));button.className=item.id===state.id?'cw-selected':'';
   const im=document.createElement('img');im.src=item.thumb;im.alt=item.name;im.loading='lazy';button.append(im);button.onclick=()=>switchPhoto(item.id);grid.append(button);
  }
- if(grid.children.length===1){const missing=document.createElement('span');missing.textContent='No matching examples';missing.style.color='#b9c7df';grid.append(missing)}
+ if(grid.children.length===0){const missing=document.createElement('span');missing.textContent='No matching examples';missing.style.color='#b9c7df';grid.append(missing)}
 }
 function renderFrames(){
  const wrap=$('cwFrames');wrap.replaceChildren();
@@ -204,7 +203,7 @@ $('cwTextColor').addEventListener('input',e=>{
 $('cwTextRemove').onclick=()=>$('cwDelete').click();
 function showToolPane(tool){
  const pane=$('cwToolPane');pane.replaceChildren();pane.hidden=false;
- const heading=document.createElement('strong');heading.textContent={design:'Choose a layout',elements:'Add a shape',text:'Write on your photo',upload:'Your photos',photos:'Choose a photo',templates:'Ready layouts',background:'Background color',apps:'AI Studio'}[tool]||'Tools';pane.append(heading);
+ const heading=document.createElement('strong');heading.textContent={design:'Choose a layout',elements:'Add a shape',text:'Write on your photo',photos:'Choose a photo',background:'Background color',apps:'AI Studio'}[tool]||'Tools';pane.append(heading);
  const grid=document.createElement('div');grid.className='cw-tool-grid';pane.append(grid);
  const option=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',fn);grid.append(b);return b};
  switch(tool){
@@ -219,8 +218,7 @@ function showToolPane(tool){
     requestAnimationFrame(()=>{$('cwInlineText').focus({preventScroll:true});$('cwInlineText').select();});
     break;
   }
-  case 'upload':option('＋ Choose photo',openUpload);break;
-  case 'design':case 'templates':{
+  case 'design':{
     const info=document.createElement('p');info.className='cw-tool-help';info.textContent='Choose a real canvas layout; your current photo stays selected.';pane.append(info);
     for(const [label,ratio,text] of [['Social 4:5','4:5','Your caption'],['Story 9:16','9:16','Your story'],['Square 1:1','1:1','Your title'],['Wide 16:9','16:9','Your headline']])option(label,()=>{mark();state.ratio=ratio;state.fit='contain';state.layers=[{type:'text',text,x:ratios[ratio][0]/2,y:ratios[ratio][1]*.82,size:Math.min(64,ratios[ratio][0]*.07),color:'#ffffff',opacity:1,locked:false}];state.selected=0;updateControls();void render();note(label+' layout applied. Tap Text to edit the title.');});break;
   }
@@ -239,20 +237,18 @@ function dockToolPane(){
  else if(library && pane.parentNode!==library)library.insertAdjacentElement('afterend',pane);
 }
 window.addEventListener('resize',dockToolPane);
-function setRatio(r){if(!ratios[r])return;mark();state.ratio=r;$('cwRatio').value=r;updateControls();void render();note('Canvas aspect ratio: '+r);}
+function setRatio(r){if(!ratios[r])return;mark();state.ratio=r;updateControls();void render();note('Canvas aspect ratio: '+r);}
 function switchMode(kind){if(!['image','video'].includes(kind)||kind===state.mode)return;mark();state.mode=kind;updateControls();void render();note(kind==='video'?'Video mode selected. Your '+state.ratio+' format stays unchanged; choose another under Format if needed. AI Studio generates the video.':'Image editing mode active.');}
 $('cwImageMode').onclick=()=>switchMode('image');$('cwVideoMode').onclick=()=>switchMode('video');
-$('cwRatio').addEventListener('change',e=>setRatio(e.target.value));$('cwRatioQuick').addEventListener('change',e=>setRatio(e.target.value));
+$('cwRatioQuick').addEventListener('change',e=>setRatio(e.target.value));
 for(const [id,field] of [['cwSize','size'],['cwRotation','rotation'],['cwOpacity','opacity'],['cwBrightness','brightness'],['cwContrast','contrast'],['cwSaturation','saturation']]){
  let snapshotMade=false;$(id).addEventListener('pointerdown',()=>{snapshotMade=false});
  $(id).addEventListener('input',e=>{if(!snapshotMade){mark();snapshotMade=true;}state[field]=+e.target.value;const label=$(id+'Label');if(label)label.textContent=e.target.value+(field==='rotation'?'°':'%');void render();});
  $(id).addEventListener('change',()=>{snapshotMade=false;});
 }
-$('cwCrop').onclick=()=>{document.querySelector('[data-cw-tab="edit"]')?.click();$('cwRatio').focus();note('To crop: choose a frame format, use Fill frame, then drag the photo to position it.');};
 for(const [id,delta] of [['cwRotateLeft',-90],['cwRotateRight',90]])$(id).onclick=()=>{mark();state.rotation=((state.rotation+delta+540)%360)-180;updateControls();void render();note('Photo rotated '+(delta<0?'left':'right')+' by 90°.');};
 for(const [id,axis] of [['cwFlipTop','flipX'],['cwMirrorX','flipX'],['cwMirrorY','flipY']])$(id).onclick=()=>{mark();state[axis]=!state[axis];void render();note(axis==='flipX'?'Photo mirrored left-to-right.':'Photo flipped top-to-bottom.');};
 for(const [id,fit] of [['cwFitCover','cover'],['cwFitContain','contain']])$(id).onclick=()=>{if(state.fit===fit)return;mark();state.fit=fit;updateControls();void render();note(fit==='contain'?'Whole image fits inside frame. Background color is now visible.':'Photo fills the frame; drag to reposition if needed.');};
-$('cwReplace').onclick=openUpload;
 $('cwRemoveBg').onclick=()=>{
  if(!state.id)return;mark();state.removeWhite=!state.removeWhite;
  note(state.removeWhite?'Removing connected near-white background only; detailed subjects may need Studio.':'Original background restored.');void render();
@@ -271,7 +267,7 @@ for(const button of document.querySelectorAll('[data-cw-tab]'))button.onclick=()
 for(const button of document.querySelectorAll('[data-cw-tool]'))button.onclick=()=>{
  document.querySelectorAll('[data-cw-tool]').forEach(x=>{x.classList.toggle('cw-rail-active',x===button);x.setAttribute('aria-pressed',String(x===button))});
  if(button.dataset.cwTool==='apps'){void handoff();return;}
- if(button.dataset.cwTool==='upload'){openUpload();showToolPane('upload');}else showToolPane(button.dataset.cwTool);
+ showToolPane(button.dataset.cwTool);
 };
 $('cwGallerySearch').addEventListener('input',renderGallery);
 for(const b of document.querySelectorAll('[data-cw-filter]'))b.onclick=()=>{document.querySelectorAll('[data-cw-filter]').forEach(x=>x.classList.toggle('cw-category-active',x===b));renderGallery();};
@@ -343,18 +339,15 @@ async function handoff(){
  }catch(error){$('cwGenerate').disabled=false;note('Studio handoff was not available. Your Canvas is still here; please try again.');}
 }
 $('cwGenerate').onclick=()=>void handoff();
-$('cwPromptUpload').onclick=openUpload;
-$('cwUploadMain').onclick=openUpload;$('cwGalleryUpload').onclick=openUpload;
+$('cwUploadMain').onclick=openUpload;
 function toggleSettings(open){
  const panel=$('cwSettingsPanel');panel.hidden=!open;
  $('cwSettings').setAttribute('aria-expanded',String(open));
- if(open){$('cwSettingsMode').value=state.mode;$('cwSettingsRatio').value=state.ratio;}
+ if(open){$('cwSettingsMode').value=state.mode;}
 }
 $('cwSettings').onclick=()=>toggleSettings($('cwSettingsPanel').hidden);
 $('cwSettingsClose').onclick=()=>toggleSettings(false);
 $('cwSettingsMode').addEventListener('change',e=>switchMode(e.target.value));
-$('cwSettingsRatio').addEventListener('change',e=>setRatio(e.target.value));
-$('cwSettingsAdjust').onclick=()=>{toggleSettings(false);document.querySelector('[data-cw-tab="adjust"]')?.click();$('cwTabAdjust').scrollIntoView({behavior:'smooth',block:'center'});};
 $('cwOpenVideoStudio').onclick=()=>void handoff();
 $('cwPlay').onclick=()=>{
  if(played){clearInterval(played);played=null;$('cwPlay').textContent='▷';$('cwSequenceTime').textContent='Preview';return;}
@@ -368,8 +361,21 @@ document.addEventListener('keydown',e=>{
  if(e.key.toLowerCase()==='z'){e.preventDefault();(e.shiftKey?$('cwRedo'):$('cwUndo')).click();}
  if(e.key.toLowerCase()==='y'){e.preventDefault();$('cwRedo').click();}
 });
+const entryQuery=new URLSearchParams(location.search);
+const example=entryQuery.get('from')==='jarvix-image'?null:CREATIVE_EXAMPLES.find(item=>
+ item.placement==='canvas'&&item.slug===entryQuery.get('example'));
+if(example){
+ const item={id:example.id,name:example.title,tags:'inspiration',src:example.previewUrl,thumb:example.previewUrl,uploaded:false};
+ photos.unshift(item);
+ srcMap.set(item.id,item);
+ state.id=item.id;
+ state.ratio=ratios[example.aspectRatio]?example.aspectRatio:state.ratio;
+ state.fit='contain';
+ sequence=[item.id,...sequence];
+ $('cwPrompt').value=example.prompt;
+}
 dockToolPane();renderGallery();updateControls();void render();
 
-if(new URLSearchParams(location.search).get('from')==='jarvix-image'){
+if(entryQuery.get('from')==='jarvix-image'){
  takeStudioHandoff('canvas').then(draft=>loadCanvasPhoto(draft?.files[0])).catch(()=>note('Could not open the image from JARVIX.'));
 }
