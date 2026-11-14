@@ -60,6 +60,7 @@ def approved_new_assets(paths):
     return frozenset()
 
 HASH_REUSE_RELEASE_SETS = (
+    frozenset({"account-settings.html"}),
     ACCOUNT_AND_DIRECTOR_RELEASE,
     QUICK_START_ART_RELEASE,
     QUICK_START_ART_V2_RELEASE,
