@@ -1,4 +1,5 @@
 name: Christmas isolated Cloudflare Preview — TEST only
+# Rerun after preserving theme switcher when disabling Christmas visuals.
 on:
   push:
     branches: [test]
