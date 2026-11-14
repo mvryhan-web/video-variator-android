@@ -61,7 +61,7 @@ function loadMemory(){
  }catch{return {turns:[],updatedAt:0};}
 }
 const restoredMemory=loadMemory();
-let turns=restoredMemory.turns,orb=null,micChip=null,micStage='idle',micFailures=0;
+let turns=restoredMemory.turns,micChip=null,micStage='idle',micFailures=0;
 let memoryChannel=null,memoryUpdatedAt=restoredMemory.updatedAt;
 function saveMemory(){
  try{sessionStorage.setItem(CONVERSATION_MEMORY,JSON.stringify({turns,updatedAt:memoryUpdatedAt}));}catch{}
@@ -110,8 +110,16 @@ const MICROPHONE_STATES={
   speaking:'Hablando',ready:'Toca 🎤 para hablar',error:'Micrófono no disponible · toca 🎤',
   unsupported:'Reconocimiento de voz no disponible',missing:'Aún no hay respuesta grabada',idle:''}
 };
+function voiceSphereControls(){
+ return document.querySelectorAll('#topJarvisBtn, .j-composer-orb-btn');
+}
 function positionMicChip(){
- if(!micChip||!orb)return;
+ if(!micChip)return;
+ const orb=document.getElementById('topJarvisBtn');
+ const visible=!!orb?.getClientRects().length;
+ micChip.style.visibility=visible?'':'hidden';
+ if(transcriptWrap)transcriptWrap.style.visibility=visible?'':'hidden';
+ if(!visible)return;
  const rect=orb.getBoundingClientRect();
  // The label is anchored to the existing sphere, never a floating footer.
  const x=Math.max(75,Math.min(innerWidth-75,rect.left+rect.width/2));
@@ -155,9 +163,11 @@ function updateSphereFromMicrophone(rms){
    Math.max(0,Math.min(.2,rms-.012)):0;
  micPulseRms=micPulseRms*.58+effective*.42;
  const volume=Math.min(1,micPulseRms*13);
- orb?.style?.setProperty?.('--jv-mic-scale',(1+volume*.19).toFixed(3));
- orb?.style?.setProperty?.('--jv-mic-glow',(5+volume*24).toFixed(1)+'px');
- orb?.setAttribute?.('data-jv-mic-live',volume>.035?'true':'false');
+ for(const orb of voiceSphereControls()){
+  orb.style.setProperty('--jv-mic-scale',(1+volume*.19).toFixed(3));
+  orb.style.setProperty('--jv-mic-glow',(5+volume*24).toFixed(1)+'px');
+  orb.setAttribute('data-jv-mic-live',volume>.035?'true':'false');
+ }
 }
 // Unlock Web Audio in the ORIGINAL user click. Mobile browsers may block
 // AudioContext.resume() when called after awaiting microphone permission.
@@ -236,7 +246,7 @@ function startMicMonitor(stream){
 function ui(stage='idle'){
  micStage=stage;
  if(stage!=='listening')updateSphereFromMicrophone(0);
- if(orb){
+ for(const orb of voiceSphereControls()){
   orb.classList.toggle('jv-new-voice-active',on);
   orb.classList.remove('jv-new-voice-speaking','jv-new-voice-listening','jv-new-voice-thinking');
   if(on&&['speaking','listening','thinking'].includes(stage))
@@ -693,20 +703,16 @@ async function start({greet=true}={}){
  }
  if(on&&seq===id)listen(id);
 }
-export function toggleJarvixNewVoice(target){
+export function toggleJarvixNewVoice(){
  installJarvixNewVoice();
  if(!window.__jarvixVoiceReady)return;
-  if(orb!==target&&orb){
-   orb.classList.remove('jv-new-voice-active','jv-new-voice-speaking','jv-new-voice-listening','jv-new-voice-thinking');
-   orb.setAttribute('aria-pressed','false');
-  }
-  orb=target;positionMicChip();window.__jarvixBeforeNewVoice?.();void start();
+ window.__jarvixBeforeNewVoice?.();
+ void start();
 }
 export function installJarvixNewVoice(){
  if((!production&&HOST!=='jarvis-new.deepsyq.pages.dev')||window.__jarvixVoiceReady)return;
  window.__jarvixVoiceReady=true;
  syncConversation();
- orb=document.getElementById('topJarvisBtn');
  const style=document.createElement('style');style.id='jv-new-voice-style';
  style.textContent=[
  '@keyframes jvListen{0%,100%{filter:hue-rotate(-18deg) drop-shadow(0 0 9px #34dce1)}50%{filter:hue-rotate(10deg) drop-shadow(0 0 20px #4effe6)}}',
@@ -763,7 +769,7 @@ export function installJarvixNewVoice(){
  document.body.appendChild(transcriptWrap);
  window.addEventListener('resize',positionMicChip,{passive:true});
  window.addEventListener('scroll',positionMicChip,{passive:true});
- if(orb){
+ for(const orb of voiceSphereControls()){
   orb.title='JARVIX NEW · голосовое общение';
   orb.setAttribute('aria-label','Начать или остановить голосовой разговор с JARVIX NEW');
   orb.setAttribute('aria-pressed','false');
@@ -773,7 +779,7 @@ export function installJarvixNewVoice(){
   const target=event.target.closest?.('#topJarvisBtn, .j-composer-orb-btn');
   if(!target)return;
   event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
-  toggleJarvixNewVoice(target);
+  toggleJarvixNewVoice();
  },true);
  const resumeAfterNavigation=()=>{
   if(on)return;
