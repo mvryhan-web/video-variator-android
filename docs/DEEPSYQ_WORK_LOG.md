@@ -1,6 +1,8 @@
 # DEEPSYQ — журнал работ и проверок
 
 ## 2026-11-14 — Точное позиционирование семи иллюстраций Tools
+- Контрольный визуальный осмотр выявил излишний сдвиг у Compress Video, Teleprompter и Video Uniquifier; их положение подровнено отдельно от четырёх остальных, с сохранением остальных карточек. Выпуск ограничен CSS страницы Tools.
+
 
 - Точечно изменён только `everyday-tools-visual.css`: семь изображений в Tools (Compress Video, Photo Collage, Background Remover, Teleprompter, Smart Reminders, Avatar Studio и Video Uniquifier) сдвинуты влево за счёт `right`, без изменения размеров карточек, текста, кнопок и ссылок. Предыдущая правка только расширяла изображения и не устранила правое смещение. 
 
