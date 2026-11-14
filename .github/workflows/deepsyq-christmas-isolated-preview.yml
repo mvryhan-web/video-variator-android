@@ -47,6 +47,23 @@ jobs:
           }
           console.log('CHRISTMAS_ISOLATED_PREVIEW_STATIC_PASS');
           NODE
+      - name: Enable the TEST-only Christmas layer on this isolated preview hostname
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const path='app/src/main/assets/deepsyq-christmas.js';
+          let js=fs.readFileSync(path,'utf8');
+          const old='if(!(/^(localhost';
+          const replacement="if(host!=='christmas-preview-20261114.deepsyq.pages.dev' && !(/^(localhost";
+          assert(js.includes(old),'TEST-only host guard not found');
+          js=js.replace(old,replacement);
+          fs.writeFileSync(path,js);
+          assert(js.includes(replacement),'Isolated preview host guard not applied');
+          NODE
+          node --check app/src/main/assets/deepsyq-christmas.js
       - name: Snapshot stable TEST and MAIN; enforce preview-only isolation
         shell: bash
         run: |
