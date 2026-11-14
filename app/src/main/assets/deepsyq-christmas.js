@@ -94,7 +94,7 @@ function toolbar(){
    b.addEventListener('click',()=>{setTheme(value);options.hidden=true;trigger.setAttribute('aria-expanded','false')});options.appendChild(b);
  }
  trigger.setAttribute('aria-expanded','false');trigger.addEventListener('click',()=>{options.hidden=!options.hidden;trigger.setAttribute('aria-expanded',String(!options.hidden))});
- root.append(trigger,options);mount(root);document.addEventListener('keydown',e=>{if(e.key==='Escape'){options.hidden=true;trigger.setAttribute('aria-expanded','false')}});
+ root.append(trigger,options);document.body.appendChild(root);document.addEventListener('keydown',e=>{if(e.key==='Escape'){options.hidden=true;trigger.setAttribute('aria-expanded','false')}});
 }
 function sync(){if(doc.dataset.siteTheme==='christmas')enable();else disable()}
 function init(){
