@@ -89,7 +89,7 @@ try{
           if(mode==='christmas'){
             await page.locator('#dsChristmasBackdrop').waitFor({state:'visible',timeout:5000});
             const winter=await page.locator('#dsChristmasBackdrop').evaluate(el=>getComputedStyle(el).backgroundImage);
-            assert.ok(winter.includes(isMobile?'winter-mobile.svg':'winter-desktop.svg'));
+            assert.ok(winter.includes(isMobile?'winter-mobile.webp':'winter-desktop.webp'));
             if(name==='home'||name==='jarvix'){
               const target=name==='home'?'#homeHeroCarousel':'#jChatForm';
               await page.locator(target+' > .ds-snow-ridge').waitFor({state:'visible',timeout:5000});
@@ -105,7 +105,7 @@ try{
                   empty:el.classList.contains('is-empty'),
                   image:getComputedStyle(el).backgroundImage
                 }));
-                if(scene.empty)assert.match(scene.image,/winter-(desktop|mobile)\.svg/);
+                if(scene.empty)assert.match(scene.image,/winter-(desktop|mobile)\.webp/);
               }
             }
             await page.locator('#dsSnowfallCanvas').waitFor({state:'visible',timeout:5000});
