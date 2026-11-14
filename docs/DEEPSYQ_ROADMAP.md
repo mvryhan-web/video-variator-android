@@ -636,3 +636,10 @@ For every block:
 - Исходное изображение выбрано владельцем. Cloudflare Actions для TEST создаёт WebP 2560×1440 и 1080×1920 из исходника, сохраняет файлы в TEST и публикует с сохранением Worker.
 - Вход в тему: `https://test.deepsyq.pages.dev/?christmas=1`; кнопка «Тема» переключает три варианта на TEST; production `deepsyq.app` не менять.
 - Выпуск обязан остановиться до публикации при несоответствии текущего TEST Worker/HTML, недоступном источнике изображения, отсутствии Cloudflare API доступа или изменении MAIN. Завершённость фиксировать только после успешного LIVE TEST и сохранённого Worker.
+
+### 2026-11-14 — Christmas LIVE Preview: Готово / канонический TEST отдельно заблокирован
+
+- **Реально опубликовано и проверено**: `https://christmas-preview-20261114.deepsyq.pages.dev/?christmas=1`. Отдельная Cloudflare preview-ветка без изменения `deepsyq.app` и `test.deepsyq.pages.dev`.
+- Выпуск прошёл [#43648798637](https://github.com/mvryhan-web/video-variator-android/actions/runs/43648798637); desktop/mobile Chromium и переключение трёх тем — [#43648877133](https://github.com/mvryhan-web/video-variator-android/actions/runs/43648877133) PASS, все исходные элементы карусели и JARVIX на месте.
+- Предыдущая строка о URL `test.deepsyq.pages.dev/?christmas=1` — **лишь запланированный канонический адрес, на нём тема не опубликована**. Запрещено выдать его за готовый.
+- Не переносить на постоянный TEST автоматически: активный Worker/HTML этого адреса отличается от исходников GitHub и помечен Cloudflare `dirty`. Сначала нужен точный безопасный baseline и точечная публикация с сохранением функций.
