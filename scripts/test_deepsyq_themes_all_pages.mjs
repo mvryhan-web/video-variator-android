@@ -29,6 +29,24 @@ try{
           assert.equal(await page.locator('#dsThemeButton').count(),1,label+' one themes button');
           assert.equal(await page.locator('link[href="/soft-aurora-preview.css"]').count(),1,label+' one CSS');
           assert.equal(await page.locator('script[src="/soft-aurora-preview.js"]').count(),1,label+' one JS');
+          if(file==='generate-studio.html'){
+            // The existing guest Studio modal is a top-layer auth gate.
+            // Do not bypass or dismiss it to click appearance controls.
+            for(const [theme,expected] of [
+              ['warm-light','rgb(244, 240, 232)'],
+              ['soft-dark','rgb(5, 5, 5)'],
+              ['christmas','rgb(16, 29, 42)']
+            ]){
+              await page.evaluate(value=>localStorage.setItem('deepsyq-themes-v1',value),theme);
+              await page.reload({waitUntil:'domcontentloaded',timeout:25000});
+              await page.locator('#dsThemeButton').waitFor({state:'attached',timeout:10000});
+              assert.equal(await page.locator('html').getAttribute('data-deepsyq-theme'),theme,label+' saved '+theme);
+              assert.equal(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor),expected,label+' color '+theme);
+            }
+            console.log('THEMES_V1_PROTECTED_STUDIO_PASS',JSON.stringify({device,file}));
+            logs.push({device,page:file,status:'protected-visual-pass'});
+            continue;
+          }
           await page.locator('#dsThemeButton').click({timeout:5000});
           assert.equal(await page.locator('#dsThemeMenu button.ds-theme-option').count(),5,label+' five choices');
           await page.locator('#dsThemeMenu button[data-theme-id="warm-light"]').click({timeout:5000});
