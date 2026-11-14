@@ -93,3 +93,29 @@ body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] 
 .et-hero:after{background:none}
 .et-hero-copy{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 @media(max-width:700px){.et-hero{height:clamp(125px,22vw,205px);min-height:125px}.et-hero .et-hero-art{min-width:650px;left:0}}
+
+/* Owner 2026-11-14: restore visible artwork inside only the six reported tools.
+   The previous narrow 53%-wide right-edge SVG crops clipped the 16:9/sprite slices.
+   Links, labels, card geometry, other tools and shared site navigation are untouched. */
+main.free-tools-page .et-gallery .et-card:is(
+  [href="?tool=video"],
+  [href="photo-collage.html"],
+  [href="?tool=prompter"],
+  [href="smart-reminders.html"],
+  [href="avatar-studio.html"]
+) .et-card-art {
+  width:62%;
+  right:3%;
+}
+main.free-tools-page .et-uniquifier .et-video-art {
+  right:4%;
+}
+@media(max-width:640px) {
+  main.free-tools-page .et-gallery .et-card:is(
+    [href="?tool=video"],
+    [href="photo-collage.html"],
+    [href="?tool=prompter"],
+    [href="smart-reminders.html"],
+    [href="avatar-studio.html"]
+  ) .et-card-art { width:64%;right:2%; }
+}
