@@ -34,7 +34,7 @@ try{
             // Do not bypass or dismiss it to click appearance controls.
             for(const [theme,expected] of [
               ['warm-light','rgb(244, 240, 232)'],
-              ['soft-dark','rgb(5, 5, 5)'],
+              ['soft-dark','rgb(0, 0, 0)'],
               ['christmas','rgb(16, 29, 42)']
             ]){
               await page.evaluate(value=>localStorage.setItem('deepsyq-themes-v1',value),theme);
@@ -54,7 +54,7 @@ try{
           assert.equal(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor),'rgb(244, 240, 232)',label+' Warm Light');
           await page.locator('#dsThemeButton').click({timeout:5000});
           await page.locator('#dsThemeMenu button[data-theme-id="soft-dark"]').click({timeout:5000});
-          assert.equal(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor),'rgb(5, 5, 5)',label+' black');
+          assert.equal(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor),'rgb(0, 0, 0)',label+' black');
           await page.locator('#dsThemeButton').click({timeout:5000});
           await page.locator('#dsThemeMenu button[data-theme-id="christmas"]').click({timeout:5000});
           assert.equal(await page.locator('#dsChristmasBackdrop').count(),1,label+' winter scene');
