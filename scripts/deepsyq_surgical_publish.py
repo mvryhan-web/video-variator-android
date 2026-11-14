@@ -43,8 +43,21 @@ QUICK_START_ART = frozenset({
     "media/home/quick-start-v1/jarvix-director.webp",
 })
 QUICK_START_ART_RELEASE = QUICK_START_ART | {"home-inspiration.js"}
+QUICK_START_ART_V2 = frozenset(path.replace("/quick-start-v1/", "/quick-start-v2/") for path in QUICK_START_ART)
+QUICK_START_ART_V2_RELEASE = QUICK_START_ART_V2 | {"home-inspiration.js"}
+
+
+def quick_start_new_assets(paths):
+    scope = frozenset(paths)
+    if scope == QUICK_START_ART_RELEASE:
+        return QUICK_START_ART
+    if scope == QUICK_START_ART_V2_RELEASE:
+        return QUICK_START_ART_V2
+    return frozenset()
+
 HASH_REUSE_RELEASE_SETS = (
     QUICK_START_ART_RELEASE,
+    QUICK_START_ART_V2_RELEASE,
     frozenset({"jarvix-guided-tour.js", "jarvix-tour-choreography.js"}),
     frozenset({"ai-apps.html", "canvas.html", "free-tools.html", "sitemap.xml"}),
     frozenset({"compare-ai.html", "simple-background-remover.html", "teleprompter.html"}),
@@ -443,7 +456,7 @@ def build_candidate(live, paths, production_commit, work):
 
     # Apply exactly the owner-requested files from the checked-out task revision.
     edited_bytes = {}
-    new_assets = QUICK_START_ART if frozenset(paths) == QUICK_START_ART_RELEASE else frozenset()
+    new_assets = quick_start_new_assets(paths)
     for rel in paths:
         src = ROOT / rel
         dest = stage / rel
@@ -596,7 +609,7 @@ def main():
                 expected_bytes.update({rel: (ROOT / rel).read_bytes() for rel in voice_sources if "/" + rel not in live})
             candidate, changed = surgical_manifest(live, {
                 rel: digest(raw, rel) for rel, raw in expected_bytes.items()}, 
-                expected_bytes if args.new_voice else (QUICK_START_ART if frozenset(paths) == QUICK_START_ART_RELEASE else ()))
+                expected_bytes if args.new_voice else quick_start_new_assets(paths))
             from_live = 0
             stage = None
             direct_manifest = True
