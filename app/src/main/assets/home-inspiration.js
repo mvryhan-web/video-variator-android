@@ -39,9 +39,9 @@ const studioLabels={
  es:['Inicio rápido','Miniatura de YouTube','Vídeo vertical','Foto de producto','Crear tu versión']
 };
 const quickStarts=[
- {id:'youtube-thumbnail',kind:'image',image:'media/home/quick-start-v2/youtube-thumbnail.webp',aspectRatio:'16:9',prompt:'Create a YouTube thumbnail about [topic]. Feature [main subject] with a clear focal point, strong contrast and space for a short title.'},
- {id:'vertical-video',kind:'video',image:'media/home/quick-start-v2/vertical-video.webp',aspectRatio:'9:16',prompt:'Create a vertical short video about [topic]. Start with a strong visual hook, show [key action] clearly and finish with a memorable final frame.'},
- {id:'product-photo',kind:'image',image:'media/home/quick-start-v2/product-photo.webp',aspectRatio:'1:1',prompt:'Create a studio product photo of [product]. Use soft directional lighting, a clean background and realistic materials. Keep the product centered with room around it.'}
+ {id:'youtube-thumbnail',kind:'image',image:'media/home/quick-start-v3/youtube-thumbnail.webp',aspectRatio:'16:9',prompt:'Create a YouTube thumbnail about [topic]. Feature [main subject] with a clear focal point, strong contrast and space for a short title.'},
+ {id:'vertical-video',kind:'video',image:'media/home/quick-start-v3/vertical-video.webp',aspectRatio:'9:16',prompt:'Create a vertical short video about [topic]. Start with a strong visual hook, show [key action] clearly and finish with a memorable final frame.'},
+ {id:'product-photo',kind:'image',image:'media/home/quick-start-v3/product-photo.webp',aspectRatio:'1:1',prompt:'Create a studio product photo of [product]. Use soft directional lighting, a clean background and realistic materials. Keep the product centered with room around it.'}
 ];
 function studioCopy(){
  const lang=(localStorage.getItem('deepsyq_lang')||document.documentElement.lang||'en').slice(0,2);
@@ -459,12 +459,12 @@ function renderQuickStarts(section){
  style.textContent=`
  #homeStudioQuickStarts .quick-start-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
  #homeStudioQuickStarts h2{margin:0 0 16px}
- #homeStudioQuickStarts .quick-start-card{display:grid;grid-template-rows:170px auto;min-width:0;width:100%;padding:0;overflow:hidden;background:var(--panel,#191328);border:1px solid var(--line,#4c3b62);border-radius:17px;color:inherit;font:inherit;text-align:start;text-decoration:none;cursor:pointer;transition:border-color .15s}
+ #homeStudioQuickStarts .quick-start-card{display:grid;grid-template-rows:auto 1fr;min-width:0;width:100%;padding:0;overflow:hidden;background:var(--panel,#191328);border:1px solid var(--line,#4c3b62);border-radius:17px;color:inherit;font:inherit;text-align:start;text-decoration:none;cursor:pointer;transition:border-color .15s}
  #homeStudioQuickStarts .quick-start-card:hover{border-color:#8964c0}
  #homeStudioQuickStarts .quick-start-card:focus-visible{outline:2px solid #c7a0f9;outline-offset:2px}
- #homeStudioQuickStarts .quick-start-thumb{position:relative;min-width:0;min-height:0;overflow:hidden;background:#302447}
+ #homeStudioQuickStarts .quick-start-thumb{position:relative;aspect-ratio:16/9;min-width:0;min-height:0;overflow:hidden;background:#302447}
  #homeStudioQuickStarts .quick-start-thumb img{display:block;width:100%;height:100%;object-fit:cover}
- #homeStudioQuickStarts .quick-start-thumb .quick-start-orb{position:absolute;inset:37.3% auto auto calc(50% + 1px);transform:translate(-50%,-50%);width:108px;height:108px;object-fit:contain;clip-path:circle(49%);mask-image:radial-gradient(circle closest-side,#000 86%,transparent 100%);pointer-events:none}
+ #homeStudioQuickStarts .quick-start-thumb .quick-start-orb{position:absolute;inset:48% auto auto 49%;transform:translate(-50%,-50%);width:auto;height:51%;aspect-ratio:1;object-fit:contain;clip-path:circle(49%);mask-image:radial-gradient(circle closest-side,#000 86%,transparent 100%);pointer-events:none}
  #homeStudioQuickStarts .quick-start-body{display:grid;gap:8px;min-width:0;padding:18px;overflow-wrap:anywhere}
  #homeStudioQuickStarts .quick-start-body strong{font-size:17px}
  #homeStudioQuickStarts .quick-start-body span{font-size:12px;line-height:1.6;color:var(--muted,#c5b9db)}
@@ -476,10 +476,9 @@ function renderQuickStarts(section){
   control.className='quick-start-card';
   const visual=detailEl('div','quick-start-thumb');
   const image=detailEl('img');
-  image.src=src;image.alt='';image.loading='lazy';image.width=720;image.height=405;
+  image.src=src;image.alt='';image.loading='lazy';image.width=768;image.height=432;
   visual.append(image);
   if(src.endsWith('/jarvix-director.webp')){
-   image.style.objectPosition='50% 37.3%';
    const orb=detailEl('img','quick-start-orb');
    orb.src='https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/760ea0b9-ba7d-4982-97f2-9bb59a6b0979.png';orb.alt='';orb.loading='lazy';orb.referrerPolicy='no-referrer';
    visual.append(orb);
@@ -511,11 +510,11 @@ function renderQuickStarts(section){
  const lang=Object.keys(creativeToolsCopy).find(key=>creativeToolsCopy[key]===language)||'en';
  const copy={...language,...characterRadarCopy[lang],director:'JARVIX Director',chain:lang==='ru'?'Изображение и видео по шагам':'Image and video, step by step'};
  for(const [tool,subtitle,imageSrc] of [
-  ['factory','plan','media/home/quick-start-v2/content-plan.webp'],
-  ['brand','style','media/home/quick-start-v2/brand-style.webp'],
-  ['characters','cast','media/home/quick-start-v2/my-characters.webp'],
-  ['radar','radarHint','media/home/quick-start-v2/ideas-radar.webp'],
-  ['director','chain','media/home/quick-start-v2/jarvix-director.webp']
+  ['factory','plan','media/home/quick-start-v3/content-plan.webp'],
+  ['brand','style','media/home/quick-start-v3/brand-style.webp'],
+  ['characters','cast','media/home/quick-start-v3/my-characters.webp'],
+  ['radar','radarHint','media/home/quick-start-v3/ideas-radar.webp'],
+  ['director','chain','media/home/quick-start-v3/jarvix-director.webp']
  ]){
   const button=detailEl('button');
   button.type='button';

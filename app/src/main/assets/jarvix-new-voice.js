@@ -703,10 +703,10 @@ export function installJarvixNewVoice(){
  '@keyframes jvListen{0%,100%{filter:hue-rotate(-18deg) drop-shadow(0 0 9px #34dce1)}50%{filter:hue-rotate(10deg) drop-shadow(0 0 20px #4effe6)}}',
  '@keyframes jvThink{0%,100%{filter:drop-shadow(0 0 7px #f2a949)}50%{filter:drop-shadow(0 0 24px #f9d27a)}}',
  '@keyframes jvSpeak{0%,100%{filter:drop-shadow(0 0 9px #ce58d4)}50%{filter:drop-shadow(0 0 29px #ff9f41) drop-shadow(0 0 10px #bc6bfc)}}',
- '#topJarvisBtn.jv-new-voice-listening .jarvis-mini-orb{animation:none!important;transform:scale(var(--jv-mic-scale,1))!important;filter:drop-shadow(0 0 var(--jv-mic-glow,5px) #40e6d5)!important;transform-origin:center!important;transition:transform 75ms ease-out,filter 75ms linear!important;will-change:transform,filter}',
- '#topJarvisBtn.jv-new-voice-thinking .jarvis-mini-orb{animation:jvThink .95s ease-in-out infinite!important}',
- '#topJarvisBtn.jv-new-voice-speaking .jarvis-mini-orb{animation:jvSpeak .5s ease-in-out infinite!important}',
- '@media(prefers-reduced-motion:reduce){#topJarvisBtn.jv-new-voice-active .jarvis-mini-orb{animation:none!important}}',
+ ':is(#topJarvisBtn,.j-composer-orb-btn).jv-new-voice-listening .jarvis-mini-orb{animation:none!important;transform:scale(var(--jv-mic-scale,1))!important;filter:drop-shadow(0 0 var(--jv-mic-glow,5px) #40e6d5)!important;transform-origin:center!important;transition:transform 75ms ease-out,filter 75ms linear!important;will-change:transform,filter}',
+ ':is(#topJarvisBtn,.j-composer-orb-btn).jv-new-voice-thinking .jarvis-mini-orb{animation:jvThink .95s ease-in-out infinite!important}',
+ ':is(#topJarvisBtn,.j-composer-orb-btn).jv-new-voice-speaking .jarvis-mini-orb{animation:jvSpeak .5s ease-in-out infinite!important}',
+ '@media(prefers-reduced-motion:reduce){:is(#topJarvisBtn,.j-composer-orb-btn).jv-new-voice-active .jarvis-mini-orb{animation:none!important}}',
  '#jv-new-mic-chip{position:fixed;transform:translateX(-50%);z-index:2147482001;display:flex;align-items:center;justify-content:center;white-space:nowrap;max-width:min(90vw,240px);min-height:30px;padding:5px 11px;border:1px solid #3faaa9;border-radius:999px;background:#101a28f2;color:#f0fafa;font:600 12px/1.3 system-ui,sans-serif;box-shadow:0 6px 20px #06122166;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}',
  '#jv-new-mic-chip[hidden]{display:none!important}',
  '#jv-new-mic-chip[data-state="listening"]{border-color:#4dffe1;box-shadow:0 0 12px #24c7b980}',
@@ -720,7 +720,7 @@ export function installJarvixNewVoice(){
  '#jv-new-transcript-text[data-actual="true"]{font-weight:700;font-size:16px;color:#fff}',
  '#jv-new-transcript-reply{margin-top:5px;color:#ffe0a5;font-size:13px;font-weight:600;line-height:1.45}',
  '#jv-new-transcript-reply[hidden]{display:none!important}',
- '@media(prefers-reduced-motion:reduce){#topJarvisBtn.jv-new-voice-listening .jarvis-mini-orb{transition:none!important}}'
+ '@media(prefers-reduced-motion:reduce){:is(#topJarvisBtn,.j-composer-orb-btn).jv-new-voice-listening .jarvis-mini-orb{transition:none!important}}'
  ].join('');
  document.head.append(style);
  // Remove old bottom error/status captions, including those left by an
@@ -761,9 +761,13 @@ export function installJarvixNewVoice(){
  }
  // Capture before other legacy click listeners. Never navigate to a new page.
  document.addEventListener('click',event=>{
-  const target=event.target.closest?.('#topJarvisBtn');
+  const target=event.target.closest?.('#topJarvisBtn, .jarvix-compose .j-composer-orb-btn');
   if(!target)return;
   event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+  if(orb!==target&&orb){
+   orb.classList.remove('jv-new-voice-active','jv-new-voice-speaking','jv-new-voice-listening','jv-new-voice-thinking');
+   orb.setAttribute('aria-pressed','false');
+  }
   orb=target;positionMicChip();window.__jarvixBeforeNewVoice?.();void start();
  },true);
  const resumeAfterNavigation=()=>{

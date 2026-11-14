@@ -49,8 +49,13 @@ QUICK_START_ART_V2_RELEASE = QUICK_START_ART_V2 | {"home-inspiration.js"}
 
 ACCOUNT_AND_DIRECTOR_RELEASE = frozenset({"deepsyq.js", "deepsyq-mobile-shell.js", "deepsyq-unified-platform-header.js", "video-uniquifier-reference.js", "home-inspiration.js", "account-settings.html"})
 
+QUICK_START_ART_V3 = frozenset(path.replace("/quick-start-v1/", "/quick-start-v3/") for path in QUICK_START_ART)
+QUICK_START_V3_RELEASE = QUICK_START_ART_V3 | {"home-inspiration.js", "jarvix-new-voice.js"}
+
 def approved_new_assets(paths):
     scope = frozenset(paths)
+    if scope == QUICK_START_V3_RELEASE:
+        return QUICK_START_ART_V3
     if scope == ACCOUNT_AND_DIRECTOR_RELEASE:
         return frozenset({"account-settings.html"})
     if scope == QUICK_START_ART_RELEASE:
@@ -60,6 +65,7 @@ def approved_new_assets(paths):
     return frozenset()
 
 HASH_REUSE_RELEASE_SETS = (
+    QUICK_START_V3_RELEASE,
     frozenset({"account-settings.html"}),
     ACCOUNT_AND_DIRECTOR_RELEASE,
     QUICK_START_ART_RELEASE,
