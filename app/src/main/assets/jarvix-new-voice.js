@@ -747,6 +747,17 @@ async function respond(message,id){
   if(on&&seq===id)location.assign(new URL('/jarvix-chat.html?mode='+kind+'&jarvixImage=1',location.origin));
   return;
  }
+ if(production&&!/^\/jarvix-chat(?:\.html)?$/.test(location.pathname)&&
+  /(?:где я (?:сейчас )?нахожусь|что (?:сейчас )?открыто|where am i)/iu.test(requestText)){
+  showTextResponse(document.title);
+  listen(id);
+  return;
+ }
+ if(production&&((action?.intent==='GENERATE_MEDIA'&&action.raw_prompt)||
+  /^(?:(?:мне\s+)?нужн[аоы]?|(?:я\s+)?хочу|можешь|создай|сделай|сгенерируй|запусти|нарисуй|озвучь|прочитай)(?![\p{L}\p{N}])/iu.test(requestText)||
+  /(?:запусти генерацию|сделай (?:промпт|пронт|фронт)|давай[, ]+делай|какой (?:сейчас )?чат открыт|где я (?:сейчас )?нахожусь|что (?:сейчас )?открыто)/iu.test(requestText))){
+  if(await openVoiceQuestion(message,id))return;
+ }
  if(action?.intent==='GENERATE_MEDIA'&&action.raw_prompt){
   try{
    await saveStudioHandoff({
