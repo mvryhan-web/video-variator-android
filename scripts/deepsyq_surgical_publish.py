@@ -614,7 +614,7 @@ def main():
                 expected_bytes.update({rel: (ROOT / rel).read_bytes() for rel in voice_sources if "/" + rel not in live})
             candidate, changed = surgical_manifest(live, {
                 rel: digest(raw, rel) for rel, raw in expected_bytes.items()}, 
-                expected_bytes if args.new_voice else quick_start_new_assets(paths))
+                expected_bytes if args.new_voice else approved_new_assets(paths))
             from_live = 0
             stage = None
             direct_manifest = True
