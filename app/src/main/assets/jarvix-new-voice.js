@@ -693,6 +693,15 @@ async function start({greet=true}={}){
  }
  if(on&&seq===id)listen(id);
 }
+export function toggleJarvixNewVoice(target){
+ installJarvixNewVoice();
+ if(!window.__jarvixVoiceReady)return;
+  if(orb!==target&&orb){
+   orb.classList.remove('jv-new-voice-active','jv-new-voice-speaking','jv-new-voice-listening','jv-new-voice-thinking');
+   orb.setAttribute('aria-pressed','false');
+  }
+  orb=target;positionMicChip();window.__jarvixBeforeNewVoice?.();void start();
+}
 export function installJarvixNewVoice(){
  if((!production&&HOST!=='jarvis-new.deepsyq.pages.dev')||window.__jarvixVoiceReady)return;
  window.__jarvixVoiceReady=true;
@@ -761,14 +770,10 @@ export function installJarvixNewVoice(){
  }
  // Capture before other legacy click listeners. Never navigate to a new page.
  document.addEventListener('click',event=>{
-  const target=event.target.closest?.('#topJarvisBtn, .jarvix-compose .j-composer-orb-btn');
+  const target=event.target.closest?.('#topJarvisBtn, .j-composer-orb-btn');
   if(!target)return;
   event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
-  if(orb!==target&&orb){
-   orb.classList.remove('jv-new-voice-active','jv-new-voice-speaking','jv-new-voice-listening','jv-new-voice-thinking');
-   orb.setAttribute('aria-pressed','false');
-  }
-  orb=target;positionMicChip();window.__jarvixBeforeNewVoice?.();void start();
+  toggleJarvixNewVoice(target);
  },true);
  const resumeAfterNavigation=()=>{
   if(on)return;
