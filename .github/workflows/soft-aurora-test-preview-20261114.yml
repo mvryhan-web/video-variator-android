@@ -7,6 +7,8 @@ on:
       - 'app/src/main/assets/soft-aurora-preview.css'
       - 'app/src/main/assets/soft-aurora-preview.js'
       - 'scripts/build_soft_aurora_preview.mjs'
+      - 'scripts/build_realistic_christmas_photos.py'
+      - 'scripts/test_christmas_softdark_visuals.mjs'
       - 'scripts/test_deepsyq_themes_preview.mjs'
       - 'scripts/test_deepsyq_themes_all_pages.mjs'
       - 'app/src/main/assets/themes/christmas/**'
@@ -32,6 +34,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Validate preview-only sources and build isolated site
         shell: bash
         run: |
@@ -41,6 +46,9 @@ jobs:
           node --check scripts/test_deepsyq_themes_preview.mjs
           node --check scripts/test_deepsyq_themes_all_pages.mjs
           node scripts/build_soft_aurora_preview.mjs
+          python -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python scripts/build_realistic_christmas_photos.py
+          node --check scripts/test_christmas_softdark_visuals.mjs
           node --check .soft-aurora-preview-build/_worker.js
           test -f .soft-aurora-preview-build/deepsyq.html
           test -f .soft-aurora-preview-build/jarvix-chat.html
@@ -85,6 +93,7 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
           npx playwright install chromium
           node scripts/test_deepsyq_themes_preview.mjs
+          node scripts/test_christmas_softdark_visuals.mjs
           node scripts/test_deepsyq_themes_all_pages.mjs
       - name: Verify canonical production deployment unchanged
         if: always()
