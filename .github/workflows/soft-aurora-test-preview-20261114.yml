@@ -91,6 +91,8 @@ jobs:
               const context=await browser.newContext({viewport,isMobile:device==='mobile',hasTouch:device==='mobile'});
               try{
                 const page=await context.newPage();
+                page.on('pageerror',err=>console.log('SOFT_AURORA_BROWSER_JS_ERROR',device,String(err).slice(0,350)));
+                page.on('console',m=>{if(m.type()==='error')console.log('SOFT_AURORA_BROWSER_CONSOLE',device,m.text().slice(0,350));});
                 for(const [name,route,form,input] of [
                   ['home','deepsyq.html','#homeQuickForm','#homeQuickPrompt'],
                   ['jarvix','jarvix-chat.html','#jChatForm','#jInput'],
@@ -98,7 +100,20 @@ jobs:
                 ]){
                   const res=await page.goto(base+'/'+route,{waitUntil:'domcontentloaded',timeout:40000});
                   assert.equal(res?.status(),200,device+' '+route+' should load');
-                  await page.locator('#saThemeSwitch').waitFor({state:'visible',timeout:15000});
+                  const resource=await page.evaluate(async()=>{
+                    const test=async(file)=>{
+                      try{const r=await fetch(file,{cache:'no-store'});return {status:r.status,type:r.headers.get('content-type'),
+                        sample:(await r.text()).slice(0,90)}}catch(e){return {error:String(e)}}
+                    };
+                    return {ready:document.readyState,mode:document.documentElement.dataset.saMode,
+                      switchCount:document.querySelectorAll('#saThemeSwitch').length,
+                      appRoot:document.documentElement.outerHTML.slice(0,260),
+                      script:[...document.scripts].filter(v=>v.src.includes('soft-aurora')).map(v=>v.src),
+                      style:[...document.querySelectorAll('link[rel=stylesheet]')].filter(v=>v.href.includes('soft-aurora')).map(v=>v.href),
+                      js:await test('/soft-aurora-preview.js'),css:await test('/soft-aurora-preview.css')};
+                  });
+                  console.log('SOFT_AURORA_BROWSER_DIAGNOSTIC',JSON.stringify({device,name,resource}));
+                  await page.locator('#saThemeSwitch').waitFor({state:'visible',timeout:12000});
                   assert.equal(await page.locator('html').getAttribute('data-sa-mode'),'dark');
                   const stylesheet=await page.locator('link[href="/soft-aurora-preview.css"]').count();
                   assert.equal(stylesheet,1,device+' '+route+' preview CSS injection');
