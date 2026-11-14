@@ -39,7 +39,7 @@ const studioLabels={
  es:['Inicio rápido','Miniatura de YouTube','Vídeo vertical','Foto de producto','Crear tu versión']
 };
 const quickStarts=[
- {id:'youtube-thumbnail',kind:'image',image:'media/home/quick-start-v3/youtube-thumbnail.webp',aspectRatio:'16:9',prompt:'Create a YouTube thumbnail about [topic]. Feature [main subject] with a clear focal point, strong contrast and space for a short title.'},
+ {id:'youtube-thumbnail',kind:'image',image:'media/home/quick-start-v3/youtube-thumbnail.webp?v=20261114-2',aspectRatio:'16:9',prompt:'Create a YouTube thumbnail about [topic]. Feature [main subject] with a clear focal point, strong contrast and space for a short title.'},
  {id:'vertical-video',kind:'video',image:'media/home/quick-start-v3/vertical-video.webp',aspectRatio:'9:16',prompt:'Create a vertical short video about [topic]. Start with a strong visual hook, show [key action] clearly and finish with a memorable final frame.'},
  {id:'product-photo',kind:'image',image:'media/home/quick-start-v3/product-photo.webp',aspectRatio:'1:1',prompt:'Create a studio product photo of [product]. Use soft directional lighting, a clean background and realistic materials. Keep the product centered with room around it.'}
 ];
@@ -508,7 +508,7 @@ function renderQuickStarts(section){
   ['brand','style','media/home/quick-start-v3/brand-style.webp'],
   ['characters','cast','media/home/quick-start-v3/my-characters.webp'],
   ['radar','radarHint','media/home/quick-start-v3/ideas-radar.webp'],
-  ['director','chain','media/home/quick-start-v3/jarvix-director.webp']
+  ['director','chain','media/home/quick-start-v3/jarvix-director.webp?v=20261114-2']
  ]){
   const button=detailEl('button');
   button.type='button';
