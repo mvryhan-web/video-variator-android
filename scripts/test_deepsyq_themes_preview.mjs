@@ -97,6 +97,10 @@ try{
                 .evaluate(el=>getComputedStyle(el).backgroundImage);
               assert.match(snowEdge,/snow-edge\.svg/);
               if(name==='home'){
+                await page.locator('.hero-stage.hero-stage-cinematic > .ds-snow-ridge').waitFor({state:'visible',timeout:5000});
+                const cap=await page.locator('.hero-stage.hero-stage-cinematic > .ds-snow-ridge')
+                  .evaluate(el=>({h:el.getBoundingClientRect().height,bg:getComputedStyle(el).backgroundImage}));
+                assert.ok(cap.h>=12&&cap.bg.includes('snow-edge.svg'),'Visible snow cap must decorate carousel outer frame');
                 const scene=await page.locator('#homeHeroCarousel').evaluate(el=>({
                   empty:el.classList.contains('is-empty'),
                   image:getComputedStyle(el).backgroundImage
