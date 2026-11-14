@@ -7,6 +7,8 @@ on:
       - 'app/src/main/assets/soft-aurora-preview.css'
       - 'app/src/main/assets/soft-aurora-preview.js'
       - 'scripts/build_soft_aurora_preview.mjs'
+      - 'scripts/test_deepsyq_themes_preview.mjs'
+      - 'app/src/main/assets/themes/christmas/**'
       - '.github/workflows/soft-aurora-test-preview-20261114.yml'
 permissions:
   contents: read
@@ -35,6 +37,7 @@ jobs:
           set -euo pipefail
           node --check scripts/build_soft_aurora_preview.mjs
           node --check app/src/main/assets/soft-aurora-preview.js
+          node --check scripts/test_deepsyq_themes_preview.mjs
           node scripts/build_soft_aurora_preview.mjs
           node --check .soft-aurora-preview-build/_worker.js
           test -f .soft-aurora-preview-build/deepsyq.html
@@ -73,79 +76,13 @@ jobs:
           fi
           echo "SOFT_AURORA_DEPLOYMENT_URL=$URL" >> "$GITHUB_ENV"
           echo "SOFT_AURORA_DEPLOYMENT_URL=$URL"
-      - name: Real Cloudflare smoke on desktop and mobile, 3 modes, 3 pages
+      - name: Real Cloudflare browser acceptance - five themes, snow, desktop and mobile
         shell: bash
         run: |
           set -euo pipefail
           npm ci --ignore-scripts --no-audit --no-fund
           npx playwright install chromium
-          mkdir -p artifacts/soft-aurora
-          node --input-type=module <<'JS'
-          import assert from 'node:assert/strict';
-          import {chromium} from 'playwright';
-          const base=process.env.SOFT_AURORA_DEPLOYMENT_URL;
-          assert.match(base,/^https:\/\/[a-z0-9-]+\.deepsyq\.pages\.dev$/);
-          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
-          try{
-            for(const [device,viewport] of [['desktop',{width:1440,height:900}],['mobile',{width:390,height:844}]]){
-              const context=await browser.newContext({viewport,isMobile:device==='mobile',hasTouch:device==='mobile'});
-              try{
-                const page=await context.newPage();
-                page.on('pageerror',err=>console.log('SOFT_AURORA_BROWSER_JS_ERROR',device,String(err).slice(0,350)));
-                page.on('console',m=>{if(m.type()==='error')console.log('SOFT_AURORA_BROWSER_CONSOLE',device,m.text().slice(0,350));});
-                for(const [name,route,form,input] of [
-                  ['home','deepsyq.html','#homeQuickForm','#homeQuickPrompt'],
-                  ['jarvix','jarvix-chat.html','#jChatForm','#jInput'],
-                  ['pricing','pricing.html',null,null]
-                ]){
-                  const res=await page.goto(base+'/'+route,{waitUntil:'domcontentloaded',timeout:40000});
-                  assert.equal(res?.status(),200,device+' '+route+' should load');
-                  const resource=await page.evaluate(async()=>{
-                    const test=async(file)=>{
-                      try{const r=await fetch(file,{cache:'no-store'});return {status:r.status,type:r.headers.get('content-type'),
-                        sample:(await r.text()).slice(0,90)}}catch(e){return {error:String(e)}}
-                    };
-                    return {ready:document.readyState,mode:document.documentElement.dataset.saMode,
-                      switchCount:document.querySelectorAll('#saThemeSwitch').length,
-                      appRoot:document.documentElement.outerHTML.slice(0,260),
-                      script:[...document.scripts].filter(v=>v.src.includes('soft-aurora')).map(v=>v.src),
-                      style:[...document.querySelectorAll('link[rel=stylesheet]')].filter(v=>v.href.includes('soft-aurora')).map(v=>v.href),
-                      js:await test('/soft-aurora-preview.js'),css:await test('/soft-aurora-preview.css')};
-                  });
-                  console.log('SOFT_AURORA_BROWSER_DIAGNOSTIC',JSON.stringify({device,name,resource}));
-                  await page.locator('#saThemeSwitch').waitFor({state:'visible',timeout:12000});
-                  assert.equal(await page.locator('html').getAttribute('data-sa-mode'),'dark');
-                  const stylesheet=await page.locator('link[href="/soft-aurora-preview.css"]').count();
-                  assert.equal(stylesheet,1,device+' '+route+' preview CSS injection');
-                  if(form){
-                    await page.locator(input).waitFor({state:'visible',timeout:15000});
-                    const layout=await page.locator(form).evaluate(el=>{
-                      const style=getComputedStyle(el),r=el.getBoundingClientRect();
-                      return {width:r.width,height:r.height,border:style.borderTopWidth,bg:style.backgroundColor,display:style.display};
-                    });
-                    assert.ok(layout.width>190&&layout.height>80,device+' '+name+' composer box');
-                    assert.ok(parseFloat(layout.border)>0,device+' '+name+' composer border');
-                    assert.equal(await page.locator(input).isVisible(),true);
-                    console.log('SOFT_AURORA_COMPOSER_VISIBLE',JSON.stringify({device,name,layout}));
-                  }
-                  await page.screenshot({path:'artifacts/soft-aurora/'+device+'-'+name+'-dark.png',animations:'disabled',fullPage:false});
-                  await page.locator('#saThemeSwitch').click();
-                  assert.equal(await page.locator('html').getAttribute('data-sa-mode'),'warm');
-                  if(name==='home'||name==='jarvix')
-                    await page.screenshot({path:'artifacts/soft-aurora/'+device+'-'+name+'-warm.png',animations:'disabled',fullPage:false});
-                  await page.locator('#saThemeSwitch').click();
-                  assert.equal(await page.locator('html').getAttribute('data-sa-mode'),'focus');
-                  await page.locator('#saThemeSwitch').click();
-                  assert.equal(await page.locator('html').getAttribute('data-sa-mode'),'dark');
-                  console.log('SOFT_AURORA_PAGE_PASS',JSON.stringify({device,name,status:res.status(),modes:3}));
-                }
-              }finally{await context.close();}
-            }
-            const res=await fetch(base+'/api/auth/email/status');
-            assert.equal(res.status,503,'Isolated preview cannot call real auth API');
-            console.log('SOFT_AURORA_ISOLATED_API_PASS',res.status);
-          }finally{await browser.close();}
-          JS
+          node scripts/test_deepsyq_themes_preview.mjs
       - name: Verify canonical production deployment unchanged
         if: always()
         shell: bash
@@ -165,7 +102,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: soft-aurora-real-preview-6-pages-3-modes
-          path: artifacts/soft-aurora/*.png
+          name: deepsyq-themes-v1-original-warm-focus-dark-christmas
+          path: artifacts/themes-v1/*.png
           retention-days: 14
           if-no-files-found: ignore
