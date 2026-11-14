@@ -32,6 +32,73 @@
 <script defer src="deepsyq-site-shell.js"></script>
 <script type="module" blocking="render" src="deepsyq-mobile-shell.js"></script>
 <style>.ds-account-page main.main > .view:not(#profileView){display:none!important}.ds-account-page #profileView{display:block!important}</style>
+<style>
+#profileView{--account-text:#f4f7ff;--account-muted:#c6d4ee;--account-card:#06162c;--account-line:#3166a0;color:var(--account-text);display:grid!important;gap:12px;min-width:0;padding:clamp(8px,1.2vw,20px);font-family:Inter,system-ui,sans-serif}
+#profileView [hidden]{display:none!important}
+#profileView h2,#profileView h3,#profileView p,#profileView dl,#profileView dd{margin:0;color:inherit}
+#profileView p{color:var(--account-muted);font-size:.88rem;line-height:1.45}
+#profileView i{font-style:normal}
+#profileView .account-tile{position:relative;min-width:0;overflow:hidden;padding:clamp(13px,1.4vw,22px);border:1px solid var(--account-line);border-radius:18px;background:radial-gradient(ellipse at 95% 0%,#33145c66,transparent 70%),var(--account-card);box-shadow:inset 0 0 20px #2365cb24}
+#profileView .account-hero{min-height:clamp(170px,13vw,240px);display:flex;align-items:center;border-color:#6b439a}
+#profileView .account-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:right center}
+#profileView .account-tile:has(.account-art)::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#041025 0%,#041025e8 27%,#04102580 56%,#04102512 100%);pointer-events:none}
+#profileView .account-layer{position:relative;z-index:1;width:100%;min-width:0}
+#profileView .account-hero p{max-width:39ch}
+#profileView .account-kicker{letter-spacing:.11em;text-transform:uppercase;color:#ffc5ff;font-weight:700;font-size:.72rem}
+#profileView .account-hero h2{font-size:clamp(1.55rem,3.1vw,3.1rem);line-height:1.07;margin:.32em 0 .15em;letter-spacing:-.035em}
+#profileView .account-hero h2 span{background:linear-gradient(90deg,#fff,#8bd9fd 45%,#fa79ef);color:transparent;background-clip:text}
+#profileView #accountHeroSignIn{margin-top:8px}
+#profileView .account-overview{display:grid;grid-template-columns:1fr 3.2fr;align-items:center;gap:12px}
+#profileView .account-overview dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+#profileView .account-overview dl>div{border-inline-start:1px solid var(--account-line);padding-inline-start:10px}
+#profileView dt{font-size:.77rem;color:var(--account-muted)}
+#profileView dd{font-weight:700;overflow-wrap:anywhere;line-height:1.3}
+#profileView .account-overview dd{color:#f6baff}
+#profileView .account-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--account-line);border-radius:24px;background:var(--account-card);min-width:0}
+#profileView .account-tabs button{min-width:0;border:0;border-radius:inherit;color:var(--account-text);background:none;cursor:pointer;display:flex;gap:7px;align-items:center;justify-content:center;padding:8px 3px;min-height:44px;font:inherit;font-size:clamp(.66rem,1vw,.9rem);overflow-wrap:anywhere}
+#profileView .account-tabs button[aria-pressed=true],#profileView .account-primary,#profileView .account-themes button[aria-pressed=true]{color:white;background:linear-gradient(105deg,#a719e8,#3030e1 56%,#00bbd9);box-shadow:inset 0 0 9px #d693ff68,0 0 12px #7c43df57}
+#profileView .account-grid{display:grid;grid-template-columns:1.15fr 1fr 1.02fr;gap:12px;min-width:0}
+#profileView .account-membership{order:-1}
+#profileView .account-grid h3{display:flex;gap:10px;align-items:center;font-size:clamp(1rem,1.5vw,1.35rem);line-height:1.2;margin-bottom:4px}
+#profileView h3 i{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#1262ac,#0b2145);color:#c2f3ff;font-size:1.45rem}
+#profileView .account-grid article>.account-layer{height:100%;display:flex;flex-direction:column;align-items:flex-start}
+#profileView .account-grid .account-layer p{max-width:31ch}
+#profileView .account-actions{display:flex;flex-wrap:wrap;gap:7px;padding-top:12px;margin-top:auto}
+#profileView .account-control,#profileView select:not([hidden]){min-width:0;min-height:40px;padding:7px 12px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--account-line);border-radius:13px;color:var(--account-text);background-color:#0b1e37e8;text-decoration:none;font:inherit;font-size:.8rem;text-align:center;cursor:pointer}
+#profileView .account-control:disabled{opacity:.55;cursor:default}
+#profileView :is(button,a,select):focus-visible{outline:2px solid #54e4ff;outline-offset:2px}
+#profileView .account-details dl{margin:10px 0}
+#profileView .account-details dl div{display:flex;gap:8px;justify-content:space-between;padding:6px 0;border-bottom:1px solid #7395c044}
+#profileView .account-details dd{text-align:end;min-width:0}
+#profileView .account-preferences label{display:block;margin:9px 0 5px;font-size:.84rem}
+#profileView .account-themes{display:flex;flex-wrap:wrap;gap:6px}
+#profileView .account-themes button{display:grid;gap:2px;flex:1}
+#profileView .account-themes i{font-size:1.1rem}
+#profileView .account-privacy ul{display:grid;gap:6px;padding:0;list-style:none;font-size:.8rem;margin:10px 0 0}
+#profileView .account-privacy li{display:flex;gap:7px}
+#profileView .account-privacy li::before{content:'✓';color:#76ffa0}
+#profileView .account-updates #updateStatus{margin-top:6px}
+html[data-theme=light] #profileView{--account-text:#f9faff;--account-muted:#e1e9fb;--account-card:#0c2340;--account-line:#5a8ac8}
+@media(max-width:1100px){#profileView .account-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:767px){
+ #profileView{gap:9px}
+ #profileView .account-grid{grid-template-columns:minmax(0,1fr);gap:9px}
+ #profileView .account-membership{order:0}
+ #profileView .account-overview{grid-template-columns:minmax(0,1fr);gap:7px}
+ #profileView .account-overview dl{grid-template-columns:repeat(4,minmax(0,1fr));font-size:.69rem}
+ #profileView .account-overview dl>div{padding-inline-start:4px}
+ #profileView .account-overview dt{font-size:.65rem}
+ #profileView .account-hero{min-height:150px}
+ #profileView .account-hero p:not(.account-kicker){max-width:24ch}
+ #profileView .account-control{min-height:44px}
+ #profileView .account-tile:has(.account-art)::after{background:linear-gradient(90deg,#041025 0%,#041025c9 45%,#04102538 100%)}
+}
+#profileView .account-control.account-primary,#profileView .account-themes button[aria-pressed=true]{background:linear-gradient(105deg,#a719e8,#3030e1 56%,#00bbd9)}
+html[data-theme=light] #profileView{--account-text:#11304f;--account-muted:#203f61;--account-card:#e9f3ff;--account-line:#6088b6}
+html[data-theme=light] #profileView .account-tile:has(.account-art){--account-text:#f4f7ff;--account-muted:#c6d4ee}
+html[data-theme=light] #profileView .account-control:not(.account-primary),html[data-theme=light] #profileView select{background:#dcecff;color:#102c4c}
+html[data-theme=light] #profileView .account-overview dd{color:#562784}
+</style>
 </head>
 <body class="ds-embedded-uniquifier deepsyq-sitewide-shell ds-account-page">
 <header class="ds-platform-header" aria-label="Deepsyq site header">
@@ -159,15 +226,39 @@
     </section>
 
     <section id="profileView" class="view active">
-      <div class="pageSection"><h2 data-i18n="profileTitle">Profile & Settings</h2><p data-i18n="profileSub">Manage your account, subscription, privacy, and updates.</p><button type="button" id="profileLogoutBtn" class="ghostBtn danger" data-i18n="signOut">Log out</button></div>
-      <div class="profileGrid">
-        <article class="card profileCard"><h3>Account</h3><div class="profileRows"><div class="profileRow"><span>Email</span><b id="profileEmail">Not signed in</b></div><div class="profileRow"><span>Plan</span><b id="profilePlan">Trial</b></div><div class="profileRow"><span>Status</span><b id="profileStatus">Inactive</b></div></div></article>
-        <article class="card profileCard"><h3>Subscription</h3><p class="muted">Manage payment methods, invoices, or cancel your subscription securely through Stripe.</p><div class="profileActionRow"><button id="manageBillingBtn" class="primaryBtn">Manage billing</button><button id="cancelSubscriptionBtn" class="ghostBtn danger">Cancel subscription</button></div></article>
-        <article class="card profileCard"><h3>Updates</h3><p class="muted" id="updateStatus">The web app checks for updates automatically.</p><div class="profileActionRow"><button id="checkUpdateBtn" class="ghostBtn">Check for updates</button><a id="downloadAndroidBtn" class="primaryBtn" href="https://github.com/mvryhan-web/video-variator-android/releases/latest/download/VideoUniquifier.apk">Download Android app</a></div></article>
-      </div>
-      <section class="card privacyPanel"><h3>Privacy & security</h3><div class="privacyPoint"><i>✓</i><span>HTTPS is enforced for production web traffic.</span></div><div class="privacyPoint"><i>✓</i><span>Raw video processing stays on-device whenever supported.</span></div><div class="privacyPoint"><i>✓</i><span>Stripe handles card data; Video Uniquifier does not store card numbers.</span></div><div class="privacyPoint"><i>✓</i><span>Google and Apple identity tokens are verified on the server.</span></div></section>
+<div class="account-hero account-tile"><img class="account-art" src="/media/account-settings/account-hero.webp" alt="" decoding="async"><div class="account-layer">
+  <p class="account-kicker">DEEPSYQ · <span data-account-copy="settings">Account &amp; Settings</span></p>
+  <h2><span data-account-copy="creative">Your creative space.</span></h2>
+  <p><span data-account-copy="intro">Manage your account, subscription, preferences, and privacy in one place.</span></p>
+  <button class="account-control" type="button" id="accountHeroSignIn"><span data-account-copy="signin">Sign in</span></button>
+</div></div>
+<div class="account-overview account-tile">
+  <div><h3><span data-account-copy="overviewTitle">Account overview</span></h3><p><span data-account-copy="overviewSub">Your key account information at a glance.</span></p></div>
+  <dl><div><dt><span data-account-copy="email">Email</span></dt><dd id="accountSummaryEmail">—</dd></div><div><dt><span data-account-copy="plan">Plan</span></dt><dd id="accountSummaryPlan">—</dd></div><div><dt><span data-account-copy="status">Status</span></dt><dd id="accountSummaryStatus">—</dd></div><div><dt>AI Credits</dt><dd id="accountCredits" aria-live="polite">—</dd></div></dl>
+</div>
+<nav class="account-tabs" aria-label="Account settings"><button type="button" aria-pressed="true" data-account-tab="overview"><i aria-hidden="true">⌂</i><span data-account-copy="overview">Overview</span></button><button type="button" aria-pressed="false" data-account-tab="billing"><i aria-hidden="true">▤</i><span data-account-copy="billing">Billing</span></button><button type="button" aria-pressed="false" data-account-tab="preferences"><i aria-hidden="true">⚙</i><span data-account-copy="preferences">Preferences</span></button><button type="button" aria-pressed="false" data-account-tab="privacy"><i aria-hidden="true">◇</i><span data-account-copy="privacy">Privacy</span></button></nav>
+<div class="account-grid"><article class="account-tile account-details" data-account-group="overview">
+<h3><i aria-hidden="true">♙</i><span data-account-copy="account">Account</span></h3><p><span data-account-copy="accountSub">Your account details and current plan.</span></p>
+<dl><div><dt><span data-account-copy="email">Email</span></dt><dd id="profileEmail">—</dd></div><div><dt><span data-account-copy="plan">Plan</span></dt><dd id="profilePlan">—</dd></div><div><dt><span data-account-copy="status">Status</span></dt><dd id="profileStatus">—</dd></div></dl>
+<button class="account-control" type="button" id="profileLogoutBtn"><span data-account-copy="signout">Sign out</span></button>
+</article><article class="account-tile account-membership" data-account-group="billing"><img class="account-art" src="/media/account-settings/account-membership.webp" alt="" decoding="async"><div class="account-layer">
+<h3><i aria-hidden="true">♛</i><span data-account-copy="membership">Membership</span></h3><p><span data-account-copy="membershipSub">Choose the plan that fits your creative work.</span></p>
+<div class="account-actions"><a class="account-control account-primary" href="/pricing.html"><span data-account-copy="plans">View plans</span></a><button class="account-control" type="button" id="manageBillingBtn"><span data-account-copy="manage">Manage billing</span></button><button class="account-control" type="button" id="cancelSubscriptionBtn"><span data-account-copy="cancel">Cancel subscription</span></button></div>
+</div></article><article class="account-tile account-preferences" data-account-group="preferences">
+<h3><i aria-hidden="true">⚙</i><span data-account-copy="prefs">App Preferences</span></h3><p><span data-account-copy="prefsSub">Customize your DEEPSYQ experience.</span></p>
+<label for="accountLanguage"><span data-account-copy="language">Language</span></label><select id="accountLanguage"><option value="ru">Русский</option><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select>
+<label id="accountAppearance"><span data-account-copy="appearance">Appearance</span></label><select id="themeChoice" hidden><option value="light">Light</option><option value="dark">Dark</option><option value="system">System</option></select>
+<div class="account-themes" role="group" aria-labelledby="accountAppearance"><button class="account-control" type="button" aria-pressed="false" data-account-theme="light"><i aria-hidden="true">☼</i><span data-account-copy="light">Light</span></button><button class="account-control" type="button" aria-pressed="false" data-account-theme="dark"><i aria-hidden="true">☾</i><span data-account-copy="dark">Dark</span></button><button class="account-control" type="button" aria-pressed="false" data-account-theme="system"><i aria-hidden="true">▣</i><span data-account-copy="system">System</span></button></div>
+</article><article class="account-tile account-updates profileCard" id="accountUpdates"><img class="account-art" src="/media/account-settings/account-android.webp" alt="" decoding="async"><div class="account-layer">
+<h3><i aria-hidden="true">▣</i><span data-account-copy="updates">Updates &amp; Android App</span></h3><p><span data-account-copy="updatesSub">Keep DEEPSYQ up to date and take your creativity on the go.</span></p>
+<div class="account-actions"><button class="account-control" type="button" id="checkUpdateBtn"><span data-account-copy="check">Check for updates</span></button><a id="downloadAndroidBtn" class="account-control account-primary" href="https://github.com/mvryhan-web/video-variator-android/releases/latest/download/VideoUniquifier.apk"><span data-account-copy="download">Download Android app</span></a></div>
+<p id="updateStatus" aria-live="polite"></p></div></article><article class="account-tile account-privacy" data-account-group="privacy"><h3><i aria-hidden="true">◇</i><span data-account-copy="security">Privacy &amp; Security</span></h3>
+<ul><li><span data-account-copy="https">HTTPS is enforced for production web traffic.</span></li><li><span data-account-copy="processing">Raw video processing stays on-device whenever supported.</span></li><li><span data-account-copy="stripe">Stripe handles card details. Video Uniquifier does not store card numbers.</span></li><li><span data-account-copy="tokens">Google and Apple identity tokens are verified on the server.</span></li></ul>
+<div class="account-actions"><a class="account-control" href="/ai-privacy.html"><span data-account-copy="policy">Read privacy policy</span></a><a class="account-control" href="/terms.html"><span data-account-copy="terms">Read terms of service</span></a></div></article><article class="account-tile account-compare" data-account-group="billing"><img class="account-art" src="/media/account-settings/account-pricing.webp" alt="" decoding="async"><div class="account-layer">
+<h3><i aria-hidden="true">◇</i><span data-account-copy="compareTitle">Find the plan that fits your pace.</span></h3><p><span data-account-copy="compareSub">Compare credits, features, and output quality.</span></p>
+<div class="account-actions"><a class="account-control account-primary" href="/pricing.html"><span data-account-copy="compare">Compare plans</span></a></div></div></article></div>
     </section>
-  
+
 </main>
 </div>
 
@@ -205,5 +296,98 @@
 <script src="tool-access.js" defer></script>
 <script defer src="video-uniquifier-reference.js?v=owner-20261103-banner-24-25"></script>
 <script type="module" src="jarvis-core.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+ const root=document.getElementById('profileView');
+ const get=id=>document.getElementById(id);
+ const language=get('accountLanguage'), theme=get('themeChoice');
+ const translations={
+  settings:['Аккаунт и настройки','Compte et paramètres','Cuenta y ajustes'],
+  creative:['Ваше пространство для творчества.','Votre espace créatif.','Tu espacio creativo.'],
+  intro:['Управляйте аккаунтом, подпиской, настройками и конфиденциальностью в одном месте.','Gérez votre compte, votre abonnement, vos préférences et votre confidentialité.','Gestiona tu cuenta, suscripción, preferencias y privacidad en un solo lugar.'],
+  signin:['Войти','Se connecter','Iniciar sesión'],signout:['Выйти','Se déconnecter','Cerrar sesión'],
+  overviewTitle:['Обзор аккаунта','Aperçu du compte','Resumen de la cuenta'],overviewSub:['Основная информация о вашем аккаунте.','Les informations essentielles de votre compte.','Los datos principales de tu cuenta.'],
+  email:['Эл. почта','E-mail','Correo'],plan:['Тариф','Forfait','Plan'],status:['Статус','Statut','Estado'],
+  overview:['Обзор','Aperçu','Resumen'],billing:['Оплата','Facturation','Facturación'],preferences:['Настройки','Préférences','Preferencias'],privacy:['Приватность','Confidentialité','Privacidad'],
+  account:['Аккаунт','Compte','Cuenta'],accountSub:['Данные аккаунта и текущий тариф.','Les données de votre compte et votre forfait.','Datos de tu cuenta y plan actual.'],
+  membership:['Подписка','Abonnement','Suscripción'],membershipSub:['Выберите тариф для вашей работы.','Choisissez le forfait adapté à votre travail.','Elige el plan adecuado para tu trabajo.'],
+  plans:['Смотреть тарифы','Voir les forfaits','Ver planes'],manage:['Управление оплатой','Gérer la facturation','Gestionar facturación'],cancel:['Отменить подписку','Résilier l’abonnement','Cancelar suscripción'],
+  prefs:['Настройки приложения','Préférences','Preferencias'],prefsSub:['Настройте DEEPSYQ под себя.','Personnalisez DEEPSYQ selon vos préférences.','Personaliza DEEPSYQ a tu gusto.'],
+  language:['Язык','Langue','Idioma'],appearance:['Оформление','Apparence','Apariencia'],light:['Светлая','Clair','Claro'],dark:['Тёмная','Sombre','Oscuro'],system:['Системная','Système','Sistema'],
+  updates:['Обновления и Android','Mises à jour et Android','Actualizaciones y Android'],updatesSub:['Обновляйте DEEPSYQ и работайте на ходу.','Mettez DEEPSYQ à jour et créez en déplacement.','Actualiza DEEPSYQ y crea desde cualquier lugar.'],
+  check:['Проверить обновления','Vérifier les mises à jour','Buscar actualizaciones'],download:['Скачать для Android','Télécharger pour Android','Descargar para Android'],
+  security:['Конфиденциальность и безопасность','Confidentialité et sécurité','Privacidad y seguridad'],
+  https:['Рабочий сайт использует HTTPS.','Le site de production utilise HTTPS.','El sitio de producción usa HTTPS.'],
+  processing:['Видео обрабатываются на устройстве, если оно поддерживает эту функцию.','Le traitement vidéo se fait sur l’appareil lorsque celui-ci le permet.','Los vídeos se procesan en el dispositivo cuando es compatible.'],
+  stripe:['Платёжные данные обрабатывает Stripe. Видеоуникализатор не хранит номера карт.','Stripe traite les données de paiement. Video Uniquifier ne stocke pas les numéros de carte.','Stripe procesa los pagos. Video Uniquifier no guarda números de tarjeta.'],
+  tokens:['Токены Google и Apple проверяются на сервере.','Les jetons Google et Apple sont vérifiés sur le serveur.','Los tokens de Google y Apple se verifican en el servidor.'],
+  policy:['Политика конфиденциальности','Politique de confidentialité','Política de privacidad'],terms:['Условия использования','Conditions d’utilisation','Condiciones de uso'],
+  compareTitle:['Найдите подходящий тариф.','Trouvez le forfait qui vous convient.','Encuentra el plan que mejor te conviene.'],compareSub:['Сравните кредиты, возможности и качество результата.','Comparez les crédits, les fonctionnalités et la qualité.','Compara créditos, funciones y calidad.'],
+  compare:['Сравнить тарифы','Comparer les forfaits','Comparar planes']
+ };
+ const copies=[...root.querySelectorAll('[data-account-copy]')].map(el=>[el,el.textContent]);
+ const lang=()=>localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang')||document.documentElement.lang.slice(0,2);
+ const translate=()=>{
+  const current=lang();
+  language.value=['en','ru','fr','es'].includes(current)?current:'en';
+  const index=['ru','fr','es'].indexOf(current);
+  for(const [el,english] of copies)el.textContent=translations[el.dataset.accountCopy]?.[index]||english;
+ };
+ language.onchange=()=>{
+  localStorage.setItem('deepsyq_home_language',language.value);
+  localStorage.setItem('deepsyq_lang',language.value);
+  window.dispatchEvent(new Event('deepsyq:lang'));
+ };
+ window.addEventListener('deepsyq:lang',translate);
+ translate();
+
+ const themes=[...root.querySelectorAll('[data-account-theme]')];
+ const reflectTheme=()=>themes.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.accountTheme===theme.value)));
+ for(const button of themes)button.onclick=()=>{
+  theme.value=button.dataset.accountTheme;
+  theme.dispatchEvent(new Event('change',{bubbles:true}));
+  reflectTheme();
+ };
+ reflectTheme();
+
+ const tabs=[...root.querySelectorAll('[data-account-tab]')];
+ for(const button of tabs)button.onclick=()=>{
+  const selected=button.dataset.accountTab;
+  for(const tab of tabs)tab.setAttribute('aria-pressed',String(tab===button));
+  for(const card of root.querySelectorAll('[data-account-group],#accountUpdates'))
+   card.hidden=selected!=='overview'&&card.dataset.accountGroup!==selected;
+ };
+ get('accountHeroSignIn').onclick=()=>get('signInBtn').click();
+
+ const sources=['Email','Plan','Status'].map(name=>[get('profile'+name),get('accountSummary'+name)]);
+ const credits=get('accountCredits');
+ let walletToken, wallet;
+ const renderWallet=()=>{credits.textContent=Number.isSafeInteger(wallet)?wallet.toLocaleString(language.value):(wallet===null?'…':'—');};
+ function renderAccount(){
+  const token=localStorage.getItem('vv_token')||'';
+  const ready=token&&sources[0][0].textContent.includes('@');
+  get('accountHeroSignIn').hidden=Boolean(token);
+  get('profileLogoutBtn').hidden=!token;
+  for(const [source,target] of sources)target.textContent=ready?source.textContent:(token?'…':'—');
+  if(walletToken===token){renderWallet();return;}
+  walletToken=token;
+  wallet=token?null:undefined;
+  renderWallet();
+  if(!token)return;
+  fetch('/api/ai-wallet/balance',{cache:'no-store',headers:{Authorization:'Bearer '+token}})
+   .then(response=>response.ok?response.json():null)
+   .then(data=>{
+    if(walletToken!==token||localStorage.getItem('vv_token')!==token)return;
+    wallet=Number.isSafeInteger(data?.available)&&data.available>=0?data.available:undefined;
+    renderWallet();
+   }).catch(()=>{if(walletToken===token){wallet=undefined;renderWallet();}});
+ }
+ const observer=new MutationObserver(renderAccount);
+ for(const [source] of sources)observer.observe(source,{childList:true,subtree:true,characterData:true});
+ window.addEventListener('storage',renderAccount);
+ window.addEventListener('deepsyq:lang',renderAccount);
+ renderAccount();
+});
+</script>
 </body>
 </html>

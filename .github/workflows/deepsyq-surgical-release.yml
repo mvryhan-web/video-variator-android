@@ -180,6 +180,7 @@ jobs:
          github.event.head_commit.message == 'release(Studio): connect composer sphere to JARVIX NEW' ||
          github.event.head_commit.message == 'release(Studio): restore YouTube cover and fit Director sphere' ||
          github.event.head_commit.message == 'release(Studio): use 16 by 9 covers and new composer voice' ||
+         github.event.head_commit.message == 'release(Account): publish Account and Settings design' ||
          github.event.head_commit.message == 'release(Account): restore original profile on its own page' ||
          github.event.head_commit.message == 'release(Account): separate profile and align Director sphere' ||
          github.event.head_commit.message == 'release(Studio): publish redesigned Quick Start artwork' ||
@@ -223,6 +224,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Account): publish Account and Settings design' }}" == "true" ]]; then
+            SCOPE_FILES="account-settings.html,media/account-settings/account-hero.webp,media/account-settings/account-membership.webp,media/account-settings/account-android.webp,media/account-settings/account-pricing.webp"
+          fi
           if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Studio): connect composer sphere to JARVIX NEW' }}" == "true" ]]; then
             SCOPE_FILES="jarvix-composer-design.js,jarvix-new-voice.js"
           fi
