@@ -43,8 +43,6 @@
 #profileView .account-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:right center}
 #profileView .account-tile:has(.account-art)::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#041025 0%,#041025e8 27%,#04102580 56%,#04102512 100%);pointer-events:none}
 #profileView .account-layer{position:relative;z-index:1;width:100%;min-width:0}
-#profileView .account-hero p{max-width:39ch}
-#profileView .account-kicker{letter-spacing:.11em;text-transform:uppercase;color:#ffc5ff;font-weight:700;font-size:.72rem}
 #profileView .account-hero h2{font-size:clamp(1.55rem,3.1vw,3.1rem);line-height:1.07;margin:.32em 0 .15em;letter-spacing:-.035em}
 #profileView .account-hero h2 span{background:linear-gradient(90deg,#fff,#8bd9fd 45%,#fa79ef);color:transparent;background-clip:text}
 #profileView #accountHeroSignIn{margin-top:8px}
@@ -95,7 +93,6 @@ html[data-theme=light] #profileView{--account-text:#f9faff;--account-muted:#e1e9
  #profileView .account-overview dl>div{padding-inline-start:4px}
  #profileView .account-overview dt{font-size:.65rem}
  #profileView .account-hero{min-height:150px}
- #profileView .account-hero p:not(.account-kicker){max-width:24ch}
  #profileView .account-control{min-height:44px}
  #profileView .account-tile:has(.account-art)::after{background:linear-gradient(90deg,#041025 0%,#041025c9 45%,#04102538 100%)}
 }
@@ -147,6 +144,17 @@ html[data-theme=light] #profileView .account-overview dd{color:#562784}
  #profileView .account-membership .account-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}
  #profileView .account-membership .account-control{padding:6px 4px;font-size:.67rem;flex-wrap:wrap}
  #profileView .account-compare .account-layer{min-height:108px}
+}
+#profileView #accountSummaryEmail,#profileView #profileEmail{font-size:clamp(.63rem,1.05vw,.78rem);overflow-wrap:anywhere}
+#profileView :is(#accountSummaryPlan,#accountSummaryStatus,#profilePlan,#profileStatus){font-size:clamp(.84rem,1.18vw,1rem)}
+#profileView :is(#accountSummaryPlan,#accountSummaryStatus){color:#ffc5f4}
+#profileView :is(#accountSummaryStatus,#profileStatus)[data-account-current]::before{content:'';display:inline-block;margin-inline-end:5px;width:7px;height:7px;border-radius:50%;background:#76ff99;box-shadow:0 0 8px #76ff9990;vertical-align:middle}
+html[data-theme=light] #profileView :is(#accountSummaryPlan,#accountSummaryStatus){color:#562784}
+@media(max-width:767px){
+ #profileView .account-privacy .account-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+ #profileView .account-privacy .account-actions a{white-space:normal;padding-inline:6px}
+ #profileView .account-privacy .account-actions a span{min-width:0;overflow-wrap:anywhere}
+ #profileView .account-privacy .account-actions a svg{width:15px;height:15px}
 }
 </style>
 </head>
@@ -277,35 +285,34 @@ html[data-theme=light] #profileView .account-overview dd{color:#562784}
 
     <section id="profileView" class="view active">
 <div class="account-hero account-tile"><img class="account-art" src="/media/account-settings/account-hero.webp" alt="" decoding="async"><div class="account-layer">
-  <p class="account-kicker">DEEPSYQ · <span data-account-copy="settings">Account &amp; Settings</span></p>
-  <h2><span data-account-copy="creative">Your creative space.</span></h2>
-  <p><span data-account-copy="intro">Manage your account, subscription, preferences, and privacy in one place.</span></p>
+  <h2><span data-account-copy="settings">Account &amp; Settings</span></h2>
+  
   <button class="account-control" type="button" id="accountHeroSignIn"><span data-account-copy="signin">Sign in</span></button>
 </div></div>
 <div class="account-overview account-tile">
-  <div><h3><span data-account-copy="overviewTitle">Account overview</span></h3><p><span data-account-copy="overviewSub">Your key account information at a glance.</span></p></div>
+  <div><h3><span data-account-copy="overviewTitle">Account overview</span></h3></div>
   <dl><div><dt><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18v14H3zM3 6l9 7 9-7"/></svg><span data-account-copy="email">Email</span></dt><dd id="accountSummaryEmail">—</dd></div><div><dt><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5l4 5 5-6 5 6 4-5-3 12H6zM6 21h12"/></svg><span data-account-copy="plan">Plan</span></dt><dd id="accountSummaryPlan">—</dd></div><div><dt><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h5l3-8 4 16 3-8h5"/></svg><span data-account-copy="status">Status</span></dt><dd id="accountSummaryStatus">—</dd></div><div class="account-credit-summary"><dt class="account-credit-term">AI Credits</dt><dd><a href="/pricing.html#credits"><span class="account-credit-label"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6a8 3 0 1 0 16 0 8 3 0 1 0-16 0v12a8 3 0 0 0 16 0V6M4 12a8 3 0 0 0 16 0"/></svg> AI Credits</span><span id="accountCredits" aria-live="polite">—</span></a></dd></div></dl>
 </div>
 <nav class="account-tabs" aria-label="Account settings"><button type="button" aria-pressed="true" data-account-tab="overview"><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10L12 3l9 7M5 9v12h5v-6h4v6h5V9"/></svg></i><span data-account-copy="overview">Overview</span></button><button type="button" aria-pressed="false" data-account-tab="billing"><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18v14H3zM3 10h18M6 15h4"/></svg></i><span data-account-copy="billing">Billing</span></button><button type="button" aria-pressed="false" data-account-tab="preferences"><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h7m4 0h7M3 12h12m4 0h2M3 18h3m4 0h11M10 4v4m5 2v4m-9 2v4"/></svg></i><span data-account-copy="preferences">Preferences</span></button><button type="button" aria-pressed="false" data-account-tab="privacy"><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12zM12 8l-3 5h6z"/></svg></i><span data-account-copy="privacy">Privacy</span></button></nav>
 <div class="account-grid"><article class="account-tile account-details" data-account-group="overview">
-<h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21v-2a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v2Z"/></svg></i><span data-account-copy="account">Account</span></h3><p><span data-account-copy="accountSub">Your account details and current plan.</span></p>
+<h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21v-2a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v2Z"/></svg></i><span data-account-copy="account">Account</span></h3>
 <dl><div><dt><span data-account-copy="email">Email</span></dt><dd id="profileEmail">—</dd></div><div><dt><span data-account-copy="plan">Plan</span></dt><dd id="profilePlan">—</dd></div><div><dt><span data-account-copy="status">Status</span></dt><dd id="profileStatus">—</dd></div></dl>
 <button class="account-control" type="button" id="profileLogoutBtn"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4H4v16h6m3-12 4 4-4 4m-5-4h13"/></svg><span data-account-copy="signout">Sign out</span></button>
 </article><article class="account-tile account-membership" data-account-group="billing"><img class="account-art" src="/media/account-settings/account-membership.webp" alt="" decoding="async"><div class="account-layer">
-<h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5l4 5 5-6 5 6 4-5-3 12H6zM6 21h12"/></svg></i><span data-account-copy="membership">Membership</span></h3><p><span data-account-copy="membershipSub">Choose the plan that fits your creative work.</span></p>
+<h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5l4 5 5-6 5 6 4-5-3 12H6zM6 21h12"/></svg></i><span data-account-copy="membership">Membership</span></h3>
 <div class="account-actions"><a class="account-control account-primary" href="/pricing.html"><span data-account-copy="plans">View plans</span><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h17m-6-6 6 6-6 6"/></svg></a><button class="account-control" type="button" id="manageBillingBtn"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18v14H3zM3 10h18M6 15h4"/></svg><span data-account-copy="manage">Manage billing</span></button><button class="account-control" type="button" id="cancelSubscriptionBtn"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg><span data-account-copy="cancel">Cancel subscription</span></button></div>
 </div></article><article class="account-tile account-preferences" data-account-group="preferences">
-<h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h7m4 0h7M3 12h12m4 0h2M3 18h3m4 0h11M10 4v4m5 2v4m-9 2v4"/></svg></i><span data-account-copy="prefs">App Preferences</span></h3><p><span data-account-copy="prefsSub">Customize your DEEPSYQ experience.</span></p>
+<h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h7m4 0h7M3 12h12m4 0h2M3 18h3m4 0h11M10 4v4m5 2v4m-9 2v4"/></svg></i><span data-account-copy="prefs">App Preferences</span></h3>
 <label for="accountLanguage"><span data-account-copy="language">Language</span></label><select id="accountLanguage"><option value="ru">Русский</option><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select>
 <label id="accountAppearance"><span data-account-copy="appearance">Appearance</span></label><select id="themeChoice" hidden><option value="light">Light</option><option value="dark">Dark</option><option value="system">System</option></select>
 <div class="account-themes" role="group" aria-labelledby="accountAppearance"><button class="account-control" type="button" aria-pressed="false" data-account-theme="light"><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></svg></i><span data-account-copy="light">Light</span></button><button class="account-control" type="button" aria-pressed="false" data-account-theme="dark"><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 15A9 9 0 0 1 9 4a9 9 0 1 0 11 11Z"/></svg></i><span data-account-copy="dark">Dark</span></button><button class="account-control" type="button" aria-pressed="false" data-account-theme="system"><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18v13H3zM12 17v4m-4 0h8"/></svg></i><span data-account-copy="system">System</span></button></div>
 </article><article class="account-tile account-updates profileCard" id="accountUpdates"><img class="account-art" src="/media/account-settings/account-android.webp" alt="" decoding="async"><div class="account-layer">
-<h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h16v9H4zM6 10V8a6 6 0 0 1 12 0v2M8 3 6 1m10 2 2-2M9 7h.1m5 0h.1M8 19v3m8-3v3"/></svg></i><span data-account-copy="updates">Updates &amp; Android App</span></h3><p><span data-account-copy="updatesSub">Keep DEEPSYQ up to date and take your creativity on the go.</span></p>
+<h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h16v9H4zM6 10V8a6 6 0 0 1 12 0v2M8 3 6 1m10 2 2-2M9 7h.1m5 0h.1M8 19v3m8-3v3"/></svg></i><span data-account-copy="updates">Updates &amp; Android App</span></h3>
 <div class="account-actions"><button class="account-control" type="button" id="checkUpdateBtn"><span data-account-copy="check">Check for updates</span></button><a id="downloadAndroidBtn" class="account-control account-primary" href="https://github.com/mvryhan-web/video-variator-android/releases/latest/download/VideoUniquifier.apk"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h16v9H4zM6 10V8a6 6 0 0 1 12 0v2M8 3 6 1m10 2 2-2M9 7h.1m5 0h.1M8 19v3m8-3v3"/></svg><span data-account-copy="download">Download Android app</span><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h17m-6-6 6 6-6 6"/></svg></a></div>
 <p id="updateStatus" aria-live="polite"></p></div></article><article class="account-tile account-privacy" data-account-group="privacy"><h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12zM12 8l-3 5h6z"/></svg></i><span data-account-copy="security">Privacy &amp; Security</span></h3>
 <ul><li><span data-account-copy="https">HTTPS is enforced for production web traffic.</span></li><li><span data-account-copy="processing">Raw video processing stays on-device whenever supported.</span></li><li><span data-account-copy="stripe">Stripe handles card details. Video Uniquifier does not store card numbers.</span></li><li><span data-account-copy="tokens">Google and Apple identity tokens are verified on the server.</span></li></ul>
 <div class="account-actions"><a class="account-control" href="/ai-privacy.html"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13H5zM14 3v6h5M8 13h8m-8 4h8"/></svg><span data-account-copy="policy">Read privacy policy</span></a><a class="account-control" href="/terms.html"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13H5zM14 3v6h5M8 13h8m-8 4h8"/></svg><span data-account-copy="terms">Read terms of service</span></a></div></article><article class="account-tile account-compare" data-account-group="billing"><img class="account-art" src="/media/account-settings/account-pricing.webp" alt="" decoding="async"><div class="account-layer">
-<h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5zM3 12l9 5 9-5M3 16l9 5 9-5"/></svg></i><span data-account-copy="compareTitle">Find the plan that fits your pace.</span></h3><p><span data-account-copy="compareSub">Compare credits, features, and output quality.</span></p>
+<h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5zM3 12l9 5 9-5M3 16l9 5 9-5"/></svg></i><span data-account-copy="compareTitle">Find the plan that fits your pace.</span></h3>
 <div class="account-actions"><a class="account-control account-primary" href="/pricing.html"><span data-account-copy="compare">Compare plans</span><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h17m-6-6 6 6-6 6"/></svg></a></div></div></article></div>
     </section>
 
@@ -352,18 +359,18 @@ document.addEventListener('DOMContentLoaded',()=>{
  const language=get('accountLanguage'), theme=get('themeChoice');
  const translations={
   settings:['Аккаунт и настройки','Compte et paramètres','Cuenta y ajustes'],
-  creative:['Ваше пространство для творчества.','Votre espace créatif.','Tu espacio creativo.'],
-  intro:['Управляйте аккаунтом, подпиской, настройками и конфиденциальностью в одном месте.','Gérez votre compte, votre abonnement, vos préférences et votre confidentialité.','Gestiona tu cuenta, suscripción, preferencias y privacidad en un solo lugar.'],
+  
+  
   signin:['Войти','Se connecter','Iniciar sesión'],signout:['Выйти','Se déconnecter','Cerrar sesión'],
-  overviewTitle:['Обзор аккаунта','Aperçu du compte','Resumen de la cuenta'],overviewSub:['Основная информация о вашем аккаунте.','Les informations essentielles de votre compte.','Los datos principales de tu cuenta.'],
+  overviewTitle:['Обзор аккаунта','Aperçu du compte','Resumen de la cuenta'],
   email:['Эл. почта','E-mail','Correo'],plan:['Тариф','Forfait','Plan'],status:['Статус','Statut','Estado'],
   overview:['Обзор','Aperçu','Resumen'],billing:['Оплата','Facturation','Facturación'],preferences:['Настройки','Préférences','Preferencias'],privacy:['Приватность','Confidentialité','Privacidad'],
-  account:['Аккаунт','Compte','Cuenta'],accountSub:['Данные аккаунта и текущий тариф.','Les données de votre compte et votre forfait.','Datos de tu cuenta y plan actual.'],
-  membership:['Подписка','Abonnement','Suscripción'],membershipSub:['Выберите тариф для вашей работы.','Choisissez le forfait adapté à votre travail.','Elige el plan adecuado para tu trabajo.'],
+  account:['Аккаунт','Compte','Cuenta'],
+  membership:['Подписка','Abonnement','Suscripción'],
   plans:['Смотреть тарифы','Voir les forfaits','Ver planes'],manage:['Управление оплатой','Gérer la facturation','Gestionar facturación'],cancel:['Отменить подписку','Résilier l’abonnement','Cancelar suscripción'],
-  prefs:['Настройки приложения','Préférences','Preferencias'],prefsSub:['Настройте DEEPSYQ под себя.','Personnalisez DEEPSYQ selon vos préférences.','Personaliza DEEPSYQ a tu gusto.'],
+  prefs:['Настройки приложения','Préférences','Preferencias'],
   language:['Язык','Langue','Idioma'],appearance:['Оформление','Apparence','Apariencia'],light:['Светлая','Clair','Claro'],dark:['Тёмная','Sombre','Oscuro'],system:['Системная','Système','Sistema'],
-  updates:['Обновления и Android','Mises à jour et Android','Actualizaciones y Android'],updatesSub:['Обновляйте DEEPSYQ и работайте на ходу.','Mettez DEEPSYQ à jour et créez en déplacement.','Actualiza DEEPSYQ y crea desde cualquier lugar.'],
+  updates:['Обновления и Android','Mises à jour et Android','Actualizaciones y Android'],
   check:['Проверить обновления','Vérifier les mises à jour','Buscar actualizaciones'],download:['Скачать для Android','Télécharger pour Android','Descargar para Android'],
   security:['Конфиденциальность и безопасность','Confidentialité et sécurité','Privacidad y seguridad'],
   https:['Рабочий сайт использует HTTPS.','Le site de production utilise HTTPS.','El sitio de producción usa HTTPS.'],
@@ -371,7 +378,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   stripe:['Платёжные данные обрабатывает Stripe. Видеоуникализатор не хранит номера карт.','Stripe traite les données de paiement. Video Uniquifier ne stocke pas les numéros de carte.','Stripe procesa los pagos. Video Uniquifier no guarda números de tarjeta.'],
   tokens:['Токены Google и Apple проверяются на сервере.','Les jetons Google et Apple sont vérifiés sur le serveur.','Los tokens de Google y Apple se verifican en el servidor.'],
   policy:['Политика конфиденциальности','Politique de confidentialité','Política de privacidad'],terms:['Условия использования','Conditions d’utilisation','Condiciones de uso'],
-  compareTitle:['Найдите подходящий тариф.','Trouvez le forfait qui vous convient.','Encuentra el plan que mejor te conviene.'],compareSub:['Сравните кредиты, возможности и качество результата.','Comparez les crédits, les fonctionnalités et la qualité.','Compara créditos, funciones y calidad.'],
+  compareTitle:['Найдите подходящий тариф.','Trouvez le forfait qui vous convient.','Encuentra el plan que mejor te conviene.'],
   compare:['Сравнить тарифы','Comparer les forfaits','Comparar planes']
  };
  const copies=[...root.querySelectorAll('[data-account-copy]')].map(el=>[el,el.textContent]);
@@ -415,6 +422,10 @@ document.addEventListener('DOMContentLoaded',()=>{
  function renderAccount(){
   const token=localStorage.getItem('vv_token')||'';
   const ready=token&&sources[0][0].textContent.includes('@');
+  const status=get('profileStatus');
+  const current=Boolean(ready&&/^(?:active|trial(?:ing)?)(?:$|[ .·(])/i.test(status.textContent.trim())&&!/inactive|expired|cancelled|canceled/i.test(status.textContent));
+  status.toggleAttribute('data-account-current',current);
+  get('accountSummaryStatus').toggleAttribute('data-account-current',current);
   get('accountHeroSignIn').hidden=Boolean(token);
   get('profileLogoutBtn').hidden=!token;
   for(const [source,target] of sources)target.textContent=ready?source.textContent:(token?'…':'—');
