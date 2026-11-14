@@ -81,8 +81,19 @@ jobs:
           const previewKeys=Object.keys(project.deployment_configs?.preview?.env_vars||{});
           assert(!previewKeys.includes('STRIPE_SECRET_KEY'),'TEST has configured live Stripe key');
           const deployments=[];
-          for(let page=1;page<=4;page++){deployments.push(...await get('/deployments?per_page=20&page='+page));}
-          const live=deployments.find(d=>(d.aliases||[]).includes('https://test.deepsyq.pages.dev'));
+          for(let page=1;page<=30;page++){
+            const batch=await get('/deployments?env=preview&per_page=50&page='+page);
+            assert(Array.isArray(batch),'Invalid preview deployments page');
+            deployments.push(...batch);
+            if(batch.length<50)break;
+          }
+          const aliasMatches = d => (d.aliases||[]).some(u => String(u).replace(/^https?:\\/\\//,'').replace(/\\/$/,'') === 'test.deepsyq.pages.dev');
+          const live=deployments.find(aliasMatches);
+          console.log('PREVIEW_DEPLOYMENT_LOOKUP',JSON.stringify({
+            count:deployments.length,matched:Boolean(live),
+            first:deployments.slice(0,8).map(d=>({id:d.id,branch:d.deployment_trigger?.metadata?.branch,aliases:d.aliases,uses_functions:d.uses_functions})),
+            testCandidates:deployments.filter(d=>d.deployment_trigger?.metadata?.branch==='test').slice(0,5).map(d=>({id:d.id,aliases:d.aliases,uses_functions:d.uses_functions}))
+          }));
           assert(live&&live.environment==='preview','Stable TEST deployment missing');
           assert.equal(live.deployment_trigger?.metadata?.branch,'test');
           assert.equal(live.uses_functions,true,'Worker-enabled TEST baseline required');
