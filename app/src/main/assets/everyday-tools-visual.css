@@ -105,7 +105,7 @@ main.free-tools-page .et-gallery .et-card:is(
 main.free-tools-page .et-gallery .et-card:is(
   [href="?tool=video"], [href="?tool=prompter"]
 ) > .et-card-art {width:62%;left:auto;right:10%;}
-main.free-tools-page .et-uniquifier > .et-video-art {left:auto;right:10%;}
+main.free-tools-page .et-uniquifier > .et-video-art {left:auto;right:0;width:70%;}
 @media(max-width:640px) {
   main.free-tools-page .et-gallery .et-card:is(
     [href="photo-collage.html"], [href="smart-reminders.html"],
@@ -114,5 +114,5 @@ main.free-tools-page .et-uniquifier > .et-video-art {left:auto;right:10%;}
   main.free-tools-page .et-gallery .et-card:is(
     [href="?tool=video"], [href="?tool=prompter"]
   ) > .et-card-art {width:64%;right:9%;}
-  main.free-tools-page .et-uniquifier > .et-video-art {right:9%;}
+  main.free-tools-page .et-uniquifier > .et-video-art {right:0;width:80%;}
 }
