@@ -135,10 +135,11 @@
         const data=await response.json().catch(()=>({}));
         if(!response.ok||!data.token)throw new Error(data.error||'EMAIL_AUTH_FAILED');
         localStorage.setItem('vv_token',data.token);if(data.newAccount===true)localStorage.setItem('deepsyq_onboarding_pending','1');msg.textContent=c.done;
+        const finishSignIn=()=>location.pathname==='/account-settings.html'?location.replace('/'):location.reload();
         if(window.openLuminaTermsModal && !window.isLuminaTermsAccepted?.()){
-          window.openLuminaTermsModal(()=>{ setTimeout(()=>location.reload(), 200); });
+          window.openLuminaTermsModal(()=>{ setTimeout(finishSignIn, 200); });
         } else {
-          setTimeout(()=>location.reload(), 250);
+          setTimeout(finishSignIn, 250);
         }
       }catch(err){msg.textContent=messageFor(err.message);submit.disabled=false;toggle.disabled=false;}
     });

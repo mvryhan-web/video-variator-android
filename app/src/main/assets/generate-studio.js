@@ -1204,6 +1204,7 @@ function filename(){const ext=blob?.type.startsWith('video/')?'mp4':blob?.type==
 $('download').onclick=async()=>{if(!blob||busy)return;busy=true;availability();try{await saveLocal(new File([blob],filename(),{type:blob.type}));}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}};
 $('share').onclick=async()=>{if(!blob||busy)return;const file=new File([blob],filename(),{type:blob.type});try{if(window.AndroidBridge&&window.VUShareFile){busy=true;availability();try{await window.VUShareFile({blob:file,name:file.name});}finally{busy=false;availability();}return;}if(navigator.canShare?.({files:[file]}))await navigator.share({files:[file]});else $('status').textContent=say('File sharing is unavailable in this browser. Download the file to share it.','Этот браузер не поддерживает отправку файла. Скачайте его и поделитесь.');}catch(e){if(e.name!=='AbortError')$('status').textContent=say('Could not share. Try downloading the file.','Не удалось поделиться. Попробуйте скачать файл.');}};
 $('remove').onclick=async()=>{if(!job||busy)return;busy=true;availability();try{await api(`/api/studio/jobs/${encodeURIComponent(job)}`,{method:'DELETE'});++generation;clearResult();forgetStudioJob(job,kind);job=null;$('status').textContent=say('Result deleted. Downloaded copies are kept.','Результат удалён. Скачанные копии остаются.');if(historyView)await loadHistory();else setHistory(false);}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}};
+let pendingJarvixLaunch=false;
 async function applyLocalStudioHandoff(){
  try{
   const h=await takeStudioHandoff();requireStudioAccount();if(!h)return false;
@@ -1213,6 +1214,15 @@ async function applyLocalStudioHandoff(){
   const ratio=h.settings?.ratio;if(ratio&&currentModel()?.ratios?.includes(ratio)){$('ratio').value=ratio;updateRatioSelection();}const resolution=h.settings?.resolution;if(kind==='image'&&currentModel()?.capabilities?.resolutions?.includes(resolution)){$('imageResolution').value=resolution;updateRatioSelection();}const outputFormat=h.settings?.outputFormat;if(kind==='image'&&currentModel()?.capabilities?.outputFormats?.includes(outputFormat)){$('imageOutputFormat').value=outputFormat;updateRatioSelection();}
   const max=currentModel()?.references||0,files=(h.files||[]).slice(0,max);if(files.length)await acceptFiles(files);
   $('consent').checked=false;availability();const dropped=(h.files||[]).length-files.length;
+  if(h.source==='jarvix-media-intake'){
+   if(ratio&&$('ratio').value!==ratio)throw Error('Requested ratio is unavailable');
+   if(target==='video'&&h.settings?.videoDuration){
+    const duration=String(h.settings.videoDuration);
+    if(!Array.from($('videoDuration').options).some(option=>option.value===duration))throw Error('Requested duration is unavailable');
+    $('videoDuration').value=duration;updateRatioSelection();availability();
+   }
+   pendingJarvixLaunch=true;
+  }
   if(h.autoGenerate||new URLSearchParams(location.search).get('auto')==='1'){
     if($('consent'))$('consent').checked=true;
     availability();
@@ -1492,6 +1502,7 @@ imageDraftReady=true;videoDraftReady=true;if(kind==='image'){showImageDraftState
 const previous=config.enabled?await restoreLegacyStudioJob():null;
 if(previous&&sessionStorage.getItem('vu_generation_background_job')!==previous){job=previous;busy=true;availability();const epoch=++generation;watch(job,epoch).catch(e=>{if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();});}else if(previous&&kind==='video'&&sessionStorage.getItem('vu_generation_background_job')===previous){job=previous;setHistory(true);$('status').textContent=say('The video job is being tracked in History. Check its status when ready.','Видеозадача находится в Истории. Проверяйте её статус там.');}
 
+if(pendingJarvixLaunch&&!busy&&!$('generate').disabled)$('generate').click();
 if(new URLSearchParams(location.search).get('view')==='history')setHistory(true);
 const targetJobId=new URLSearchParams(location.search).get('jobId');if(targetJobId&&config.enabled){job=targetJobId;busy=true;availability();const epoch=++generation;watch(job,epoch).catch(e=>{if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();});}
 

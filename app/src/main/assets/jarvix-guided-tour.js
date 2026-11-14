@@ -6,7 +6,7 @@ import {getTourV3Recording} from './jarvix-tour-v3-audio.js';
 import {getTourV4Recording,v4BeatId} from './jarvix-tour-v4-audio.js';
 import {installTourFocus,performTourDemo,endTourFocus} from './jarvix-tour-choreography.js';
 let audio=null,turn=0,bar=null,state=null,navTimer=null,waitTimer=null,stepWaitKey=null,stepWaitStart=0,activeFocus='',tourSettingsOpened=false;
-let transcriptPromise=null,tourSpeaking=false,cueTimer=null,narrationTimer=null,tourStudioSettingsOwned=false;
+let tourSpeaking=false,cueTimer=null,narrationTimer=null,tourStudioSettingsOwned=false;
 const pauseFrame=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 // Tour-only pacing: a gesture should be visible but never force one or more
 // seconds of dead air before the next native control is clicked.
@@ -26,7 +26,6 @@ async function showTourElement(target,alive,ms=350){
 async function speakOptionalTourV4(id,current){
  const approved=await getTourV4Recording(id,state?.language||'ru');
  if(!approved||current!==turn||state?.phase!=='playing')return false;
- caption(approved.text);
  const player=new Audio(approved.url);audio=player;player.id='dsTourAudio';player.hidden=true;document.body.append(player);
  let finished=false;
  await new Promise(resolve=>{
@@ -39,13 +38,6 @@ async function speakOptionalTourV4(id,current){
  });
  return current===turn&&state?.phase==='playing';
 }
-const clipTranscript=file=>{
- transcriptPromise ||= fetch('/media/jarvix/clips/manifest.json',{signal:AbortSignal.timeout(5000)})
-  .then(r=>r.ok?r.json():null).then(data=>new Map((data?.clips||[]).map(item=>[item.url.split('/').pop().split('?')[0],item.text]))).catch(()=>new Map());
- return transcriptPromise.then(map=>map.get(file.split('/').pop())||'');
-};
-function caption(text){const el=bar?.querySelector('.ds-tour-caption');if(el)el.textContent=text||'';}
-function captionForClip(file,current){caption('');void clipTranscript(file).then(text=>{if(current===turn&&state)caption(text);});}
 const read=()=>{try{const s=JSON.parse(sessionStorage.getItem(TOUR_KEY)||'null');return s&&Number.isInteger(s.index)&&s.index>=0&&s.index<tourPlan(s.language).length&&['playing','paused'].includes(s.phase)?s:null;}catch{return null;}};
 function save(){try{state?sessionStorage.setItem(TOUR_KEY,JSON.stringify(state)):sessionStorage.removeItem(TOUR_KEY);}catch{}}
 export function isTourActive(){return !!state||!!read();}
@@ -93,7 +85,7 @@ function render(){
  if(!state){document.body.classList.remove('ds-tour-active');bar?.remove();bar=null;document.getElementById('topJarvisBtn')?.classList.remove('ds-tour-speaking');return;}
  document.body.classList.add('ds-tour-active');
  const lang=state.language;const texts={ru:['Пауза','Продолжить','Стоп'],en:['Pause','Continue','Stop'],fr:['Pause','Continuer','Arrêter'],es:['Pausa','Continuar','Parar']}[lang]||['Pause','Continue','Stop'];
- if(!bar){bar=document.createElement('section');bar.className='ds-tour-controls';bar.setAttribute('aria-label','JARVIX tour controls');bar.innerHTML='<button type="button" data-tour="pause"></button><button type="button" data-tour="continue"></button><button type="button" data-tour="stop"></button>';bar.querySelector('[data-tour="pause"]').onclick=pauseJarvixGuidedTour;bar.querySelector('[data-tour="continue"]').onclick=continueJarvixGuidedTour;bar.querySelector('[data-tour="stop"]').onclick=stopJarvixGuidedTour;document.body.append(bar);}
+ if(!bar){bar=document.createElement('section');bar.className='ds-tour-controls';bar.setAttribute('aria-label','JARVIX tour controls');bar.innerHTML='<button type="button" data-tour="pause"></button><button type="button" data-tour="continue"></button><button type="button" data-tour="stop"></button>';bar.querySelector('[data-tour="pause"]').onclick=pauseJarvixGuidedTour;bar.querySelector('[data-tour="continue"]').onclick=continueJarvixGuidedTour;bar.querySelector('[data-tour="stop"]').onclick=()=>{stopJarvixGuidedTour();window.__jarvixNewVoiceStop?.();};document.body.append(bar);}
  bar.setAttribute('aria-label',`JARVIX · ${tourPlan(lang)[state.index].title} · ${state.index+1}/${tourPlan(lang).length}${state.error?' · '+state.error:''}`);
  // A paused tour used to look like it had silently stopped. Show the exact
  // playback/navigation problem above the existing Pause/Continue controls.
@@ -110,12 +102,7 @@ function render(){
  for(const [i,key]of ['pause','continue','stop'].entries()){const b=bar.querySelector(`[data-tour="${key}"]`);b.textContent=texts[i];b.title=state.error||texts[i];}
  bar.querySelector('[data-tour="pause"]').hidden=state.phase==='paused';bar.querySelector('[data-tour="continue"]').hidden=state.phase!=='paused';
  bar.dataset.error=state.error||'';
- if(!bar.querySelector('.ds-tour-caption')){
-  const line=document.createElement('p');line.className='ds-tour-caption';line.setAttribute('aria-live','polite');
-  line.style.cssText='position:absolute;bottom:calc(100% + 8px);left:0;right:0;margin:auto;max-width:min(92vw,550px);padding:10px 12px;background:rgba(11,17,32,.94);border:1px solid rgba(245,181,81,.55);border-radius:10px;color:#fff;font:500 13px/1.5 system-ui,sans-serif;text-align:center;';
-  bar.append(line);
- }
- bar.querySelector('.ds-tour-caption').hidden=!!state.error;
+
  document.getElementById('topJarvisBtn')?.classList.toggle('ds-tour-speaking',state.phase==='playing'&&tourSpeaking);
 }
 function advance(current){if(current!==turn||!state||state.phase!=='playing')return;closeTourSettings();state=tourAction(state,'ended');save();if(state)void play();else{clearAudio();document.querySelectorAll('.jarvis-tour-spotlight,.ds-tour-drawer-target').forEach(e=>e.classList.remove('jarvis-tour-spotlight','ds-tour-drawer-target'));activeFocus='';updateJarvisState('idle');render();window.dispatchEvent(new Event('jarvix:tour-ended'));}}
@@ -141,7 +128,6 @@ function speakNavigation(step,target,current){
  clip.onloadedmetadata=()=>{if(state?.position)clip.currentTime=Math.min(state.position,Math.max(0,(clip.duration||0)-.1));};
  clip.onplay=()=>{pauseJarvisRecognition();updateJarvisState('speaking');};
  clip.onended=navigate;clip.onerror=()=>blocked(current,'Navigation voice unavailable');
- captionForClip(file,current);
  void clip.play().catch(()=>blocked(current,'Press Continue'));
 }
 function speakBeats(beats,current){
@@ -150,7 +136,6 @@ function speakBeats(beats,current){
   if(current!==turn||!state||state.phase!=='playing')return;
   const beat=beats[index];
   if(!beat){advance(current);return;}
-  caption(beat.text);
   // Highlight the precise control only when its associated phrase starts playing.
   void speakOwnerSpeech(beat.text,state.language,{
    phase:phase=>{if(current===turn&&phase==='playing')spotlight(beat);if(current===turn&&bar)bar.dataset.narration=phase;},
@@ -430,7 +415,6 @@ async function speakV3(text,current,complete,beat=null){
    // Starting a real MP3 disarms the loading watchdog. Long owner recordings
    // must finish naturally; the former 14s timer cut them off mid-sentence.
    clearTimeout(narrationTimer);
-   caption(narration); // Actual approved V4 line when recorded; otherwise matching V3.
    if(beat){
     const title=tourPlan(state.language)[state.index]?.title;
     const idx=state.beat||0;
@@ -614,7 +598,6 @@ function playV3(step,target,current){
     const alive=()=>current===turn&&state?.phase==='playing';
     const line=await getTourV4Recording('final-upgrade',state.language);
     if(!alive())return;
-    caption(line?.text||closing);
     // Spotlight and voice now run together rather than making the listener
     // wait 2.2 seconds before a second closing recording starts.
     const focus=showTourElement('#topPricing,[href="pricing.html"]',alive,1100);
@@ -632,7 +615,6 @@ function playV3(step,target,current){
  if(step.title==='trial'){
   // The old speech explicitly says Trial cannot be purchased, which is
   // no longer true. Show the live card without playing a false statement.
-  caption({ru:'Trial — ознакомительный план. Актуальные условия смотрите на этой странице.',en:'Trial — introductory plan. See the current terms on this page.',fr:'Trial — offre de découverte. Consultez les conditions sur cette page.',es:'Trial — plan introductorio. Consulta las condiciones actuales en esta página.'}[state.language]);
   void showTourElement('.price-plan.price-trial',()=>current===turn&&state?.phase==='playing',1600)
    .then(()=>{if(current===turn&&state?.phase==='playing')advance(current);});
   return;
@@ -717,10 +699,10 @@ async function play(){
  clip.onplay=()=>{pauseJarvisRecognition();updateJarvisState('speaking');sync();};
  clip.onended=()=>{const delay=state?.index===0?Math.max(0,3000-(performance.now()-started)):0;waitTimer=setTimeout(()=>advance(current),delay);};
  clip.onerror=()=>blocked(current,'Recorded narration unavailable');
- captionForClip(step.audio,current);
  try{await clip.play();}catch{blocked(current,'Press Continue');}
 }
 export function startJarvixGuidedTour(){
+ clearAudio();
  unlockOwnerSpeech();
  suspendJarvisForTour();
  // Tour never restores a previously active microphone over its own narration.
@@ -760,18 +742,12 @@ if(typeof window!=='undefined'){
    state=checkpoint;state.cloneHandoff=false;save();render();
    void (async()=>{
     const active=()=>!!state&&state.phase==='playing'&&state.index===11;
-    const captionText={
-     ru:'Здесь вы можете создать собственное изображение или видео по понравившемуся примеру.',
-     en:'Here you can create your own image or video based on the example you liked.',
-     fr:'Vous pouvez créer ici une image ou une vidéo à partir de votre exemple préféré.',
-     es:'Aquí puedes crear tu propia imagen o vídeo a partir del ejemplo elegido.'
-    }[state.language]||'Create your own image or video here.';
     await pauseFrame(650);
     if(!active())return;
     await showTourElement('#jMessages',active,1700);
     if(!active())return;
     const recorded=await speakOptionalTourV4('clone-arrival',turn);
-    if(!recorded){caption(captionText);await pauseFrame(3000);}
+    if(!recorded)await pauseFrame(3000);
     // No JARVIX Chat source modifications or chat actions.
     if(!active())return;
     state=tourAction(state,'ended');

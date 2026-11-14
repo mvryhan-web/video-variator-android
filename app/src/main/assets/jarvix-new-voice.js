@@ -732,13 +732,19 @@ async function respond(message,id){
   return;
  }
  const action=extra?null:extractAction(command.replace(/^(?:я\s+хочу|можешь)\s+(?:создать|сделать|сгенерировать|нарисовать)\s+/iu,'Создай '))||(extra?null:extractAction(command.replace(/\bcanva\b/giu,'Canvas')));
+ if(!extra&&action?.intent!=='NAVIGATE'&&!isGreetingOnly(message,lang)&&/^\/jarvix-chat(?:\.html)?$/.test(location.pathname)){
+  const accepted=!window.dispatchEvent(new CustomEvent('jarvix:media-details',{cancelable:true,detail:{text:message}}));
+  if(accepted){listen(id);return;}
+ }
  const imageRequest=command.replace(/^(?:(?:слушай|эй|джарвис|джарвикс|jarvix|jarvis|пожалуйста)[,\s:]+)+/iu,'').trim();
- if(/^(?:(?:ты\s+)?можешь\s+(?:создать|сделать|сгенерировать|нарисовать)|создай|сделай|сгенерируй|нарисуй)\s+(?:мне\s+)?(?:изображение|картинку|фото)[.!?…]*$/iu.test(imageRequest)){
+ const intakeMatch=imageRequest.match(/^(?:(?:я\s+)?хочу\s+(?:создать|сделать|сгенерировать)|(?:ты\s+)?можешь\s+(?:создать|сделать|сгенерировать|нарисовать)|создай|сделай|сгенерируй|нарисуй)\s+(?:мне\s+)?(?:нов(?:ое|ую)\s+)?(изображение|картинку|фото|фотографию|видео|ролик)[.!?…]*$/iu);
+ if(intakeMatch){
+  const kind=/видео|ролик/iu.test(intakeMatch[1])?'video':'image';
   const confirmation='Да, конечно.';
   showTextResponse(confirmation);
   const clip=await recordedExact(confirmation,lang).catch(()=>null);
   if(clip&&on&&seq===id)await playOwnerRecording(clip,id,1500);
-  if(on&&seq===id)location.assign(new URL('/jarvix-chat.html?mode=image&jarvixImage=1',location.origin));
+  if(on&&seq===id)location.assign(new URL('/jarvix-chat.html?mode='+kind+'&jarvixImage=1',location.origin));
   return;
  }
  if(action?.intent==='GENERATE_MEDIA'&&action.raw_prompt){

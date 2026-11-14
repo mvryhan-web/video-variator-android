@@ -180,6 +180,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' ||
        (github.event_name == 'push' &&
         (github.event.head_commit.message == 'release(JARVIX Tour): publish tour-only fix' ||
+         github.event.head_commit.message == 'release(JARVIX): connect voice generation tools and tour controls' ||
          github.event.head_commit.message == 'release(Studio): connect composer sphere to JARVIX NEW' ||
          github.event.head_commit.message == 'release(Studio): restore YouTube cover and fit Director sphere' ||
          github.event.head_commit.message == 'release(Studio): use 16 by 9 covers and new composer voice' ||
@@ -229,6 +230,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(JARVIX): connect voice generation tools and tour controls' }}" == "true" ]]; then
+            SCOPE_FILES="jarvix-chat.js,jarvix-new-voice.js,generate-studio.js,jarvix-guided-tour.js,auth-email.js,app-v4.js,jarvix-action-plan.js"
+          fi
           if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(AI Credits): enable Checkout on production aliases' }}" == "true" ]]; then
             python scripts/deepsyq_surgical_publish.py --mode publish --files "" --commit "$GITHUB_SHA" --credit-worker
             exit

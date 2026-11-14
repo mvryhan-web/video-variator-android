@@ -465,8 +465,9 @@ function generationPlanNotice(mode){
  return copy[getJarvixLanguage()]||copy.en;
 }
 const imageIntakeQuery = new URLSearchParams(location.search);
-const imageIntakeEnabled = imageIntakeQuery.get('mode') === 'image' && imageIntakeQuery.get('jarvixImage') === '1';
-const imageRatios = /(?<!\d)(?:1\s*:\s*1|16\s*:\s*9|9\s*:\s*16|4\s*:\s*3|3\s*:\s*4)(?!\d)/u;
+const intakeMode = imageIntakeQuery.get('mode');
+const imageIntakeEnabled = ['image','video'].includes(intakeMode) && imageIntakeQuery.get('jarvixImage') === '1';
+const imageRatios = /(?<!\d)(?:1\s*[:xх×]\s*1|16\s*[:xх×]\s*9|9\s*[:xх×]\s*16|4\s*[:xх×]\s*3|3\s*[:xх×]\s*4)(?!\d)/iu;
 const imageIntakeReply = text => ({id:makeId(),role:'assistant',text,createdAt:Date.now()});
 async function prepareImageIntake(message, intake){
  const text=message.text.trim();
@@ -477,15 +478,17 @@ async function prepareImageIntake(message, intake){
  delete intake.approval;
  const format=text.match(imageRatios)?.[0];
  const stories=/(?:^|\s)для\s+сторис(?=\s|[,.!?]|$)/iu;
- if(format)intake.ratio=format.replace(/\s/g,'');
+ if(format)intake.ratio=format.replace(/\s/g,'').replace(/[xх×]/giu,':');
  else if(stories.test(text))intake.ratio='9:16';
- const description=text.replace(imageRatios,'').replace(stories,'')
+ const duration=intake.kind==='video'?text.match(/(?:^|\s)(\d{1,2})\s*(?:секунд[уы]?|сек\.?|seconds?)(?=\s|[,.!?]|$)/iu):null;
+ if(duration)intake.duration=Number(duration[1]);
+ const description=(duration?text.replace(duration[0],' '):text).replace(imageRatios,'').replace(stories,'')
   .replace(/(?:^|\s)(?:формат|соотношение сторон)\s*[:—-]?\s*/iu,' ')
   .replace(/^[\s,.:;—-]+|[\s,.:;—-]+$/gu,'');
  if(description)intake.description=[intake.description,description].filter(Boolean).join(', ').slice(0,1800);
- if(!intake.description)return 'Какое изображение вы хотите создать? Опишите сюжет и стиль.';
+ if(!intake.description)return intake.kind==='video'?'Какое видео вы хотите создать? Опишите сюжет и стиль.':'Какое изображение вы хотите создать? Опишите сюжет и стиль.';
  if(!intake.ratio)return 'Какой формат нужен? Например, «для сторис» — 9:16.';
- const request='Составь только промпт для изображения по описанию и формату. Формат: '+intake.ratio+'. Описание: '+JSON.stringify(intake.description);
+ const request='Составь только промпт для '+(intake.kind==='video'?'видео':'изображения')+'. Формат: '+intake.ratio+'. Описание: '+JSON.stringify(intake.description);
  const data=await api('/api/jarvix/chat',{sessionId:conversation.sessionId,message:request,images:[],language:getJarvixLanguage()});
  const prompt=typeof data.reply==='string'?data.reply.trim().slice(0,1800):'';
  if(!prompt || !/^Google Gemini/i.test(data.provider||''))throw Error('Gemini не подготовил промпт. Повторите попытку.');
@@ -545,7 +548,7 @@ async function runBuiltinTool(tool){
 
 async function processMessage(message){
  let mode, textChat=false;
- const greeting=!conversation.imageIntake&&localStorage.getItem('vv_token')?localGreeting(message,getJarvixLanguage()):null;
+ const greeting=(!conversation.imageIntake||conversation.imageIntake.autoLaunch)&&localStorage.getItem('vv_token')?localGreeting(message,getJarvixLanguage()):null;
  if(!greeting){message.status='processing';await save();render();}
  try{
   if(greeting){
@@ -580,10 +583,20 @@ async function processMessage(message){
   if(!conversation.imageIntake&&lastImage?.imageRecipe&&/^(?:сделай (?:её|ее|картинку) (?:светлее|темнее)|оставь тот же стиль|добавь)(?=\s|[.!?]|$)/iu.test(message.text.trim())){
    conversation.imageIntake={...lastImage.imageRecipe};
   }
-  if(conversation.imageIntake&&(message.mode==='image'||lastImage?.imageRecipe)){
+  const pendingTool=conversation.imageIntake?.autoLaunch&&extractAction(message.text.trim().replace(/^(?:(?:слушай|джарвис|джарвикс|jarvis|jarvix)[,\s:]+)+/iu,''));
+  if(conversation.imageIntake&&pendingTool?.intent!=='NAVIGATE'&&(message.voiceFollowUp||['auto','image','video'].includes(message.mode)||lastImage?.imageRecipe)){
    const result=await prepareImageIntake(message,conversation.imageIntake);
    if(typeof result==='string'){
     message.status='sent';conversation.messages.push(imageIntakeReply(result));await save();render();return;
+   }
+   if(conversation.imageIntake.autoLaunch){
+    const kind=conversation.imageIntake.kind;
+    await saveStudioHandoff({kind,prompt:result.prompt,settings:{ratio:result.ratio,...(conversation.imageIntake.duration?{videoDuration:conversation.imageIntake.duration}:{})},source:'jarvix-media-intake'});
+    store.guard();
+    delete conversation.imageIntake;
+    message.status='sent';await save();
+    location.assign('/generate-studio.html?studio='+kind);
+    return;
    }
    preparedImage=result;
   }
@@ -963,12 +976,15 @@ async function applyIncomingHandoffOrTemplate() {
     }
   }
 }
-if(imageIntakeEnabled&&!conversation.imageIntake){
- conversation.imageIntake={};
- conversation.messages.push(imageIntakeReply('Да, конечно. Какое изображение вы хотите создать? Опишите сюжет и укажите формат, например 1:1, 16:9 или 9:16.'));
+if(imageIntakeEnabled&&!conversation.imageIntake?.autoLaunch){
+ conversation.imageIntake={kind:intakeMode,autoLaunch:true};
+ imageIntakeQuery.delete('jarvixImage');
+ history.replaceState(null,'',location.pathname+'?'+imageIntakeQuery+location.hash);
+ conversation.messages.push(imageIntakeReply(('Да, конечно. '+(intakeMode==='video'?'Какое видео вы хотите создать?':'Какое изображение вы хотите создать?')+' Опишите сюжет, стиль и формат, например 16:9 или 9:16.')));
  void save().then(render).catch(error=>status(error.message));
  }else if(!imageIntakeEnabled&&!imageIntakeQuery.has('jarvixBuiltin'))void applyIncomingHandoffOrTemplate();
-window.addEventListener('jarvix:voice-question',event=>{
+function handleVoiceQuestion(event){
+ if(event.type==='jarvix:media-details'&&!conversation?.imageIntake?.autoLaunch)return;
  const text=event.detail?.text;
  if(typeof text!=='string'||!text.trim()||!conversation)return;
  event.preventDefault();
@@ -982,7 +998,9 @@ window.addEventListener('jarvix:voice-question',event=>{
   conversation.messages.push(message);
   await processMessage(message);
  });
-});
+}
+window.addEventListener('jarvix:voice-question',handleVoiceQuestion);
+window.addEventListener('jarvix:media-details',handleVoiceQuestion);
 const incomingTool=imageIntakeQuery.get('jarvixBuiltin');
 let incomingCommand={'latest-image':'Открой последнюю картинку в Canvas','latest-video':'Покажи последнее видео'}[incomingTool];
 let incomingVoiceQuestion=false;
