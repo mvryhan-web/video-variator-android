@@ -146,10 +146,39 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
    #studioSettingsHub>:is(#studioTypePicker,#modelButton,#settingsButton) .composer-chevron{margin-left:auto!important;}
    #studioSettingsHub.composer-popover::backdrop{background:transparent!important;}
   `;
+  // JARVIX Chat mobile only: reserve a separate title row for the close X.
+  // Do not alter the shared Studio controls or any desktop/Home layout.
+  if(document.getElementById('jChatForm')&&innerWidth<=760){
+   style.textContent+=`
+    #studioSettingsHub.composer-popover{
+     display:grid!important;grid-template-columns:minmax(0,1fr) 44px!important;
+     align-items:start!important;
+    }
+    #studioSettingsHub>h2{
+     grid-column:1!important;grid-row:1!important;
+     display:block!important;min-height:44px!important;
+     margin:0 0 12px!important;padding:4px 4px 0 0!important;
+    }
+    #studioSettingsHub>button:nth-child(2){
+     grid-column:2!important;grid-row:1!important;
+     position:static!important;align-self:start!important;
+     justify-self:end!important;float:none!important;
+     margin:0!important;transform:translateY(-10px)!important;z-index:2!important;
+    }
+    #studioSettingsHub>:is(#studioTypePicker,#modelButton,#settingsButton){
+     grid-column:1 / -1!important;
+    }
+   `;
+  }
   doc.head.append(style);
   // The native Studio script already opens this real hub for ?settings=1.
   if(!hub.open)hub.showModal();
   hubRef=hub;
+  // JARVIX mobile closes above the first Studio type button. Pin the
+  // original X itself: child Studio layout may override stylesheet offsets.
+  if(document.getElementById('jChatForm')&&innerWidth<=760){
+   hub.querySelector(':scope > button:nth-child(2)')?.style.setProperty('transform','translateY(-14px)','important');
+  }
   const pin=()=>{
    if(!hub.isConnected)return;
    hub.style.setProperty('left','8px','important');
