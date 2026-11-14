@@ -548,7 +548,7 @@ async function runBuiltinTool(tool){
 
 function requestedChatMedia(message){
  const text=message.text.trim().replace(/^(?:(?:слушай|смотри|джарвис|джарвикс|jarvis|jarvix|пожалуйста)[,\s:]+)+/iu,'');
- if(/^(?:открой|покажи|перейди|open|show|как|почему|объясни|расскажи|how|why|explain)(?![\p{L}\p{N}])/iu.test(text))return null;
+ if(/^(?:открой|покажи|перейди|open|show|как|почему|зачем|что|какой|какая|какое|объясни|расскажи|подскажи|привет|здравствуй|how|why|what|explain|hello|hi)(?![\p{L}\p{N}])/iu.test(text))return null;
  const explicit=/^(?:(?:мне\s+)?нужн[аоы]?|(?:я\s+)?хочу|можешь|создай|сделай|сгенерируй|нарисуй|create|generate|make|i need|i want)(?![\p{L}\p{N}])/iu.test(text);
  const selected=['image','video','audio'].includes(message.mode)?message.mode:null;
  if(!explicit&&!selected)return null;
@@ -647,7 +647,7 @@ async function processMessage(message){
   const imageIntentText = rawText.replace(/^(?:(?:слушай|смотри|эй|джарвис|джарвикс|jarvix|jarvis|пожалуйста|hey|please)[,\s:]+)+/iu, '').trim();
   const explicitImageEdit = /^(?:измени|отредактируй|перерисуй|добавь|убери|удали|замени|осветли|затемни|edit|modify|change|add|remove|replace|ajoute|modifie|supprime|edita|cambia|quita)(?![\p{L}\p{N}_])/iu.test(imageIntentText);
   const explicitImageRequest = explicitImageEdit || /^(?:сгенерируй|нарисуй|создай|сделай|generate|create|draw|make|render|хочу\s+(?:создать|сгенерировать|нарисовать)|(?:можешь|можете|можно)\s+(?:создать|сгенерировать|нарисовать|сделать|изменить)|(?:can|could|would)\s+you\s+(?:create|generate|draw|make|edit)|génère|crée|crea|genera)(?![\p{L}\p{N}_])/iu.test(imageIntentText);
-  const shouldGenerateMedia = realMedia || (message.mode==='text'?false:mode==='image'
+  const shouldGenerateMedia = message.mode==='text'?false:mode==='image'
    ? Boolean(mediaCommand || message.action?.intent==='GENERATE_MEDIA' || explicitImageRequest)
    : mediaCommand || isModeSelected || (!isAdviceOrQuestion && (
    isExplicitGen ||
@@ -655,9 +655,9 @@ async function processMessage(message){
    (message.action?.intent === 'GENERATE_MEDIA') ||
    (command?.intent === 'GENERATE_MEDIA' && !/(?:^|[^a-zа-яё0-9])(как|дела|привет|что)/iu.test(rawText)) ||
    /(?:картинку?|фото|изображени[ея]|рисунок|видео|клип|ролик|музык[уа]|трек|песн[юя]|soundtrack|song|track)\b/iu.test(cleanedText)
-  )));
+  ));
 
-  if(!shouldGenerateMedia&&!preparedImage){
+  if(!shouldGenerateMedia&&!preparedImage&&!realMedia){
    textChat=true;
    // Text conversation / advice / question: dynamically switch header to Chat
    setChatHeaderMode('auto');
@@ -790,7 +790,7 @@ async function processMessage(message){
    answer={id:makeId(),role:'assistant',text:resultLabel,jobId:d.jobId||d.id,status:d.status,kind:mode,ratio:parameters.ratio,...(imageRecipe?{imageRecipe}:{}),demo:false,createdAt:Date.now()};
   }
   pendingMediaFrame=null;
-  message.status='sent';conversation.messages.push(answer);if(!shouldGenerateMedia&&!preparedImage){render();if(await recordChatReply())addChatPlanOffer();}await save();render();if(answer.jobId)await poll(answer);
+  message.status='sent';conversation.messages.push(answer);if(!shouldGenerateMedia&&!preparedImage&&!realMedia){render();if(await recordChatReply())addChatPlanOffer();}await save();render();if(answer.jobId)await poll(answer);
  }catch(e){
   if(['image','video'].includes(mode)&&['INSUFFICIENT_AI_CREDITS','INSUFFICIENT_CREDITS','LIMIT_REACHED'].includes(e.code)){
    pendingMediaFrame=null;
