@@ -1,7 +1,7 @@
 import {saveStudioHandoff} from './studio-handoff.js';
 import {extractAction} from './jarvix-action-plan.js';
 import {recordedConversationReply as recordedReply,recordedExact,wasRecordedReplyUsed} from './jarvix-new-recorded-dialog.js';
-import {helloRecording,smalltalkReply,smalltalkTextReply,isGreetingOnly} from './jarvix-new-smalltalk.js';
+import {helloRecording,promptRecording,smalltalkReply,smalltalkTextReply,isGreetingOnly} from './jarvix-new-smalltalk.js';
 /* JARVIX NEW — voice-only mode on the OWNER'S EXISTING sphere, TEST host only.
    No new page, code form, paid API or simulated model answer. */
 const HOST=location.hostname;
@@ -337,7 +337,17 @@ async function playOwnerUsingUnlockedAudio(record,id){
     ownerWebSource=node;
     ownerClipDone=finish;
     node.buffer=pcm;
-    node.connect(ctx.destination);
+    if(record.purpose==='hello'&&useLocalRecognition()){
+     const compressor=ctx.createDynamicsCompressor();
+     const gain=ctx.createGain();
+     compressor.threshold.value=-16;
+     compressor.ratio.value=5;
+     compressor.attack.value=.003;
+     gain.gain.value=1.65;
+     node.connect(gain);
+     gain.connect(compressor);
+     compressor.connect(ctx.destination);
+    }else node.connect(ctx.destination);
     node.onended=()=>finish(true);
     if(Number.isFinite(record.stopAtSeconds)&&record.stopAtSeconds>0)
      node.start(0,0,Math.min(record.stopAtSeconds,pcm.duration));
@@ -354,6 +364,8 @@ async function playOwnerRecording(record,id,timeoutMs=0,allowFallback=!timeoutMs
  if(!record?.audioUrl||!on||seq!==id)return false;
  releaseLocalCapture();
  cancelRecognition();
+ if(record.purpose==='hello'&&useLocalRecognition()&&await playOwnerUsingUnlockedAudio(record,id))return true;
+ if(!on||seq!==id)return false;
  return new Promise(resolve=>{
   // The original hosted MP3 is used unchanged. Never synthesize or substitute text.
   const audio=new Audio(record.audioUrl);
@@ -699,6 +711,16 @@ async function respond(message,id){
  const lang=recordedLanguage();
  showTextResponse('');
  setTranscript(message,true);
+ if([lang,...Object.keys(MICROPHONE_STATES)].some(language=>isGreetingOnly(message,language))){
+  const reply=await promptRecording(lang).catch(()=>null);
+  if(!on||seq!==id)return;
+  if(reply){
+   showTextResponse(reply.text);
+   await playOwnerRecording(reply,id);
+  }
+  if(on&&seq===id)listen(id);
+  return;
+ }
  const extra=NAVIGATION_COMMAND.test(message)
   ? EXTRA_NAVIGATION.find(([,pattern])=>pattern.test(message))?.[0] : null;
  const command=message.replace(/^\s*(?:джарвис|джарвикс|jarvix|jarvis)[,\s:]+/iu,'');
@@ -742,10 +764,7 @@ async function respond(message,id){
   location.assign(new URL(destination,location.origin+'/'));
   return;
  }
- if(isGreetingOnly(message,lang)){
-  listen(id);
-  return;
- }
+
 
  if(production&&/^\/jarvix-chat(?:\.html)?$/.test(location.pathname)&&/^(?:сделай короче|сократи|покажи пример|приведи пример|объясни проще|продолжи|make it shorter|give an example)(?=\s|[,.!?]|$)/iu.test(requestText)){
   if(await openVoiceQuestion(message,id))return;
