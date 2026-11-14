@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `ccc5944186d43dc22b7c0a454849a07c1727c0f8`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 126 | Named symbols: 456 | Checked relations: 80
+Source commit: `98075b57e1dfed54fc761752aed582ee12281a68`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 126 | Named symbols: 459 | Checked relations: 80
 
 ## Topic finder (matching filenames)
 
@@ -98,7 +98,7 @@ MODELS (L37) · RAW_MODEL_CATALOG (L42) · MODEL_CATALOG (L75)
 
 ### `app/src/main/assets/generate-studio.js`
 
-curLang (L25) · studioI18n (L32) · hintEl (L42) · requested (L45) · config (L47) · catalog (L47) · refs (L48) · historyThumbUrls (L67) · drafts (L69) · studioDocumentToken (L220) · studioRequests (L222) · walletKinds (L276) · imageEditPrompts (L499) · cropDialog (L514) · cropRatio (L517) · cropZoom (L517) · cropX (L517) · cropY (L517) · studioDialogAnchors (L726) · UNCERTAIN_VIDEO_ERRORS (L820) · targetJobId (L1496) · aiCheckoutState (L1499)
+curLang (L25) · studioI18n (L32) · hintEl (L42) · requested (L45) · config (L47) · catalog (L47) · refs (L48) · historyThumbUrls (L67) · drafts (L69) · studioDocumentToken (L220) · studioRequests (L222) · walletKinds (L276) · imageEditPrompts (L499) · cropDialog (L514) · cropRatio (L517) · cropZoom (L517) · cropX (L517) · cropY (L517) · studioDialogAnchors (L726) · UNCERTAIN_VIDEO_ERRORS (L820) · targetJobId (L1507) · aiCheckoutState (L1510)
 
 ### `app/src/main/assets/home-creative-examples.js`
 
@@ -126,11 +126,11 @@ JARVIX_ONBOARDING (L81) · jarvixContext (L84) · cachedVoices (L91) · WORLD_CI
 
 ### `app/src/main/assets/jarvix-action-plan.js`
 
-ACTION_ROUTES (L2)
+ACTION_ROUTES (L2) · SPECIFIC_TOOL_PAGES (L3) · UTILITY_ROUTES (L11)
 
 ### `app/src/main/assets/jarvix-chat.js`
 
-modeHeaderLabels (L40) · urls (L46) · siteAnswers (L242) · chatTrialCopy (L426) · imageIntakeQuery (L467) · composer (L781) · pendingMsg (L831) · pending (L859) · composerInput (L894) · incomingTool (L986) · wpPane (L1011) · expandBtn (L1030)
+modeHeaderLabels (L40) · urls (L46) · siteAnswers (L242) · chatTrialCopy (L426) · imageIntakeQuery (L467) · intakeMode (L468) · composer (L794) · pendingMsg (L844) · pending (L872) · composerInput (L907) · incomingTool (L1004) · wpPane (L1029) · expandBtn (L1048)
 
 ### `app/src/main/assets/jarvix-clip-library.js`
 
@@ -138,7 +138,7 @@ blobs (L9) · SECTION_KEYWORDS (L14) · INTENT_KEYWORDS (L33) · topicContext (L
 
 ### `app/src/main/assets/jarvix-guided-tour.js`
 
-v3DialogsOpened (L167) · mediaTourModes (L193)
+v3DialogsOpened (L152) · mediaTourModes (L178)
 
 ### `app/src/main/assets/jarvix-home-chat.js`
 
