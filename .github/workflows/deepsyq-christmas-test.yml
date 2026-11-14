@@ -82,10 +82,10 @@ jobs:
           assert(!previewKeys.includes('STRIPE_SECRET_KEY'),'TEST has configured live Stripe key');
           const deployments=[];
           for(let page=1;page<=30;page++){
-            const batch=await get('/deployments?env=preview&per_page=50&page='+page);
+            const batch=await get('/deployments?env=preview&per_page=20&page='+page);
             assert(Array.isArray(batch),'Invalid preview deployments page');
             deployments.push(...batch);
-            if(batch.length<50)break;
+            if(batch.length<20)break;
           }
           const aliasMatches = d => (d.aliases||[]).some(u => String(u).replace('https://','').replace('http://','').split('/')[0] === 'test.deepsyq.pages.dev');
           const live=deployments.find(aliasMatches);
