@@ -1,5 +1,10 @@
 # DEEPSYQ — журнал работ и проверок
 
+## 2026-11-14 — Точное позиционирование семи иллюстраций Tools
+
+- Точечно изменён только `everyday-tools-visual.css`: семь изображений в Tools (Compress Video, Photo Collage, Background Remover, Teleprompter, Smart Reminders, Avatar Studio и Video Uniquifier) сдвинуты влево за счёт `right`, без изменения размеров карточек, текста, кнопок и ссылок. Предыдущая правка только расширяла изображения и не устранила правое смещение. 
+
+
 ## 2026-11-14 — Everyday Tools: дубликат и смещение иллюстраций (точечный выпуск)
 
 - По запросу владельца удалена только нижняя повторная ссылка `Simple Background Remover · Transparent PNG` из `free-tools.html`; верхняя карточка Background Remover и реальный маршрут `simple-background-remover.html` сохранены.
