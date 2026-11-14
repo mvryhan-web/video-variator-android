@@ -32,7 +32,19 @@ MAX_FILE_BYTES = 25 * 1024 * 1024
 # For each explicitly approved release scope below, reuse canonical LIVE hashes
 # for all untouched assets when Cloudflare cannot reproduce a live /404.html byte-for-byte.
 # This never permits changing more assets than the exact requested allowlist.
+QUICK_START_ART = frozenset({
+    "media/home/quick-start-v1/youtube-thumbnail.webp",
+    "media/home/quick-start-v1/vertical-video.webp",
+    "media/home/quick-start-v1/product-photo.webp",
+    "media/home/quick-start-v1/content-plan.webp",
+    "media/home/quick-start-v1/brand-style.webp",
+    "media/home/quick-start-v1/my-characters.webp",
+    "media/home/quick-start-v1/ideas-radar.webp",
+    "media/home/quick-start-v1/jarvix-director.webp",
+})
+QUICK_START_ART_RELEASE = QUICK_START_ART | {"home-inspiration.js"}
 HASH_REUSE_RELEASE_SETS = (
+    QUICK_START_ART_RELEASE,
     frozenset({"jarvix-guided-tour.js", "jarvix-tour-choreography.js"}),
     frozenset({"ai-apps.html", "canvas.html", "free-tools.html", "sitemap.xml"}),
     frozenset({"compare-ai.html", "simple-background-remover.html", "teleprompter.html"}),
@@ -59,7 +71,7 @@ def allowed_hash_reuse(paths):
 
 def pages_asset_mime(path):
     return {".js": "application/javascript", ".html": "text/html", ".css": "text/css",
-            ".xml": "application/xml", ".mp3": "audio/mpeg", ".json": "application/json"}.get(Path(path).suffix, "application/octet-stream")
+            ".xml": "application/xml", ".mp3": "audio/mpeg", ".webp": "image/webp", ".json": "application/json"}.get(Path(path).suffix, "application/octet-stream")
 
 class Blocked(Exception):
     pass
@@ -431,10 +443,12 @@ def build_candidate(live, paths, production_commit, work):
 
     # Apply exactly the owner-requested files from the checked-out task revision.
     edited_bytes = {}
+    new_assets = QUICK_START_ART if frozenset(paths) == QUICK_START_ART_RELEASE else frozenset()
     for rel in paths:
         src = ROOT / rel
         dest = stage / rel
-        insist(dest.is_file(), "Target is not part of the current LIVE site: " + rel)
+        insist(dest.is_file() or rel in new_assets, "Target is not part of the current LIVE site: " + rel)
+        dest.parent.mkdir(parents=True, exist_ok=True)
         raw = src.read_bytes()
         dest.write_bytes(raw)
         edited_bytes[rel] = raw
@@ -449,7 +463,7 @@ def build_candidate(live, paths, production_commit, work):
         rel = f.relative_to(stage).as_posix()
         if rel in SPECIAL:
             continue
-        insist(rel in expected_paths, "Unexpected file would be published: " + rel)
+        insist(rel in expected_paths or rel in new_assets, "Unexpected file would be published: " + rel)
         found.add(rel)
         hash_value = digest(f.read_bytes(), rel)
         if rel in paths:
@@ -457,9 +471,9 @@ def build_candidate(live, paths, production_commit, work):
         else:
             insist(hash_value == live[expected_paths[rel]],
                    "Unrequested LIVE asset would change: " + rel)
-    insist(found == set(expected_paths), "Pages candidate lost LIVE public assets")
+    insist(found == set(expected_paths) | new_assets, "Pages candidate lost LIVE public assets")
     special_snapshot(stage, original)
-    expected, changes = surgical_manifest(live, edits)
+    expected, changes = surgical_manifest(live, edits, new_assets)
     return stage, expected, changes, updated_from_live, edited_bytes
 
 def run_wrangle(stage, sha):
@@ -582,7 +596,7 @@ def main():
                 expected_bytes.update({rel: (ROOT / rel).read_bytes() for rel in voice_sources if "/" + rel not in live})
             candidate, changed = surgical_manifest(live, {
                 rel: digest(raw, rel) for rel, raw in expected_bytes.items()}, 
-                expected_bytes if args.new_voice else ())
+                expected_bytes if args.new_voice else (QUICK_START_ART if frozenset(paths) == QUICK_START_ART_RELEASE else ()))
             from_live = 0
             stage = None
             direct_manifest = True

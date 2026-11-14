@@ -39,9 +39,9 @@ const studioLabels={
  es:['Inicio rápido','Miniatura de YouTube','Vídeo vertical','Foto de producto','Crear tu versión']
 };
 const quickStarts=[
- {id:'youtube-thumbnail',kind:'image',image:'media/home/owner-20261018/01-close-up-woman.jpg',aspectRatio:'16:9',prompt:'Create a YouTube thumbnail about [topic]. Feature [main subject] with a clear focal point, strong contrast and space for a short title.'},
- {id:'vertical-video',kind:'video',image:'media/home/owner-20261018/04-neon-motorcycle.jpg',aspectRatio:'9:16',prompt:'Create a vertical short video about [topic]. Start with a strong visual hook, show [key action] clearly and finish with a memorable final frame.'},
- {id:'product-photo',kind:'image',image:'media/home/neon-20261018/canvas.webp',aspectRatio:'1:1',prompt:'Create a studio product photo of [product]. Use soft directional lighting, a clean background and realistic materials. Keep the product centered with room around it.'}
+ {id:'youtube-thumbnail',kind:'image',image:'media/home/quick-start-v1/youtube-thumbnail.webp',aspectRatio:'16:9',prompt:'Create a YouTube thumbnail about [topic]. Feature [main subject] with a clear focal point, strong contrast and space for a short title.'},
+ {id:'vertical-video',kind:'video',image:'media/home/quick-start-v1/vertical-video.webp',aspectRatio:'9:16',prompt:'Create a vertical short video about [topic]. Start with a strong visual hook, show [key action] clearly and finish with a memorable final frame.'},
+ {id:'product-photo',kind:'image',image:'media/home/quick-start-v1/product-photo.webp',aspectRatio:'1:1',prompt:'Create a studio product photo of [product]. Use soft directional lighting, a clean background and realistic materials. Keep the product centered with room around it.'}
 ];
 function studioCopy(){
  const lang=(localStorage.getItem('deepsyq_lang')||document.documentElement.lang||'en').slice(0,2);
@@ -504,11 +504,11 @@ function renderQuickStarts(section){
  const lang=Object.keys(creativeToolsCopy).find(key=>creativeToolsCopy[key]===language)||'en';
  const copy={...language,...characterRadarCopy[lang],director:'JARVIX Director',chain:lang==='ru'?'Изображение и видео по шагам':'Image and video, step by step'};
  for(const [tool,subtitle,imageSrc] of [
-  ['factory','plan','media/home/owner-20261018/04-neon-motorcycle.jpg'],
-  ['brand','style','media/home/neon-20261018/canvas.webp'],
-  ['characters','cast','media/home/owner-20261018/01-close-up-woman.jpg'],
-  ['radar','radarHint','media/home/neon-20261018/agent.webp'],
-  ['director','chain','media/home/neon-20261018/agent.webp']
+  ['factory','plan','media/home/quick-start-v1/content-plan.webp'],
+  ['brand','style','media/home/quick-start-v1/brand-style.webp'],
+  ['characters','cast','media/home/quick-start-v1/my-characters.webp'],
+  ['radar','radarHint','media/home/quick-start-v1/ideas-radar.webp'],
+  ['director','chain','media/home/quick-start-v1/jarvix-director.webp']
  ]){
   const button=detailEl('button');
   button.type='button';
