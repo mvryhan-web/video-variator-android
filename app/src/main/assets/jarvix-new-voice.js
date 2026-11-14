@@ -93,7 +93,7 @@ function rememberTurn(message,reply){
 }
 let transcriptWrap=null,transcriptText=null,transcriptReply=null,heardText='',heardIsFinal=false,botReplyText='';
 let micPulseRms=0,recognizedPulseTimer=null;
-let monitorContext=null;
+let monitorStream=null,monitorContext=null,monitorAnalyser=null,monitorTimer=null,monitorSamples=null;
 let ownerWebSource=null,playbackAbort=null;
 const Recognition=()=>window.SpeechRecognition||window.webkitSpeechRecognition;
 const MICROPHONE_STATES={
@@ -184,6 +184,7 @@ function ensureAudioContextFromGesture(){
 // pulse on a REAL partial recognition result instead. Never pulse merely
 // because "listening" is shown or because a timer elapsed.
 function pulseOnRecognizedWords(){
+ if(monitorAnalyser&&monitorContext?.state==='running')return;
  if(recognizedPulseTimer!==null){
   clearTimeout(recognizedPulseTimer);recognizedPulseTimer=null;
  }
@@ -201,9 +202,46 @@ function stopMicMonitor(){
   clearTimeout(recognizedPulseTimer);recognizedPulseTimer=null;
  }
  micPulseRms=0;
+ if(monitorTimer!==null){clearInterval(monitorTimer);monitorTimer=null;}
+ if(monitorStream){
+  try{monitorStream.getTracks().forEach(track=>track.stop());}catch{}
+  monitorStream=null;
+ }
  try{monitorContext?.close?.();}catch{}
- monitorContext=null;
+ monitorContext=null;monitorAnalyser=null;monitorSamples=null;
  updateSphereFromMicrophone(0);
+}
+function startMicMonitor(stream){
+ if(monitorTimer!==null){clearInterval(monitorTimer);monitorTimer=null;}
+ if(monitorStream&&monitorStream!==stream){
+  try{monitorStream.getTracks().forEach(t=>t.stop());}catch{}
+ }
+ monitorStream=stream;
+ if(!monitorContext)return;
+ try{
+  const source=monitorContext.createMediaStreamSource(stream);
+  monitorAnalyser=monitorContext.createAnalyser();
+  monitorAnalyser.fftSize=512;
+  source.connect(monitorAnalyser); // NOT connected to speakers.
+  monitorSamples=new Uint8Array(monitorAnalyser.fftSize);
+  Promise.resolve(monitorContext.resume?.()).catch(()=>{});
+  monitorTimer=setInterval(()=>{
+   if(!on||micStage!=='listening'||!monitorAnalyser){
+    updateSphereFromMicrophone(0);
+    return;
+   }
+   monitorAnalyser.getByteTimeDomainData(monitorSamples);
+   let sum=0;
+   for(const value of monitorSamples){
+    const centered=(value-128)/128;
+    sum+=centered*centered;
+   }
+   updateSphereFromMicrophone(Math.sqrt(sum/monitorSamples.length));
+  },65);
+ }catch{
+  try{monitorContext?.close?.();}catch{}
+  monitorContext=null;monitorAnalyser=null;monitorSamples=null;
+ }
 }
 function ui(stage='idle'){
  micStage=stage;
@@ -471,7 +509,10 @@ function listen(id){
    if(on&&seq===id)listen(id);
   },Math.min(1200,350+200*micFailures));
  };
- r.onaudiostart=()=>{if(on&&seq===id&&rec===r)ui('listening');};
+ r.onstart=()=>{
+  if(!on||seq!==id||rec!==r)return;
+  ui('listening'); // Native recognition onstart, not just mic permission.
+ };
  r.onspeechstart=()=>{if(on&&seq===id&&rec===r)ui('listening');};
  r.onresult=event=>{
   if(!on||seq!==id||processed||rec!==r)return;
@@ -497,7 +538,7 @@ function listen(id){
   if(!hasFinal||!allFinal)return;
   processed=true;
   r.onend=null;
-  try{r.abort();}catch{}
+  try{r.stop();}catch{}
   if(rec===r)rec=null;
   void respond(combined,id);
  };
@@ -687,7 +728,7 @@ async function respond(message,id){
   location.assign(new URL(destination,location.origin+'/'));
   return;
  }
- if(!production&&isGreetingOnly(message,lang)){
+ if(!useLocalRecognition()&&isGreetingOnly(message,lang)){
   listen(id);
   return;
  }
@@ -737,11 +778,26 @@ async function respond(message,id){
 }
 async function start({greet=true}={}){
  if(on){stop();return;}
- if(!useLocalRecognition()&&!Recognition()){on=true;ui('unsupported');return;}
+ if(useLocalRecognition()){
+  on=true;
+  const id=++seq;
+  await listenLocally(id);
+  return;
+ }
+ if(!Recognition()){on=true;ui('unsupported');return;}
+ if(!navigator.mediaDevices?.getUserMedia){on=true;ui('error');return;}
  on=true;const id=++seq;setTranscript('');ui('starting');
- ensureAudioContextFromGesture();
- if(greet&&!production){
-  const greeting=await helloRecording(recordedLanguage()).catch(()=>null);
+ ensureAudioContextFromGesture(); // synchronous mobile click, before await
+ try{
+  const stream=await navigator.mediaDevices.getUserMedia({audio:{
+   echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  if(!on||seq!==id){stream.getTracks().forEach(track=>track.stop());return;}
+  startMicMonitor(stream);
+ }catch{if(on&&seq===id)ui('error');return;}
+ if(!on||seq!==id)return;
+ if(greet){
+  const language=recordedLanguage();
+  const greeting=await helloRecording(language).catch(()=>null);
   if(on&&seq===id)await playOwnerRecording(greeting,id,3000,true);
  }
  if(on&&seq===id)listen(id);
