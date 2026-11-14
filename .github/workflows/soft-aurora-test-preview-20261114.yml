@@ -8,6 +8,7 @@ on:
       - 'app/src/main/assets/soft-aurora-preview.js'
       - 'scripts/build_soft_aurora_preview.mjs'
       - 'scripts/test_deepsyq_themes_preview.mjs'
+      - 'scripts/test_deepsyq_themes_all_pages.mjs'
       - 'app/src/main/assets/themes/christmas/**'
       - '.github/workflows/soft-aurora-test-preview-20261114.yml'
 permissions:
@@ -38,6 +39,7 @@ jobs:
           node --check scripts/build_soft_aurora_preview.mjs
           node --check app/src/main/assets/soft-aurora-preview.js
           node --check scripts/test_deepsyq_themes_preview.mjs
+          node --check scripts/test_deepsyq_themes_all_pages.mjs
           node scripts/build_soft_aurora_preview.mjs
           node --check .soft-aurora-preview-build/_worker.js
           test -f .soft-aurora-preview-build/deepsyq.html
@@ -83,6 +85,7 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
           npx playwright install chromium
           node scripts/test_deepsyq_themes_preview.mjs
+          node scripts/test_deepsyq_themes_all_pages.mjs
       - name: Verify canonical production deployment unchanged
         if: always()
         shell: bash
