@@ -23,12 +23,8 @@
   };
   const install=()=>{
     if(button?.isConnected)return;
-    const target=document.querySelector('.top-actions')
-      || document.querySelector('header.ds-unified-header .ds-header-actions')
-      || document.querySelector('.price-topbar nav')
-      || document.querySelector('header.topbar')
-      || document.querySelector('header.top')
-      || document.querySelector('body>header');
+    // Existing hidden legacy headers must not hide the preview-only control.
+    const target=document.body;
     if(!target)return;
     button=document.createElement('button');
     button.id='saThemeSwitch';
@@ -40,7 +36,7 @@
       apply(modes[(i+1)%modes.length]);
     });
     // Insert into existing header; do not replace any original element.
-    target.insertBefore(button,target.firstChild);
+    target.appendChild(button);
     apply(root.dataset.saMode);
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
