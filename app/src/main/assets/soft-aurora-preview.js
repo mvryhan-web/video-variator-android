@@ -72,9 +72,26 @@
     menu.hidden=true;button?.setAttribute('aria-expanded','false');
     if(restore)button?.focus();
   }
+  function positionMenu(){
+    if(!menu||!button)return;
+    const rect=button.getBoundingClientRect();
+    const width=Math.min(294,Math.max(230,window.innerWidth-16));
+    const left=Math.max(8,Math.min(window.innerWidth-width-8,rect.right-width));
+    const height=Math.min(400,menu.scrollHeight||400);
+    const proposed=rect.bottom+8;
+    const top=proposed+height>window.innerHeight-8?
+      Math.max(8,rect.top-height-8):proposed;
+    menu.style.position='fixed';
+    menu.style.width=width+'px';
+    menu.style.left=left+'px';
+    menu.style.right='auto';
+    menu.style.top=top+'px';
+    menu.style.zIndex='2147483000';
+  }
   function openMenu(){
     if(!menu)return;
     menu.hidden=false;button.setAttribute('aria-expanded','true');
+    positionMenu();
     menu.querySelector('button[aria-checked="true"]')?.focus();
   }
   const palette=t=>{
@@ -134,9 +151,11 @@
         e.preventDefault();openMenu();
       }else if(e.key==='Escape'&&!menu.hidden){closeMenu(true);}
     });
-    control.append(button,menu);holder.appendChild(control);
+    control.append(button);holder.appendChild(control);
+    // Portal: existing mobile creative-tools rails must never obscure theme choices.
+    document.body.appendChild(menu);
     document.addEventListener('pointerdown',e=>{
-      if(holder&&!holder.contains(e.target))closeMenu();
+      if(holder&&!holder.contains(e.target)&&menu&&!menu.contains(e.target))closeMenu();
     });
     document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden)closeMenu(true)});
     window.addEventListener('storage',e=>{if(e.key===KEY)setTheme(stored())});
@@ -221,7 +240,7 @@
     if(!active){active=true;last=performance.now();raf=requestAnimationFrame(drawSnow);}
   }
   document.addEventListener('visibilitychange',updateSnow);
-  window.addEventListener('resize',()=>{if(canvas)resizeSnow()},{passive:true});
+  window.addEventListener('resize',()=>{if(canvas)resizeSnow();if(menu&&!menu.hidden)positionMenu()},{passive:true});
   reduce?.addEventListener?.('change',updateSnow);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});
   else mount();
