@@ -231,3 +231,5 @@ jobs:
             --mode "$RELEASE_MODE" \
             --files "$SCOPE_FILES" \
             --commit "$GITHUB_SHA"
+
+# Preserve the original account profile as a single-asset release.
