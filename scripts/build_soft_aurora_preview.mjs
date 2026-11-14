@@ -8,11 +8,21 @@ import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const source=path.join(root,'app/src/main/assets');
 const target=path.join(root,'.soft-aurora-preview-build');
-const banner='<!-- DEEPSYQ SOFT AURORA: isolated preview stylesheet only -->';
-const inject=banner+'\n<link rel="stylesheet" href="/soft-aurora-preview.css">\n'+
+const banner='<!-- DEEPSYQ THEMES V1: test-preview only, original source untouched -->';
+const bootstrap='<script>(function(){try{var t=localStorage.getItem("deepsyq-themes-v1");'+
+  'document.documentElement.dataset.deepsyqTheme=/^(original|warm-light|focus|soft-dark|christmas)$/.test(t)?t:"original";'+
+  '}catch(e){document.documentElement.dataset.deepsyqTheme="original";}})();</script>\n';
+const inject=banner+'\n'+bootstrap+'<link rel="stylesheet" href="/soft-aurora-preview.css">\n'+
   '<script defer src="/soft-aurora-preview.js"></script>\n';
 assert(fs.existsSync(path.join(source,'soft-aurora-preview.css')),'Preview stylesheet missing');
 assert(fs.existsSync(path.join(source,'soft-aurora-preview.js')),'Preview selector missing');
+for(const asset of [
+  'themes/christmas/winter-desktop.svg',
+  'themes/christmas/winter-mobile.svg',
+  'themes/christmas/snow-edge.svg'
+]){
+  assert(fs.existsSync(path.join(source,asset)),'Required Christmas asset missing: '+asset);
+}
 fs.rmSync(target,{recursive:true,force:true});
 fs.cpSync(source,target,{recursive:true,dereference:true});
 let count=0;
@@ -55,6 +65,7 @@ export default {
 console.log(JSON.stringify({
   status:'SOFT_AURORA_PREVIEW_BUILD_PASS',
   pages:count,main:'deepsyq.html',chat:'jarvix-chat.html',
+  themeCount:5, christmasAssets:3,
   googleAndLoginSourcePreserved:true,
   backendPaymentsAndGenerationDisabled:true,
   productionUnchanged:true
