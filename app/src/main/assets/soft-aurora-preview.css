@@ -387,3 +387,34 @@ html[data-deepsyq-theme="christmas"] #dsChristmasBackdrop{
     background-size:cover!important;background-position:center center!important;
   }
 }
+
+
+/* Soft Dark: override owner-authored Home golden composer by higher specificity.
+   Preserve its original 2px border width, radius, layout, input and handlers. */
+html[data-deepsyq-theme="soft-dark"] body #homeQuickBar #homeQuickForm,
+html[data-deepsyq-theme="soft-dark"] body #homeQuickBar .jarvix-compose,
+html[data-deepsyq-theme="soft-dark"] body #homeQuickForm[data-jarvix-chat],
+html[data-deepsyq-theme="soft-dark"] body #homeQuickBar #homeQuickForm:is(:hover,:focus-within){
+  background:#111111!important;
+  border-color:#303030!important;
+  box-shadow:none!important;
+}
+html[data-deepsyq-theme="soft-dark"] body #homeQuickBar textarea#homeQuickPrompt{
+  color:#f5f5f5!important;
+  background:transparent!important;
+}
+html[data-deepsyq-theme="soft-dark"] body #homeQuickBar textarea#homeQuickPrompt::placeholder{
+  color:#b8b8b8!important;opacity:1!important;
+}
+html[data-deepsyq-theme="soft-dark"] body #homeQuickBar :is(#jPlus,#jMic,#jSend,#jStudioSettingsBtn,#jStudioSettings){
+  color:#bfa7ff!important;
+  border-color:#303030!important;
+  background-color:#111111!important;
+  box-shadow:none!important;
+}
+html[data-deepsyq-theme="soft-dark"] body #homeQuickBar :is(#jPlus,#jMic,#jSend,#jStudioSettingsBtn,#jStudioSettings) svg{
+  color:#bfa7ff!important;stroke:#bfa7ff!important;
+}
+html[data-deepsyq-theme="soft-dark"] :is(
+  .hero-stage,.home-hero-carousel,.hero-floor,.hero-film-outline
+){border-color:#232323!important;box-shadow:none!important;}
