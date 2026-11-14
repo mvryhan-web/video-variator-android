@@ -559,6 +559,7 @@ function requestedChatMedia(message){
  return {kind,text,ratio:aspect?.replace(/\s/g,'').replace(/на|[xх×]/giu,':')};
 }
 
+// Resolve follow-up commands against the current conversation only.
 function continueMediaRequest(message, before){
  const text=message.text.trim();
  if(!/(?:запусти(?:ть)? (?:эту )?генерацию|сгенерируй (?:это|её|ее|его)|(?:сделай|составь|подготовь)\s+(?:промпт|пронт|фронт)|давай[, ]+делай|start generation|generate it)/iu.test(text))return null;
