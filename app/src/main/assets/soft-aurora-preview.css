@@ -295,3 +295,19 @@ html[data-deepsyq-theme="christmas"] :is(#homeQuickForm,#jChatForm) > .ds-snow-r
     height:10px!important;background-size:400px 26px!important;
   }
 }
+
+html[data-deepsyq-theme="christmas"] .hero-stage.hero-stage-cinematic > .ds-snow-ridge{
+  display:block!important;position:absolute!important;top:0!important;left:0!important;
+  right:0!important;width:100%!important;height:26px!important;z-index:100!important;
+  pointer-events:none!important;opacity:1!important;
+  background:url('/themes/christmas/snow-edge.svg') left top / 720px 46px repeat-x!important;
+  filter:drop-shadow(0 3px 3px rgba(5,26,39,.46));
+}
+@media(max-width:760px){
+ html[data-deepsyq-theme="christmas"] .hero-stage.hero-stage-cinematic > .ds-snow-ridge{
+   height:17px!important;background-size:420px 28px!important;
+ }
+ html[data-deepsyq-theme="christmas"] :is(.hero-stage.hero-stage-cinematic,#homeHeroCarousel.is-empty){
+   background-position:center 82%!important;
+ }
+}
