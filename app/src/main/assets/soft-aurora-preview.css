@@ -1,0 +1,275 @@
+/* DEEPSYQ SOFT AURORA — isolated owner-approval PREVIEW only, 2026-11-14.
+   Loaded into preview deployment HTML by build_soft_aurora_preview.mjs.
+   Existing handlers, JARVIX sphere, media and production are untouched. */
+html[data-soft-aurora]{
+  color-scheme:dark;
+  --sa-bg:#101827; --sa-sidebar:#142033; --sa-card:#1a2638;
+  --sa-raised:#243247; --sa-border:#36475b;
+  --sa-text:#f6f2eb; --sa-muted:#b9c6d1;
+  --sa-mint:#92d0c8; --sa-lavender:#c2b3e8; --sa-gold:#e9b77c;
+  --sa-glow:0 10px 32px rgba(0,0,0,.17);
+  --ds-bg:var(--sa-bg); --ds-sidebar:var(--sa-sidebar); --ds-surface:var(--sa-card);
+  --ds-raised:var(--sa-raised); --ds-line:var(--sa-border);
+  --ds-text:var(--sa-text); --ds-muted:var(--sa-muted);
+  --ds-violet:var(--sa-lavender); --ds-pink:var(--sa-mint);
+  --ds-blue:var(--sa-mint); --ds-focus:var(--sa-gold);
+}
+html[data-soft-aurora] body,
+html[data-soft-aurora]:not([data-theme="light"]) body,
+html[data-soft-aurora] body.deepsyq-pricing-page {
+  background:
+    radial-gradient(ellipse 750px 480px at 92% -18%,rgba(109,100,156,.11),transparent 77%),
+    radial-gradient(ellipse 650px 450px at 0 85%,rgba(96,159,151,.07),transparent 78%),
+    var(--sa-bg)!important;
+  color:var(--sa-text)!important;
+  -webkit-font-smoothing:antialiased;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+html[data-soft-aurora] :is(
+  aside#sidebar,.sidebar,.ds-site-sidebar,.studio-nav,.topbar,.top,
+  .ds-unified-header,.ds-header-cockpit,.price-topbar,
+  .j-chat-toolbar,.j-drawer-panel
+){
+  background:var(--sa-sidebar)!important;
+  border-color:var(--sa-border)!important;
+  box-shadow:none!important;
+}
+html[data-soft-aurora] :is(
+  .brand,.top-brand,.price-brand,.brand-name,
+  h1,h2,h3,.j-chat-toolbar h1,.price-hero h1
+){color:var(--sa-text)!important;}
+html[data-soft-aurora] :is(
+  .muted,.caption,.j-empty,.home-create-copy>span,.section-head p,
+  .section-heading p,.price-muted,.price-plan-footnote
+){color:var(--sa-muted)!important;}
+html[data-soft-aurora] :is(
+  aside nav a,.ds-site-sidebar nav a,.j-drawer-panel a,
+  .price-topbar nav a
+){
+  color:var(--sa-muted)!important;
+  transition:color .18s ease, background-color .18s ease;
+}
+html[data-soft-aurora] :is(
+  aside nav a.active, .ds-site-sidebar nav a[aria-current="page"],
+  .ds-site-sidebar nav a.active,.j-drawer-panel a.active
+){
+  color:var(--sa-text)!important;
+  background:rgba(194,179,232,.14)!important;
+  border-color:rgba(194,179,232,.26)!important;
+  box-shadow:none!important;
+}
+html[data-soft-aurora] :is(
+  aside nav a:hover,.ds-site-sidebar nav a:hover,
+  .j-drawer-panel a:hover,.price-topbar nav a:hover
+){background:rgba(194,179,232,.09)!important;color:var(--sa-text)!important;}
+html[data-soft-aurora] :is(
+  .home-create-card,.home-quick-start-card,.quick-start-card,
+  .card,.app-card,.hub-tile,.cp-feature,.tool-card,
+  .price-plan,.price-credit-card,.j-message,.j-drawer-panel
+){
+  border-color:var(--sa-border)!important;
+  box-shadow:var(--sa-glow)!important;
+}
+html[data-soft-aurora] :is(
+  .home-create-card,.home-quick-start-card,.quick-start-card,.price-plan,.price-credit-card
+){border-radius:18px!important;}
+html[data-soft-aurora] :is(
+  .home-create-card,.home-quick-start-card,.quick-start-card
+):hover{border-color:rgba(194,179,232,.65)!important;transform:translateY(-2px);transition:transform .18s ease,border-color .18s ease;}
+html[data-soft-aurora] :is(
+  .j-chat-toolbar,.j-empty,.j-chat-bottom,
+  main.jarvix-chat,.price-plans-area
+){color:var(--sa-text)!important;}
+html[data-soft-aurora] :is(.j-empty p,.j-message,.price-features,.price-plan-body){
+  line-height:1.55;
+}
+html[data-soft-aurora] :is(
+  .j-chat-bottom .jarvix-compose,
+  .jarvix-chat .jarvix-compose,
+  main.jarvix-chat .j-chat-bottom .jarvix-compose,
+  body #homeQuickBar #homeQuickForm,
+  body #homeQuickBar .jarvix-compose,
+  #homeQuickForm[data-jarvix-chat],
+  #jChatForm.j-neon-composer
+){
+  box-sizing:border-box!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:9px!important;
+  min-height:122px!important;
+  padding:16px 17px 12px!important;
+  background:linear-gradient(135deg,#203047,#1b293c)!important;
+  border:1px solid #6f8895!important;
+  border-radius:24px!important;
+  box-shadow:0 12px 35px #0000002b,0 0 0 1px rgba(146,208,200,.10)!important;
+  backdrop-filter:none!important;
+  color:var(--sa-text)!important;
+  opacity:1!important;visibility:visible!important;
+}
+html[data-soft-aurora] :is(#homeQuickBar,#homeQuickForm,#jChatForm,.j-chat-bottom){
+  visibility:visible!important;
+  opacity:1!important;
+}
+html[data-soft-aurora] :is(
+  #homeQuickPrompt,#jInput,
+  #homeQuickForm textarea,
+  #jChatForm textarea
+){
+  display:block!important;
+  position:relative!important;
+  width:100%!important;
+  min-height:52px!important;
+  padding:5px 4px!important;
+  background:transparent!important;
+  color:var(--sa-text)!important;
+  border:0!important;
+  box-shadow:none!important;
+  font-size:16px!important;
+  line-height:1.55!important;
+  resize:vertical;
+  opacity:1!important;visibility:visible!important;
+}
+html[data-soft-aurora] :is(#homeQuickPrompt,#jInput)::placeholder{
+  color:#b9c6d1!important;
+  opacity:1!important;
+}
+html[data-soft-aurora] :is(#homeQuickForm,#jChatForm) .j-composer-actions-row{
+  display:flex!important;align-items:center!important;
+  justify-content:space-between!important;gap:8px!important;
+}
+html[data-soft-aurora] :is(
+  #homeQuickForm,#jChatForm
+) :is(#jPlus,#jMic,#studioSettingsBtn,.j-settings-shortcut,.j-attach-shortcut){
+  border-color:transparent!important;
+  color:var(--sa-lavender)!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  min-width:44px;min-height:44px;
+}
+html[data-soft-aurora] :is(
+  #homeQuickForm,#jChatForm
+) :is(#jPlus,#jMic,#studioSettingsBtn,.j-settings-shortcut):hover{
+  background:rgba(194,179,232,.11)!important;
+}
+html[data-soft-aurora] :is(
+  #homeQuickSubmit,#jSend,
+  #homeQuickForm .j-send,#jChatForm .j-send
+){
+  color:#111a23!important;
+  background:var(--sa-gold)!important;
+  border:1px solid var(--sa-gold)!important;
+  border-radius:50%!important;
+  box-shadow:none!important;
+  min-width:44px;min-height:44px;
+}
+html[data-soft-aurora] :is(
+  #homeQuickSubmit,#jSend
+) svg{stroke:#111a23!important;}
+html[data-soft-aurora] :is(
+  .top-login,.price-plan-action,.price-top-active,
+  button.primary,.primaryBtn,.price-credit-action
+){
+  background:var(--sa-gold)!important;
+  color:#111a23!important;
+  border-color:var(--sa-gold)!important;
+  box-shadow:none!important;
+}
+html[data-soft-aurora] :is(
+  .price-top-active,.price-plan-price,.price-hero h1 em,
+  .home-create-title em,.hero h1 em
+){color:var(--sa-gold)!important;}
+html[data-soft-aurora] :is(
+  .price-hero,.price-plan,.price-credit-card
+){border-color:var(--sa-border)!important;}
+html[data-soft-aurora] :is(
+  .price-plan-body,.price-plan-content
+){padding-inline:clamp(15px,2vw,24px)!important;}
+html[data-soft-aurora] :is(
+  a,button,textarea,input,select,[role="button"]
+):focus-visible{
+  outline:3px solid var(--sa-gold)!important;
+  outline-offset:3px!important;
+}
+html[data-soft-aurora] :is(
+  a,button,.home-create-card
+){transition-duration:.2s!important;transition-timing-function:ease-out!important;}
+/* Test-only appearance control. It does not interfere with existing navigation. */
+#saThemeSwitch{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  flex-shrink:0;margin:0 8px;
+  padding:7px 10px;border:1px solid var(--sa-border);border-radius:999px;
+  color:var(--sa-text);background:var(--sa-card);
+  font:600 12px/1.3 Inter,ui-sans-serif,system-ui,sans-serif;
+  cursor:pointer;white-space:nowrap;
+  box-shadow:none;
+}
+#saThemeSwitch:hover{background:var(--sa-raised);}
+#saThemeSwitch:focus-visible{outline:3px solid var(--sa-gold);outline-offset:3px;}
+#saThemeSwitch .sa-dot{width:9px;height:9px;border-radius:50%;background:var(--sa-gold);}
+#saThemeSwitch[data-mode="warm"] .sa-dot{background:#d49765;}
+#saThemeSwitch[data-mode="focus"] .sa-dot{background:var(--sa-mint);}
+#saThemeSwitch[data-mode="focus"]{color:var(--sa-muted);}
+/* Warm light: genuine legible light working surfaces, retaining existing media. */
+html[data-soft-aurora][data-sa-mode="warm"]{
+  color-scheme:light;
+  --sa-bg:#f4f0e8;--sa-sidebar:#e8e4db;--sa-card:#fffdf8;
+  --sa-raised:#f5eee4;--sa-border:#c9c3b8;
+  --sa-text:#26313a;--sa-muted:#52616e;
+  --sa-mint:#2e776b;--sa-lavender:#6b5888;--sa-gold:#a66b34;
+  --sa-glow:0 7px 22px #4c463c10;
+}
+html[data-soft-aurora][data-sa-mode="warm"] body,
+html[data-soft-aurora][data-sa-mode="warm"] body.deepsyq-pricing-page{
+  background:radial-gradient(ellipse at 85% 0%,#eddccf55,transparent 60%),#f4f0e8!important;
+}
+html[data-soft-aurora][data-sa-mode="warm"] :is(
+  .j-chat-bottom .jarvix-compose,#jChatForm.j-neon-composer,
+  body #homeQuickBar #homeQuickForm
+){
+  background:var(--sa-card)!important;border-color:var(--sa-border)!important;
+  color:var(--sa-text)!important;
+}
+html[data-soft-aurora][data-sa-mode="warm"] :is(
+  #homeQuickPrompt,#jInput
+){color:var(--sa-text)!important;}
+html[data-soft-aurora][data-sa-mode="warm"] :is(
+  #homeQuickPrompt,#jInput
+)::placeholder{color:#52616e!important;}
+html[data-soft-aurora][data-sa-mode="warm"] :is(
+  .j-empty h2,.j-chat-toolbar h1,.price-plan-body,.price-features,
+  #saThemeSwitch
+){color:var(--sa-text)!important;}
+/* Focus mode mutes visual noise, keeps high-contrast content & functional controls. */
+html[data-soft-aurora][data-sa-mode="focus"]{
+  --sa-bg:#151d27;--sa-sidebar:#18212c;--sa-card:#202b37;
+  --sa-raised:#273442;--sa-border:#45515e;--sa-text:#f1f2ee;
+  --sa-muted:#bbc5cb;--sa-mint:#a5c7c3;--sa-lavender:#bfc0cc;
+  --sa-gold:#e6c3a0;--sa-glow:none;
+}
+html[data-soft-aurora][data-sa-mode="focus"] *,
+html[data-soft-aurora][data-sa-mode="focus"] *::before,
+html[data-soft-aurora][data-sa-mode="focus"] *::after{
+  text-shadow:none!important;
+  animation-duration:.001ms!important;
+}
+html[data-soft-aurora][data-sa-mode="focus"] :is(
+  .home-create-card,.price-plan,.jarvix-compose,.j-chat-bottom
+){box-shadow:none!important;}
+@media(max-width:760px){
+  html[data-soft-aurora] :is(
+    body #homeQuickBar #homeQuickForm,
+    main.jarvix-chat .j-chat-bottom .jarvix-compose
+  ){border-radius:21px!important;min-height:110px!important;padding:13px 14px 11px!important;}
+  html[data-soft-aurora] :is(#homeQuickPrompt,#jInput){font-size:16px!important;}
+  #saThemeSwitch{padding:8px;min-width:44px;min-height:44px;font-size:0!important;margin:0 4px;}
+  #saThemeSwitch .sa-dot{width:12px;height:12px;}
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-soft-aurora] *,
+  html[data-soft-aurora] *::before,
+  html[data-soft-aurora] *::after{
+    transition-duration:.001ms!important;
+    animation-duration:.001ms!important;
+    scroll-behavior:auto!important;
+  }
+}
