@@ -15,7 +15,7 @@
   'deepsyq-christmas.js','deepsyq-christmas-v2.js','deepsyq-christmas-v4.js'
  ];
  let holidayPromise=null;
- const asset=(path)=>'/'+path+'?v=20261115-prod-theme-v1';
+ const asset=(path)=>'/'+path+'?v='+(path==='deepsyq-christmas-v4.js'||path==='deepsyq-christmas-v4.css'?'20261115-mobile-sync-v2':'20261115-prod-theme-v1');
  const ensureStyle=(name)=>new Promise(resolve=>{
   const id='ds-appearance-'+name.replace(/[^\w-]/g,'-');
   if(document.getElementById(id)){resolve();return}

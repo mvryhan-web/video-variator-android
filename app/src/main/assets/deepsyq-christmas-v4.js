@@ -164,6 +164,160 @@
   }
   ctx.restore();
  }
+
+ // Mobile scrolls are composited asynchronously by WebView/Safari. The original
+ // fixed viewport canvas waited for a JS scroll event and visibly chased cards.
+ // Mount identical snow as native scroll-content children instead. These small,
+ // inert canvases travel in the same compositor layer as their OWN cards.
+ const mobileQuery=matchMedia('(max-width: 760px), (pointer: coarse)');
+ const mobileCaps=new Map(),mobileHosts=new Set();
+ let mobileFrame=0,mobileRippleFrame=0,mobileObserver=null;
+ const MOBILE_H=27;
+ function clearMobile(){
+  cancelAnimationFrame(mobileRippleFrame);mobileRippleFrame=0;
+  for(const [el,record] of mobileCaps){
+   mobileObserver?.unobserve(el);
+   record.canvas.remove();
+  }
+  mobileCaps.clear();
+  for(const host of mobileHosts)host.classList.remove('xmas-mobile-snow-host');
+  mobileHosts.clear();
+  root.dataset.xmasMobileCaps='0';
+ }
+ function mobileHostFor(el){
+  let host=el.parentElement;
+  // A clip-only wrapper would cut off the snow above the card. Prefer the
+  // next un-clipped ancestor, but stay inside scrollable containers.
+  for(let n=0;host&&host.parentElement&&n<3;n++){
+   const style=getComputedStyle(host);
+   const o=[style.overflowX,style.overflowY];
+   if(o.includes('auto')||o.includes('scroll'))break;
+   if(!o.includes('hidden')&&!o.includes('clip'))break;
+   host=host.parentElement;
+  }
+  return host;
+ }
+ function mobileEligible(el){
+  if(!el.isConnected||el.closest('.xmas-mini-stage,.xmas-theme-tool,.xmas-pile-overlay,.xmas-mobile-snow-cap'))return false;
+  if(el.closest('#homeQuickBar,#jChatForm')&&!el.matches('#homeQuickBar,#jChatForm'))return false;
+  const r=el.getBoundingClientRect();
+  if(r.width<94||r.height<26)return false;
+  if(el.classList.contains('j-workspace-pane')&&r.height>innerHeight*.85)return false;
+  const style=getComputedStyle(el);
+  if(style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0)return false;
+  for(const form of document.querySelectorAll('#homeQuickBar,#jChatForm')){
+   if(el===form)continue;
+   const f=form.getBoundingClientRect();
+   if(r.top>f.top-22&&r.top<f.bottom+4&&r.right>f.left&&r.left<f.right)return false;
+  }
+  return true;
+ }
+ function paintMobile(record,now){
+  const c=record.canvas,local=c.getContext('2d');
+  if(!local||!record.width)return;
+  const old=ctx;
+  try{
+   ctx=local;
+   local.setTransform(record.dpr,0,0,record.dpr,0,0);
+   local.clearRect(0,0,record.width,MOBILE_H);
+   mound({el:record.el,x:0,w:record.width,y:MOBILE_H,seed:record.seed},now);
+  }finally{ctx=old}
+ }
+ function placeMobile(record,refresh=false){
+  const {el,host,canvas:cap}=record;
+  if(!el.isConnected||!host.isConnected)return;
+  const r=el.getBoundingClientRect(),p=host.getBoundingClientRect();
+  const width=Math.max(0,r.width);
+  const left=r.left-p.left+host.scrollLeft-host.clientLeft;
+  const top=r.top-p.top+host.scrollTop-host.clientTop-MOBILE_H;
+  if(Math.abs(record.left-left)>.75)cap.style.left=left.toFixed(2)+'px';
+  if(Math.abs(record.top-top)>.75)cap.style.top=top.toFixed(2)+'px';
+  if(Math.abs(record.width-width)>.75||refresh){
+   const dpr=Math.min(devicePixelRatio||1,1.5);
+   const nextW=Math.max(1,Math.round(width*dpr)),nextH=Math.round(MOBILE_H*dpr);
+   if(cap.width!==nextW)cap.width=nextW;
+   if(cap.height!==nextH)cap.height=nextH;
+   cap.style.width=width.toFixed(2)+'px';
+   cap.style.height=MOBILE_H+'px';
+   record.width=width;record.dpr=dpr;
+   paintMobile(record,performance.now());
+  }
+  record.left=left;record.top=top;
+ }
+ function syncMobile(){
+  if(!mobileQuery.matches||!isChristmas()){clearMobile();return}
+  const all=[...document.querySelectorAll(targets)],seen=new Set();
+  for(let i=0;i<all.length&&seen.size<140;i++){
+   const el=all[i];
+   if(!(el instanceof HTMLElement)||seen.has(el)||!mobileEligible(el))continue;
+   seen.add(el);
+   let record=mobileCaps.get(el);
+   const host=mobileHostFor(el);
+   if(!host)continue;
+   if(record&&record.host!==host){
+    record.canvas.remove();mobileObserver?.unobserve(el);
+    mobileCaps.delete(el);record=null;
+   }
+   if(!record){
+    const cap=document.createElement('canvas');
+    cap.className='xmas-mobile-snow-cap';
+    cap.setAttribute('aria-hidden','true');
+    cap.dataset.snowFor=el.id||el.className.toString().slice(0,45);
+    // position:relative only affects the coordinate system of the cap;
+    // the card keeps its original size, padding, layout and interactions.
+    if(getComputedStyle(host).position==='static'){
+     host.classList.add('xmas-mobile-snow-host');mobileHosts.add(host);
+    }
+    host.appendChild(cap);
+    record={el,host,canvas:cap,seed:seedFor(el,i),left:NaN,top:NaN,width:0,dpr:1};
+    mobileCaps.set(el,record);
+    mobileObserver?.observe(el);
+   }
+   placeMobile(record);
+  }
+  for(const [el,record] of mobileCaps){
+   if(!seen.has(el)||!el.isConnected){
+    mobileObserver?.unobserve(el);record.canvas.remove();mobileCaps.delete(el);
+   }
+  }
+  root.dataset.xmasMobileCaps=String(mobileCaps.size);
+  // Update the existing diagnostic count; the fixed overlay is hidden on mobile.
+  if(canvas)canvas.dataset.xmasPiles=String(mobileCaps.size);
+ }
+ function brushMobile(e,dist){
+  let target=null,distance=Infinity,box;
+  for(const record of mobileCaps.values()){
+   const r=record.canvas.getBoundingClientRect();
+   const d=Math.abs(e.clientY-(r.bottom-10));
+   if(e.clientX>=r.left-7&&e.clientX<=r.right+7&&d<28&&d<distance){
+    target=record;distance=d;box=r;
+   }
+  }
+  if(!target)return;
+  const local=Math.max(1,Math.min(target.width-1,e.clientX-box.left));
+  const now=performance.now();
+  ripples.push({el:target.el,x:local,at:now,force:Math.min(1.5,Math.max(.45,dist/17))});
+  if(ripples.length>14)ripples.shift();
+  target.lastRipple=now;
+  rippleCount++;
+  target.canvas.dataset.xmasRippleCount=String(rippleCount);
+  if(canvas)canvas.dataset.xmasRippleCount=String(rippleCount);
+  paintMobile(target,now);
+  if(!mobileRippleFrame&&!reduced.matches){
+   const tick=(at)=>{
+    mobileRippleFrame=0;
+    if(!mobileQuery.matches||!isChristmas())return;
+    let running=false;
+    for(const record of mobileCaps.values()){
+     if(record.lastRipple&&at-record.lastRipple<1100){
+      paintMobile(record,at);running=true;
+     }
+    }
+    if(running)mobileRippleFrame=requestAnimationFrame(tick);
+   };
+   mobileRippleFrame=requestAnimationFrame(tick);
+  }
+ }
  function draw(now){
   frame=0;if(!canvas||!ctx||!isChristmas())return;
   if(isDrawing)return;isDrawing=true;
@@ -182,13 +336,26 @@
   isDrawing=false;
   if((ripples.length||particles.length)&&!reduced.matches)schedule();
  }
- function schedule(){if(!frame&&canvas&&isChristmas())frame=requestAnimationFrame(draw)}
+ function schedule(e){
+  if(mobileQuery.matches){
+   // Native touch scrolling handles the attached caps; NEVER ask JS to
+   // chase a scrolling card with a fixed canvas on every scroll frame.
+   if(e?.type==='scroll')return;
+   if(!mobileFrame)mobileFrame=requestAnimationFrame(()=>{
+    mobileFrame=0;syncMobile();
+   });
+   return;
+  }
+  if(mobileCaps.size)clearMobile();
+  if(!frame&&canvas&&isChristmas())frame=requestAnimationFrame(draw);
+ }
  function pointerMove(e){
   if(!isChristmas()||reduced.matches||!canvas||!e.isPrimary)return;
   pointerX=e.clientX;pointerY=e.clientY;
   const dist=max(Math.abs(pointerX-lastX),Math.abs(pointerY-lastY));
   if(dist<3)return;
   lastX=pointerX;lastY=pointerY;
+  if(mobileQuery.matches){brushMobile(e,dist);return}
   let nearest=null,dy=Infinity;
   for(const t of painted){
    const d=Math.abs(pointerY-(t.y-10));
@@ -217,8 +384,11 @@
   document.body.appendChild(canvas);
   ctx=canvas.getContext('2d',{alpha:true});
   if(!ctx)return;
-  resize();collect();schedule();
+  resize();if(!mobileQuery.matches)collect();schedule();
+  mobileObserver=typeof ResizeObserver==='function'
+   ? new ResizeObserver(()=>schedule()) : null;
   addEventListener('resize',resize,{passive:true});
+  mobileQuery.addEventListener?.('change',schedule);
   document.addEventListener('scroll',schedule,{capture:true,passive:true});
   addEventListener('scroll',schedule,{passive:true});
   document.addEventListener('pointermove',pointerMove,{capture:true,passive:true});
@@ -227,7 +397,7 @@
   observer=new MutationObserver(mutations=>{
    if(!isChristmas())return;
    if(mutations.some(m=>[...m.addedNodes].some(n=>n.nodeType===1&&
-      !n.closest?.('.xmas-mini-stage,.xmas-pile-overlay')&&n.id!=='xmas-pile-overlay'))){
+      !n.closest?.('.xmas-mini-stage,.xmas-pile-overlay,.xmas-mobile-snow-cap')&&n.id!=='xmas-pile-overlay'))){
      if(scanTimer)clearTimeout(scanTimer);
      scanTimer=setTimeout(()=>{scanTimer=0;schedule()},180);
    }
@@ -236,6 +406,7 @@
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule()});
   // Recheck late-rendered cards without changing their markup.
   [350,1100,2800].forEach(ms=>setTimeout(schedule,ms));
+  addEventListener('load',schedule,{once:true});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

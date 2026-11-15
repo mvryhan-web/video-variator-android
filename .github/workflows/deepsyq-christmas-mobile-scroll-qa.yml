@@ -1,0 +1,132 @@
+name: DEEPSYQ Christmas mobile snow sync — patched live-page browser preflight
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths: ['.github/workflows/deepsyq-christmas-mobile-scroll-qa.yml']
+permissions:
+  contents: read
+jobs:
+  test-mobile-card-snow-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Verify mobile snow stays attached to card during scroll, desktop unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check app/src/main/assets/deepsyq-christmas-v4.js
+          node --check app/src/main/assets/deepsyq-theme-loader.js
+          mkdir -p /tmp/deepsyq-mobile-snow-qa
+          node --input-type=module <<'NODE'
+          import {chromium} from 'playwright';
+          import {readFile} from 'node:fs/promises';
+          import assert from 'node:assert/strict';
+          const browser=await chromium.launch({headless:true});
+          const replacements=[
+            ['deepsyq-theme-loader.js','application/javascript'],
+            ['deepsyq-christmas-v4.js','application/javascript'],
+            ['deepsyq-christmas-v4.css','text/css']
+          ];
+          try{
+            for(const mode of ['mobile','desktop']){
+              const mobile=mode==='mobile';
+              const ctx=await browser.newContext({
+                viewport:mobile?{width:390,height:844}:{width:1440,height:900},
+                isMobile:mobile,hasTouch:mobile,deviceScaleFactor:mobile?2:1,
+                colorScheme:'dark'
+              });
+              const errors=[];
+              const page=await ctx.newPage();
+              page.on('pageerror',error=>errors.push(error.message));
+              for(const [asset,mime] of replacements){
+                const local=await readFile('app/src/main/assets/'+asset);
+                await page.route('**/'+asset+'*',route=>route.fulfill({
+                  status:200,contentType:mime,body:local,
+                  headers:{'cache-control':'no-store','access-control-allow-origin':'*'}
+                }));
+              }
+              try{
+                for(const url of ['https://deepsyq.app/deepsyq.html','https://deepsyq.app/free-tools.html','https://deepsyq.app/jarvix-chat.html?mode=image']){
+                  await page.goto(url+(url.includes('?')?'&':'?')+'test_snow_sync='+Date.now(),
+                    {waitUntil:'domcontentloaded',timeout:45000});
+                  await page.waitForFunction(()=>document.documentElement.dataset.siteTheme==='christmas'&&
+                    !!document.getElementById('xmas-pile-overlay'),null,{timeout:30000});
+                  if(mobile)await page.waitForFunction(()=>Number(document.documentElement.dataset.xmasMobileCaps||0)>0,null,{timeout:22000});
+                  else await page.waitForFunction(()=>!!document.getElementById('xmas-pile-overlay'),null,{timeout:12000});
+                  const initial=await page.evaluate(()=>{
+                    const caps=[...document.querySelectorAll('.xmas-mobile-snow-cap')];
+                    const fixed=document.getElementById('xmas-pile-overlay');
+                    const visible=caps.filter(c=>getComputedStyle(c).display!=='none');
+                    const host=visible[0]?.parentElement;
+                    const computed=fixed?getComputedStyle(fixed):null;
+                    const topCards=[...document.querySelectorAll('#homeQuickBar,.quick-tool-item,.tool-card,.app-card,#jChatForm')].slice(0,8).map(e=>e.id||e.className.toString().slice(0,28));
+                    return {
+                      mobileCaps:caps.length,
+                      fixedDisplay:computed?.display,
+                      hostRelative:host?.classList.contains('xmas-mobile-snow-host')||getComputedStyle(host||document.body).position!=='static',
+                      topCards,theme:document.documentElement.dataset.siteTheme
+                    };
+                  });
+                  console.log('SNOW_SYNC_INITIAL',mode,url,JSON.stringify(initial));
+                  if(mobile){
+                    assert(initial.mobileCaps>0,'No mobile card-anchored snow on '+url);
+                    assert.equal(initial.fixedDisplay,'none','Old fixed canvas must not paint on touch mobile');
+                    await page.evaluate(async()=>{
+                      const cap=document.querySelector('.xmas-mobile-snow-cap');
+                      if(!cap)return;
+                      const node=cap.parentElement.querySelector('#homeQuickBar,.quick-tool-item,.tool-card,.app-card,#jChatForm') ||
+                        cap.parentElement.querySelector(':scope > :not(.xmas-mobile-snow-cap)');
+                      if(!node)return;
+                      const ancestor=(()=>{let p=node.parentElement;while(p&&p!==document.body){
+                        const st=getComputedStyle(p);
+                        if(p.scrollHeight>p.clientHeight+80&&/(auto|scroll)/.test(st.overflowY))return p;
+                        p=p.parentElement;
+                      }return document.scrollingElement})();
+                      const snapshots=[];
+                      for(let i=0;i<12;i++){
+                        const capRect=cap.getBoundingClientRect();
+                        const nodeRect=node.getBoundingClientRect();
+                        snapshots.push({step:i,gap:Number((nodeRect.top-capRect.bottom).toFixed(2)),
+                          cardTop:Number(nodeRect.top.toFixed(2)),capTop:Number(capRect.top.toFixed(2))});
+                        ancestor.scrollTop+=35;
+                        await new Promise(requestAnimationFrame);
+                      }
+                      document.documentElement.dataset.xmasMobileSyncMaxGap=String(Math.max(...snapshots.map(s=>Math.abs(s.gap))));
+                      document.documentElement.dataset.xmasMobileSyncSamples=JSON.stringify(snapshots);
+                    });
+                    const sync=await page.evaluate(()=>({
+                      maxGap:Number(document.documentElement.dataset.xmasMobileSyncMaxGap),
+                      samples:JSON.parse(document.documentElement.dataset.xmasMobileSyncSamples||'[]'),
+                      count:Number(document.documentElement.dataset.xmasMobileCaps||0)
+                    }));
+                    console.log('SNOW_SYNC_SCROLL',mode,url,JSON.stringify(sync));
+                    assert(sync.samples.length===12);
+                    assert(sync.maxGap<3.5,'Mobile snow drifted away from its card when scrolling');
+                    assert(sync.count>0,'Snow decorations disappeared on scroll');
+                  }else{
+                    assert.notEqual(initial.fixedDisplay,'none','Desktop original snow overlay must be preserved');
+                    assert.equal(initial.mobileCaps,0,'Desktop should not get mobile canvases');
+                  }
+                }
+                await page.screenshot({path:'/tmp/deepsyq-mobile-snow-qa/'+mode+'-last-page.png'});
+                const newErrors=errors.filter(e=>/xmas|christmas|snow|mound|canvas|mobile/i.test(e));
+                assert.deepEqual(newErrors,[],'Christmas JS errors');
+                console.log('SNOW_SYNC_ALL_PASS',mode);
+              }finally{await ctx.close()}
+            }
+            console.log('CHRISTMAS_MOBILE_ANCHORED_SNOW_AND_DESKTOP_REGRESSION_PASS');
+          }finally{await browser.close()}
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: christmas-mobile-snow-preflight
+          path: /tmp/deepsyq-mobile-snow-qa/*.png
+          retention-days: 3
+          if-no-files-found: ignore
