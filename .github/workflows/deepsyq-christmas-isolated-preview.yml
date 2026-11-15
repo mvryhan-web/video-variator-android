@@ -84,9 +84,9 @@ jobs:
           let injected=0;
           const baseAssets='<link rel="stylesheet" href="/deepsyq-christmas.css?v=20261115">'+
             '<script defer src="/deepsyq-christmas.js?v=20261115"></script>';
-          const newAssets='<link rel="stylesheet" href="/deepsyq-christmas-v2.css?v=20261115">'+
-            '<script defer src="/deepsyq-christmas-v2.js?v=20261115"></script>'+
-            '<link rel="stylesheet" href="/deepsyq-christmas-v3.css?v=20261115b">';
+          const newAssets='<link rel="stylesheet" href="/deepsyq-christmas-v2.css?v=20261115-scroll-final">'+
+            '<script defer src="/deepsyq-christmas-v2.js?v=20261115-scroll-final"></script>'+
+            '<link rel="stylesheet" href="/deepsyq-christmas-v3.css?v=20261115-scroll-final">';
           for(const name of files){
             const p=path.join(dir,name);
             let html=fs.readFileSync(p,'utf8');
