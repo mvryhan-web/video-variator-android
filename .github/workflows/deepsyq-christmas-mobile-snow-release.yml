@@ -1,4 +1,5 @@
 name: DEEPSYQ Christmas mobile snow sync — guarded production release
+# Retry: restore only the verified LIVE Worker origin, never the GitHub DEV Worker.
 on:
   push:
     branches: [deepsyq-platform]
