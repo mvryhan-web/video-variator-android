@@ -643,3 +643,12 @@ For every block:
 - Выпуск прошёл [#43648798637](https://github.com/mvryhan-web/video-variator-android/actions/runs/43648798637); desktop/mobile Chromium и переключение трёх тем — [#43648877133](https://github.com/mvryhan-web/video-variator-android/actions/runs/43648877133) PASS, все исходные элементы карусели и JARVIX на месте.
 - Предыдущая строка о URL `test.deepsyq.pages.dev/?christmas=1` — **лишь запланированный канонический адрес, на нём тема не опубликована**. Запрещено выдать его за готовый.
 - Не переносить на постоянный TEST автоматически: активный Worker/HTML этого адреса отличается от исходников GitHub и помечен Cloudflare `dirty`. Сначала нужен точный безопасный baseline и точечная публикация с сохранением функций.
+
+### 2026-11-15 — Christmas V2 — LIVE APPROVED TEST PREVIEW
+
+- **DONE:** опубликовано на https://christmas-preview-20261114.deepsyq.pages.dev/?christmas=1, Cloudflare [#43712357501](https://github.com/mvryhan-web/video-variator-android/actions/runs/43712357501).
+- **DONE:** пять исходных мини-персонажей на главном поле ввода; теперь броски имеют цель, попадание, падение, вставание и ответный бросок.
+- **DONE:** снежки больше; snowfall реже и реалистичнее (шестилучевые частицы вместо точек); снежные шапки объемнее и лежат над рамками.
+- **DONE:** эффекты добавляются на все существующие HTML-страницы при сборке изолированного TEST; мини-сцены до двух на других панелях.
+- **QA PASS:** [#43712439801](https://github.com/mvryhan-web/video-variator-android/actions/runs/43712439801), Chromium desktop/mobile, реальное попадание, Tools, Pricing, JARVIX Chat, theme switching; без JS ошибок.
+- **DO NOT TOUCH:** production и канонический TEST Worker остаются отдельно; переносить сюда без подтверждённого baseline нельзя.
