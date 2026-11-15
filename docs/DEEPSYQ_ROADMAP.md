@@ -677,3 +677,11 @@ For every block:
 - **DONE:** Added Christmas snow to mobile tool tile panels, and shifted the left chalet chimney upward on the unified JARVIX Chat/Image/Video/Audio view (desktop 180px, mobile 68px). Existing full scrolling portrait, five-actor snowball game and original content remain intact.
 - **PASS:** TEST Preview [release #43718790272](https://github.com/mvryhan-web/video-variator-android/actions/runs/43718790272), Chromium desktop/mobile [#43718835307](https://github.com/mvryhan-web/video-variator-android/actions/runs/43718835307), painted snow+hover interaction+Tools/Pricing/Studio/JARVIX cards verified.
 - **TEST LINK:** https://christmas-preview-20261114.deepsyq.pages.dev/?christmas=1. No production / canonical TEST changes.
+
+
+### 2026-11-15 — Christmas V4.2 visual quality / no input overlap
+
+- Rounded, discontinuous powder-snow drifts now use real photographed snow from the owner-supplied long scene; narrowed coverage to prevent snow ribbons and explicitly exclude neighboring panels from overpainting the chat composer.
+- Hover/touch brush interaction, unified JARVIX 5-person snowball scene, chimney upshift on chat modes and all-page snowy background are preserved.
+- Desktop/mobile browser QA passed for prior photographic version [#43720228902](https://github.com/mvryhan-web/video-variator-android/actions/runs/43720228902). Final thin-drift release follows on independent `christmas-preview-20261114` branch. Check final workflow separately.
+- Do not automatically merge with canonical TEST Worker or production. Staging link: https://christmas-preview-20261114.deepsyq.pages.dev/?christmas=1
