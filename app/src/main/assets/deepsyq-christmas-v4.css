@@ -1,6 +1,10 @@
 /* DEEPSYQ Christmas V4 – soft white snow above card edges, pointer-reactive.
    Old repeating gradient strips are hidden, but DOM geometry stays measurable. */
-html[data-site-theme="christmas"] .xmas-snowcap{
+html[data-site-theme="christmas"] body .xmas-snowcap,
+html[data-site-theme="christmas"] #homeQuickBar > .xmas-snowcap,
+html[data-site-theme="christmas"] #jChatForm > .xmas-snowcap,
+html[data-site-theme="christmas"] .xmas-snowcap.xmas-header,
+html[data-site-theme="christmas"] .xmas-snowcap.xmas-thin{
  opacity:0!important;visibility:hidden!important;
  filter:none!important;
 }
