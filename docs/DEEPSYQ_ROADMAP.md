@@ -669,3 +669,11 @@ For every block:
 - Preview to review: https://christmas-preview-20261114.deepsyq.pages.dev/?christmas=1. Do not change production or canonical TEST Worker.
 
 - **Latest verified publication (cache refreshed):** [TEST Preview release #43716357047](https://github.com/mvryhan-web/video-variator-android/actions/runs/43716357047), success. Combined with live desktop/mobile Chromium QA [#43716159814](https://github.com/mvryhan-web/video-variator-android/actions/runs/43716159814). Production and main TEST unaffected.
+
+
+### 2026-11-15 — Christmas V4: fluffy interactive snow — verified on isolated TEST Preview
+
+- **DONE:** Replaced visually flat CSS snow strips with soft irregular translucent canvas snowdrifts above input, header and card boundaries. Snow gently reacts to pointer/finger movement, without stealing clicks.
+- **DONE:** Added Christmas snow to mobile tool tile panels, and shifted the left chalet chimney upward on the unified JARVIX Chat/Image/Video/Audio view (desktop 180px, mobile 68px). Existing full scrolling portrait, five-actor snowball game and original content remain intact.
+- **PASS:** TEST Preview [release #43718790272](https://github.com/mvryhan-web/video-variator-android/actions/runs/43718790272), Chromium desktop/mobile [#43718835307](https://github.com/mvryhan-web/video-variator-android/actions/runs/43718835307), painted snow+hover interaction+Tools/Pricing/Studio/JARVIX cards verified.
+- **TEST LINK:** https://christmas-preview-20261114.deepsyq.pages.dev/?christmas=1. No production / canonical TEST changes.
