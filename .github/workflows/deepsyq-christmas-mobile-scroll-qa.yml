@@ -1,4 +1,5 @@
 name: DEEPSYQ Christmas mobile snow sync — patched live-page browser preflight
+# Final preflight: initial top/left placement initialized; visible snow must follow card in compositor.
 on:
   push:
     branches: [deepsyq-platform]
