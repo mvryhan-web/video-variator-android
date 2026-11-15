@@ -1,6 +1,6 @@
 import {saveStudioHandoff} from './studio-handoff.js';
 import {extractAction} from './jarvix-action-plan.js';
-import {recordedConversationReply as recordedReply,recordedExact,wasRecordedReplyUsed} from './jarvix-new-recorded-dialog.js';
+import {recordedConversationReply as recordedReply,recordedExact,wasRecordedReplyUsed} from './jarvix-new-recorded-dialog.js?v=scenario-catalog-1';
 import {helloRecording,smalltalkReply,smalltalkTextReply,isGreetingOnly} from './jarvix-new-smalltalk.js';
 /* JARVIX NEW — voice-only mode on the OWNER'S EXISTING sphere, TEST host only.
    No new page, code form, paid API or simulated model answer. */

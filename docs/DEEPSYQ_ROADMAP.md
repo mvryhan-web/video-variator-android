@@ -1,5 +1,9 @@
 # DEEPSYQ ROADMAP — approved next product phase
 
+## 2026-11-15 · JARVIX NEW recorded dialogue
+
+TEST: enable scenario recordings from the source scripts for four-language dialogue and verify question-to-MP3 matching before any production decision.
+
 ## OWNER D17 — ACTIVE ROADMAP TERMINOLOGY AND WAVES (2026-10-20)
 
 **CURRENT RULE — READ THIS BEFORE THE HISTORICAL BLOCK HEADINGS BELOW.** The owner renamed the eight platform workstreams: **F1=Block 1 Compare AI/Smart; F2=Block 2 User Agent; F3=Block 3 Inspiration; F4=Block 4 Studio/My Workspace; F5=Block 5 Product Watcher; F6=Block 6 Voice Agent; F7=Block 7 Pricing/Credits/Stripe; F8=Block 8 Virtual Pet.** `Block N` in this roadmap and existing Issues/PRs means `FN`. This is a naming change, **not** eight new implementations. Original source TXT specifications, requirement numbers, existing PRs and completed work remain untouched.

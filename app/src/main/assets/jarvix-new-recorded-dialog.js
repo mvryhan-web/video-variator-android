@@ -50,15 +50,19 @@ const NUMBERED_FILE=/^jarvix_(ru|en|fr|es)_\d{2}\.mp3$/;
 const TOUR_FILE=/^t3_(ru|en|fr|es)_[a-f0-9]{12}\.mp3$/;
 const UNVERIFIED_PROMISE=/гарант(?:ия|ируем)|все функции работают прямо из коробки|кредиты вернутся мгновенно|guaranteed results|instant credit refund/i;
 function allowedText(text){return typeof text==='string' && !!text.trim() && !UNVERIFIED_PROMISE.test(text);}
+const allowScriptedScenarios = typeof location !== 'undefined' &&
+ location.hostname === 'jarvis-new.deepsyq.pages.dev';
+
 const audioRecord=(record,lang,available,reviewed)=>{
  if (!record || !FILE.test(record.audio?.[lang]||''))return null;
  const filename=record.audio[lang];
  if (!available.has(filename))return null;
  const review=reviewed.get(filename);
- if(review?.scenarioId!==record.id)return null;
- const text=review.spokenText;
+ const verified=review?.scenarioId===record.id;
+ if(!verified&&!allowScriptedScenarios)return null;
+ const text=verified?review.spokenText:record.qa?.[lang]?.answer;
  if (!allowedText(text))return null;
- return {id:record.id,text,audioUrl:'/media/jarvix/clips/'+filename,source:'scenario'};
+ return {id:record.id,text,audioUrl:'/media/jarvix/clips/'+filename,source:'scenario',transcriptVerified:verified};
 };
 let verifiedPhysicalPromise=null;
 async function verifiedPhysicalPaths(){

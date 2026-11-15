@@ -1,5 +1,9 @@
 # JARVIX implementation status
 
+## 2026-11-15 · Scenario recordings on JARVIX NEW TEST
+
+The preview can select existing scenario MP3s from the four-language source scripts, with the physical index, manifest, language and content checks still applied. A reviewed transcript takes precedence. Source-script text is provisional and does not count as an independent audio review. The production host still requires reviewed scenario entries.
+
 Updated 2026-11-02. These changes target the isolated DEV preview only.
 
 ## Working in this change
