@@ -1,4 +1,5 @@
 name: DEEPSYQ three appearance themes — stage exact assets without activating
+# release-retry: canonical Worker SHA verified; preserve existing manifest and bindings
 on:
   push:
     branches: [deepsyq-platform]
