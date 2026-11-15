@@ -6,6 +6,11 @@
  if(!['christmas-preview-20261114.deepsyq.pages.dev','localhost','127.0.0.1'].includes(hostname))return;
  const root=document.documentElement;
  const isChristmas=()=>root.dataset.siteTheme==='christmas';
+ const texture=new Image();
+ let textureReady=false;
+ texture.onload=()=>{textureReady=true;schedule()};
+ texture.onerror=()=>{textureReady=false};
+ texture.src='/media/christmas/snowbank-texture.webp';
  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
  const targets=[
   '#homeQuickBar','#jChatForm','.jarvix-compose','.composer',
@@ -45,10 +50,11 @@
   for(let i=0;i<list.length;i++){
    const el=list[i];
    if(unique.has(el)||el.closest('.xmas-mini-stage,.xmas-theme-tool,.xmas-pile-overlay'))continue;
+   if(el.closest('#homeQuickBar,#jChatForm')&&!el.matches('#homeQuickBar,#jChatForm'))continue;
    unique.add(el);
    const rect=el.getBoundingClientRect();
    if(rect.width<94||rect.height<26||rect.bottom<=0||rect.top>innerHeight+35)continue;
-   if(rect.top<2||rect.top>innerHeight+24)continue;
+   if(rect.top<2||rect.top>innerHeight-29)continue;
    const style=getComputedStyle(el);
    if(style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0)continue;
    const x=max(0,rect.left),right=min(innerWidth,rect.right),w=right-x;
@@ -62,86 +68,89 @@
   if(canvas)canvas.dataset.xmasPiles=String(visible.length);
  }
  function heightAt(t,local,now){
-  // Snow settles as separated, irregular cushions, not a white horizontal tape.
-  // Each drift has a different position, radius and amount of accumulated snow.
-  const period=t.w<190?61:t.w>800?108:82;
+  // Wide rounded deposits, with airy gaps: realistic snow pillows, no spikes.
+  const period=t.w<190?83:t.w>750?126:108;
   const index=Math.floor(local/period);
-  let height=0;
+  let h=0;
   for(let n=index-2;n<=index+2;n++){
-   const offset=rand(t.seed+n*57+5);
-   const center=n*period+period*(.29+.41*offset);
-   const radius=period*(.21+.16*rand(t.seed+n*37+11));
-   const distance=Math.abs(local-center)/radius;
-   if(distance>=1)continue;
-   const mass=.5+.5*Math.cos(Math.PI*distance);
-   const amount=8+14*rand(t.seed+n*41+23);
-   height+=amount*Math.pow(mass,.86);
+   const seed=rand(t.seed+n*57+5);
+   const center=n*period+period*(.39+.23*seed);
+   const radius=period*(.40+.07*rand(t.seed+n*37+11));
+   const d=Math.abs(local-center)/radius;
+   if(d>=1)continue;
+   // Superellipse-like low rounded summit (not pointy sine-wave peaks).
+   const dome=Math.pow(1-d*d,.46);
+   const amount=8.6+5.4*rand(t.seed+n*41+23);
+   h=Math.max(h,amount*dome);
   }
-  // Snow crumbles into a thin intermittent dusting at the outskirts.
-  if(height>1.3)height+=.75*Math.sin(local*.21+t.seed);
-  else height=0;
+  // Fine uneven settling, damped at the outline.
+  if(h>1.7)h+=.45*Math.sin(local*.092+t.seed)*Math.min(1,h/7);
+  else h=0;
   if(!reduced.matches){
    for(const r of ripples){
     if(r.el!==t.el)continue;
     const age=now-r.at;
     if(age<0||age>1100)continue;
-    const dx=local-r.x,spread=30+age*.068;
+    const dx=local-r.x,spread=30+age*.07;
     const envelope=Math.exp(-(dx*dx)/(2*spread*spread));
-    height+=envelope*Math.sin(age*.026-dx*.075)*
-      (r.force*6.6)*Math.exp(-age/530);
+    h+=envelope*Math.sin(age*.026-dx*.065)*r.force*5.7*Math.exp(-age/530);
    }
   }
-  return max(0,min(27,height));
+  return max(0,min(20,h));
  }
  function mound(t,now){
-  const left=t.x,w=t.w,base=t.y-1;
-  const upper=base-30;
+  const left=t.x,w=t.w,base=t.y-1,upper=base-23;
   ctx.save();
-  // All the snow remains OUTSIDE the card and the input border.
-  ctx.beginPath();ctx.rect(left,upper-3,w,32);ctx.clip();
-  const silhouette=()=>{
-   ctx.beginPath();ctx.moveTo(left,base);
-   ctx.lineTo(left+w,base);
-   for(let x=w;x>=0;x-=3)ctx.lineTo(left+x,base-heightAt(t,x,now));
+  ctx.beginPath();ctx.rect(left,upper-3,w,25);ctx.clip();
+  const contour=()=>{
+   ctx.beginPath();ctx.moveTo(left,base);ctx.lineTo(left+w,base);
+   for(let x=w;x>=0;x-=2.2)ctx.lineTo(left+x,base-heightAt(t,x,now));
    ctx.lineTo(left,base-heightAt(t,0,now));ctx.closePath();
   };
-  silhouette();
-  ctx.shadowColor='rgba(56,91,124,.23)';
+  contour();
+  ctx.shadowColor='rgba(39,79,112,.32)';
   ctx.shadowBlur=3.5;ctx.shadowOffsetY=1;
-  const frost=ctx.createLinearGradient(0,upper,0,base);
-  frost.addColorStop(0,'#ffffff');
-  frost.addColorStop(.34,'#ffffff');
-  frost.addColorStop(.66,'#fbfeff');
-  frost.addColorStop(.86,'#f1f9fe');
-  frost.addColorStop(1,'#dfeefa');
-  ctx.fillStyle=frost;ctx.fill();
+  const snow=ctx.createLinearGradient(0,upper,0,base);
+  snow.addColorStop(0,'#ffffff');
+  snow.addColorStop(.35,'#ffffff');
+  snow.addColorStop(.8,'#f8fdff');
+  snow.addColorStop(1,'#e4f1fa');
+  ctx.fillStyle=snow;ctx.fill();
   ctx.shadowBlur=0;ctx.shadowOffsetY=0;
-  // Uneven powdery tufts only ON REAL SNOW MOUNDS, not across bare gaps.
-  const tufts=Math.ceil(w/16);
-  for(let i=0;i<tufts;i++){
-   const x=min(w-2,i*16+7+(rand(t.seed+i*11)-.5)*10);
-   const h=heightAt(t,x,now);
-   if(h<4.5)continue;
-   const r=2.5+rand(t.seed+i*29+31)*4.7;
-   const cx=left+x,cy=base-h+r*.45;
-   const light=ctx.createRadialGradient(cx-r*.15,cy-r*.35,.3,cx,cy,r*1.55);
-   light.addColorStop(0,'rgba(255,255,255,.95)');
-   light.addColorStop(.43,'rgba(255,255,255,.69)');
-   light.addColorStop(.75,'rgba(242,250,255,.25)');
-   light.addColorStop(1,'rgba(236,247,255,0)');
-   ctx.fillStyle=light;ctx.beginPath();
-   ctx.ellipse(cx,cy,r*1.45,r*.94,rand(i+t.seed)*.4,0,Math.PI*2);ctx.fill();
+  // The actual photographed snow texture stays clipped to the natural banks.
+  if(textureReady){
+   contour();ctx.save();ctx.clip();
+   ctx.globalAlpha=.43;
+   // Repeat with a different crop offset per card to prevent tiled repetition.
+   const tw=Math.max(230,Math.min(520,w));
+   const seed=(t.seed%3)*91;
+   for(let xx=-tw;xx<w+tw;xx+=tw){
+    ctx.drawImage(texture,left+xx+(seed%37),upper,tw,24);
+   }
+   ctx.restore();
   }
-  // A handful of snow grains, avoiding uniform repetitive painted stripes.
-  const grain=Math.ceil(w/19);
-  for(let i=0;i<grain;i++){
+  const tufts=Math.ceil(w/19);
+  for(let i=0;i<tufts;i++){
+   const x=min(w-2,i*19+9+(rand(t.seed+i*11)-.5)*12);
+   const h=heightAt(t,x,now);
+   if(h<5)continue;
+   const r=3.6+rand(t.seed+i*29+31)*3.5;
+   const cx=left+x,cy=base-h+r*.36;
+   const glow=ctx.createRadialGradient(cx-r*.22,cy-r*.3,.2,cx,cy,r*1.6);
+   glow.addColorStop(0,'rgba(255,255,255,.78)');
+   glow.addColorStop(.47,'rgba(255,255,255,.39)');
+   glow.addColorStop(1,'rgba(241,250,255,0)');
+   ctx.fillStyle=glow;ctx.beginPath();
+   ctx.ellipse(cx,cy,r*1.8,r*.95,0,0,Math.PI*2);ctx.fill();
+  }
+  // Sparse frost detail, not evenly spaced dot rows.
+  for(let i=0;i<Math.ceil(w/21);i++){
    const x=rand(t.seed+i*17+101)*w;
    const h=heightAt(t,x,now);
-   if(h<3.2)continue;
-   const y=base-h*(.2+.7*rand(t.seed+i*13+9));
-   ctx.fillStyle=i%3===0?'rgba(198,226,245,.19)':'rgba(255,255,255,.67)';
+   if(h<4)continue;
+   ctx.globalAlpha=.48;ctx.fillStyle='#fff';
    ctx.beginPath();
-   ctx.arc(left+x,y,.38+rand(t.seed+i*31)*.68,0,Math.PI*2);
+   ctx.arc(left+x,base-h*(.2+.6*rand(t.seed+i*13+9)),.4+rand(t.seed+i*31)*.65,0,Math.PI*2);
    ctx.fill();
   }
   ctx.restore();
