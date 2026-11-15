@@ -177,7 +177,7 @@ jobs:
         run: |
           python -m py_compile scripts/deepsyq_surgical_publish.py
           PYTHONPATH=scripts python -m unittest discover -s tests -p 'test_deepsyq_surgical_publish.py' -v
-          node --test tests/jarvix-remove-background-viewer.test.mjs tests/video-uniquifier-quality-lock.test.mjs
+          node --test tests/jarvix-remove-background-viewer.test.mjs tests/video-uniquifier-quality-lock.test.mjs tests/jarvix-activation.test.mjs
 
   surgical:
     # Push publishes ONLY the exact owner-approved Tour or Chat asset with its guarded release commit.
