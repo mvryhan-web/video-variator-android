@@ -44,7 +44,13 @@ jobs:
                   const button=page.locator('#accountThemesCarousel [data-account-theme="'+value+'"]');
                   await button.scrollIntoViewIfNeeded();
                   await button.click({timeout:10000});
-                  await page.waitForTimeout(500);
+                  // A legacy theme change may reload Account Settings. Inspect
+                  // the loaded document, never an in-flight HTML response.
+                  await page.waitForTimeout(700);
+                  await page.waitForFunction(()=>document.readyState==='complete'&&
+                    document.querySelectorAll('#accountThemesCarousel [data-account-theme]').length===6,
+                    null,{timeout:18000});
+                  await page.waitForTimeout(150);
                   const state=await page.evaluate(()=>({
                     url:location.href,
                     documentState:document.readyState,
