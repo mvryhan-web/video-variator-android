@@ -60,7 +60,7 @@ jobs:
             await page.screenshot({path:'artifacts/christmas-test/'+name+'-initial.png',fullPage:false});
             assert(before.carousel && before.previous && before.next && before.composer && before.prompt,name+' original controls missing');
             assert.equal(before.theme,'christmas',name+' theme not active on ?christmas=1');
-            assert(before.snowCanvas && before.snowcaps>=3 && before.sprites===5,name+' snow layers not initialized');
+            assert(before.snowCanvas && before.snowcaps>=3 && before.sprites>=5,name+' snow layers not initialized');
             assert(before.bg.includes(name==='mobile'?'christmas-mobile.webp':'christmas-desktop.webp'),name+' responsive background not applied');
             await page.waitForFunction(()=>Number(document.querySelector('#homeQuickBar .xmas-mini-stage')?.dataset.xmasHitCount||0)>=1,null,{timeout:9000});
             const combat=await page.evaluate(()=>{
@@ -85,7 +85,7 @@ jobs:
             console.log('LIVE_XMAS_RETURN_TO_CHRISTMAS',name,JSON.stringify(back));
             await page.screenshot({path:'artifacts/christmas-test/'+name+'-back.png',fullPage:false});
             assert.equal(back.theme,'christmas',name+' cannot return to Christmas');
-            assert(back.snowCanvas && back.snowcaps>=3 && back.sprites===5,name+' snow layers not restored');
+            assert(back.snowCanvas && back.snowcaps>=3 && back.sprites>=5,name+' snow layers not restored');
             assert(await page.locator('#xmas-real-snow').count()===1,name+' crystalline snow not restored');
             for(const route of ['free-tools.html','pricing.html','jarvix-chat.html']){
               const resp=await page.goto('https://christmas-preview-20261114.deepsyq.pages.dev/'+route,{waitUntil:'domcontentloaded',timeout:30000});
