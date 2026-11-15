@@ -677,7 +677,7 @@ body{background:#090a0c}
 .hero-mobile-title{display:none}
 .hero-benefits{list-style:none;padding:0;margin:16px 0}
 .hero-benefits li{margin:7px 0}
-.hero-benefits li::before{content:"✓";display:inline-grid;place-items:center;border-radius:50%;width:22px;height:22px;background:#382b19;color:#ffe1a4;margin-inline-end:9px}
+.hero-benefits li::before{content:"✓";display:inline-block;color:#ffe1a4;font-weight:700;margin-inline-end:9px}
 .hero-art{padding-inline-end:clamp(90px,11vw,150px)}
 .villa-hero{display:block;width:100%;height:100%;object-fit:cover}
 .hero-media-caption{position:absolute;left:0;bottom:0;right:0;padding:26px 20px 16px;background:linear-gradient(transparent,#08090ed9);display:grid;color:#fff}
@@ -1282,19 +1282,18 @@ body{background:#090a0c}
         <span class="kicker" data-i18n="addonsKicker">Services complémentaires</span>
         <h2 data-i18n="addonsTitle">Services complémentaires pour votre vidéo</h2>
       </div>
-      <p data-i18n="addonsDesc">Ajoutez ces options en un clic à votre commande vidéo ou demandez une proposition personnalisée.</p>
     </div>
     <button class="premium-reveal-extras" id="showAllExtras" type="button" aria-expanded="false" aria-controls="addonsGrid">Voir tous les services <span aria-hidden="true">＋</span></button><div class="addons-grid" id="addonsGrid"></div>
   </section>
 
+<style>.dual-bottom{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:stretch;margin:24px auto}.dual-bottom .panel-box{display:flex;flex-direction:column;padding:18px 20px}.dual-bottom .panel-box h3{margin:4px 0 12px;font-size:20px}.dual-bottom .support-fields{display:grid;gap:8px;margin-top:auto}.dual-bottom .tracking-controls{display:flex;gap:8px;flex-wrap:wrap}.dual-bottom input,.dual-bottom textarea{background:#171d2c;border:1px solid #454a5e;color:#fff;padding:9px 12px;border-radius:10px;font-size:13px}.dual-bottom .pill.secondary{min-height:40px;padding:9px 16px}@media(max-width:700px){.dual-bottom{grid-template-columns:1fr}}</style>
 <section id="suivi" class="dual-bottom">
     <div class="panel-box">
       <span class="kicker" data-i18n="trackKicker">Suivi en temps réel</span>
       <h3 data-i18n="trackTitle">Vérifier le statut de votre commande</h3>
-      <p class="fine" data-i18n="trackDesc">Entrez votre numéro de commande (ex. DSQ-000001) reçu après validation pour suivre la production et télécharger votre vidéo finale.</p>
       <div class="support-fields">
         <label for="trackOrderInput" data-i18n="trackNumber">Numéro de commande</label>
-        <div class="tracking-controls"><input id="trackOrderInput" placeholder="DSQ-000001" style="flex:1;background:#171d2c;border:1px solid #454a5e;color:#fff;padding:11px 14px;border-radius:10px">
+        <div class="tracking-controls"><input id="trackOrderInput" placeholder="DSQ-000001" style="flex:1">
         <button type="button" class="pill secondary" id="trackOrderBtn" data-i18n="btnTrackCheck">Vérifier</button></div>
       </div>
       <div class="track-result" id="trackResultBox" aria-live="polite"></div>
@@ -1303,12 +1302,11 @@ body{background:#090a0c}
     <div class="panel-box">
       <span class="kicker">Anton — DEEPSYQ Creative Studio</span>
       <h3 data-i18n="agentTitle">Une question avant de commander ?</h3>
-      <p class="fine" data-i18n="agentDesc">Écrivez votre question dans votre langue (tarifs, absence de logo, durée personnalisée, exemple). Notre consultant vous répond immédiatement.</p>
       <div class="support-fields">
         <label for="agentAskEmail" data-i18n="agentEmail">E-mail (facultatif)</label>
-        <input id="agentAskEmail" type="email" placeholder="votre@email.com" style="background:#171d2c;border:1px solid #454a5e;color:#fff;padding:10px 14px;border-radius:10px">
+        <input id="agentAskEmail" type="email" placeholder="votre@email.com">
         <label for="agentAskText" data-i18n="agentQuestion">Votre question</label>
-        <textarea id="agentAskText" rows="3" style="background:#171d2c;border:1px solid #454a5e;color:#fff;padding:10px 14px;border-radius:10px"></textarea>
+        <textarea id="agentAskText" rows="2"></textarea>
         <button type="button" class="pill secondary" id="agentAskBtn" data-i18n="btnAgentAsk">Obtenir une réponse immédiate</button>
       </div>
       <div class="track-result" id="agentReplyBox" aria-live="polite" style="white-space:pre-line"></div>
