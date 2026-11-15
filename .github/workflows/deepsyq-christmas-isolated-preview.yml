@@ -138,14 +138,18 @@ jobs:
           python -m pip install --disable-pip-version-check --no-cache-dir Pillow==11.3.0
           mkdir -p app/src/main/assets/media/christmas
           curl --fail --location --silent --show-error --retry 3 --max-time 90 \
-            "https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/289082f4-4413-4d7b-ae8e-e037b497a2bf.png" \
+            "https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/56119c17-2a7f-49f2-968c-67df039d2c36.png" \
             -o /tmp/christmas-source.png
           python - <<'PY'
           from PIL import Image
           from pathlib import Path
+          from hashlib import sha256
           path=Path('/tmp/christmas-source.png')
           print('CHRISTMAS_OWNER_LONG_IMAGE_SOURCE',path.stat().st_size)
           assert path.stat().st_size>500_000,'Source art download incomplete'
+          digest=sha256(path.read_bytes()).hexdigest()
+          assert digest=='ff491e142b96f056afc3e2ff3d56016b70a1928ea96035743dedaefb9672bc7a','Uploaded owner image does not match exact PNG checksum'
+          print('CHRISTMAS_OWNER_IMAGE_SHA256',digest)
           with Image.open(path) as im:
               im.load()
               assert im.width>=900 and im.height>=1600
@@ -154,7 +158,8 @@ jobs:
           w,h=src.size
           src.crop((0,0,w,round(w*9/16))).resize((2560,1440),Image.Resampling.LANCZOS).save(out/'christmas-desktop.webp','WEBP',quality=90,method=6)
           src.resize((1080,1920),Image.Resampling.LANCZOS).save(out/'christmas-mobile.webp','WEBP',quality=90,method=6)
-          for n,sz in [('christmas-desktop.webp',(2560,1440)),('christmas-mobile.webp',(1080,1920))]:
+          src.resize((1412,2508),Image.Resampling.LANCZOS).save(out/'christmas-portrait.webp','WEBP',quality=92,method=6)
+          for n,sz in [('christmas-desktop.webp',(2560,1440)),('christmas-mobile.webp',(1080,1920)),('christmas-portrait.webp',(1412,2508))]:
               with Image.open(out/n) as f:
                   f.verify()
               with Image.open(out/n) as f:
@@ -176,7 +181,7 @@ jobs:
           node --input-type=module <<'NODE'
           import assert from 'node:assert/strict';
           const base=process.env.TARGET_URL;
-          const checks=['/deepsyq.html','/deepsyq-christmas.css','/deepsyq-christmas.js','/deepsyq-christmas-v2.css','/deepsyq-christmas-v2.js','/deepsyq-christmas-v3.css','/free-tools.html','/jarvix-chat.html','/pricing.html','/media/christmas/christmas-desktop.webp','/media/christmas/christmas-mobile.webp','/api/config'];
+          const checks=['/deepsyq.html','/deepsyq-christmas.css','/deepsyq-christmas.js','/deepsyq-christmas-v2.css','/deepsyq-christmas-v2.js','/deepsyq-christmas-v3.css','/free-tools.html','/jarvix-chat.html','/pricing.html','/media/christmas/christmas-desktop.webp','/media/christmas/christmas-mobile.webp','/media/christmas/christmas-portrait.webp','/api/config'];
           let passed=false;
           for(let trial=0;trial<18;trial++){
             try{
@@ -189,14 +194,15 @@ jobs:
                 assert(html.includes('deepsyq-christmas.js')&&html.includes('deepsyq-christmas.css'));
                 assert(css.includes('christmas-desktop.webp')&&js.includes('xmas-mini-stage'));
                 const v3css=await r[5].text();
-                assert(v3css.includes('background-attachment:fixed')&&v3css.includes('xmas-mini-universal'),'Missing global Christmas V3 background');
+                assert(v3css.includes('christmas-portrait.webp')&&v3css.includes('--xmas-photo-position')&&v3css.includes('xmas-mini-universal'),'Missing scrollable full-size owner portrait or JARVIX composer');
                 const v2js=await r[4].text();
-                assert(v2js.includes('xmasHitCount')&&v2js.includes('xmas-real-snow'),'V2 missing expected seasonal game/snow');
+                assert(v2js.includes('xmasHitCount')&&v2js.includes('xmas-real-snow')&&v2js.includes('panScenery'),'V2 missing game, snow or scroll-driven portrait');
                 for(const index of [6,7,8]){
                   const routeHtml=await r[index].text();
                   assert(routeHtml.includes('deepsyq-christmas-v2.js')&&routeHtml.includes('deepsyq-christmas-v3.css'),'Secondary HTML missing seasonal layer');
                 }
                 assert((r[10].headers.get('content-type')||'').startsWith('image/'));
+                assert((r[11].headers.get('content-type')||'').startsWith('image/'),'Full-size owner portrait not publicly served');
                 assert((r[9].headers.get('content-type')||'').startsWith('image/'));
                 passed=true;console.log('CHRISTMAS_PREVIEW_LIVE_PASS',JSON.stringify({url:base+'/?christmas=1',status:statuses,realCarousel:true,jarvixPrompt:true,workerApi:true,desktopAndMobileArtwork:true}));break;
               }
