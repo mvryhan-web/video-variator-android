@@ -62,6 +62,15 @@ jobs:
             assert.equal(before.theme,'christmas',name+' theme not active on ?christmas=1');
             assert(before.snowCanvas && before.snowcaps>=3 && before.sprites===5,name+' snow layers not initialized');
             assert(before.bg.includes(name==='mobile'?'christmas-mobile.webp':'christmas-desktop.webp'),name+' responsive background not applied');
+            await page.waitForFunction(()=>Number(document.querySelector('#homeQuickBar .xmas-mini-stage')?.dataset.xmasHitCount||0)>=1,null,{timeout:9000});
+            const combat=await page.evaluate(()=>{
+              const a=document.querySelector('#homeQuickBar .xmas-mini-stage');
+              return {hits:Number(a?.dataset.xmasHitCount),shots:Number(a?.dataset.xmasShots),last:a?.dataset.xmasLastHit,
+                actors:a?.querySelectorAll('.xmas-person').length,
+                realSnow:!!document.getElementById('xmas-real-snow')};
+            });
+            console.log('LIVE_XMAS_V2_REAL_IMPACT',name,JSON.stringify(combat));
+            assert(combat.actors===5&&combat.hits>=1&&combat.shots>=1&&combat.last.includes('-')&&combat.realSnow,name+' actual impact or crystal snow missing');
             await page.locator('.xmas-theme-toggle').click({timeout:10000});
             await page.locator('[data-xmas-theme="soft-dark"]').click({timeout:10000});
             await page.waitForTimeout(180);
@@ -77,6 +86,23 @@ jobs:
             await page.screenshot({path:'artifacts/christmas-test/'+name+'-back.png',fullPage:false});
             assert.equal(back.theme,'christmas',name+' cannot return to Christmas');
             assert(back.snowCanvas && back.snowcaps>=3 && back.sprites===5,name+' snow layers not restored');
+            assert(await page.locator('#xmas-real-snow').count()===1,name+' crystalline snow not restored');
+            for(const route of ['free-tools.html','pricing.html','jarvix-chat.html']){
+              const resp=await page.goto('https://christmas-preview-20261114.deepsyq.pages.dev/'+route,{waitUntil:'domcontentloaded',timeout:30000});
+              assert.equal(resp?.status(),200,name+' '+route+' HTTP status');
+              await page.waitForFunction(()=>document.documentElement.dataset.siteTheme==='christmas' &&
+                !!document.getElementById('xmas-real-snow'),null,{timeout:12000});
+              await page.waitForTimeout(300);
+              const other=await page.evaluate(()=>({
+                theme:document.documentElement.dataset.siteTheme,
+                flakes:!!document.querySelector('#xmas-real-snow'),
+                snowcaps:document.querySelectorAll('.xmas-snowcap').length,
+                mini:document.querySelectorAll('.xmas-mini-stage').length,
+                toggle:!!document.querySelector('.xmas-theme-toggle')
+              }));
+              console.log('LIVE_XMAS_V2_SECONDARY_PAGE',name,route,JSON.stringify(other));
+              assert(other.snowcaps>=1&&other.mini>=1&&other.toggle,name+' '+route+' decorations not distributed');
+            }
             await ctx.close();
           }
           await browser.close();
