@@ -854,3 +854,10 @@ For every block:
 - Logic committed [b86ffd5](https://github.com/mvryhan-web/video-variator-android/commit/b86ffd5d67bad3abbae441ff295a077a17527bea): Christmas automatically when neither theme storage key exists; all six user choices remain and existing explicit preferences are respected, no automatic persistence.
 - **Production blocked for safety**: [#43737397296](https://github.com/mvryhan-web/video-variator-android/actions/runs/43737397296) detected Worker binding differences after candidate Pages deployment; verified automatic rollback to baseline `ccbba282-d182-4ece-8a9a-900f2bec83ca`. No production activation, no unrelated changes.
 - Next: resolve Pages deployment binding preservation without weakening protection, then verify real incognito/no-localStorage first visit and returning user with Light/Dark/System/Brown/Black/Christmas prior choice.
+
+
+### 2026-11-15 — Seasonal Christmas first-visit default (PRODUCTION VERIFIED)
+
+- **DONE:** Christmas is default only for previously uncustomized visitors until the end of 2027-01-10 (Europe/Paris); Dark becomes default automatically starting 2027-01-11 00:00 Paris time. All six explicit user preferences override the seasonal default and remain permanent until changed. No backup restore or manual redeploy is needed in January.
+- **Production deployment PASS:** [GitHub Actions #43739121468](https://github.com/mvryhan-web/video-variator-android/actions/runs/43739121468), Cloudflare `d2b2d498-66ce-4e4a-8884-24613b2859bd`; exactly 2 frontend routes changed, Worker and all bindings verified preserved, all other assets unchanged.
+- **Desktop+mobile Chromium PASS:** [#43739353674](https://github.com/mvryhan-web/video-variator-android/actions/runs/43739353674) for new visitors, refresh, six themes, Christmas chat and simulated 2027-01-11 reset. Browser preference persistence respected.
