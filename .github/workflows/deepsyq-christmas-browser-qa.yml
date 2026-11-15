@@ -1,5 +1,5 @@
 name: DEEPSYQ Christmas live Chromium visual QA (no deploy)
-# QA V4 final visual quality: separated fluffy snow mounds, not a white ribbon; browser-only.
+# QA V4 natural photographed snowbank, rounded cushions, hover interaction — browser only.
 on:
   push:
     branches: [test]
@@ -125,6 +125,10 @@ jobs:
               return {covered,total,ratio:Number((covered/Math.max(total,1)).toFixed(3))};
             });
             console.log('LIVE_XMAS_V4_PATCHY_PROFILE',name,JSON.stringify(snowProfile));
+            const textureResponse=await page.request.get('https://christmas-preview-20261114.deepsyq.pages.dev/media/christmas/snowbank-texture.webp');
+            assert.equal(textureResponse.status(),200,name+' user-photo snowbank texture missing');
+            assert((textureResponse.headers()['content-type']||'').includes('image/'),name+' snowbank texture wrong content type');
+            console.log('LIVE_XMAS_V4_NATURAL_SNOW_TEXTURE',name,(await textureResponse.body()).byteLength);
             assert(snowProfile.ratio>.06&&snowProfile.ratio<.82,
               name+' snow must form separated natural cushions, not a continuous painted ribbon');
 
