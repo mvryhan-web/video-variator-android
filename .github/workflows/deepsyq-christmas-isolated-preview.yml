@@ -7,6 +7,7 @@ on:
       - '.github/workflows/deepsyq-christmas-isolated-preview.yml'
       - 'app/src/main/assets/deepsyq-christmas-v2.js'
       - 'app/src/main/assets/deepsyq-christmas-v2.css'
+      - 'app/src/main/assets/deepsyq-christmas-v3.css'
 permissions:
   contents: read
 concurrency:
@@ -84,15 +85,17 @@ jobs:
           const baseAssets='<link rel="stylesheet" href="/deepsyq-christmas.css?v=20261115">'+
             '<script defer src="/deepsyq-christmas.js?v=20261115"></script>';
           const newAssets='<link rel="stylesheet" href="/deepsyq-christmas-v2.css?v=20261115">'+
-            '<script defer src="/deepsyq-christmas-v2.js?v=20261115"></script>';
+            '<script defer src="/deepsyq-christmas-v2.js?v=20261115"></script>'+
+            '<link rel="stylesheet" href="/deepsyq-christmas-v3.css?v=20261115b">';
           for(const name of files){
             const p=path.join(dir,name);
             let html=fs.readFileSync(p,'utf8');
             assert(/<\/head>/i.test(html),'Missing HEAD in '+name);
             const additions=(html.includes('deepsyq-christmas.js')?'':baseAssets)+
-              (html.includes('deepsyq-christmas-v2.js')?'':newAssets);
+              (html.includes('deepsyq-christmas-v3.css')?'':newAssets);
             if(additions){html=html.replace(/<\/head>/i,additions+'\n</head>');fs.writeFileSync(p,html);injected++;}
             assert(html.includes('deepsyq-christmas-v2.js'),name+' missing V2');
+            assert(html.includes('deepsyq-christmas-v3.css'),name+' missing global winter background');
             assert(html.includes('deepsyq-christmas.js'),name+' missing base Christmas layer');
           }
           console.log('CHRISTMAS_ALL_PAGES_CONNECTED',JSON.stringify({pages:files.length,updated:injected}));
@@ -130,7 +133,7 @@ jobs:
           python -m pip install --disable-pip-version-check --no-cache-dir Pillow==11.3.0
           mkdir -p app/src/main/assets/media/christmas
           curl --fail --location --silent --show-error --retry 3 --max-time 90 \
-            "https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/69570076-a930-4091-8daf-401aecdce103.png" \
+            "https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/b926f73d-f080-4986-96e5-2d300d9b542e.png" \
             -o /tmp/christmas-source.png
           python - <<'PY'
           from PIL import Image
@@ -167,7 +170,7 @@ jobs:
           node --input-type=module <<'NODE'
           import assert from 'node:assert/strict';
           const base=process.env.TARGET_URL;
-          const checks=['/deepsyq.html','/deepsyq-christmas.css','/deepsyq-christmas.js','/deepsyq-christmas-v2.css','/deepsyq-christmas-v2.js','/free-tools.html','/jarvix-chat.html','/pricing.html','/media/christmas/christmas-desktop.webp','/media/christmas/christmas-mobile.webp','/api/config'];
+          const checks=['/deepsyq.html','/deepsyq-christmas.css','/deepsyq-christmas.js','/deepsyq-christmas-v2.css','/deepsyq-christmas-v2.js','/deepsyq-christmas-v3.css','/free-tools.html','/jarvix-chat.html','/pricing.html','/media/christmas/christmas-desktop.webp','/media/christmas/christmas-mobile.webp','/api/config'];
           let passed=false;
           for(let trial=0;trial<18;trial++){
             try{
@@ -179,12 +182,15 @@ jobs:
                 assert(html.includes('id="homeQuickPrompt"'));
                 assert(html.includes('deepsyq-christmas.js')&&html.includes('deepsyq-christmas.css'));
                 assert(css.includes('christmas-desktop.webp')&&js.includes('xmas-mini-stage'));
+                const v3css=await r[5].text();
+                assert(v3css.includes('background-attachment:fixed')&&v3css.includes('xmas-mini-universal'),'Missing global Christmas V3 background');
                 const v2js=await r[4].text();
                 assert(v2js.includes('xmasHitCount')&&v2js.includes('xmas-real-snow'),'V2 missing expected seasonal game/snow');
-                for(const index of [5,6,7]){
-                  assert((await r[index].text()).includes('deepsyq-christmas-v2.js'),'Secondary HTML missing seasonal layer');
+                for(const index of [6,7,8]){
+                  const routeHtml=await r[index].text();
+                  assert(routeHtml.includes('deepsyq-christmas-v2.js')&&routeHtml.includes('deepsyq-christmas-v3.css'),'Secondary HTML missing seasonal layer');
                 }
-                assert((r[8].headers.get('content-type')||'').startsWith('image/'));
+                assert((r[10].headers.get('content-type')||'').startsWith('image/'));
                 assert((r[9].headers.get('content-type')||'').startsWith('image/'));
                 passed=true;console.log('CHRISTMAS_PREVIEW_LIVE_PASS',JSON.stringify({url:base+'/?christmas=1',status:statuses,realCarousel:true,jarvixPrompt:true,workerApi:true,desktopAndMobileArtwork:true}));break;
               }
