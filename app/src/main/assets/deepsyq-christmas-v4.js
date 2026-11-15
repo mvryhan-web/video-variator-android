@@ -53,6 +53,15 @@
    if(el.closest('#homeQuickBar,#jChatForm')&&!el.matches('#homeQuickBar,#jChatForm'))continue;
    unique.add(el);
    const rect=el.getBoundingClientRect();
+   // Snow must NEVER appear in the interior of the user's text input.
+   // Cards directly underneath the composer may not overpaint its field.
+   const composing=[...document.querySelectorAll('#homeQuickBar,#jChatForm')];
+   if(composing.some(form=>{
+     if(el===form)return false;
+     const f=form.getBoundingClientRect();
+     return rect.top>f.top-22 && rect.top<f.bottom+4 &&
+       rect.right>f.left && rect.left<f.right;
+   }))continue;
    if(rect.width<94||rect.height<26||rect.bottom<=0||rect.top>innerHeight+35)continue;
    if(rect.top<2||rect.top>innerHeight-29)continue;
    const style=getComputedStyle(el);
@@ -75,7 +84,7 @@
   for(let n=index-2;n<=index+2;n++){
    const seed=rand(t.seed+n*57+5);
    const center=n*period+period*(.39+.23*seed);
-   const radius=period*(.40+.07*rand(t.seed+n*37+11));
+   const radius=period*(.28+.055*rand(t.seed+n*37+11));
    const d=Math.abs(local-center)/radius;
    if(d>=1)continue;
    // Superellipse-like low rounded summit (not pointy sine-wave peaks).
