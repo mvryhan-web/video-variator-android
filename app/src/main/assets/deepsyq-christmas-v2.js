@@ -12,7 +12,7 @@
  const later=(fn,ms)=>{const id=setTimeout(()=>{timeouts.delete(id);if(enabled)fn()},ms);timeouts.add(id)};
  const stageEnabled=()=>root.dataset.siteTheme==='christmas';
  const costumes=[['#c74753','#c74552'],['#e7d8c7','#ca726c'],['#467092','#6c8ab0'],['#d3a062','#bb7759'],['#5d8373','#546d66']];
- const selectors=['#sidebar','.ds-site-sidebar','.sidebar','.topbar','body>header','header','.hero-stage','.panel','.tool-card','.app-card','.card','.home-create-card','.home-feature-spotlight','.feature-card','.price-card','.studio-card','.tool-tile','.jarvix-compose','.j-neon-composer','.creative-example-card','.studio-panel','.subscription-card'];
+ const selectors=['#sidebar','.ds-site-sidebar','.sidebar','.topbar','body>header','header','.hero-stage','.panel','.tool-card','.app-card','.card','.home-create-card','.home-feature-spotlight','.feature-card','.price-card','.studio-card','.tool-tile','.jarvix-compose','.j-neon-composer','.creative-example-card','.studio-panel','.subscription-card','.price-hero','.price-plans-area','.price-credits-area','.price-credit-hero','.price-five-grid','.price-credit-grid','.price-wallet-area','.j-workspace-header','.j-workspace-pane','.j-chat-toolbar'];
  const activeTargets=()=>document.querySelectorAll('.xmas-mini-stage');
  function snowcaps(){
   let count=document.querySelectorAll('.xmas-snowcap').length;
@@ -69,7 +69,7 @@
   // Other pages: mini-scenes atop existing panels, never inside active editors.
   const isHome=!!document.querySelector('#homeQuickBar');
   let extra=document.querySelectorAll('.xmas-mini-secondary').length;
-  const panels=document.querySelectorAll('.jarvix-compose,.j-neon-composer,.tool-card,.app-card,.panel,.card,.studio-card,.home-create-card,.feature-card,.tool-tile,.price-card');
+  const panels=document.querySelectorAll('.jarvix-compose,.j-neon-composer,.tool-card,.app-card,.panel,.card,.studio-card,.home-create-card,.feature-card,.tool-tile,.price-card,.price-hero,.price-plans-area,.price-credits-area,.price-credit-hero,.price-wallet-area,.j-workspace-header,.j-chat-toolbar');
   for(const panel of panels){
    if(extra>=2)break;
    if(panel.closest('.xmas-mini-stage,.xmas-theme-tool'))continue;
@@ -86,6 +86,19 @@
    panel.appendChild(stage);
    setupScene(stage);
    extra++;
+  }
+  if(!extra){
+   const fallback=Array.from(document.querySelectorAll('main > section,main > article,main,.content > section')).find(el=>{
+    const r=el.getBoundingClientRect();
+    return r.width>=260&&r.height>=80&&!el.querySelector(':scope > .xmas-mini-stage');
+   });
+   if(fallback){
+    if(getComputedStyle(fallback).position==='static')fallback.classList.add('xmas-v2-relative');
+    const stage=make('div','xmas-mini-stage xmas-mini-secondary');
+    stage.setAttribute('aria-hidden','true');stage.dataset.xmasSecondary='true';
+    for(let i=0;i<3;i++)stage.appendChild(tinyPerson(i));
+    fallback.appendChild(stage);setupScene(stage);
+   }
   }
  }
  function throwShot(state,now){
