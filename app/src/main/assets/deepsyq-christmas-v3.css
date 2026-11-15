@@ -125,3 +125,63 @@ html[data-site-theme="christmas"] .xmas-mini-universal{
 @media (prefers-reduced-motion:reduce){
  html[data-site-theme="christmas"] #xmas-real-snow{display:none!important}
 }
+
+/* V3.2 — the FULL owner-supplied portrait is a scrollable scene, not a
+   cropped still behind a black page. The viewport stays covered while
+   --xmas-photo-position travels from 0% to 100% on page/inner scroll. */
+html[data-site-theme="christmas"]{
+ --xmas-photo-position:0%;
+ background-color:#13223c!important;
+ background-image:
+   linear-gradient(180deg,rgba(8,16,33,.055),rgba(8,18,36,.13)),
+   url("/media/christmas/christmas-portrait.webp")!important;
+ background-repeat:no-repeat,no-repeat!important;
+ background-attachment:fixed,fixed!important;
+ background-size:cover,max(100vw,68vh) auto!important;
+ background-position:center center,center var(--xmas-photo-position,0%)!important;
+}
+html[data-site-theme="christmas"] body{
+ background:transparent!important;
+ background-image:none!important;
+ background-color:transparent!important;
+}
+@media(max-width:760px),(orientation:portrait){
+ html[data-site-theme="christmas"]{
+  background-image:
+   linear-gradient(180deg,rgba(8,16,33,.045),rgba(8,18,36,.095)),
+   url("/media/christmas/christmas-portrait.webp")!important;
+  background-size:cover,max(100vw,68vh) auto!important;
+  background-position:center center,24% var(--xmas-photo-position,0%)!important;
+ }
+}
+
+/* Fluffy accumulation above—not inside—the input, headers and card edges.
+   Each cap's bottom ends precisely at the parent's top border. */
+html[data-site-theme="christmas"] .xmas-snowcap,
+html[data-site-theme="christmas"] .xmas-snowcap.xmas-thin,
+html[data-site-theme="christmas"] .xmas-snowcap.xmas-header,
+html[data-site-theme="christmas"] #homeQuickBar > .xmas-snowcap,
+html[data-site-theme="christmas"] #jChatForm > .xmas-snowcap {
+ top:calc(-1 * var(--xmas-pile-depth,20px))!important;
+ bottom:auto!important;
+ height:var(--xmas-pile-depth,20px)!important;
+ transform:none!important;
+ border:0!important;
+ border-radius:0!important;
+ z-index:30!important;
+ opacity:1!important;
+ pointer-events:none!important;
+ background:
+  radial-gradient(ellipse 33px 16px at 19px 17px,#fff 0 54%,#eef8fd 61%,transparent 76%) calc(var(--xmas-pile-shift,13px) + 1px) 2px/79px 29px repeat-x,
+  radial-gradient(ellipse 24px 14px at 15px 13px,#fff 0 59%,#ecf8ff 68%,transparent 77%) 15px 1px/54px 24px repeat-x,
+  radial-gradient(ellipse 42px 18px at 34px 19px,#fafdff 0 53%,#e3f3fd 67%,transparent 77%) 30px 3px/94px 30px repeat-x,
+  linear-gradient(180deg,transparent 0%,#fafdff 34%,#fff 67%,#e6f4fc 91%,#d4e9f6 100%) 0 0/100% 100% no-repeat!important;
+ filter:drop-shadow(0 -2px 2px #ffffff5e) drop-shadow(0 2px 2px #35577c78)!important;
+}
+/* Never deposit snow across the editable field itself. */
+html[data-site-theme="christmas"] #homeQuickBar > .xmas-snowcap,
+html[data-site-theme="christmas"] #jChatForm > .xmas-snowcap {
+ --xmas-pile-depth:18px;
+ top:-18px!important;
+ height:18px!important;
+}
