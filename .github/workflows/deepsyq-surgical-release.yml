@@ -27,6 +27,7 @@ on:
       - 'app/src/main/assets/canvas.html'
       - 'app/src/main/assets/canvas-workspace.js'
       - 'app/src/main/assets/jarvix-new-voice.js'
+      - 'app/src/main/assets/jarvix-new-recorded-dialog.js'
       - 'app/src/main/assets/auth-email.js'
       - 'app/src/main/assets/auth-email.css'
       - 'app/src/main/assets/deepsyq-mobile-shell.js'
