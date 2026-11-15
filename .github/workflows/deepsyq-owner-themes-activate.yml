@@ -48,12 +48,16 @@ jobs:
           assert(shell.includes("import './deepsyq-theme-loader.js';"));
           const diff=await import('node:child_process');
           const changed=diff.execFileSync('git',['diff','--name-only','HEAD^','HEAD'],{encoding:'utf8'}).trim().split('\n').filter(Boolean).sort();
-          assert.deepEqual(changed,[
+          const initialScope=[
             '.github/workflows/deepsyq-owner-themes-activate.yml',
             'app/src/main/assets/account-settings.html',
             'app/src/main/assets/deepsyq-mobile-shell.js',
             'scripts/deepsyq_surgical_publish.py'
-          ]);
+          ];
+          const verificationFix=['.github/workflows/deepsyq-owner-themes-activate.yml'];
+          assert(changed.join('|')===initialScope.join('|')||
+                 changed.join('|')===verificationFix.join('|'),
+                 'Unexpected source changes outside approved appearance activation');
           console.log('EXACT_OWNER_APPEARANCE_SCOPE_PASS',buttons);
           NODE
       - name: Verify all Christmas assets were already published BEFORE activating controls
@@ -87,9 +91,12 @@ jobs:
           set -euo pipefail
           curl --fail --silent --show-error --retry 4 --max-time 20 \
             "https://deepsyq.app/account-settings.html?owner-themes=$GITHUB_SHA" \
-            | grep -q 'id="accountThemesCarousel"'
+            --output /tmp/deepsyq-owner-account-appearance.html
+          grep -Fq 'id="accountThemesCarousel"' /tmp/deepsyq-owner-account-appearance.html
+          grep -Fq 'data-account-theme="christmas"' /tmp/deepsyq-owner-account-appearance.html
           curl --fail --silent --show-error --retry 4 --max-time 20 \
             "https://deepsyq.app/deepsyq-mobile-shell.js?owner-themes=$GITHUB_SHA" \
-            | grep -q 'deepsyq-theme-loader.js'
+            --output /tmp/deepsyq-owner-appearance-shell.js
+          grep -Fq 'deepsyq-theme-loader.js' /tmp/deepsyq-owner-appearance-shell.js
           curl --fail --silent --show-error --max-time 20 'https://deepsyq.app/api/config' >/dev/null
           echo 'PRODUCTION_BROWN_BLACK_CHRISTMAS_CAROUSEL_VERIFIED'
