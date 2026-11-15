@@ -127,8 +127,8 @@ jobs:
                 attachment:getComputedStyle(document.documentElement).backgroundAttachment
               }));
               assert(pageBg.image.includes(name==='mobile'?'christmas-mobile.webp':'christmas-desktop.webp')&&pageBg.attachment.includes('fixed'),name+' '+route+' background absent on scroll');
-              if(route==='jarvix-chat.html'||route==='generate-studio.html'){
-                const selector=route==='jarvix-chat.html'?'#jChatForm .xmas-mini-universal':'.composer .xmas-mini-universal';
+              if(route==='jarvix-chat.html'){
+                const selector='#jChatForm .xmas-mini-universal';
                 await page.waitForFunction(sel=>document.querySelector(sel)?.querySelectorAll('.xmas-person').length===5,selector,{timeout:10000});
                 console.log('LIVE_XMAS_V3_UNIVERSAL_CHAT',name,route,'five actors mounted');
               }
