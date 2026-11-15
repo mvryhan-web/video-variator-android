@@ -667,3 +667,5 @@ For every block:
 - **DONE:** Existing 5-actor snowball fight and one JARVIX chat shared for Image/Video/Audio preserved.
 - **Cloudflare TEST Preview release PASS:** [#43716078258](https://github.com/mvryhan-web/video-variator-android/actions/runs/43716078258); **Desktop/mobile browser QA PASS:** [#43716159814](https://github.com/mvryhan-web/video-variator-android/actions/runs/43716159814).
 - Preview to review: https://christmas-preview-20261114.deepsyq.pages.dev/?christmas=1. Do not change production or canonical TEST Worker.
+
+- **Latest verified publication (cache refreshed):** [TEST Preview release #43716357047](https://github.com/mvryhan-web/video-variator-android/actions/runs/43716357047), success. Combined with live desktop/mobile Chromium QA [#43716159814](https://github.com/mvryhan-web/video-variator-android/actions/runs/43716159814). Production and main TEST unaffected.
