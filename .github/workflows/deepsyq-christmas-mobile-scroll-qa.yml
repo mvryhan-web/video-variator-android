@@ -1,4 +1,4 @@
-name: DEEPSYQ Christmas mobile snow sync — patched live-page browser preflight
+name: DEEPSYQ Christmas mobile snow sync — deployed live-page browser QA
 # Final preflight: initial top/left placement initialized; visible snow must follow card in compositor.
 on:
   push:
@@ -17,8 +17,10 @@ jobs:
           node-version: '22'
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
-      - name: Verify mobile snow stays attached to card during scroll, desktop unchanged
+      - name: Verify LIVE mobile snow stays attached to card during scroll, desktop unchanged
         shell: bash
+        env:
+          SNOW_SYNC_LIVE_ONLY: '1'
         run: |
           set -euo pipefail
           node --check app/src/main/assets/deepsyq-christmas-v4.js
@@ -29,7 +31,7 @@ jobs:
           import {readFile} from 'node:fs/promises';
           import assert from 'node:assert/strict';
           const browser=await chromium.launch({headless:true});
-          const replacements=[
+          const replacements=process.env.SNOW_SYNC_LIVE_ONLY==='1'?[]:[
             ['deepsyq-theme-loader.js','application/javascript'],
             ['deepsyq-christmas-v4.js','application/javascript'],
             ['deepsyq-christmas-v4.css','text/css']
