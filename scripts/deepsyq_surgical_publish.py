@@ -57,6 +57,7 @@ ACCOUNT_DESIGN_RELEASE = ACCOUNT_DESIGN_ART | {"account-settings.html"}
 THEME_ASSET_RELEASE = frozenset(["deepsyq-theme-loader.js","deepsyq-theme-styles.css","deepsyq-christmas.css","deepsyq-christmas.js","deepsyq-christmas-v2.css","deepsyq-christmas-v2.js","deepsyq-christmas-v3.css","deepsyq-christmas-v4.css","deepsyq-christmas-v4.js","media/christmas/christmas-portrait.webp","media/christmas/snowbank-texture.webp"])  # owner-approved staged appearance-only assets
 THEME_ACTIVATION_RELEASE = frozenset({"account-settings.html", "deepsyq-theme-loader.js", "deepsyq-christmas-v4.css"})  # existing UI only
 THEME_SEASON_RELEASE = frozenset({"account-settings.html", "deepsyq-theme-loader.js"})  # first-visit default and Jan 2027 expiry only
+THEME_MOBILE_SNOW_RELEASE = frozenset({"deepsyq-christmas-v4.js", "deepsyq-christmas-v4.css", "deepsyq-theme-loader.js"})  # only mobile scroll binding + V4 cache version
 
 
 def approved_new_assets(paths):
@@ -79,6 +80,7 @@ HASH_REUSE_RELEASE_SETS = (
     THEME_ASSET_RELEASE,
     THEME_ACTIVATION_RELEASE,
     THEME_SEASON_RELEASE,
+    THEME_MOBILE_SNOW_RELEASE,
     frozenset({"admin-access.js", "trial-quality.js", "video-uniquifier.html"}),    frozenset({"jarvix-new-voice.js", "jarvix-new-recorded-dialog.js"}),
     frozenset({"jarvix-chat.js", "jarvis-core.js", "generate-studio.js"}),
     frozenset({"jarvix-chat.js", "jarvix-chat.html"}),
@@ -638,8 +640,8 @@ def main():
         if legacy_voice_cleanup:
             # This asset-only patch keeps the canonical Worker provenance for future releases.
             print("JARVIX_ASSETS_ONLY: canonical LIVE Worker pinned")
-        elif paths == ["deepsyq-mobile-shell.js"] or paths == ["contact.html"] or frozenset(paths) in (frozenset({"free-tools.html", "everyday-tools-visual.css"}), THEME_ASSET_RELEASE, THEME_ACTIVATION_RELEASE, THEME_SEASON_RELEASE):
-            if frozenset(paths) in (THEME_ASSET_RELEASE, THEME_ACTIVATION_RELEASE, THEME_SEASON_RELEASE):
+        elif paths == ["deepsyq-mobile-shell.js"] or paths == ["contact.html"] or frozenset(paths) in (frozenset({"free-tools.html", "everyday-tools-visual.css"}), THEME_ASSET_RELEASE, THEME_ACTIVATION_RELEASE, THEME_SEASON_RELEASE, THEME_MOBILE_SNOW_RELEASE):
+            if frozenset(paths) in (THEME_ASSET_RELEASE, THEME_ACTIVATION_RELEASE, THEME_SEASON_RELEASE, THEME_MOBILE_SNOW_RELEASE):
                 insist(saved_worker == task_worker, "Active production Worker source is different from current GitHub; no theme release")
             insist(bool(saved_worker and task_worker), "Worker provenance unavailable")
             print("GUEST_AUTH_ONLY: canonical LIVE Worker pinned; DEV Worker never published")

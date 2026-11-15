@@ -1,0 +1,75 @@
+name: DEEPSYQ Christmas mobile snow sync — guarded production release
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths: ['.github/workflows/deepsyq-christmas-mobile-snow-release.yml']
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+jobs:
+  publish-only-snow-scroll-fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Enforce exact scope — mobile snow only, desktop unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = deepsyq-platform
+          node --check app/src/main/assets/deepsyq-christmas-v4.js
+          node --check app/src/main/assets/deepsyq-theme-loader.js
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          import assert from 'node:assert/strict';
+          const script=readFileSync('app/src/main/assets/deepsyq-christmas-v4.js','utf8');
+          const css=readFileSync('app/src/main/assets/deepsyq-christmas-v4.css','utf8');
+          const loader=readFileSync('app/src/main/assets/deepsyq-theme-loader.js','utf8');
+          assert(script.includes("if(e?.type==='scroll')return"),'Mobile scroll repaint still enabled');
+          assert(script.includes('host.appendChild(cap)'),'Snow canvas is not attached to each card');
+          assert(script.includes('brushMobile(e,dist)'),'Mobile snow brush motion missing');
+          assert(script.includes("if(!frame&&canvas&&isChristmas())frame=requestAnimationFrame(draw)"),'Desktop behavior changed');
+          assert(css.includes('.xmas-mobile-snow-cap')&&css.includes('#xmas-pile-overlay{display:none!important}'),'Mobile style missing');
+          assert(loader.includes('20261115-mobile-sync-v2'),'Mobile cache version missing');
+          for(const choice of ['light','dark','system','brown','soft-dark','christmas'])
+            assert(readFileSync('app/src/main/assets/account-settings.html','utf8').includes('data-account-theme="'+choice+'"'));
+          console.log('CHRISTMAS_MOBILE_SNOW_SCOPE_PASS');
+          NODE
+      - name: Publish only mobile snow script, mobile snow CSS and their cache-version loader
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-cache-dir "requests==2.32.3" "blake3==1.0.8"
+          python scripts/deepsyq_surgical_publish.py \
+            --mode publish \
+            --files 'deepsyq-christmas-v4.js,deepsyq-christmas-v4.css,deepsyq-theme-loader.js' \
+            --commit "$GITHUB_SHA"
+      - name: Verify three LIVE published files, original Worker endpoints and Christmas script
+        shell: bash
+        run: |
+          set -euo pipefail
+          for asset in deepsyq-christmas-v4.js deepsyq-christmas-v4.css deepsyq-theme-loader.js; do
+            curl --fail --silent --show-error --max-time 20 --retry 4 \
+              "https://deepsyq.app/$asset?mobile_snow_release=$GITHUB_SHA" \
+              --output "/tmp/$asset"
+          done
+          grep -Fq 'host.appendChild(cap)' /tmp/deepsyq-christmas-v4.js
+          grep -Fq "if(e?.type==='scroll')return" /tmp/deepsyq-christmas-v4.js
+          grep -Fq '#xmas-pile-overlay{display:none!important}' /tmp/deepsyq-christmas-v4.css
+          grep -Fq '20261115-mobile-sync-v2' /tmp/deepsyq-theme-loader.js
+          curl --fail --silent --show-error --max-time 20 https://deepsyq.app/api/config >/dev/null
+          curl --fail --silent --show-error --max-time 20 https://deepsyq.app/account-settings.html >/dev/null
+          echo CHRISTMAS_MOBILE_SCROLL_PRODUCTION_VERIFIED
