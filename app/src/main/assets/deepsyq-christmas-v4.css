@@ -29,3 +29,15 @@ html[data-site-theme="christmas"]:has(#jChatForm){
   background-position:center center,24% calc(var(--xmas-photo-position,0%) - var(--xmas-chimney-shift))!important;
  }
 }
+/* Christmas only — improve input readability without changing layout, snow or controls. */
+html[data-site-theme="christmas"] main.jarvix-chat .j-chat-bottom form#jChatForm.jarvix-compose{
+ background-color:rgba(8,17,33,.78)!important;
+ background-image:none!important;
+ color:#f6f9ff!important;
+}
+html[data-site-theme="christmas"] main.jarvix-chat #jChatForm textarea#jInput{
+ color:#f6f9ff!important;
+}
+html[data-site-theme="christmas"] main.jarvix-chat #jChatForm textarea#jInput::placeholder{
+ color:rgba(235,241,253,.82)!important;
+}

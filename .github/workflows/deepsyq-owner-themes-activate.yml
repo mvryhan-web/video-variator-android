@@ -26,7 +26,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Verify exact four-file scope, three choices and unmodified surrounding account UI
+      - name: Verify six original-and-new choices, one scoped JARVIX composer style and unchanged other UI
         shell: bash
         run: |
           set -euo pipefail
@@ -39,7 +39,12 @@ jobs:
           const page=fs.readFileSync('app/src/main/assets/account-settings.html','utf8');
           const shell=fs.readFileSync('app/src/main/assets/deepsyq-mobile-shell.js','utf8');
           const buttons=[...page.matchAll(/data-account-theme="([^"]+)"/g)].map(x=>x[1]);
-          assert.deepEqual(buttons,['brown','soft-dark','christmas']);
+          assert.deepEqual(buttons,['light','dark','system','brown','soft-dark','christmas']);
+          assert(page.includes("theme.value=classicThemes.has(value)?value:'dark'"));
+          const loader=fs.readFileSync('app/src/main/assets/deepsyq-theme-loader.js','utf8');
+          assert(loader.includes("const classic=new Set(['light','dark','system'])"));
+          const snow=fs.readFileSync('app/src/main/assets/deepsyq-christmas-v4.css','utf8');
+          assert(snow.includes('main.jarvix-chat .j-chat-bottom form#jChatForm.jarvix-compose'));
           for(const id of ['accountLanguage','accountAppearance','themeChoice','accountTabs','accountHeroSignIn','manageBillingBtn','cancelSubscriptionBtn']){
             if(id==='accountTabs')continue;
             assert(page.includes('id="'+id+'"'),'Original account action missing: '+id);
@@ -52,7 +57,8 @@ jobs:
           const initialScope=[
             '.github/workflows/deepsyq-owner-themes-activate.yml',
             'app/src/main/assets/account-settings.html',
-            'app/src/main/assets/deepsyq-mobile-shell.js',
+            'app/src/main/assets/deepsyq-christmas-v4.css',
+            'app/src/main/assets/deepsyq-theme-loader.js',
             'scripts/deepsyq_surgical_publish.py'
           ];
           const verificationFix=['.github/workflows/deepsyq-owner-themes-activate.yml'];
@@ -78,15 +84,15 @@ jobs:
           done
           curl --fail --silent --show-error --max-time 18 'https://deepsyq.app/api/config' >/dev/null
           echo 'PRODUCTION_THEME_ASSETS_READY'
-      - name: Publish account Appearance and shared theme entrypoint only
+      - name: Publish exactly Account carousel, theme loader and Christmas input contrast
         shell: bash
         run: |
           set -euo pipefail
           python -m pip install --disable-pip-version-check --no-cache-dir requests==2.32.3 blake3==1.0.8
           python scripts/deepsyq_surgical_publish.py \
-            --mode publish --files 'account-settings.html,deepsyq-mobile-shell.js' \
+            --mode publish --files 'account-settings.html,deepsyq-theme-loader.js,deepsyq-christmas-v4.css' \
             --commit "$GITHUB_SHA"
-      - name: Verify live account carousel and one shared theme entrypoint
+      - name: Verify six live theme controls, normal system behavior and chat contrast
         shell: bash
         run: |
           set -euo pipefail
@@ -95,9 +101,20 @@ jobs:
             --output /tmp/deepsyq-owner-account-appearance.html
           grep -Fq 'id="accountThemesCarousel"' /tmp/deepsyq-owner-account-appearance.html
           grep -Fq 'data-account-theme="christmas"' /tmp/deepsyq-owner-account-appearance.html
+          grep -Fq 'data-account-theme="light"' /tmp/deepsyq-owner-account-appearance.html
+          grep -Fq 'data-account-theme="dark"' /tmp/deepsyq-owner-account-appearance.html
+          grep -Fq 'data-account-theme="system"' /tmp/deepsyq-owner-account-appearance.html
           curl --fail --silent --show-error --retry 4 --max-time 20 \
             "https://deepsyq.app/deepsyq-mobile-shell.js?owner-themes=$GITHUB_SHA" \
             --output /tmp/deepsyq-owner-appearance-shell.js
+          curl --fail --silent --show-error --retry 4 --max-time 20 \
+            "https://deepsyq.app/deepsyq-theme-loader.js?owner-themes=$GITHUB_SHA" \
+            --output /tmp/deepsyq-owner-theme-loader.js
+          grep -Fq "const classic=new Set(['light','dark','system'])" /tmp/deepsyq-owner-theme-loader.js
+          curl --fail --silent --show-error --retry 4 --max-time 20 \
+            "https://deepsyq.app/deepsyq-christmas-v4.css?owner-themes=$GITHUB_SHA" \
+            --output /tmp/deepsyq-owner-christmas-v4.css
+          grep -Fq 'main.jarvix-chat .j-chat-bottom form#jChatForm.jarvix-compose' /tmp/deepsyq-owner-christmas-v4.css
           grep -Fq 'deepsyq-theme-loader.js' /tmp/deepsyq-owner-appearance-shell.js
           curl --fail --silent --show-error --max-time 20 'https://deepsyq.app/api/config' >/dev/null
           echo 'PRODUCTION_BROWN_BLACK_CHRISTMAS_CAROUSEL_VERIFIED'

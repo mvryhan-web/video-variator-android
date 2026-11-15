@@ -5,6 +5,8 @@
  const root=document.documentElement;
  const key='deepsyq_site_theme';
  const variants=new Set(['brown','soft-dark','christmas']);
+ const classic=new Set(['light','dark','system']);
+ const media=matchMedia('(prefers-color-scheme: light)');
  const holidayCSS=[
   'deepsyq-christmas.css','deepsyq-christmas-v2.css',
   'deepsyq-christmas-v3.css','deepsyq-christmas-v4.css'
@@ -41,22 +43,46 @@
  const selected=()=>{
   try{return localStorage.getItem(key)||''}catch{return ''}
  };
+ const legacyTheme=()=>{
+  try{return localStorage.getItem('vu_theme')||'dark'}catch{return 'dark'}
+ };
+ const emit=value=>window.dispatchEvent(new CustomEvent('deepsyq:appearance',{detail:{theme:value}}));
  const apply=(value,persist=false)=>{
+  if(classic.has(value)){
+   // Keep the native Light/Dark/System semantics, including OS switching.
+   root.dataset.theme=value==='system'?(media.matches?'light':'dark'):value;
+   root.removeAttribute('data-site-theme');
+   if(persist){
+    try{
+     localStorage.setItem('vu_theme',value);
+     localStorage.removeItem(key);
+    }catch{}
+   }
+   emit(value);
+   return true;
+  }
   if(!variants.has(value))return false;
   root.dataset.siteTheme=value;
+  root.dataset.theme='dark';
   if(persist){try{localStorage.setItem(key,value)}catch{}}
   if(value==='christmas')ensureHoliday();
-  window.dispatchEvent(new CustomEvent('deepsyq:appearance',{detail:{theme:value}}));
+  emit(value);
   return true;
  };
  window.deepsyqSetAppearance=value=>apply(value,true);
  const saved=selected();
  if(variants.has(saved))apply(saved,false);
+ else if(classic.has(legacyTheme()))apply(legacyTheme(),false);
  ensureStyle('deepsyq-theme-styles.css');
+ media.addEventListener('change',()=>{
+  if(!variants.has(selected())&&legacyTheme()==='system')apply('system',false);
+ });
  new MutationObserver(()=>{if(root.dataset.siteTheme==='christmas')ensureHoliday();})
   .observe(root,{attributes:true,attributeFilter:['data-site-theme']});
  window.addEventListener('storage',event=>{
-  if(event.key!==key)return;
-  if(variants.has(event.newValue))apply(event.newValue,false);
+  if(event.key!==key&&event.key!=='vu_theme')return;
+  const chosen=selected();
+  if(variants.has(chosen))apply(chosen,false);
+  else apply(legacyTheme(),false);
  });
 })();

@@ -169,6 +169,9 @@ html[data-theme=light] #profileView :is(#accountSummaryPlan,#accountSummaryStatu
 #profileView .account-theme-carousel .account-theme-card{display:flex;flex-direction:column;flex:0 0 clamp(105px,44%,137px);gap:6px;align-items:stretch;justify-content:flex-start;scroll-snap-align:center;min-height:116px;padding:6px;border-radius:13px;white-space:normal;overflow:hidden}
 #profileView .account-theme-card [data-account-copy]{display:block;font-size:11px;line-height:1.25;text-align:center;font-weight:650}
 #profileView .account-theme-preview{display:block;width:100%;height:69px;border-radius:9px;border:1px solid #ffffff3f;box-shadow:inset 0 0 1px #fff6;background-size:cover;background-position:center}
+#profileView .account-theme-light{background:linear-gradient(135deg,#ffffff 0 60%,#e7eff9 60% 100%);box-shadow:inset 0 0 0 5px #eef3f9,inset 0 0 0 6px #a4b7ce}
+#profileView .account-theme-dark{background:radial-gradient(ellipse at 70% 25%,#2a3e69,#0b1935 72%);box-shadow:inset 0 0 0 5px #101d38,inset 0 0 0 6px #43567c}
+#profileView .account-theme-system{background:linear-gradient(125deg,#f2f5fa 0 48%,#121b32 49% 100%);box-shadow:inset 0 0 0 5px #ffffff22}
 #profileView .account-theme-brown{background:radial-gradient(ellipse at 73% 28%,#be90616e 0%,transparent 60%),repeating-linear-gradient(0deg,#5d3a24 0,#402819 13px,#6f492c 15px,#382216 23px)}
 #profileView .account-theme-black{background:linear-gradient(140deg,#000 0%,#080808 62%,#161616 100%);box-shadow:inset 0 0 0 6px #0e0e0e,inset 0 0 0 7px #383838}
 #profileView .account-theme-christmas{background-image:url('/media/christmas/christmas-portrait.webp');background-position:50% 8%}
@@ -328,6 +331,18 @@ html[data-theme=light] #profileView :is(#accountSummaryPlan,#accountSummaryStatu
 <div class="account-theme-carousel">
   <button class="account-theme-arrow" type="button" data-theme-arrow="-1" aria-label="Previous theme" title="Previous theme">‹</button>
   <div class="account-themes" id="accountThemesCarousel" role="group" aria-labelledby="accountAppearance">
+    <button class="account-control account-theme-card" type="button" aria-pressed="false" data-account-theme="light">
+      <span class="account-theme-preview account-theme-light" aria-hidden="true"></span>
+      <span data-account-copy="light">Light</span>
+    </button>
+    <button class="account-control account-theme-card" type="button" aria-pressed="false" data-account-theme="dark">
+      <span class="account-theme-preview account-theme-dark" aria-hidden="true"></span>
+      <span data-account-copy="dark">Dark</span>
+    </button>
+    <button class="account-control account-theme-card" type="button" aria-pressed="false" data-account-theme="system">
+      <span class="account-theme-preview account-theme-system" aria-hidden="true"></span>
+      <span data-account-copy="system">System</span>
+    </button>
     <button class="account-control account-theme-card" type="button" aria-pressed="false" data-account-theme="brown">
       <span class="account-theme-preview account-theme-brown" aria-hidden="true"></span>
       <span data-account-copy="brown">Brown Style</span>
@@ -436,16 +451,27 @@ document.addEventListener('DOMContentLoaded',()=>{
  translate();
 
  const themes=[...root.querySelectorAll('[data-account-theme]')];
- const activeAppearance=()=>{try{return localStorage.getItem('deepsyq_site_theme')||''}catch{return ''}};
+ const classicThemes=new Set(['light','dark','system']);
+ const customThemes=new Set(['brown','soft-dark','christmas']);
+ const activeAppearance=()=>{
+  try{
+   const custom=localStorage.getItem('deepsyq_site_theme');
+   if(customThemes.has(custom))return custom;
+   return localStorage.getItem('vu_theme')||'dark';
+  }catch{return theme.value||'dark'}
+ };
  const reflectTheme=()=>themes.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.accountTheme===activeAppearance())));
  const selectTheme=value=>{
-  if(!['brown','soft-dark','christmas'].includes(value))return;
-  // The legacy theme.js still owns data-theme: these three designs are dark-mode variants.
-  theme.value='dark';
+  if(!classicThemes.has(value)&&!customThemes.has(value))return;
+  // Restore all three original choices, with the original theme.js handler.
+  theme.value=classicThemes.has(value)?value:'dark';
   theme.dispatchEvent(new Event('change',{bubbles:true}));
   const apply=window.deepsyqSetAppearance;
   if(typeof apply==='function')apply(value);
-  else{
+  else if(classicThemes.has(value)){
+   document.documentElement.removeAttribute('data-site-theme');
+   try{localStorage.removeItem('deepsyq_site_theme')}catch{}
+  }else{
    document.documentElement.dataset.siteTheme=value;
    try{localStorage.setItem('deepsyq_site_theme',value)}catch{}
   }
@@ -464,7 +490,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   selectTheme(themes[next].dataset.accountTheme);
  };
  window.addEventListener('deepsyq:appearance',reflectTheme);
- window.addEventListener('storage',event=>{if(event.key==='deepsyq_site_theme')reflectTheme()});
+ window.addEventListener('storage',event=>{
+  if(event.key==='deepsyq_site_theme'||event.key==='vu_theme')reflectTheme();
+ });
  reflectTheme();
 
  const tabs=[...root.querySelectorAll('[data-account-tab]')];

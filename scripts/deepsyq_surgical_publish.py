@@ -55,7 +55,7 @@ QUICK_START_V3_RELEASE = QUICK_START_ART_V3 | {"home-inspiration.js", "jarvix-ne
 ACCOUNT_DESIGN_ART = frozenset({"media/account-settings/account-hero.webp", "media/account-settings/account-membership.webp", "media/account-settings/account-android.webp", "media/account-settings/account-pricing.webp"})
 ACCOUNT_DESIGN_RELEASE = ACCOUNT_DESIGN_ART | {"account-settings.html"}
 THEME_ASSET_RELEASE = frozenset(["deepsyq-theme-loader.js","deepsyq-theme-styles.css","deepsyq-christmas.css","deepsyq-christmas.js","deepsyq-christmas-v2.css","deepsyq-christmas-v2.js","deepsyq-christmas-v3.css","deepsyq-christmas-v4.css","deepsyq-christmas-v4.js","media/christmas/christmas-portrait.webp","media/christmas/snowbank-texture.webp"])  # owner-approved staged appearance-only assets
-THEME_ACTIVATION_RELEASE = frozenset({"account-settings.html", "deepsyq-mobile-shell.js"})  # existing UI only
+THEME_ACTIVATION_RELEASE = frozenset({"account-settings.html", "deepsyq-theme-loader.js", "deepsyq-christmas-v4.css"})  # existing UI only
 
 
 def approved_new_assets(paths):
