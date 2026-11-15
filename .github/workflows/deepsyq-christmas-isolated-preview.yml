@@ -126,6 +126,11 @@ jobs:
           fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_DEPLOYMENT_BEFORE='+main+'\n'+'TEST_DEPLOYMENT_BEFORE='+test.id+'\n');
           console.log('ISOLATED_PREVIEW_BASELINES',JSON.stringify({testId:test.id,mainId:main,targetBranch:process.env.TARGET_BRANCH}));
           NODE
+      - name: Record new owner-selected long image and build-only deployment
+        shell: bash
+        run: |
+          echo 'WINTER_SCENE_SOURCE=owner uploaded vertical PNG (941x1672)';
+          echo 'CHRISTMAS_PREVIEW_ONLY=true';
       - name: Convert owner-selected original snowy chalet art to desktop and mobile WebP
         shell: bash
         run: |
@@ -133,12 +138,13 @@ jobs:
           python -m pip install --disable-pip-version-check --no-cache-dir Pillow==11.3.0
           mkdir -p app/src/main/assets/media/christmas
           curl --fail --location --silent --show-error --retry 3 --max-time 90 \
-            "https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/b926f73d-f080-4986-96e5-2d300d9b542e.png" \
+            "https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/289082f4-4413-4d7b-ae8e-e037b497a2bf.png" \
             -o /tmp/christmas-source.png
           python - <<'PY'
           from PIL import Image
           from pathlib import Path
           path=Path('/tmp/christmas-source.png')
+          print('CHRISTMAS_OWNER_LONG_IMAGE_SOURCE',path.stat().st_size)
           assert path.stat().st_size>500_000,'Source art download incomplete'
           with Image.open(path) as im:
               im.load()
