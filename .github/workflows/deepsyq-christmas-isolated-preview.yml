@@ -91,7 +91,7 @@ jobs:
             '<script defer src="/deepsyq-christmas-v2.js?v=20261115-scroll-final"></script>'+
             '<link rel="stylesheet" href="/deepsyq-christmas-v3.css?v=20261115-scroll-final">'+
             '<link rel="stylesheet" href="/deepsyq-christmas-v4.css?v=20261115-fluffy-v2">'+
-            '<script defer src="/deepsyq-christmas-v4.js?v=20261115-fluffy-v3"></script>';
+            '<script defer src="/deepsyq-christmas-v4.js?v=20261115-photographic-v4"></script>';
           for(const name of files){
             const p=path.join(dir,name);
             let html=fs.readFileSync(p,'utf8');
@@ -147,7 +147,7 @@ jobs:
             "https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/56119c17-2a7f-49f2-968c-67df039d2c36.png" \
             -o /tmp/christmas-source.png
           python - <<'PY'
-          from PIL import Image
+          from PIL import Image, ImageOps
           from pathlib import Path
           from hashlib import sha256
           path=Path('/tmp/christmas-source.png')
@@ -165,7 +165,16 @@ jobs:
           src.crop((0,0,w,round(w*9/16))).resize((2560,1440),Image.Resampling.LANCZOS).save(out/'christmas-desktop.webp','WEBP',quality=90,method=6)
           src.resize((1080,1920),Image.Resampling.LANCZOS).save(out/'christmas-mobile.webp','WEBP',quality=90,method=6)
           src.resize((1412,2508),Image.Resampling.LANCZOS).save(out/'christmas-portrait.webp','WEBP',quality=92,method=6)
-          for n,sz in [('christmas-desktop.webp',(2560,1440)),('christmas-mobile.webp',(1080,1920)),('christmas-portrait.webp',(1412,2508))]:
+
+          # Capture real fluffy snow from the owner's lower snowbank,
+          # not a generated geometric white stripe. Use only photographic snow.
+          snow_bank=src.crop((0,round(h*.925),w,h))
+          snow_bank=ImageOps.autocontrast(snow_bank,cutoff=1)
+          snow_bank=Image.blend(snow_bank,Image.new('RGB',snow_bank.size,(250,253,255)),.32)
+          snow_bank.resize((1536,220),Image.Resampling.LANCZOS).save(
+              out/'snowbank-texture.webp','WEBP',quality=91,method=6)
+
+          for n,sz in [('christmas-desktop.webp',(2560,1440)),('christmas-mobile.webp',(1080,1920)),('christmas-portrait.webp',(1412,2508)),('snowbank-texture.webp',(1536,220))]:
               with Image.open(out/n) as f:
                   f.verify()
               with Image.open(out/n) as f:
@@ -187,7 +196,7 @@ jobs:
           node --input-type=module <<'NODE'
           import assert from 'node:assert/strict';
           const base=process.env.TARGET_URL;
-          const checks=['/deepsyq.html','/deepsyq-christmas.css','/deepsyq-christmas.js','/deepsyq-christmas-v2.css','/deepsyq-christmas-v2.js','/deepsyq-christmas-v3.css','/free-tools.html','/jarvix-chat.html','/pricing.html','/media/christmas/christmas-desktop.webp','/media/christmas/christmas-mobile.webp','/media/christmas/christmas-portrait.webp','/api/config','/deepsyq-christmas-v4.js','/deepsyq-christmas-v4.css'];
+          const checks=['/deepsyq.html','/deepsyq-christmas.css','/deepsyq-christmas.js','/deepsyq-christmas-v2.css','/deepsyq-christmas-v2.js','/deepsyq-christmas-v3.css','/free-tools.html','/jarvix-chat.html','/pricing.html','/media/christmas/christmas-desktop.webp','/media/christmas/christmas-mobile.webp','/media/christmas/christmas-portrait.webp','/api/config','/deepsyq-christmas-v4.js','/deepsyq-christmas-v4.css','/media/christmas/snowbank-texture.webp'];
           let passed=false;
           for(let trial=0;trial<18;trial++){
             try{
@@ -204,6 +213,8 @@ jobs:
                 const v4js=await r[13].text(),v4css=await r[14].text();
                 assert(v4js.includes('xmasRippleCount')&&v4js.includes('xmas-pile-overlay')&&
                   v4css.includes('--xmas-chimney-shift'),'Missing V4 hover snow or chimney offset');
+                assert(v4js.includes('snowbank-texture.webp'),'V4 must use real snow photo texture');
+                assert((r[15].headers.get('content-type')||'').includes('image/'),'Real snow photo texture missing');
                 const v2js=await r[4].text();
                 assert(v2js.includes('xmasHitCount')&&v2js.includes('xmas-real-snow')&&v2js.includes('panScenery'),'V2 missing game, snow or scroll-driven portrait');
                 for(const index of [6,7,8]){
