@@ -29,24 +29,24 @@ test("Landscape preview plays the villa hero video automatically",()=>{
  assert.match(hero,/16:9/);
  assert.doesNotMatch(hero,/poster=/);
  assert.match(hero,/<video\b[^>]*class="villa-hero"[^>]*autoplay[^>]*muted[^>]*loop[^>]*>[\s\S]*sales-villa-hero\.mp4/);
- assert.equal((visibleHtml.match(/<video\b/g)||[]).length,2);
- assert.match(visibleHtml,/<video id="spotlightVideo"[^>]*sales-studio-intro\.mp4/);
- assert.match(visibleHtml,/id="spotlightPoster"/);
+ assert.equal((visibleHtml.match(/<video\b/g)||[]).length,1);
+ assert.doesNotMatch(visibleHtml,/id="spotlightVideo"/);
+ assert.doesNotMatch(visibleHtml,/id="spotlightPoster"/);
 });
 test("Inline scripts parse correctly",()=>{
  const scripts=[...page.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);assert.ok(scripts.length>=3);
  scripts.forEach((s,i)=>assert.doesNotThrow(()=>new vm.Script(s,{filename:"inline-"+i+".js"})));
 });
 
-test("Wide showcase, vertical Shorts and packages are distinct and ordered",()=>{
- const wide=page.indexOf('id="spotlightPoster"');
+test("Filters, vertical Shorts and packages are ordered without 16:9 carousel",()=>{
+ const filterBar=page.indexOf('id="industryFilterBar"');
  const shorts=page.indexOf('id="shorts"');
  const pricing=page.indexOf('id="tarifs"');
  const landscape=page.indexOf('id="landscapePreview"');
- assert.ok(landscape>0&&landscape<wide&&wide<shorts&&shorts<pricing);
+ assert.ok(landscape>0&&landscape<filterBar&&filterBar<shorts&&shorts<pricing);
+ assert.doesNotMatch(visibleHtml,/class="carousel-stage"/);
  assert.match(page,/\.shorts \.poster\{aspect-ratio:9\/16!important/);
  assert.match(page,/setOrderFormat\("9:16"\)/);
- assert.match(page,/setOrderFormat\("16:9"\)/);
  assert.equal((visibleHtml.match(/id="stripeCheckoutBtn"/g)||[]).length,1);
  assert.doesNotMatch(visibleHtml,/class="mobile-sticky-bar"/);
 });

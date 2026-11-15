@@ -929,30 +929,6 @@ body{background:#090a0c}
       </div>
     </div>
 
-    <!-- Interactive Spotlight Carousel Stage -->
-    <div class="carousel-stage" aria-label="Carrousel des styles">
-      <div class="carousel-player-wrap">
-        <div class="carousel-phone">
-          <span class="showcase-aspect">16:9</span>
-          <video id="spotlightVideo" controls playsinline preload="metadata" aria-label="DEEPSYQ Creative Studio" poster="./media/sales-villa-sunset.webp" src="./media/sales-studio-intro.mp4"></video>
-          <img hidden id="spotlightPoster" src="https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.jpg" alt="">
-        </div>
-        <img class="carousel-peek previous" id="prevPoster" alt="">
-        <img class="carousel-peek next" id="nextPoster" alt="">
-        <button type="button" class="icon-btn" id="carouselPrevBtn" aria-label="Vidéo précédente">‹</button>
-          <button type="button" class="icon-btn" id="carouselNextBtn" aria-label="Vidéo suivante">→</button>
-      </div>
-      <div class="carousel-dots" id="showcaseDots" aria-label="Featured styles"></div>
-      <div class="carousel-info">
-        <span class="carousel-counter" id="spotlightCounter">STYLE 01 · HÔTEL &amp; LUXE</span>
-        <h3 class="carousel-title" id="spotlightTitle">Aurelia Palace · Hôtel &amp; Suites</h3>
-        <p class="fine" id="spotlightNote" style="font-size:14px;margin:0">Penthouse · Piscine &amp; Champagne — Prêt à personnaliser avec votre marque, logo et coordonnées.</p>
-        <div class="carousel-nav">
-          <button type="button" class="pill" id="spotlightSelectBtn">Choisir ce style (#01)</button>
-        </div>
-      </div>
-    </div>
-
     <section class="shorts" id="shorts" aria-labelledby="shortsTitle">
       <div class="shorts-heading"><h3 id="shortsTitle">Shorts <span>9:16</span></h3><p>Reels · TikTok · YouTube Shorts</p></div>
       <div class="shorts-stage">
@@ -1672,44 +1648,6 @@ const SECTOR_GROUPS={
   prestige:[8,11,15,16,17,18]
 };
 
-let spotlightSlot=1;
-let spotlightStyles=samples.map((_,index)=>index);
-function stepSpotlight(offset){
-  const index=spotlightStyles.indexOf(spotlightSlot-1);
-  updateSpotlightCarousel(spotlightStyles[(index+offset+spotlightStyles.length)%spotlightStyles.length]);
-}
-function updateSpotlightCarousel(idx){
-  const safeIdx=((idx%samples.length)+samples.length)%samples.length;
-  spotlightSlot=safeIdx+1;
-  const s=samples[safeIdx];
-  const video=document.getElementById("spotlightVideo");
-  const poster=document.getElementById("spotlightPoster");
-  video.hidden=safeIdx!==0;
-  if(video.hidden&&!video.paused)video.pause();
-  poster.hidden=!video.hidden;
-  if(video.hidden)poster.src=s.poster;
-  const index=spotlightStyles.indexOf(safeIdx);
-  document.getElementById("prevPoster").src=samples[spotlightStyles.at(index-1)].poster;
-  document.getElementById("nextPoster").src=samples[spotlightStyles[(index+1)%spotlightStyles.length]].poster;
-  const first=Math.max(0,Math.min(index-2,spotlightStyles.length-5));
-  document.getElementById("showcaseDots").replaceChildren(...spotlightStyles.slice(first,first+5).map((slot)=>{
-    const dot=document.createElement("button");
-    dot.type="button";
-    dot.setAttribute("aria-label",samples[slot].title);
-    dot.setAttribute("aria-pressed",String(slot===safeIdx));
-    dot.addEventListener("click",()=>updateSpotlightCarousel(slot));
-    return dot;
-  }));
-  const cnt=document.getElementById("spotlightCounter");
-  if(cnt)cnt.textContent=`STYLE ${String(safeIdx+1).padStart(2,"0")} · ${s.category.toUpperCase()}`;
-  const ttl=document.getElementById("spotlightTitle");
-  if(ttl)ttl.textContent=s.title;
-  const nt=document.getElementById("spotlightNote");
-  if(nt)nt.textContent=s.note+" — Prêt à personnaliser avec votre marque, logo et coordonnées.";
-  const btn=document.getElementById("spotlightSelectBtn");
-  if(btn)btn.textContent=`Choisir ce style (#${String(safeIdx+1).padStart(2,"0")})`;
-}
-
 function calculateCustomStudioLocal(){
   const dur=Number(document.getElementById("csDuration")?.value||20);
   const fmt=document.getElementById("csFormat")?.value||"9:16";
@@ -2031,18 +1969,6 @@ gallery.addEventListener("keydown",event=>{
   }
 });
 showShorts();
-updateSpotlightCarousel(0);
-document.getElementById("carouselPrevBtn").addEventListener("click",()=>stepSpotlight(-1));
-document.getElementById("carouselNextBtn").addEventListener("click",()=>stepSpotlight(1));
-document.getElementById("spotlightSelectBtn")?.addEventListener("click",()=>{
-  state.selectedSlot=spotlightSlot;
-  const s=samples[spotlightSlot-1]||samples[0];
-  setOrderFormat("16:9");
-  styleSelect.value=s.title;
-  document.getElementById("picked").textContent="Style sélectionné : "+String(state.selectedSlot).padStart(2,"0")+" — "+s.title;
-  updateSummary();
-  document.getElementById("commande").scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});
-});
 
 document.querySelectorAll("#industryFilterBar .filter-btn").forEach(btn=>{
   btn.addEventListener("click",()=>{
@@ -2053,17 +1979,23 @@ document.querySelectorAll("#industryFilterBar .filter-btn").forEach(btn=>{
     gallery.querySelectorAll(".showcase").forEach((card,idx)=>{
       card.classList.toggle("filtered-out",Boolean(allowed&&!allowed.includes(idx)));
     });
-    spotlightStyles=allowed||samples.map((_,index)=>index);
-    updateSpotlightCarousel(spotlightStyles[0]);
-    showShorts();
+    if(allowed&&allowed.length&&shortCards[allowed[0]]){
+      activeShort=shortCards[allowed[0]];
+    }
+    shortsInView=true;
+    showShorts(0);
     trackFunnelEvent("industry_filter",{industry:f});
   });
 });
 
 document.querySelectorAll("[data-hero-filter]").forEach(link=>{
   link.addEventListener("click",()=>{
-    document.querySelector(`#industryFilterBar [data-filter="${link.dataset.heroFilter}"]`).click();
-    if(link.dataset.heroSlide)updateSpotlightCarousel(Number(link.dataset.heroSlide));
+    document.querySelector(`#industryFilterBar [data-filter="${link.dataset.heroFilter}"]`)?.click();
+    if(link.dataset.heroSlide&&shortCards[Number(link.dataset.heroSlide)]){
+      activeShort=shortCards[Number(link.dataset.heroSlide)];
+      shortsInView=true;
+      showShorts(0);
+    }
   });
 });
 
