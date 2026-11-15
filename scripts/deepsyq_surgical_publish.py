@@ -641,8 +641,17 @@ def main():
             # This asset-only patch keeps the canonical Worker provenance for future releases.
             print("JARVIX_ASSETS_ONLY: canonical LIVE Worker pinned")
         elif paths == ["deepsyq-mobile-shell.js"] or paths == ["contact.html"] or frozenset(paths) in (frozenset({"free-tools.html", "everyday-tools-visual.css"}), THEME_ASSET_RELEASE, THEME_ACTIVATION_RELEASE, THEME_SEASON_RELEASE, THEME_MOBILE_SNOW_RELEASE):
-            if frozenset(paths) in (THEME_ASSET_RELEASE, THEME_ACTIVATION_RELEASE, THEME_SEASON_RELEASE, THEME_MOBILE_SNOW_RELEASE):
+            if frozenset(paths) in (THEME_ASSET_RELEASE, THEME_ACTIVATION_RELEASE, THEME_SEASON_RELEASE):
                 insist(saved_worker == task_worker, "Active production Worker source is different from current GitHub; no theme release")
+            if frozenset(paths) == THEME_MOBILE_SNOW_RELEASE:
+                # The GitHub branch has unrelated unshipped Worker changes.
+                # Pin the LIVE origin's canonical Worker and preserve EVERY live
+                # binding. Never ship the DEV Worker for a Christmas visual fix.
+                insist(bool(origin and saved_worker and worker),
+                       "Cannot prove the current production Worker origin")
+                insist(checked_git("rev-parse", origin + ":app/src/main/assets/_worker.js") == saved_worker,
+                       "Live-origin Worker source SHA differs from verified baseline")
+                print("CHRISTMAS_MOBILE_SNOW_LIVE_WORKER_ORIGIN_PINNED", saved_worker[:12])
             insist(bool(saved_worker and task_worker), "Worker provenance unavailable")
             print("GUEST_AUTH_ONLY: canonical LIVE Worker pinned; DEV Worker never published")
         else:
