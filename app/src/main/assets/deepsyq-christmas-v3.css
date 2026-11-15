@@ -97,3 +97,31 @@ html[data-site-theme="christmas"] #xmas-real-snow{opacity:.75!important}
 @media(prefers-reduced-motion:reduce){
  html[data-site-theme="christmas"] .xmas-mini-universal .xmas-person{animation:none!important}
 }
+
+/* V3.1: Keep the winter landscape visible through the complete scrolling Home
+   and through shared Chat/Image/Video/Audio shells. Do not flatten actual cards. */
+html[data-site-theme="christmas"] body.home-neon,
+html[data-site-theme="christmas"] body.home-neon :is(.content,.main,.home-page,.home-layout,.home-content,.home-sections),
+html[data-site-theme="christmas"] body:not(.home-neon) :is(.content,.main,.tools,.app-shell,.j-workspace-body,.j-chat-bottom,.studio-page,.studio-content,.studio-workspace){
+ background-color:transparent!important;
+ background-image:none!important;
+}
+html[data-site-theme="christmas"] :is(.content,.main,.home-content,.home-sections,.jarvix-chat,.j-workspace-body,.studio-main){
+ min-height:0;
+}
+html[data-site-theme="christmas"] body.home-neon :is(.hero-section,.home-hero,.content,.home-create-section){
+ background-color:transparent!important;
+}
+html[data-site-theme="christmas"] :is(.j-messages,.j-chat-bottom,.j-workspace-body){
+ background-color:rgba(6,15,31,.12)!important;
+}
+html[data-site-theme="christmas"] :is(#homeQuickBar,#jChatForm,.jarvix-compose){
+ overflow:visible!important;
+}
+html[data-site-theme="christmas"] .xmas-mini-universal{
+ pointer-events:none!important;
+ z-index:75!important;
+}
+@media (prefers-reduced-motion:reduce){
+ html[data-site-theme="christmas"] #xmas-real-snow{display:none!important}
+}
