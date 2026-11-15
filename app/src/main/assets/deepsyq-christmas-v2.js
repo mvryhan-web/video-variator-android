@@ -64,9 +64,21 @@
   scenes.set(stage,state);
  }
  function walkOnPanels(){
-  // Keep original five characters and their composer exactly as they are.
+  // One visual game scene for the same universal JARVIX chat in all modes.
+  // The HOME scene remains the original five; no second chat or composer is created.
+  const composer=document.querySelector('#jChatForm')
+    || (!document.querySelector('#homeQuickBar')&&document.querySelector('.composer'));
+  if(composer&&!composer.querySelector(':scope > .xmas-mini-stage')){
+   if(getComputedStyle(composer).position==='static')composer.classList.add('xmas-v2-relative');
+   const stage=make('div','xmas-mini-stage xmas-mini-universal');
+   stage.dataset.xmasUniversal='true';
+   stage.setAttribute('aria-hidden','true');
+   for(let i=0;i<5;i++)stage.appendChild(tinyPerson(i));
+   composer.appendChild(stage);
+  }
   document.querySelectorAll('.xmas-mini-stage').forEach(setupScene);
-  // Other pages: mini-scenes atop existing panels, never inside active editors.
+  if(composer)return; // JARVIX modes share one 5-person scene, not random card clones.
+  // Non-chat pages may have two smaller scenes on existing panels.
   const isHome=!!document.querySelector('#homeQuickBar');
   let extra=document.querySelectorAll('.xmas-mini-secondary').length;
   const panels=document.querySelectorAll('.jarvix-compose,.j-neon-composer,.tool-card,.app-card,.panel,.card,.studio-card,.home-create-card,.feature-card,.tool-tile,.price-card,.price-hero,.price-plans-area,.price-credits-area,.price-credit-hero,.price-wallet-area,.j-workspace-header,.j-chat-toolbar');
@@ -169,42 +181,57 @@
   resize();
   snowRAF=requestAnimationFrame(drawSnow);
  }
+
+ /* Three depth planes of soft, irregular photographed-looking snowfall.
+    No six-point stars and no hard-edged oversized round particles. */
  function resize(){
   if(!canvas||!ctx)return;
   const w=innerWidth,h=innerHeight,dpr=Math.min(devicePixelRatio||1,1.6);
   canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
   canvas.style.width=w+'px';canvas.style.height=h+'px';
   ctx.setTransform(dpr,0,0,dpr,0,0);
-  const count=reduced.matches?0:(w<760?28:52);
+  const count=reduced.matches?0:(w<760?34:58);
   flakes=Array.from({length:count},()=>{
-   const depth=.15+Math.random()*.85;
-   return {x:Math.random()*w,y:Math.random()*h,r:2.8+depth*4.5,
-    speed:.25+depth*.9,phase:Math.random()*6.3,
-    drift:(Math.random()-.5)*.32,opacity:.36+depth*.5,depth,
-    angle:Math.random()*6.3};
+   const depth=Math.random();
+   const far=depth<.44,near=depth>.88;
+   return {
+    x:Math.random()*w,y:Math.random()*h,
+    r:far?.55+Math.random()*.8:near?2.5+Math.random()*2.3:1.3+Math.random()*1.5,
+    vy:far?.33+Math.random()*.38:near?.95+Math.random()*.9:.55+Math.random()*.55,
+    vx:(Math.random()-.5)*.37,
+    phase:Math.random()*6.28,
+    alpha:far?.23+Math.random()*.23:near?.22+Math.random()*.2:.38+Math.random()*.25,
+    wobble:.15+Math.random()*.32,
+    near,far,
+    shape:.75+Math.random()*.65
+   };
   });
  }
  function drawSnow(time){
   if(!enabled||!ctx){snowRAF=0;return}
   snowRAF=requestAnimationFrame(drawSnow);
-  if(document.hidden||time-lastSnow<27)return;
+  if(document.hidden||time-lastSnow<29)return;
   const dt=Math.min(2,(time-lastSnow||16)/16);lastSnow=time;
   ctx.clearRect(0,0,innerWidth,innerHeight);
   for(const f of flakes){
-   f.y+=f.speed*dt;
-   f.x+=(f.drift+Math.sin(time*.00075+f.phase)*.17)*dt;
+   f.y+=f.vy*dt;
+   f.x+=(f.vx+Math.sin(time*.00078+f.phase)*f.wobble)*dt;
    if(f.y>innerHeight+12){f.y=-12;f.x=Math.random()*innerWidth}
-   if(f.x>innerWidth+15)f.x=-10;if(f.x<-15)f.x=innerWidth+10;
-   ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.angle+Math.sin(time*.00029+f.phase)*.19);
-   ctx.lineWidth=f.depth>.5?1.15:.75;ctx.lineCap='round';
-   ctx.strokeStyle='rgba(247,253,255,'+f.opacity+')';
-   for(let i=0;i<6;i++){
-    ctx.save();ctx.rotate(i*Math.PI/3);
-    const b=f.r*.54,c=f.r*.32;
-    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-f.r);
-    ctx.moveTo(0,-b);ctx.lineTo(-c,-b-c*.65);
-    ctx.moveTo(0,-b);ctx.lineTo(c,-b-c*.65);
-    ctx.stroke();ctx.restore();
+   if(f.x>innerWidth+14)f.x=-10;if(f.x<-14)f.x=innerWidth+10;
+   ctx.save();
+   ctx.translate(f.x,f.y);
+   ctx.globalAlpha=f.alpha;
+   // Close, out-of-focus flakes gently bloom instead of resembling iconography.
+   if(f.near){ctx.shadowColor='#e5f6ff';ctx.shadowBlur=4.6}
+   ctx.fillStyle='#f7fbff';
+   ctx.beginPath();
+   ctx.ellipse(0,0,f.r*f.shape,f.r,Math.sin(time*.0004+f.phase)*.4,0,Math.PI*2);
+   ctx.fill();
+   if(!f.far){
+     ctx.globalAlpha=f.alpha*.48;
+     ctx.beginPath();
+     ctx.ellipse(f.r*.38,-f.r*.28,f.r*.48,f.r*.53,.2,0,Math.PI*2);
+     ctx.fill();
    }
    ctx.restore();
   }
@@ -224,7 +251,7 @@
    stage.classList.remove('xmas-v2-battle');
    stage.querySelectorAll('.xmas-v2-projectile,.xmas-v2-splash').forEach(el=>el.remove());
    state.actors.forEach(a=>{a.el.classList.remove('xmas-v2-hit','xmas-v2-recover','xmas-v2-throw');a.el.style.left=''});
-   if(stage.dataset.xmasSecondary==='true')stage.remove();
+   if(stage.dataset.xmasSecondary==='true'||stage.dataset.xmasUniversal==='true')stage.remove();
   }
   scenes.clear();
   document.querySelectorAll('.xmas-snowcap-v2').forEach(el=>el.remove());
