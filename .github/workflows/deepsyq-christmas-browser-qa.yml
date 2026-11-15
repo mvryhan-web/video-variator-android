@@ -1,5 +1,5 @@
 name: DEEPSYQ Christmas live Chromium visual QA (no deploy)
-# QA V3: owner long-background, organic snow, single JARVIX composer and all-page scroll.
+# QA V3.2: owner exact portrait, scroll-driven panorama, elevated snowcaps, JARVIX unified composer.
 on:
   push:
     branches: [test]
@@ -75,11 +75,28 @@ jobs:
               };
             });
             console.log('LIVE_XMAS_V3_GLOBAL_BACKGROUND',name,JSON.stringify(globalBg));
-            assert(globalBg.rootImage.includes(name==='mobile'?'christmas-mobile.webp':'christmas-desktop.webp'),name+' global root background missing');
+            assert(globalBg.rootImage.includes('christmas-portrait.webp'),name+' exact full-length owner photo missing');
             assert(globalBg.rootAttachment.includes('fixed'),name+' winter background scrolls away');
             assert(globalBg.bodyImage==='none',name+' body still covers long winter scene');
-            await page.evaluate(()=>window.scrollTo({top:Math.max(0,document.documentElement.scrollHeight-innerHeight),behavior:'instant'}));
-            await page.waitForTimeout(300);
+            const portrait=await page.request.get('https://christmas-preview-20261114.deepsyq.pages.dev/media/christmas/christmas-portrait.webp');
+            assert.equal(portrait.status(),200,name+' long portrait HTTP 200');
+            assert((portrait.headers()['content-type']||'').includes('image/'),name+' long portrait not an image');
+            assert((await portrait.body()).byteLength>100_000,name+' exact photo image too small');
+            const capGeometry=await page.evaluate(()=>{
+              const bar=document.querySelector('#homeQuickBar');
+              const cap=bar?.querySelector(':scope > .xmas-snowcap');
+              if(!bar||!cap)return null;
+              return {barTop:bar.getBoundingClientRect().top,capTop:cap.getBoundingClientRect().top,
+                capBottom:cap.getBoundingClientRect().bottom,height:cap.getBoundingClientRect().height};
+            });
+            console.log('LIVE_XMAS_INPUT_SNOWCAP_GEOMETRY',name,JSON.stringify(capGeometry));
+            assert(capGeometry&&capGeometry.capTop<capGeometry.barTop-4&&capGeometry.capBottom<=capGeometry.barTop+2,name+' fluffy snow must sit ABOVE input, not cover it');
+            await page.evaluate(()=>window.scrollTo({top:Math.min(1400,Math.max(0,document.documentElement.scrollHeight-innerHeight)),behavior:'instant'}));
+            await page.waitForFunction(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--xmas-photo-position'))>=25,null,{timeout:12000});
+            const pan=await page.evaluate(()=>({position:getComputedStyle(document.documentElement).getPropertyValue('--xmas-photo-position').trim(),
+              dataset:document.documentElement.dataset.xmasPhotoPan}));
+            console.log('LIVE_XMAS_OWNER_PHOTO_SCROLL',name,JSON.stringify(pan));
+            assert(parseFloat(pan.position)>=25,name+' background not moving with scroll');
             await page.screenshot({path:'artifacts/christmas-test/'+name+'-scrolled.png',fullPage:false});
             await page.evaluate(()=>scrollTo(0,0));
             await page.waitForFunction(()=>Number(document.querySelector('#homeQuickBar .xmas-mini-stage')?.dataset.xmasHitCount||0)>=1,null,{timeout:9000});
@@ -126,7 +143,7 @@ jobs:
                 image:getComputedStyle(document.documentElement).backgroundImage,
                 attachment:getComputedStyle(document.documentElement).backgroundAttachment
               }));
-              assert(pageBg.image.includes(name==='mobile'?'christmas-mobile.webp':'christmas-desktop.webp')&&pageBg.attachment.includes('fixed'),name+' '+route+' background absent on scroll');
+              assert(pageBg.image.includes('christmas-portrait.webp')&&pageBg.attachment.includes('fixed'),name+' '+route+' long portrait absent');
               if(route==='jarvix-chat.html'){
                 const selector='#jChatForm .xmas-mini-universal';
                 await page.waitForFunction(sel=>document.querySelector(sel)?.querySelectorAll('.xmas-person').length===5,selector,{timeout:10000});
