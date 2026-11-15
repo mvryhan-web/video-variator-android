@@ -15,11 +15,11 @@
  const targets=[
   '#homeQuickBar','#jChatForm','.jarvix-compose','.composer',
   '.tool-card','.app-card','.card','.panel','.hub-tile','.feature-card',
-  '.tool-tile','.home-create-card','.home-feature-spotlight','.home-create-section',
+  '.tool-tile','.home-feature-spotlight',
   '.creative-example-card','.studio-card','.studio-panel','.subscription-card',
   '.price-card','.price-hero','.price-plans-area','.price-credits-area',
   '.price-credit-hero','.price-wallet-area','.price-five-grid',
-  '.hero-stage','#homeHeroCarousel','.j-workspace-header','.j-workspace-pane',
+  '.hero-stage','.j-workspace-header','.j-workspace-pane',
   '.j-chat-toolbar','.content>.top','.topbar','body>header','.ds-site-sidebar',
   '.image-tool-card','.video-tool-card','.service-card','.model-card',
   '.plan-card','.feature-tile','.result-card','.gallery-card','.pricing-card',
