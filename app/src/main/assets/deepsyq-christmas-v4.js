@@ -17,7 +17,9 @@
   '.hero-stage','#homeHeroCarousel','.j-workspace-header','.j-workspace-pane',
   '.j-chat-toolbar','.content>.top','.topbar','body>header','.ds-site-sidebar',
   '.image-tool-card','.video-tool-card','.service-card','.model-card',
-  '.plan-card','.feature-tile','.result-card','.gallery-card','.pricing-card'
+  '.plan-card','.feature-tile','.result-card','.gallery-card','.pricing-card',
+  '.quick-tool-item','.avatar-launch-card','.selected-tool-panel',
+  '.tools-direct-launches','.free-tools-hero'
  ].join(',');
  let canvas=null,ctx=null,dpr=1,frame=0,scanTimer=0,painted=[],ripples=[],particles=[];
  let pointerX=-1,pointerY=-1,lastX=-1,lastY=-1,rippleCount=0;
