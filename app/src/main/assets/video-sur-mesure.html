@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#080c18">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="DEEPSYQ — vidéos publicitaires sur mesure. Découvrez dix directions créatives et demandez une proposition personnalisée.">
+<title>Vidéos sur mesure · DEEPSYQ Studio</title>
+<style>
+:root{--bg:#080c18;--card:#141927;--edge:#323847;--text:#f5f1ea;--muted:#a9b0be;--gold:#f0cca0;--lilac:#bda7ed;--radius:17px;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);line-height:1.52;-webkit-font-smoothing:antialiased}
+body:before{content:"";position:absolute;inset:0 0 auto;height:660px;pointer-events:none;background:radial-gradient(ellipse 44% 55% at 85% 7%,#51407845,transparent),radial-gradient(ellipse 36% 48% at 10% 25%,#34416530,transparent)}
+a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}button,a,input,select,textarea{outline-offset:4px}button{cursor:pointer}
+.shell{width:min(1200px,calc(100% - 48px));margin:auto;position:relative}
+.top{position:relative;border-bottom:1px solid #ffffff16}
+.nav{display:flex;align-items:center;justify-content:space-between;min-height:80px;gap:18px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:17px;letter-spacing:-.035em}
+.brand img{width:35px;height:35px;object-fit:contain}
+.brand small{display:block;font-size:9px;letter-spacing:.23em;font-weight:700;color:var(--muted)}
+.navlinks{display:flex;align-items:center;gap:26px;font-size:13px;color:#d4d6e2}
+.navlinks a:hover{color:#fff}
+.pill{border-radius:999px;background:var(--gold);color:#1b1820;font-weight:800;font-size:13px;padding:13px 20px;border:1px solid transparent;display:inline-flex;align-items:center;gap:8px;justify-content:center;transition:transform .18s,background .18s}
+.pill:hover{transform:translateY(-2px);background:#ffdfb8}
+.pill.secondary{background:transparent;color:var(--text);border-color:#777180}
+.pill.secondary:hover{background:#ffffff14}
+.hero{display:grid;grid-template-columns:1fr .94fr;align-items:center;gap:70px;padding:88px 0 88px}
+.kicker{color:var(--gold);letter-spacing:.18em;text-transform:uppercase;font-size:11px;font-weight:800}
+h1,h2,h3,p{margin-top:0}h1{font-weight:650;letter-spacing:-.06em;font-size:clamp(46px,5.8vw,82px);line-height:1.04;margin:22px 0}
+h1 em{font-style:normal;color:var(--gold)}
+.lead{font-size:17px;max-width:520px;color:#bcc0ce;line-height:1.75}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin:29px 0}
+.under{color:#8992a2;font-size:12px}
+.hero-art{position:relative;min-height:535px;display:flex;justify-content:center;align-items:center}
+.hero-frame{width:min(100%,358px);aspect-ratio:9/13;border:9px solid #212435;border-radius:25px;overflow:hidden;background:#111;position:relative;box-shadow:24px 34px 75px #000a,0 0 0 1px #9583af35;transform:rotate(3deg)}
+.hero-frame video{width:100%;height:100%;object-fit:cover;display:block}
+.hero-frame:after{content:"";position:absolute;inset:50% 0 0;background:linear-gradient(transparent,#070912d1);pointer-events:none}
+.hero-caption{position:absolute;bottom:28px;left:23px;z-index:1}
+.hero-caption b{display:block;font-size:25px;letter-spacing:-.04em}.hero-caption span{font-size:12px;color:#e5d9da}
+.floatlabel{position:absolute;z-index:2;background:#121829ef;border:1px solid #ffffff30;padding:11px 18px;border-radius:12px;font-size:12px;box-shadow:0 14px 48px #0009;backdrop-filter:blur(12px)}
+.floatlabel.one{top:20px;right:-4px}.floatlabel.two{bottom:34px;left:-16px;color:var(--gold)}
+.rule{border:0;border-top:1px solid #ffffff20;margin:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);padding:24px 0 32px;gap:25px}
+.stats div{border-left:1px solid #ffffff36;padding-left:19px}.stats strong{font-size:19px;display:block;font-weight:700;letter-spacing:-.025em}.stats span{color:var(--muted);font-size:12px}
+section{scroll-margin-top:25px}
+.section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:28px;margin:83px 0 26px}
+.section-head h2{font-size:clamp(32px,3.2vw,46px);font-weight:650;line-height:1.14;letter-spacing:-.05em;margin:8px 0}
+.section-head p{color:var(--muted);font-size:14px;max-width:350px;margin-bottom:2px}
+.gallery{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px}
+.showcase{background:#111724;border:1px solid #3a4054;border-radius:var(--radius);overflow:hidden;min-width:0;transition:border-color .2s,transform .2s;position:relative}
+.showcase:hover,.showcase.selected{border-color:#e5c19d;transform:translateY(-3px)}
+.poster{aspect-ratio:9/12;position:relative;background:linear-gradient(150deg,#34304b,#111824);overflow:hidden}
+.poster video{width:100%;height:100%;object-fit:cover;display:block}
+.poster:after{content:"";position:absolute;inset:55% 0 0;background:linear-gradient(transparent,#040713a6);pointer-events:none}
+.video-toggle{position:absolute;z-index:2;left:12px;bottom:12px;background:#050711ae;color:#fff;border:1px solid #ffffff77;min-width:41px;min-height:41px;border-radius:50%;font-size:16px;display:grid;place-items:center;backdrop-filter:blur(9px)}
+.video-toggle:hover{background:#251c39}
+.sample-number{position:absolute;right:13px;top:10px;color:#fff;background:#0a0d18ab;z-index:1;font-size:11px;border:1px solid #ffffff56;padding:3px 7px;border-radius:20px}
+.sample-info{padding:16px}.sample-info b{font-weight:650;font-size:13px;display:block;min-height:40px;line-height:1.35}
+.sample-info span{display:block;font-size:11px;color:var(--muted);min-height:30px}
+.use-style{width:100%;min-height:38px;margin-top:10px;border:1px solid #777087;border-radius:9px;background:transparent;color:#f6e6d2;font-size:12px;font-weight:700}
+.use-style:hover,.showcase.selected .use-style{background:#f0cca0;color:#11131c;border-color:#f0cca0}
+.gallery-note{margin:18px 0 0;color:#8790a1;font-size:12px}
+.how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:40px 0 86px}
+.step{border-top:1px solid #57536b;padding:21px 4px}
+.step span{color:var(--gold);font-size:12px}.step h3{margin:8px 0;font-size:20px;letter-spacing:-.035em}
+.step p{font-size:13px;color:var(--muted)}
+.order{display:grid;grid-template-columns:.83fr 1.17fr;gap:60px;padding:46px;background:linear-gradient(135deg,#1d1e32,#131b2a 65%,#0f1825);border:1px solid #3c4159;border-radius:23px;margin-bottom:100px}
+.order h2{font-size:clamp(34px,3.4vw,47px);line-height:1.12;letter-spacing:-.05em;font-weight:650;margin:12px 0}
+.price{font-size:42px;letter-spacing:-.06em;font-weight:750;margin:22px 0 0}.price small{font-size:12px;letter-spacing:0;font-weight:450;color:var(--muted)}
+.details{padding-left:18px;font-size:13px;line-height:2;color:#c3c8d6}
+.fine{color:#99a3b6;font-size:12px;line-height:1.7}
+form{display:grid;grid-template-columns:1fr 1fr;gap:15px 13px;background:#090e1a9c;border-radius:18px;padding:26px;border:1px solid #555266}
+label{display:block;color:#d6d9e0;font-size:12px;font-weight:650}
+label input,label select,label textarea{display:block;width:100%;margin-top:7px;background:#171d2c;border:1px solid #454a5e;color:#f5f2ee;padding:13px 14px;border-radius:10px;min-height:47px}
+label textarea{resize:vertical;min-height:102px}label :is(input,textarea):focus{border-color:var(--gold)}
+.full{grid-column:1/-1}.order form .pill{width:100%;min-height:49px}.selected-style{color:#c9b7ef;font-size:12px;margin:-3px 0 0}
+.note{margin:0;color:#aab0c0;font-size:11px;line-height:1.55}
+footer{border-top:1px solid #ffffff24;display:flex;justify-content:space-between;gap:18px;padding:32px 0 44px;color:#9199a8;font-size:12px}
+footer a{color:#e8c8a4}
+@media(max-width:1100px){.gallery{grid-template-columns:repeat(4,minmax(0,1fr))}.hero{gap:35px}.order{gap:25px}}
+@media(max-width:780px){.navlinks a:not(.pill){display:none}.shell{width:min(100% - 32px,650px)}.hero{grid-template-columns:1fr;padding:52px 0 30px;gap:10px}.hero-art{min-height:400px}.hero-frame{width:270px;aspect-ratio:9/11}.floatlabel.one{right:5%}.floatlabel.two{left:0}.gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.sample-info{padding:12px}.section-head{display:block;margin-top:64px}.how{grid-template-columns:1fr;gap:4px;margin-bottom:54px}.order{grid-template-columns:1fr;padding:24px;gap:18px}.stats{gap:10px}.stats strong{font-size:15px}}
+@media(max-width:460px){.nav{min-height:69px}.brand{font-size:15px}.brand img{width:27px;height:27px}.nav .pill{padding:10px;font-size:11px}.hero{padding-top:45px}h1{font-size:48px}.hero-art{min-height:350px}.floatlabel{font-size:10px}.hero-frame{width:232px}.stats{grid-template-columns:1fr}.stats div{padding:6px 15px}.gallery{gap:9px}.poster{aspect-ratio:9/12}.sample-info b{font-size:12px}.order{padding:17px}form{grid-template-columns:1fr;padding:18px}.full{grid-column:auto}footer{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="shell nav">
+<a href="deepsyq.html" class="brand" aria-label="Retour à DEEPSYQ"><img src="deepsyq-icon-192.png" alt=""><span>DEEPSYQ<small>CREATIVE STUDIO</small></span></a>
+<nav class="navlinks" aria-label="Navigation"><a href="#realisations">Exemples</a><a href="#processus">Notre méthode</a><a class="pill" href="#commande">Parlons de votre vidéo <span aria-hidden="true">↗</span></a></nav>
+</div></header>
+<main>
+<div class="shell"><section class="hero">
+<div><span class="kicker">Création vidéo pour les marques</span><h1>Donnez à votre marque <em>du mouvement.</em></h1>
+<p class="lead">Des vidéos courtes, soignées et faites pour votre activité. Vous nous racontez votre idée, nous imaginons le rythme, les images et la mise en scène. Votre logo, votre ton, votre histoire.</p>
+<div class="actions"><a href="#realisations" class="pill">Découvrir 10 styles <span aria-hidden="true">↓</span></a><a href="#commande" class="pill secondary">Demander un projet</a></div>
+<p class="under">Formats verticaux pour Reels, Shorts et TikTok · Sur devis · Livraison numérique</p></div>
+<div class="hero-art" aria-label="Exemple de vidéo cinématographique"><div class="hero-frame">
+<video autoplay muted loop playsinline preload="metadata" poster="media/home/owner-20261018/01-close-up-woman.jpg" aria-label="Aperçu vidéo cinématographique"><source src="media/home/owner-20261018/01-close-up-woman.mp4" type="video/mp4"></video>
+<div class="hero-caption"><b>Votre histoire.<br>Notre regard.</b><span>Une signature visuelle qui vous ressemble.</span></div>
+</div><div class="floatlabel one">✦ Vidéo pensée pour votre marque</div><div class="floatlabel two">9:16 · Reels & Shorts</div></div>
+</section><hr class="rule"><div class="stats" aria-label="Offre"><div><strong>10 styles</strong><span>pour trouver votre univers</span></div><div><strong>15–30 sec</strong><span>format court et impactant</span></div><div><strong>Sur mesure</strong><span>logo, texte et rythme adaptés</span></div></div></div>
+<div class="shell"><section id="realisations">
+<div class="section-head"><div><span class="kicker">La collection créative</span><h2>Choisissez une direction.<br>On crée votre version.</h2></div>
+<p>Ces dix vidéos montrent des ambiances possibles, pas des publicités déjà réalisées pour des clients. Choisissez celle qui vous inspire.</p></div>
+<div class="gallery" id="videoGallery"></div>
+<p class="gallery-note">Démonstrations visuelles issues de la collection créative DEEPSYQ. Les marques affichées dans de futures commandes sont ajoutées uniquement avec l'accord du client.</p>
+</section>
+<section id="processus"><div class="section-head"><div><span class="kicker">Un processus simple</span><h2>De l'idée à votre vidéo.</h2></div><p>Pas de jargon. Un brief clair, une proposition, puis une réalisation validée par vous.</p></div>
+<div class="how">
+<div class="step"><span>01 / Votre idée</span><h3>Racontez votre projet</h3><p>Votre activité, vos objectifs et les images dont vous disposez. Vous pouvez envoyer votre logo après le premier échange.</p></div>
+<div class="step"><span>02 / Notre proposition</span><h3>On définit le style</h3><p>Direction visuelle, format, durée, prix et délai convenus avant le paiement.</p></div>
+<div class="step"><span>03 / Votre livraison</span><h3>Recevez votre création</h3><p>Une vidéo prête pour les réseaux sociaux, envoyée au contact professionnel confirmé lors de la commande.</p></div>
+</div></section>
+<section id="commande" class="order" aria-label="Demander votre vidéo">
+<div><span class="kicker">Offre de lancement indicative</span><h2>Votre prochaine campagne commence ici.</h2><p class="lead">Un concept maîtrisé, adapté à votre image. Sans engagement tant que le devis n'est pas accepté.</p>
+<div class="price">120 € <small>/ pack découverte indicatif</small></div>
+<ul class="details"><li>3 vidéos verticales de 15 à 30 secondes</li><li>Textes et logo intégrés</li><li>Une série de retouches</li><li>Conditions et délai fixés au devis</li></ul>
+<p class="fine">Prix indicatif à confirmer selon vos fichiers, le travail nécessaire et le régime de TVA applicable. Aucun paiement n'est encaissé sur cette page.</p></div>
+<form id="projectForm"><label>Nom de votre entreprise *<input id="company" autocomplete="organization" required maxlength="120" placeholder="Ex. Maison Lumière"></label>
+<label>Votre e-mail professionnel *<input id="email" type="email" autocomplete="email" required maxlength="180" placeholder="bonjour@entreprise.fr"></label>
+<label class="full">Votre secteur <select id="sector"><option value="Hôtel / tourisme">Hôtel / tourisme</option><option value="Restaurant / café">Restaurant / café</option><option value="Beauté / bien-être">Beauté / bien-être</option><option value="Immobilier">Immobilier</option><option value="Mode / boutique">Mode / boutique</option><option value="Automobile">Automobile</option><option value="Autre">Autre</option></select></label>
+<label class="full">Style choisi <select id="style"><option value="À définir ensemble">À définir ensemble</option></select></label>
+<label class="full">Parlez-nous de votre idée <textarea id="brief" maxlength="1800" placeholder="Ce que vous souhaitez montrer, votre public, votre site internet, votre idée de vidéo…"></textarea></label>
+<p class="selected-style full" id="picked" aria-live="polite">Vous pouvez sélectionner un style dans la collection ci-dessus.</p>
+<button class="pill full" type="submit">Préparer mon e-mail de demande <span aria-hidden="true">↗</span></button>
+<p class="note full">Le bouton ouvre votre application e-mail avec votre demande préremplie, à envoyer vous-même à mvryhan@gmail.com. Aucun paiement ni envoi automatique n'est déclenché ici. N'incluez pas de données sensibles dans le brief.</p>
+</form></section>
+</div></main>
+<footer class="shell"><span>© DEEPSYQ · Creative Studio · Démonstration commerciale</span><span>Contact : <a href="mailto:mvryhan@gmail.com">mvryhan@gmail.com</a> · <a href="deepsyq.html">Plateforme DEEPSYQ</a></span></footer>
+<script>
+"use strict";
+const samples=[
+{title:"Portrait signature",note:"Intimité · esthétique cinéma",file:"media/home/owner-20261018/01-close-up-woman.mp4",poster:"media/home/owner-20261018/01-close-up-woman.jpg"},
+{title:"Portail futuriste",note:"Innovation · lancement",file:"media/home/owner-20261018/02-futuristic-portal.mp4",poster:"media/home/owner-20261018/02-futuristic-portal.jpg"},
+{title:"Univers sous-marin",note:"Immersion · atmosphère",file:"media/home/owner-20261018/03-underwater-woman.mp4",poster:"media/home/owner-20261018/03-underwater-woman.jpg"},
+{title:"Énergie nocturne",note:"Mouvement · intensité",file:"media/home/owner-20261018/04-neon-motorcycle.mp4",poster:"media/home/owner-20261018/04-neon-motorcycle.jpg"},
+{title:"Rêve en altitude",note:"Poésie · imagination",file:"media/home/owner-20261018/05-sky-whale.mp4",poster:"media/home/owner-20261018/05-sky-whale.jpg"},
+{title:"Lumière dorée",note:"Nature · sérénité",file:"media/home/owner-20261018/06-golden-forest.mp4",poster:"media/home/owner-20261018/06-golden-forest.jpg"},
+{title:"Couture en mouvement",note:"Élégance · mode",file:"media/home/owner-20261018/v02-red-gown.mp4",poster:"media/home/owner-20261018/v02-red-gown.jpg"},
+{title:"Studio d'idées",note:"Créativité · identité",file:"media/home/neon-20261018/canvas-card.mp4",poster:"media/home/neon-20261018/canvas.webp"},
+{title:"Création sans limites",note:"Outils · transformation",file:"media/home/neon-20261018/apps-card.mp4",poster:"media/home/neon-20261018/apps.webp"},
+{title:"Futur en action",note:"Technologie · vision",file:"media/home/neon-20261018/agent-card.mp4",poster:"media/home/neon-20261018/agent.webp"}
+];
+const gallery=document.getElementById("videoGallery"),styleSelect=document.getElementById("style");
+samples.forEach((s,i)=>{const article=document.createElement("article");article.className="showcase";const p=document.createElement("div");p.className="poster";const video=document.createElement("video");video.muted=true;video.loop=true;video.playsInline=true;video.preload="none";video.poster=s.poster;video.setAttribute("aria-label","Aperçu "+s.title);const source=document.createElement("source");source.src=s.file;source.type="video/mp4";video.append(source);p.append(video);const number=document.createElement("span");number.className="sample-number";number.textContent=String(i+1).padStart(2,"0");p.append(number);const toggle=document.createElement("button");toggle.className="video-toggle";toggle.type="button";toggle.setAttribute("aria-label","Lire la vidéo "+s.title);toggle.textContent="▶";toggle.addEventListener("click",async()=>{if(video.paused){document.querySelectorAll(".poster video").forEach(v=>{if(v!==video)v.pause()});document.querySelectorAll(".video-toggle").forEach(b=>{b.textContent="▶";b.setAttribute("aria-label",b.getAttribute("aria-label").replace("Mettre en pause","Lire"))});try{await video.play();toggle.textContent="Ⅱ";toggle.setAttribute("aria-label","Mettre en pause la vidéo "+s.title)}catch{toggle.textContent="▶"}}else{video.pause();toggle.textContent="▶";toggle.setAttribute("aria-label","Lire la vidéo "+s.title)}});p.append(toggle);const info=document.createElement("div");info.className="sample-info";const name=document.createElement("b");name.textContent=s.title;const sub=document.createElement("span");sub.textContent=s.note;const select=document.createElement("button");select.type="button";select.className="use-style";select.textContent="Choisir ce style";select.addEventListener("click",()=>{styleSelect.value=s.title;gallery.querySelectorAll(".showcase").forEach(el=>el.classList.remove("selected"));article.classList.add("selected");document.getElementById("picked").textContent="Style sélectionné : "+s.title;document.getElementById("commande").scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});});info.append(name,sub,select);article.append(p,info);gallery.append(article);const option=document.createElement("option");option.value=s.title;option.textContent=String(i+1).padStart(2,"0")+" — "+s.title;styleSelect.append(option)});
+document.getElementById("projectForm").addEventListener("submit",(event)=>{event.preventDefault();if(!event.currentTarget.reportValidity())return;const c=document.getElementById("company").value.trim(),e=document.getElementById("email").value.trim(),sector=document.getElementById("sector").value,style=styleSelect.value,brief=document.getElementById("brief").value.trim();const subject="DEEPSYQ · Demande de vidéo · "+c;const message="Bonjour DEEPSYQ,\n\nJe souhaite recevoir une proposition pour des vidéos publicitaires.\n\nEntreprise : "+c+"\nE-mail : "+e+"\nSecteur : "+sector+"\nStyle : "+style+"\nBrief : "+(brief||"À préciser ensemble")+"\n\nMerci de me contacter pour un devis, le délai et les modalités de commande.\n";window.location.href="mailto:mvryhan@gmail.com?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(message)});
+</script>
+</body></html>
