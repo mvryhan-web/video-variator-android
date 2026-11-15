@@ -690,8 +690,17 @@ def main():
                 ok = False
                 for attempt in range(12):
                     token = live_id.replace("-", "") + "-check-" + str(attempt)
-                    if cloudflare.live_asset("/" + rel, token) == raw:
-                        ok = True
+                    served = cloudflare.live_asset("/" + rel, token)
+                    if (frozenset(paths) == THEME_ACTIVATION_RELEASE
+                            and rel == "account-settings.html"):
+                        # The canonical Worker can transform HTML before delivery;
+                        # require the exact owner-approved three-card UI in served HTML.
+                        ok = (b'id="accountThemesCarousel"' in served and
+                              all(('data-account-theme="' + name + '"').encode() in served
+                                  for name in ("brown", "soft-dark", "christmas")))
+                    else:
+                        ok = (served == raw)
+                    if ok:
                         break
                     time.sleep(2)
                 insist(ok, "LIVE_PUBLIC_FILE_STILL_STALE: " + rel)
