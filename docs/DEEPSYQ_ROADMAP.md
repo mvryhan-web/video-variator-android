@@ -872,3 +872,10 @@ For every block:
 - **DONE:** Fixed mobile Christmas snowbanks on Image/Video/Tools/Audio/card panels to be scroll-content anchored. They now move with their card during touch momentum, not one JS scroll event behind. Original white fluffy snow appearance and interactive brush preserved.
 - **DONE:** Exact top/left initialization; independent Chromium tests verified **0 px gap** on 12 mobile scroll positions for Home, Free Tools and unified JARVIX, while desktop rendering remains unchanged.
 - **Deployed and verified LIVE:** [#43758338864](https://github.com/mvryhan-web/video-variator-android/actions/runs/43758338864), Cloudflare `c6d1c803-eef3-4aa2-9f44-268036e0825d`; [Chromium QA #43758531884](https://github.com/mvryhan-web/video-variator-android/actions/runs/43758531884). Changed only `deepsyq-christmas-v4.js`, `deepsyq-christmas-v4.css` and `deepsyq-theme-loader.js`; other 2840 assets, Worker and bindings untouched.
+
+### 2026-11-15 — Christmas UI point-fix follow-up
+- [x] Code: prevent Christmas snow overlay on Home create cards and carousel inner layer.
+- [x] Code: keep generated JARVIX Chat media scrollable above the composer in Christmas theme.
+- [x] Code: hide winter landscape in the isolated Studio Settings window.
+- [ ] Verify mobile reload / carousel snow positioning and generated-image bottom reachability in the deployed build.
+- [ ] Confirm Cloudflare production deployment for the above commits (not independently verified).
