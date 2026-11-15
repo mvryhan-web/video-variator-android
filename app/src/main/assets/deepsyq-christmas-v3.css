@@ -1,0 +1,99 @@
+/* DEEPSYQ Christmas V3 — isolated Cloudflare preview only.
+   The user-supplied long chalet image must remain visible behind ALL pages,
+   not just inside Home, and the original carousel/chat functionality is untouched. */
+html[data-site-theme="christmas"]{
+ background-color:#1b2a49!important;
+ background-image:linear-gradient(180deg,rgba(7,15,31,.07),rgba(9,22,45,.13)),
+   url("/media/christmas/christmas-mobile.webp")!important;
+ background-position:center top!important;
+ background-size:cover!important;
+ background-attachment:fixed!important;
+ background-repeat:no-repeat!important;
+ min-height:100%!important;
+}
+html[data-site-theme="christmas"] body{
+ background:transparent!important;
+ background-color:transparent!important;
+ background-image:none!important;
+ background-attachment:scroll!important;
+ min-height:100vh!important;
+}
+/* Main page shells formerly painted solid navy/black over the body background.
+   Clear ONLY these full-page surfaces; keep actual cards/inputs legible. */
+html[data-site-theme="christmas"] :is(
+ body>main,body>.main,body>#app,body>.app,body>.app-shell,
+ body>.page-shell,body>.page-wrap,body>.studio-shell,
+ .jarvix-chat,.j-messages,.j-chat-bottom,
+ .studio-shell,.studio-main,.studio-stage,.page-content,
+ .app-main,.content-area,.content-wrap,.home-shell,.home-main,
+ .hero,.home-hero,.page-container,.creator-pages
+){
+ background-color:transparent!important;
+ background-image:none!important;
+}
+html[data-site-theme="christmas"] :is(
+ .price-plans-area,.price-credits-area,.price-wallet-area,
+ .j-workspace-pane,.studio-container,.stage.result,.intro
+){
+ background-color:rgba(9,17,34,.17)!important;
+ background-image:none!important;
+}
+/* Preserve readable glass panels while letting the winter world show through. */
+html[data-site-theme="christmas"] :is(
+ .j-chat-toolbar,.j-workspace-header,.tool-card,.app-card,
+ .price-five-grid,.price-hero,.studio-card,.composer,.panel,.card
+){
+ backdrop-filter:blur(7px);
+}
+html[data-site-theme="christmas"] :is(
+ #homeHeroCarousel,.hero-stage,.home-feature-spotlight
+){
+ background-color:rgba(6,16,35,.19)!important;
+}
+/* Reuse exactly five sprites on the SINGLE JARVIX composer on Chat/Image/Video/Audio. */
+html[data-site-theme="christmas"] #jChatForm,
+html[data-site-theme="christmas"] .composer:has(#prompt){
+ overflow:visible!important;
+ isolation:isolate;
+}
+html[data-site-theme="christmas"] .xmas-mini-universal{
+ position:absolute!important;
+ left:4%!important;right:4%!important;
+ top:-67px!important;height:70px!important;
+ z-index:75!important;
+ pointer-events:none!important;
+ overflow:visible!important;
+}
+html[data-site-theme="christmas"] .xmas-mini-universal .xmas-person{
+ width:42px!important;height:56px!important;
+ bottom:5px!important;
+}
+html[data-site-theme="christmas"] .xmas-mini-universal .xmas-v2-projectile{width:16px;height:16px}
+html[data-site-theme="christmas"] #xmas-real-snow{opacity:.75!important}
+/* Keep no angular/six-ray icon snowflakes; organic near-focus flakes are soft. */
+@media(min-width:880px){
+ html[data-site-theme="christmas"]{
+  background-image:linear-gradient(180deg,rgba(5,16,31,.08),rgba(8,19,40,.14)),
+    url("/media/christmas/christmas-desktop.webp")!important;
+  background-position:center top!important;
+  background-size:cover!important;
+ }
+}
+@media(max-width:760px),(orientation:portrait){
+ html[data-site-theme="christmas"]{
+  background-image:linear-gradient(180deg,rgba(6,12,30,.05),rgba(8,18,38,.12)),
+    url("/media/christmas/christmas-mobile.webp")!important;
+  background-size:cover!important;
+  background-position:center top!important;
+ }
+ html[data-site-theme="christmas"] .xmas-mini-universal{
+  top:-52px!important;height:55px!important;left:2%!important;right:2%!important
+ }
+ html[data-site-theme="christmas"] .xmas-mini-universal .xmas-person{
+  width:32px!important;height:44px!important
+ }
+ html[data-site-theme="christmas"] .xmas-mini-universal .xmas-v2-projectile{width:13px;height:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-site-theme="christmas"] .xmas-mini-universal .xmas-person{animation:none!important}
+}
