@@ -774,6 +774,13 @@ body{background:#090a0c}
  .studio-play{font-size:33px}
  .brand{gap:4px}
 }
+@media(min-width:701px){
+ html[lang="en"] .hero h1{font-size:clamp(29px,3.65vw,65px)}
+ .hero{padding-block:44px}
+}
+.cs-heading .kicker{border:1px solid #735932;border-radius:20px;padding:5px 14px}
+.cs-heading h2{color:#f9f4e9}
+.cs-quote-bar h3::before{content:"◇";margin-inline-end:8px;color:#ffd48d}
 </style></head>
 <body>
 <header class="top"><div class="shell nav">
@@ -910,7 +917,7 @@ body{background:#090a0c}
         <div class="gallery" id="videoGallery"></div>
         <div class="shorts-arrows"><button type="button" id="shortsPrev" aria-label="Previous Short">‹</button><button type="button" id="shortsNext" aria-label="Next Short">›</button></div>
       </div>
-      <button type="button" class="pill shorts-select" id="shortsSelect">Use This Style →</button>
+      <button type="button" class="pill shorts-select" id="shortsSelect" data-i18n="shortsChoose">Use This Style →</button>
     </section>
     <details class="brand-options">
       <summary>Aperçu avec votre marque</summary>
@@ -1038,7 +1045,7 @@ body{background:#090a0c}
       <div class="cs-controls">
       <h3 class="cs-mobile-title"><span>1</span> <b data-i18n="studioConfigure">Configure Your Video</b></h3>
       <div class="custom-studio-grid">
-        <label><span>Durée de la vidéo</span>
+        <label><span data-i18n="csDuration">Durée de la vidéo</span>
           <select id="csDuration">
             <option value="10">10s — Spot Express (-5 €)</option>
             <option value="20" selected="">20s — Standard Commercial (Base)</option>
@@ -1047,7 +1054,7 @@ body{background:#090a0c}
             <option value="60">60s — Film de Marque (+45 €)</option>
           </select>
         </label>
-        <label><span>Formats d'export</span>
+        <label><span data-i18n="csFormat">Formats d'export</span>
           <select id="csFormat">
             <option value="9:16" selected="">9:16 Vertical uniquement (0 €)</option>
             <option value="16:9">16:9 Horizontal uniquement (0 €)</option>
@@ -1055,55 +1062,55 @@ body{background:#090a0c}
             <option value="all_ratios">Pack Omni 9:16 + 16:9 + 1:1 (+20 €)</option>
           </select>
         </label>
-        <label><span>Résolution</span>
+        <label><span data-i18n="csResolution">Résolution</span>
           <select id="csResolution">
             <option value="1080p" selected="">Full HD 1080p (Inclus)</option>
             <option value="4k_master">Master 4K UHD (+15 €)</option>
           </select>
         </label>
-        <label><span>Scénario &amp; Textes</span>
+        <label><span data-i18n="csScript">Scénario &amp; Textes</span>
           <select id="csScript">
             <option value="template_script" selected="">Structure Studio Adaptée (Inclus)</option>
             <option value="bespoke_script">Scénario &amp; Copywriting dédié (+15 €)</option>
           </select>
         </label>
-        <label><span>Animation du Logo</span>
+        <label><span data-i18n="csLogoAnim">Animation du Logo</span>
           <select id="csLogoAnim">
             <option value="standard_fade" selected="">Apparition fluide standard (Inclus)</option>
             <option value="bespoke_reveal">Animation Signature sur mesure (+12 €)</option>
           </select>
         </label>
-        <label><span>Voix-off &amp; Audio</span>
+        <label><span data-i18n="csVoiceover">Voix-off &amp; Audio</span>
           <select id="csVoiceover">
             <option value="none" selected="">Musique sous licence uniquement (0 €)</option>
             <option value="native_voiceover">Voix-off studio dans votre langue (+18 €)</option>
           </select>
         </label>
-        <label><span>Sous-titres</span>
+        <label><span data-i18n="csSubtitles">Sous-titres</span>
           <select id="csSubtitles">
             <option value="none" selected="">Titres principaux uniquement (0 €)</option>
             <option value="burned_subtitles">Sous-titres synchronisés + SRT (+8 €)</option>
             <option value="bilingual_subtitles">Version bilingue 2 langues (+15 €)</option>
           </select>
         </label>
-        <label><span>Cycles de révision</span>
+        <label><span data-i18n="csRevisions">Cycles de révision</span>
           <select id="csRevisions">
             <option value="0" selected="">0 révision — Rendu direct (0 €)</option>
             <option value="1">1 cycle de modifications (+10 €)</option>
             <option value="2">2 cycles de modifications (+20 €)</option>
           </select>
         </label>
-        <label><span>Priorité &amp; Nombre de vidéos</span>
+        <label><span data-i18n="csPriority">Priorité &amp; Nombre de vidéos</span>
           <select id="csPriority">
             <option value="standard" selected="">File standard 24–48h · 1 vidéo (0 €)</option>
             <option value="priority_24h">Priorité Express &lt;24h (+15 €)</option>
           </select>
         </label>
-        <label><span>Logo</span><select id="csLogo"><option value="upload">Use my logo</option><option value="text_only">Text only</option><option value="create_logo">Create a logo (+25 €)</option></select></label>
-        <label><span>Additional ad images</span><select id="csImages"><option value="0">None</option><option value="5">5 images (+30 €)</option></select></label>
-        <label><span>Video language</span><select id="csLanguage"><option value="">Use website language</option><option value="English">English</option><option value="French">Français</option><option value="German">Deutsch</option><option value="Arabic">العربية</option><option value="Spanish">Español</option><option value="Italian">Italiano</option><option value="Dutch">Nederlands</option><option value="Portuguese">Português</option><option value="Russian">Русский</option></select></label>
+        <label><span data-i18n="csLogo">Logo</span><select id="csLogo"><option value="upload">Use my logo</option><option value="text_only">Text only</option><option value="create_logo">Create a logo (+25 €)</option></select></label>
+        <label><span data-i18n="csImages">Additional ad images</span><select id="csImages"><option value="0">None</option><option value="5">5 images (+30 €)</option></select></label>
+        <label><span data-i18n="csLanguage">Video language</span><select id="csLanguage"><option value="">Use website language</option><option value="English">English</option><option value="French">Français</option><option value="German">Deutsch</option><option value="Arabic">العربية</option><option value="Spanish">Español</option><option value="Italian">Italiano</option><option value="Dutch">Nederlands</option><option value="Portuguese">Português</option><option value="Russian">Русский</option></select></label>
       </div>
-      <button type="button" class="pill secondary" id="resetCustomStudioBtn">Reset options</button>
+      <button type="button" class="pill secondary" id="resetCustomStudioBtn" data-i18n="studioReset">Reset options</button>
       </div>
       <div class="cs-quote-bar" aria-live="polite">
         <h3 data-i18n="studioSummary">Your Order</h3>
@@ -1115,7 +1122,7 @@ body{background:#090a0c}
         </div>
         <div style="display:flex;align-items:center;gap:14px">
           <strong style="font-size:28px;color:#ecfdf5" id="csLiveTotal">14,95 €</strong>
-          <button type="button" class="pill" id="applyCustomStudioToOrderBtn">Continue to Order Details →</button>
+          <button type="button" class="pill" id="applyCustomStudioToOrderBtn" data-i18n="studioContinue">Continue to Order Details →</button>
         </div>
       </div>
       </div>
@@ -1435,7 +1442,7 @@ const I18N={
     navTrack:"Suivi commande",
     navOrderBtn:"Commander une vidéo",
     heroKicker:"Création vidéo publicitaire internationale",
-    heroBrand:"Votre marque, logo et coordonnées",heroReady:"Prêt pour les réseaux sociaux et les sites web",heroPrepared:"Une vidéo réalisée par le studio",studioConfigure:"Configurez votre vidéo",studioTitle:"Créez votre vidéo sur mesure",studioLead:"Choisissez les options et consultez le prix estimé.",studioSummary:"Votre commande",orderDetailsTitle:"Vos coordonnées",
+    heroBrand:"Votre marque, logo et coordonnées",heroReady:"Prêt pour les réseaux sociaux et les sites web",heroPrepared:"Une vidéo réalisée par le studio",studioConfigure:"Configurez votre vidéo",studioTitle:"Créez votre vidéo sur mesure",csDuration:"Durée de la vidéo",csFormat:"Formats d’export",csResolution:"Résolution",csScript:"Scénario et textes",csLogoAnim:"Animation du logo",csVoiceover:"Voix off et audio",csSubtitles:"Sous-titres",csRevisions:"Révisions",csPriority:"Priorité",csLogo:"Logo",csImages:"Visuels publicitaires supplémentaires",csLanguage:"Langue de la vidéo",studioReset:"Réinitialiser",studioContinue:"Continuer vers la commande →",shortsChoose:"Choisir ce style →",studioLead:"Choisissez les options et consultez le prix estimé.",studioSummary:"Votre commande",orderDetailsTitle:"Vos coordonnées",
     heroTitle:"Des vidéos publicitaires <em>pour votre entreprise.</em>",
     heroLead:"Des vidéos courtes, soignées et conçues pour attirer de nouveaux clients sur votre site, Instagram Reels, TikTok, YouTube Shorts et Facebook. Choisissez l'un de nos styles, ajoutez votre nom, votre logo et vos coordonnées — nous livrons votre film prêt à diffuser dès 5 €.",
     btnExplore10:"Découvrir les styles",
@@ -1451,22 +1458,22 @@ const I18N={
   en:{
     dir:"ltr",
     navExamples:"Video Examples",
-    galleryDesc:"Find a style that suits your business.",galleryKicker:"VIDEO SHOWCASE",
+    galleryDesc:"Find a style that suits your business.",
     pricingDesc:"Professional videos for every business.",heroExamples:"See Examples",
     lblCompany:"Company Name *",lblEmail:"Email Address *",lblSector:"Business Type",
     lblBrief:"Notes (Optional)",btnOrderBasic:"Choose Basic",btnOrderMedium:"Choose Medium",
     btnOrderPro:"Choose Professional",btnOrderCustom:"Get a Custom Quote",
-    navPricing:"Packages (€5 – €55)",
+    navPricing:"Pricing",
     navServices:"Add-on Services",
     navTrack:"Track Order",
     navOrderBtn:"Create My Video",
     heroKicker:"Creative Video Studio",
-    heroBrand:"Your brand, logo and contact details",heroReady:"Ready for social media and websites",heroPrepared:"Professionally prepared video",studioConfigure:"Configure Your Video",studioTitle:"Build Your Custom Video",studioLead:"Choose the details. See your estimated price.",studioSummary:"Your Order",orderDetailsTitle:"Your Order Details",
-    heroTitle:"<span class='hero-desktop-title'>Professional Promotional Videos for <em>Your Business</em></span><span class='hero-mobile-title'>Your business deserves a powerful <em>video ad</em></span>",
+    heroBrand:"Your brand, logo and contact details",heroReady:"Ready for social media and websites",heroPrepared:"Professionally prepared video",studioConfigure:"Configure Your Video",studioTitle:"Build Your Custom Video",csDuration:"Video Length",csFormat:"Format",csResolution:"Resolution",csScript:"Script",csLogoAnim:"Logo Animation",csVoiceover:"Voice-over",csSubtitles:"Subtitles",csRevisions:"Revisions",csPriority:"Priority",csLogo:"Logo",csImages:"Additional Ad Images",csLanguage:"Video Language",studioReset:"Reset options",studioContinue:"Continue to Order Details →",shortsChoose:"Use This Style →",studioLead:"Choose the details. See your estimated price.",studioSummary:"Your Order",orderDetailsTitle:"Your Order Details",
+    heroTitle:"<span class='hero-desktop-title'>Professional<br>Promotional Videos<br>for <em>Your Business</em></span><span class='hero-mobile-title'>Your business deserves a powerful <em>video ad</em></span>",
     heroLead:"We create customised advertising videos for hotels, restaurants, beauty brands, real estate and other businesses.",
     btnExplore10:"Explore Video Styles",
     btnSeePackages:"See Packages: €5 · €15 · €55",
-    galleryKicker:"DEEPSYQ Creative Collection",
+    galleryKicker:"VIDEO SHOWCASE",
     galleryTitle:"Choose your <em>video style</em>",
     pricingTitle:"Choose your package",
     addonsTitle:"Help your business become even more visible",
@@ -1602,7 +1609,7 @@ const I18N={
     navTrack:"Статус заказа",
     navOrderBtn:"Заказать видео",
     heroKicker:"Международная студия рекламных видео DEEPSYQ",
-    heroBrand:"Ваш бренд, логотип и контакты",heroReady:"Для соцсетей и сайтов",heroPrepared:"Профессиональная подготовка видео",studioConfigure:"Настройте видео",studioTitle:"Создайте видео под заказ",studioLead:"Выберите настройки и посмотрите предварительную стоимость.",studioSummary:"Ваш заказ",orderDetailsTitle:"Данные для заказа",
+    heroBrand:"Ваш бренд, логотип и контакты",heroReady:"Для соцсетей и сайтов",heroPrepared:"Профессиональная подготовка видео",studioConfigure:"Настройте видео",studioTitle:"Создайте видео под заказ",csDuration:"Длительность видео",csFormat:"Формат",csResolution:"Разрешение",csScript:"Сценарий",csLogoAnim:"Анимация логотипа",csVoiceover:"Озвучка",csSubtitles:"Субтитры",csRevisions:"Правки",csPriority:"Срочность",csLogo:"Логотип",csImages:"Рекламные изображения",csLanguage:"Язык видео",studioReset:"Сбросить настройки",studioContinue:"Перейти к оформлению →",shortsChoose:"Выбрать стиль →",studioLead:"Выберите настройки и посмотрите предварительную стоимость.",studioSummary:"Ваш заказ",orderDetailsTitle:"Данные для заказа",
     heroTitle:"Рекламные видео, которые помогают вашему бизнесу <em>выделиться.</em>",
     heroLead:"Короткие эффектные видеоролики для вашего сайта, Instagram Reels, TikTok, YouTube Shorts и Facebook. Выберите один из стилей, укажите название компании, логотип и контакты — готовый ролик от 5 €.",
     btnExplore10:"Смотреть примеров",
@@ -1719,9 +1726,11 @@ function calculateCustomStudioLocal(){
   PKG_DURATIONS.custom_studio=dur;
 
   const specEl=document.getElementById("csSpecSummary");
-  if(specEl)specEl.textContent=`Spécification : ${dur}s · ${fmt} · ${res} · ${vo==="native_voiceover"?"Voix-off":"Musique"} · ${rev} rév.`;
+  const french=state.lang==="fr";
+  const formatLabel={dual_916_169:"9:16 + 16:9",all_ratios:"9:16 + 16:9 + 1:1"}[fmt]||fmt;
+  if(specEl)specEl.textContent=`${dur}s · ${formatLabel} · ${res==="4k_master"?"4K":res}`;
   const brkEl=document.getElementById("csPriceBreakdown");
-  if(brkEl)brkEl.textContent=`Base ${formatMoneyFromEur(base)} + Options ${formatMoneyFromEur(opts)} + Taxes 0,00 €`;
+  if(brkEl)brkEl.textContent=`Base ${formatMoneyFromEur(base)} + ${french?"options":"add-ons"} ${formatMoneyFromEur(opts)}`;
   const totEl=document.getElementById("csLiveTotal");
   if(totEl)totEl.textContent=formatMoneyFromEur(total);
   const cardEl=document.getElementById("customStudioCardPrice");
@@ -2126,6 +2135,7 @@ function applyLanguage(lang){
     const key=el.getAttribute("data-i18n-html");
     if(dict[key])el.innerHTML=dict[key];
   });
+  document.querySelectorAll(".cs-segments").forEach(group=>group.setAttribute("aria-label",group.querySelector("label span").textContent));
   renderAddons();
   updateSummary();
 }
