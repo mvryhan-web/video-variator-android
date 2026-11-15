@@ -589,7 +589,7 @@ body{background:radial-gradient(ellipse at 80% 5%,#33271c 0,transparent 27%),#09
 #realisations .section-head p,#tarifs .section-head p{margin-inline:auto}
 .hero .actions .pill,.carousel-info .pill,#stripeCheckoutBtn{border-radius:999px}
 @media(min-width:701px){.hero h1{font-family:Georgia,serif;font-weight:600;letter-spacing:-.045em}}
-@media(max-width:700px){.hero>div:first-of-type+div{text-align:center}.hero-art{min-height:0}.hero .lead,.hero .under{margin-inline:auto}}
+@media(max-width:700px){.hero>div:first-of-type+div{text-align:center}.hero-art{min-height:0}.hero .lead,.hero .under{margin-inline:auto}#realisations .filter-pills{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}#realisations .filter-btn{width:100%;min-height:42px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;line-height:1.25;padding:9px 10px!important}#realisations .filter-btn[data-filter="all"]{grid-column:1/-1}}
 #realisations .filter-pills{justify-content:center}
 .carousel-stage{display:block!important;background:none!important;border:0!important;padding:0!important}
 .carousel-player-wrap{position:relative;max-width:980px;margin:auto}
@@ -868,7 +868,6 @@ body{background:#090a0c}
         <a href="#tarifs" class="pill"><span data-i18n="navOrderBtn">Commander une vidéo</span> <span aria-hidden="true">→</span></a>
         <a href="#realisations" class="pill secondary" data-i18n="heroExamples">Voir les exemples</a>
       </div>
-      <p class="under" data-i18n="heroUnder">Formats 9:16 (Reels/TikTok/Shorts) &amp; 16:9 (Web/YouTube) · Paiement sécurisé Stripe Checkout · Livraison rapide</p>
     </div>
     <div class="hero-art" aria-label="Exemple de vidéo cinématographique">
       <div class="hero-frame" id="landscapePreview">
@@ -912,10 +911,8 @@ body{background:#090a0c}
   <section id="realisations">
     <div class="section-head">
       <div>
-        <span class="kicker" data-i18n="galleryKicker">La collection créative DEEPSYQ</span>
         <h2 data-i18n-html="galleryTitle">Vous choisissez l'idée —<br>DEEPSYQ crée la publicité.</h2>
       </div>
-      <p data-i18n="galleryDesc">Explorez les réalisations par secteur en mode carrousel interactif ou catalogue complet.</p>
     </div>
 
     <!-- Industry Smart Filter Bar -->
@@ -930,7 +927,7 @@ body{background:#090a0c}
     </div>
 
     <section class="shorts" id="shorts" aria-labelledby="shortsTitle">
-      <div class="shorts-heading"><h3 id="shortsTitle">Shorts <span>9:16</span></h3><p>Reels · TikTok · YouTube Shorts</p></div>
+      <div class="shorts-heading"><h3 id="shortsTitle">Shorts</h3></div>
       <div class="shorts-stage">
         <div class="gallery" id="videoGallery"></div>
         <div class="shorts-arrows"><button type="button" id="shortsPrev" aria-label="Previous Short">‹</button><button type="button" id="shortsNext" aria-label="Next Short">›</button></div>
