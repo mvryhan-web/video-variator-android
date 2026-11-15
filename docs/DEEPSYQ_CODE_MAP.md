@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `147464c65a8b27903ea471e3a8499b28d7ffe5a6`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `983d51ab0ce8c96210aea4f5193c7863c4671a5e`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 126 | Named symbols: 460 | Checked relations: 80
 
 ## Topic finder (matching filenames)
@@ -150,7 +150,7 @@ replies (L2)
 
 ### `app/src/main/assets/jarvix-new-recorded-dialog.js`
 
-COMMON (L10) · LANGS (L47) · catalogs (L98) · SITE_ANSWERS_RU (L124) · SITE_DETAILS_RU (L132) · NUMBERED_QUESTIONS_RU (L147)
+COMMON (L10) · LANGS (L47) · catalogs (L99) · SITE_ANSWERS_RU (L125) · SITE_DETAILS_RU (L133) · NUMBERED_QUESTIONS_RU (L148)
 
 ### `app/src/main/assets/jarvix-new-smalltalk.js`
 
