@@ -56,6 +56,7 @@ const audioRecord=(record,lang,available,reviewed)=>{
  if (!available.has(filename))return null;
  const review=reviewed.get(filename);
  if(review&&review.scenarioId!==record.id)return null;
+ // Imported scenario recordings use the source script until individually reviewed.
  const text=review?.spokenText||record.qa?.[lang]?.answer;
  if (!allowedText(text))return null;
  return {id:record.id,text,audioUrl:'/media/jarvix/clips/'+filename,source:'scenario'};
