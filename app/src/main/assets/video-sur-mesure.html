@@ -1864,7 +1864,11 @@ async function lookupOrder(orderNum){
       return;
     }
     const o=data.order;
-    box.innerHTML=`<div class="status-badge">● ${o.status.toUpperCase()}</div><p style="margin:10px 0 4px"><strong>${o.orderNumber}</strong> — ${o.companyName} · Pack ${o.packageName} (${o.videoFormat}, ${o.durationSeconds}s)</p><p style="margin:0;color:var(--muted)">Statut production : ${o.productionStatus}</p>${o.deliveryVideoUrl?`<p style="margin-top:10px"><a class="pill" href="${o.deliveryVideoUrl}" download>⬇ Télécharger la vidéo finale</a></p>`:""}`;
+    // Only render escaped server data; the authorization check belongs on the API.
+    const esc=(v)=>String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+    let deliveryHref="";
+    if(o.deliveryVideoUrl){try{const u=new URL(o.deliveryVideoUrl,window.location.origin);if(u.protocol==="https:"||u.protocol==="http:")deliveryHref=esc(u.href)}catch{}}
+    box.innerHTML=`<div class="status-badge">● ${esc(o.status).toUpperCase()}</div><p style="margin:10px 0 4px"><strong>${esc(o.orderNumber)}</strong> — ${esc(o.companyName)} · Pack ${esc(o.packageName)} (${esc(o.videoFormat)}, ${esc(o.durationSeconds)}s)</p><p style="margin:0;color:var(--muted)">Statut production : ${esc(o.productionStatus)}</p>${deliveryHref?`<p style="margin-top:10px"><a class="pill" href="${deliveryHref}" download rel="noopener noreferrer">⬇ Télécharger la vidéo finale</a></p>`:""}`;
   }catch{
     box.textContent="Impossible de vérifier la commande pour le moment.";
   }
