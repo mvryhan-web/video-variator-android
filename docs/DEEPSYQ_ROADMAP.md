@@ -861,3 +861,4 @@ For every block:
 - do not mark DONE until verified;
 - do not create duplicate systems when an existing system can be extended.
 
+- 2026-11-15 — Sales design preview: reserve the empty 16:9 hero for owner footage, browse stills in the separate style carousel, and play the 19 existing vertical videos in Shorts below. Live Stripe checkout is outside the static preview.

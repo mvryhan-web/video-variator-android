@@ -573,11 +573,7 @@ footer.shell{flex-direction:column;padding-bottom:105px}.mobile-sticky-bar{displ
 @media(prefers-reduced-motion:reduce){.pkg-card,.pill{transition:none!important;transform:none!important}}
 
 /* Preserve original 9:16 videos in premium 16:9 presentation, ready for optional future landscape assets */
-.hero-frame[data-video-orientation="portrait"],.carousel-phone[data-video-orientation="portrait"]{position:relative;background-color:#0f1722}
-.hero-frame[data-video-orientation="portrait"]::before,.carousel-phone[data-video-orientation="portrait"]::before{content:"";position:absolute;inset:-25px;background-image:var(--video-poster);background-position:center;background-size:cover;filter:blur(23px) brightness(.46) saturate(.83);transform:scale(1.1);z-index:0;pointer-events:none}
-.hero-frame[data-video-orientation="portrait"] video,.carousel-phone[data-video-orientation="portrait"] video{object-fit:contain!important;position:absolute;inset:0;width:100%!important;height:100%!important;z-index:1}
 .hero-frame .brand-overlay-top,.hero-frame .hero-caption{position:absolute;z-index:3}
-.carousel-phone[data-video-orientation="portrait"] video{filter:drop-shadow(0 0 16px #0008)}
 /* Approved graphite and gold layout, shared by both video formats. */
 :root{--gold:#f0c16c;--ink:#090b0e}
 body{background:radial-gradient(ellipse at 80% 5%,#33271c 0,transparent 27%),#090b0e}
@@ -600,8 +596,6 @@ body{background:radial-gradient(ellipse at 80% 5%,#33271c 0,transparent 27%),#09
 .carousel-phone{width:100%!important;aspect-ratio:16/9!important;border:1px solid #deb473!important;box-shadow:0 0 23px #e8b85c4a}
 .carousel-player-wrap .icon-btn{position:absolute;z-index:4;top:50%;transform:translateY(-50%);border-color:#e4bd79;border-radius:50%;background:#0a0c10e8}
 #carouselPrevBtn{left:12px} #carouselNextBtn{right:12px}
-#carouselPlayBtn,#heroPlayBtn{left:50%;transform:translate(-50%,-50%);width:58px;height:58px}
-.hero-frame #heroPlayBtn{position:absolute;top:50%;z-index:5;border-radius:50%;background:#0a0c10ae;color:#fff;border:1px solid #ffe8b9}
 .showcase-aspect{position:absolute;z-index:3;right:15px;top:14px;background:#0a0c10db;color:#f6d595;border:1px solid #ba9457;border-radius:20px;padding:5px 12px}
 .carousel-info{display:grid!important;grid-template-columns:1fr auto;gap:6px 20px;max-width:980px;margin:20px auto 28px}
 .carousel-info .carousel-counter,.carousel-info .carousel-title,.carousel-info .fine{grid-column:1}
@@ -633,10 +627,50 @@ footer.shell{padding-bottom:32px!important}
  .shorts-arrows button{background:#07090ceb}
  .hero .actions a{justify-content:center}
 }
+
+/* The landscape frame is reserved for the studio's own 16:9 footage. */
+html,body{overflow-x:clip}
+body{background:#090a0c}
+.hero{padding:clamp(32px,5vw,70px) 0;min-height:0;gap:clamp(20px,3vw,46px)}
+.hero-art{min-height:0}
+.hero h1{font-size:clamp(36px,4.1vw,69px);line-height:1.03}
+.premium-hero-orbit{inset:6% 0 0 0;background:radial-gradient(ellipse at 70% 55%,#8b5b292e,transparent 66%);transform:none}
+.hero-frame::after{content:none}
+.hero-frame:not(.show-brand) :is(.brand-overlay-top,.hero-caption){display:none}
+.hero-frame{background:linear-gradient(145deg,#15171b,#0a0b0d 62%)!important}
+.studio-play{color:#f5ca74;font:700 47px/.8 Georgia,serif;filter:drop-shadow(0 0 8px #ce8b42aa)}
+.section-head h2 em{color:#f0c16c;font-style:normal}
+.carousel-player-wrap{width:76%;max-width:900px}
+.carousel-phone{background:#101216}
+#spotlightPoster{display:block;width:100%;height:100%;object-fit:cover;object-position:center 48%}
+.carousel-peek{position:absolute;top:10%;width:24%;height:80%;object-fit:cover;opacity:.55;border:1px solid #897653;border-radius:16px;pointer-events:none}
+.carousel-peek.previous{inset-inline-end:calc(100% + 16px)}
+.carousel-peek.next{inset-inline-start:calc(100% + 16px)}
+#carouselPrevBtn{left:-23px}
+#carouselNextBtn{right:-23px}
+#realisations .filter-pills{flex-wrap:wrap;overflow:visible}
+.brand-options{margin-bottom:35px}
+.brand-options summary{cursor:pointer;color:#edc982}
+.shorts .gallery{--short-width:clamp(162px,23vw,245px);padding-inline:calc((100% - var(--short-width))/2)!important}
+.shorts .showcase{flex-basis:var(--short-width)!important}
+.pkg-card[data-pkg-card="basic"]{background:linear-gradient(145deg,#343d48,#101214 70%)!important}
+.pkg-card[data-pkg-card="medium"]{background:linear-gradient(145deg,#153a65,#081322 70%)!important}
+.pkg-card[data-pkg-card="professional"]{background:linear-gradient(145deg,#53391c,#14110d 70%)!important}
+.pkg-card[data-pkg-card="custom_studio"]{background:linear-gradient(145deg,#06463d,#071815 70%)!important}
+.pkg-card .pkg-mini-preview{display:none!important}
+@media(max-width:700px){
+ .hero .actions{display:grid;margin:20px auto;max-width:410px}
+ .hero .actions .pill{min-width:0}
+ .hero h1{font-family:system-ui,sans-serif;letter-spacing:-.055em}
+ .hero .under{margin-bottom:0}
+ .carousel-player-wrap{width:82%}
+ .shorts .gallery{--short-width:min(60vw,220px)}
+ .pricing-grid{grid-template-columns:minmax(0,1fr)!important}
+}
 </style></head>
 <body>
 <header class="top"><div class="shell nav">
-<a href="https://sales-preview-20261115.deepsyq.pages.dev/deepsyq.html" class="brand" aria-label="Retour à DEEPSYQ"><img src="https://sales-preview-20261115.deepsyq.pages.dev/deepsyq-icon-192.png" alt=""><span>DEEPSYQ<small>CREATIVE STUDIO</small></span></a>
+<a href="https://sales-preview-20261115.deepsyq.pages.dev/deepsyq.html" class="brand" aria-label="Retour à DEEPSYQ"><span class="studio-play" aria-hidden="true">▷</span><span>DEEPSYQ<small>CREATIVE STUDIO</small></span></a>
 <nav class="navlinks" aria-label="Navigation">
   <a href="#realisations" data-i18n="navExamples">Exemples</a>
   <a href="#tarifs" data-i18n="navPricing">Tarifs (5 € – 55 €)</a>
@@ -671,7 +705,7 @@ footer.shell{padding-bottom:32px!important}
   <section class="hero"><div class="premium-hero-orbit" aria-hidden="true"></div>
     <div>
       <span class="kicker" data-i18n="heroKicker">Création vidéo publicitaire internationale</span>
-      <h1 data-i18n-html="heroTitle">Des vidéos publicitaires qui permettent à votre entreprise <em>de se démarquer.</em></h1>
+      <h1 data-i18n-html="heroTitle">Des vidéos publicitaires <em>pour votre entreprise.</em></h1>
       <p class="lead" data-i18n="heroLead">Des vidéos courtes, soignées et conçues pour attirer de nouveaux clients sur votre site, Instagram Reels, TikTok, YouTube Shorts et Facebook. Choisissez l'un de nos styles, ajoutez votre nom, votre logo et vos coordonnées — nous livrons votre film prêt à diffuser dès 5 €.</p>
       <div class="actions">
         <a href="#tarifs" class="pill"><span data-i18n="navOrderBtn">Commander une vidéo</span> <span aria-hidden="true">→</span></a>
@@ -680,7 +714,7 @@ footer.shell{padding-bottom:32px!important}
       <p class="under" data-i18n="heroUnder">Formats 9:16 (Reels/TikTok/Shorts) &amp; 16:9 (Web/YouTube) · Paiement sécurisé Stripe Checkout · Livraison rapide</p>
     </div>
     <div class="hero-art" aria-label="Exemple de vidéo cinématographique">
-      <div class="hero-frame">
+      <div class="hero-frame" id="landscapePreview">
         <div class="brand-overlay-top">
           <div class="brand-overlay-logo">
             <img id="livePreviewLogoImg" src="https://sales-preview-20261115.deepsyq.pages.dev/deepsyq-icon-192.png" alt="Logo preview">
@@ -688,16 +722,13 @@ footer.shell{padding-bottom:32px!important}
           </div>
           <span class="brand-overlay-tag" id="livePreviewPkgTag">MEDIUM · 20s · 9:16</span>
         </div>
-        <video id="heroPreviewVideo" muted="" loop="" playsinline="" preload="metadata" poster="https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.jpg" aria-label="Aperçu vidéo cinématographique"><source src="https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.mp4" type="video/mp4"></video>
-        <button type="button" id="heroPlayBtn" class="icon-btn" aria-label="Play preview">▶</button>
+        <span class="showcase-aspect">16:9</span>
         <div class="hero-caption">
           <b id="livePreviewHeadline">Votre histoire. Notre regard.</b>
           <span id="livePreviewSubline">Une signature visuelle qui vous ressemble.</span>
           <small id="livePreviewContact">📍 Paris · www.votre-entreprise.fr</small>
         </div>
       </div>
-      <div class="floatlabel one" data-i18n="floatLabel1">✦ Aperçu en direct avec votre logo</div>
-      <div class="floatlabel two">9:16 &amp; 16:9 · HD MP4</div>
     </div>
   </section>
 
@@ -712,7 +743,7 @@ footer.shell{padding-bottom:32px!important}
 
 <div class="shell">
   <!-- VIDEO SHOWCASE GALLERY + V6 INTERACTIVE SPOTLIGHT CAROUSEL -->
-  <section id="realisations"><div class="premium-index"><span>01 / VIDEO SHOWCASE</span><span>DEEPSYQ CREATIVE STUDIO</span></div>
+  <section id="realisations">
     <div class="section-head">
       <div>
         <span class="kicker" data-i18n="galleryKicker">La collection créative DEEPSYQ</span>
@@ -733,16 +764,14 @@ footer.shell{padding-bottom:32px!important}
     </div>
 
     <!-- Interactive Spotlight Carousel Stage -->
-    <div class="carousel-stage" aria-label="Carrousel vidéo interactif">
+    <div class="carousel-stage" aria-label="Carrousel des styles">
       <div class="carousel-player-wrap">
         <div class="carousel-phone">
-          <video id="spotlightVideo" muted="" loop="" playsinline="" preload="metadata" poster="https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.jpg">
-            <source src="https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.mp4" type="video/mp4">
-          </video>
+          <img id="spotlightPoster" src="https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.jpg" alt="">
         </div>
-        <span class="showcase-aspect">16:9</span>
-          <button type="button" class="icon-btn" id="carouselPrevBtn" aria-label="Vidéo précédente">←</button>
-          <button type="button" class="icon-btn" id="carouselPlayBtn" aria-label="Lire ou mettre en pause">▶</button>
+        <img class="carousel-peek previous" id="prevPoster" alt="">
+        <img class="carousel-peek next" id="nextPoster" alt="">
+        <button type="button" class="icon-btn" id="carouselPrevBtn" aria-label="Vidéo précédente">‹</button>
           <button type="button" class="icon-btn" id="carouselNextBtn" aria-label="Vidéo suivante">→</button>
       </div>
       <div class="carousel-info">
@@ -755,6 +784,15 @@ footer.shell{padding-bottom:32px!important}
       </div>
     </div>
 
+    <section class="shorts" id="shorts" aria-labelledby="shortsTitle">
+      <div class="shorts-heading"><h3 id="shortsTitle">Shorts <span>9:16</span></h3><p>Reels · TikTok · YouTube Shorts</p></div>
+      <div class="shorts-stage">
+        <div class="gallery" id="videoGallery"></div>
+        <div class="shorts-arrows"><button type="button" id="shortsPrev" aria-label="Previous Short">‹</button><button type="button" id="shortsNext" aria-label="Next Short">›</button></div>
+      </div>
+    </section>
+    <details class="brand-options">
+      <summary>Aperçu avec votre marque</summary>
     <!-- Interactive Brand Preview ("See your brand in the video") -->
     <div class="brand-studio-bar" id="brandPreviewSection" aria-label="See your brand in the video">
       <label><span>✦ See your brand in the video (Nom)</span>
@@ -776,18 +814,11 @@ footer.shell{padding-bottom:32px!important}
       </div>
     </div>
 
-    <section class="shorts" id="shorts" aria-labelledby="shortsTitle">
-      <div class="shorts-heading"><h3 id="shortsTitle">Shorts <span>9:16</span></h3><p>Reels · TikTok · YouTube Shorts</p></div>
-      <div class="shorts-stage">
-        <div class="gallery" id="videoGallery"></div>
-        <div class="shorts-arrows"><button type="button" id="shortsPrev" aria-label="Previous Short">‹</button><button type="button" id="shortsNext" aria-label="Next Short">›</button></div>
-      </div>
-    </section>
-    <p class="gallery-note" data-i18n="galleryNote">Aperçu interactif de composition en temps réel (ne consomme aucun crédit IA payant). Le rendu vidéo final haute définition est produit après validation de commande.</p>
+    </details>
   </section>
 
   <!-- 4 PRICING PACKAGES (BASIC 4,95€, MEDIUM 14,95€, PROFESSIONAL 54,95€, CUSTOM STUDIO) -->
-  <section id="tarifs"><div class="premium-index"><span>02 / VIDEO PACKAGES</span><span>CHOISIR · PERSONNALISER · COMMANDER</span></div>
+  <section id="tarifs">
     <div class="section-head">
       <div>
         <span class="kicker" data-i18n="pricingKicker">Tarifs clairs · Paiement unique</span>
@@ -1010,7 +1041,7 @@ footer.shell{padding-bottom:32px!important}
   </section>
 
   <!-- ADDITIONAL SERVICES BLOCK -->
-  <section id="services-plus"><div class="premium-index"><span>03 / CREATIVE EXTRAS</span><span>PERSONNALISEZ VOTRE CAMPAGNE</span></div>
+  <section id="services-plus">
     <div class="section-head">
       <div>
         <span class="kicker" data-i18n="addonsKicker">Services complémentaires</span>
@@ -1169,7 +1200,7 @@ footer.shell{padding-bottom:32px!important}
   <!-- LIVE ORDER TRACKING & AI SALES CONSULTANT (ANTON) -->
   
 <section class="premium-faq" id="questions" aria-labelledby="premiumFaqHeading">
- <div class="premium-index"><span>05 / YOUR QUESTIONS</span><span>NO SURPRISES · JUST A CLEAR PROCESS</span></div>
+ 
  <div class="premium-faq-grid">
   <div><span class="kicker" id="premiumFaqEyebrow">EN TOUTE CLARTÉ</span><h2 id="premiumFaqHeading">Tout ce que vous voulez savoir.</h2><p class="premium-faq-lead" id="premiumFaqLead">Vous choisissez un style, nous préparons votre création. Les conditions exactes sont confirmées avant paiement.</p></div>
   <div class="premium-faq-accordion">
@@ -1271,13 +1302,13 @@ const I18N={
     navTrack:"Suivi commande",
     navOrderBtn:"Commander une vidéo",
     heroKicker:"Création vidéo publicitaire internationale",
-    heroTitle:"Des vidéos publicitaires qui permettent à votre entreprise <em>de se démarquer.</em>",
+    heroTitle:"Des vidéos publicitaires <em>pour votre entreprise.</em>",
     heroLead:"Des vidéos courtes, soignées et conçues pour attirer de nouveaux clients sur votre site, Instagram Reels, TikTok, YouTube Shorts et Facebook. Choisissez l'un de nos styles, ajoutez votre nom, votre logo et vos coordonnées — nous livrons votre film prêt à diffuser dès 5 €.",
     btnExplore10:"Découvrir les styles",
     btnSeePackages:"Voir les packs 5 € · 15 € · 55 €",
     galleryKicker:"La collection créative DEEPSYQ",
-    galleryTitle:"exemples de vidéos publicitaires.<br>Choisissez votre ambiance.",
-    pricingTitle:"Trois formules adaptées à votre objectif",
+    galleryTitle:"Choisissez votre <em>style vidéo</em>",
+    pricingTitle:"Choisissez votre formule",
     addonsTitle:"Aidons votre entreprise à devenir encore plus visible",
     orderTitle:"Configurez votre vidéo publicitaire",
     btnPayStripe:"Payer & Commander en ligne",
@@ -1291,13 +1322,13 @@ const I18N={
     navTrack:"Track Order",
     navOrderBtn:"Order Your Video",
     heroKicker:"International Commercial Video Studio",
-    heroTitle:"Promotional videos that help your business <em>stand out.</em>",
+    heroTitle:"Professional promotional videos <em>for your business.</em>",
     heroLead:"Short, high-impact promotional videos crafted for your website, Instagram Reels, TikTok, YouTube Shorts, and Facebook. Pick one of our visual styles, add your company name, logo, and contact details — delivered ready to publish starting at €5.",
     btnExplore10:"Explore Video Styles",
     btnSeePackages:"See Packages: €5 · €15 · €55",
     galleryKicker:"DEEPSYQ Creative Collection",
-    galleryTitle:"promotional video examples.<br>Choose your visual direction.",
-    pricingTitle:"Three clear packages for your brand",
+    galleryTitle:"Choose your <em>video style</em>",
+    pricingTitle:"Choose your package",
     addonsTitle:"Help your business become even more visible",
     orderTitle:"Configure your promotional video order",
     btnPayStripe:"Pay & Order via Stripe Checkout",
@@ -1483,16 +1514,19 @@ const SECTOR_GROUPS={
 };
 
 let spotlightSlot=1;
+let spotlightStyles=samples.map((_,index)=>index);
+function stepSpotlight(offset){
+  const index=spotlightStyles.indexOf(spotlightSlot-1);
+  updateSpotlightCarousel(spotlightStyles[(index+offset+spotlightStyles.length)%spotlightStyles.length]);
+}
 function updateSpotlightCarousel(idx){
   const safeIdx=((idx%samples.length)+samples.length)%samples.length;
   spotlightSlot=safeIdx+1;
   const s=samples[safeIdx];
-  const vid=document.getElementById("spotlightVideo");
-  if(vid){
-    vid.poster=s.poster;
-    vid.querySelector("source").src=s.file;
-    vid.load();
-  }
+  document.getElementById("spotlightPoster").src=s.poster;
+  const index=spotlightStyles.indexOf(safeIdx);
+  document.getElementById("prevPoster").src=samples[spotlightStyles.at(index-1)].poster;
+  document.getElementById("nextPoster").src=samples[spotlightStyles[(index+1)%spotlightStyles.length]].poster;
   const cnt=document.getElementById("spotlightCounter");
   if(cnt)cnt.textContent=`STYLE ${String(safeIdx+1).padStart(2,"0")} · ${s.category.toUpperCase()}`;
   const ttl=document.getElementById("spotlightTitle");
@@ -1614,8 +1648,6 @@ samples.forEach((s,i)=>{
     gallery.querySelectorAll(".showcase").forEach(el=>el.classList.remove("selected"));
     article.classList.add("selected");
     document.getElementById("picked").textContent="Style sélectionné : "+String(i+1).padStart(2,"0")+" — "+s.title;
-    const heroVid=document.getElementById("heroPreviewVideo");
-    if(heroVid){heroVid.poster=s.poster;heroVid.querySelector("source").src=s.file;heroVid.load();heroVid.play().catch(()=>{});}
     updateSummary();
     document.getElementById("commande").scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});
   });
@@ -1714,21 +1746,9 @@ function scrollShorts(step){
 }
 document.getElementById("shortsPrev").addEventListener("click",()=>scrollShorts(-1));
 document.getElementById("shortsNext").addEventListener("click",()=>scrollShorts(1));
-document.getElementById("heroPlayBtn").addEventListener("click",async event=>{
-  const video=document.getElementById("heroPreviewVideo"),button=event.currentTarget;
-  if(!video.paused){video.pause();button.textContent="▶";button.setAttribute("aria-label","Play preview");return;}
-  try{await video.play();button.textContent="Ⅱ";button.setAttribute("aria-label","Pause preview");}catch{}
-});
-
-// Spotlight Carousel & Filter Controls
-document.getElementById("carouselPrevBtn")?.addEventListener("click",()=>updateSpotlightCarousel(spotlightSlot-2));
-document.getElementById("carouselNextBtn")?.addEventListener("click",()=>updateSpotlightCarousel(spotlightSlot));
-document.getElementById("carouselPlayBtn")?.addEventListener("click",async(e)=>{
-  const v=document.getElementById("spotlightVideo");
-  if(!v)return;
-  if(v.paused){try{await v.play();e.currentTarget.textContent="Ⅱ";trackFunnelEvent("video_play",{slot:spotlightSlot});}catch{}}
-  else{v.pause();e.currentTarget.textContent="▶";}
-});
+updateSpotlightCarousel(0);
+document.getElementById("carouselPrevBtn").addEventListener("click",()=>stepSpotlight(-1));
+document.getElementById("carouselNextBtn").addEventListener("click",()=>stepSpotlight(1));
 document.getElementById("spotlightSelectBtn")?.addEventListener("click",()=>{
   state.selectedSlot=spotlightSlot;
   const s=samples[spotlightSlot-1]||samples[0];
@@ -1748,7 +1768,8 @@ document.querySelectorAll("#industryFilterBar .filter-btn").forEach(btn=>{
     gallery.querySelectorAll(".showcase").forEach((card,idx)=>{
       card.style.display=(!allowed||allowed.includes(idx))?"flex":"none";
     });
-    if(allowed&&allowed.length)updateSpotlightCarousel(allowed[0]);
+    spotlightStyles=allowed||samples.map((_,index)=>index);
+    updateSpotlightCarousel(spotlightStyles[0]);
     trackFunnelEvent("industry_filter",{industry:f});
   });
 });
@@ -1767,6 +1788,7 @@ document.querySelectorAll("#industryFilterBar .filter-btn").forEach(btn=>{
 });
 document.getElementById("applyBrandPreviewBtn")?.addEventListener("click",()=>{
   updateSummary();
+  document.getElementById("landscapePreview").classList.add("show-brand");
   document.querySelector(".hero-art")?.scrollIntoView({behavior:"smooth"});
   trackFunnelEvent("brand_preview_applied");
 });
@@ -2051,19 +2073,6 @@ localize();
   if(label)label.textContent=selectedStyleLabels[lang]||selectedStyleLabels.en;
  }
  document.getElementById("langSwitcher")?.addEventListener("change",()=>queueMicrotask(alignLabels));
- function mountOrientation(video){
-  const parent=video.closest(".hero-frame,.carousel-phone");if(!parent)return;
-  function synchronize(){
-   const poster=video.getAttribute("poster")||"";
-   if(poster.startsWith("https://"))parent.style.setProperty("--video-poster",'url("'+poster.replace(/["\\]/g,"")+'")');
-   if(video.videoWidth&&video.videoHeight)parent.dataset.videoOrientation=video.videoHeight>video.videoWidth?"portrait":"landscape";
-   else if(!parent.dataset.videoOrientation)parent.dataset.videoOrientation="portrait";
-  }
-  video.addEventListener("loadedmetadata",synchronize);
-  new MutationObserver(synchronize).observe(video,{attributes:true,attributeFilter:["poster"]});
-  synchronize();
- }
- document.querySelectorAll("#heroPreviewVideo,#spotlightVideo").forEach(mountOrientation);
  alignLabels();
 })();
 </script></body></html>

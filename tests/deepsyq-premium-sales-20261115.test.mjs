@@ -24,10 +24,12 @@ test("Contains desktop and mobile premium systems and correct order integration 
  assert.match(page,/prefers-reduced-motion/);
  assert.match(page,/<meta name="robots" content="noindex,nofollow">/);
 });
-test("CSS preserves source aspect ratio for current portrait samples and future landscape content",()=>{
- assert.match(page,/data-video-orientation="portrait"/);
- assert.match(page,/loadedmetadata/);
- assert.match(page,/video\.videoHeight>video\.videoWidth/);
+test("Landscape preview has no video source and carousel uses only posters",()=>{
+ const hero=visibleHtml.slice(visibleHtml.indexOf('id="landscapePreview"'),visibleHtml.indexOf('<hr class="rule">'));
+ assert.match(hero,/16:9/);
+ assert.doesNotMatch(hero,/<(?:video|source)\b/);
+ assert.doesNotMatch(visibleHtml,/<video\b/);
+ assert.match(visibleHtml,/id="spotlightPoster"/);
 });
 test("Inline scripts parse correctly",()=>{
  const scripts=[...page.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);assert.ok(scripts.length>=3);
@@ -35,10 +37,11 @@ test("Inline scripts parse correctly",()=>{
 });
 
 test("Wide showcase, vertical Shorts and packages are distinct and ordered",()=>{
- const wide=page.indexOf('id="spotlightVideo"');
+ const wide=page.indexOf('id="spotlightPoster"');
  const shorts=page.indexOf('id="shorts"');
  const pricing=page.indexOf('id="tarifs"');
- assert.ok(wide>0&&wide<shorts&&shorts<pricing);
+ const landscape=page.indexOf('id="landscapePreview"');
+ assert.ok(landscape>0&&landscape<wide&&wide<shorts&&shorts<pricing);
  assert.match(page,/\.shorts \.poster\{aspect-ratio:9\/16!important/);
  assert.match(page,/setOrderFormat\("9:16"\)/);
  assert.match(page,/setOrderFormat\("16:9"\)/);

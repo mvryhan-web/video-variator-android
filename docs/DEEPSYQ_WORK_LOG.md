@@ -614,3 +614,4 @@ Production `fc8fc614-bbe6-4c78-8aa9-f4a78a38020e`, [выпуск #43501433353](h
 ## 2026-11-14 — Отдельный аккаунт и сфера в Director
 
 [Выпуск #43579507538](https://github.com/mvryhan-web/video-variator-android/actions/runs/43579507538). Кнопки аккаунта на главной и в общих шапках открывают `/account-settings.html`. Старая ссылка `video-uniquifier.html#profile` перенаправляется браузером. Новый профиль использует существующую сессию и `/api/me`; справка Видео-уникализатора осталась в инструменте. Сфера Director уменьшена и совмещена с центром чёрной области. Cloudflare подтвердил точечный выпуск шести файлов. Проверка профиля с реальным входом и перехода в Stripe не выполнена.
+- 2026-11-15 — Sales design preview: reserve the empty 16:9 hero for owner footage, browse stills in the separate style carousel, and play the 19 existing vertical videos in Shorts below. Live Stripe checkout is outside the static preview.
