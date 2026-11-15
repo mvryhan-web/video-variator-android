@@ -48,3 +48,14 @@
 - **Public isolated TEST Preview:** https://christmas-preview-20261114.deepsyq.pages.dev/?christmas=1. **Production and canonical TEST unchanged**.
 
 - **Final cache-refresh release:** [Cloudflare TEST Preview #43716357047](https://github.com/mvryhan-web/video-variator-android/actions/runs/43716357047) PASS. V2 JS/CSS and V3 CSS now use refreshed asset URLs `?v=20261115-scroll-final` so existing browsers do not retain the earlier stationary background. Exact source SHA-256 reconfirmed; 13 live preview endpoints HTTP 200; production and canonical TEST baseline unchanged.
+
+
+## 2026-11-15 — Christmas V4: fluffy pointer-responsive snow and raised chimney — PASS
+
+- Owner feedback: old snow caps on input/cards were flat repeated CSS stripes and sometimes visually intruded; long winter background appeared too low on universal JARVIX Chat (Image/Video/Audio).
+- Added independent preview-only `app/src/main/assets/deepsyq-christmas-v4.js`: transparent fixed canvas draws irregular white snow accumulation ABOVE visible card/header/composer edges; micro-clumps, tonal shading and fine frost. On pointer movement/touch, local drift gently deforms and sheds a few tiny snow particles. Non-interactive layer `pointer-events:none`; no modifications to existing carousel/forms/actions.
+- Added `deepsyq-christmas-v4.css`: legacy flat-gradient snowcaps fully hidden despite high-specificity earlier selectors; new snow rendered on overlay. One shared JARVIX Chat portrait's chimney shifts upward by 180 px at 1440px desktop and 68px mobile, while Home and full portrait scrolling remain unchanged.
+- Expanded V4 card selectors for compact mobile Tools / launch tile panels; no card layout rebuild. Updated isolated Cloudflare Preview workflow with V4 CSS/JS and cache versions `fluffy-v2`, validating assets, original carousel, Worker, preserved stable TEST/production deployments.
+- **Published Cloudflare Christmas Preview PASS**: [#43718790272](https://github.com/mvryhan-web/video-variator-android/actions/runs/43718790272), URL `https://christmas-preview-20261114.deepsyq.pages.dev/?christmas=1`. Production and canonical TEST unchanged.
+- **Full real Chromium desktop/mobile PASS**: [#43718835307](https://github.com/mvryhan-web/video-variator-android/actions/runs/43718835307). Home painted snow: 12026 non-transparent overlay pixels desktop / 4237 mobile; old stripes computed opacity 0. Mouse brush produced 6 interaction events desktop and 2 simulated touch events mobile. Visible pile counts on Free Tools: desktop 5 / mobile 3; Pricing 3/3; JARVIX Chat 2/2; Generate Studio 2/2; Audio Studio 2/2. JARVIX chimney offset confirmed desktop 180px, mobile 68px. Image/Video/Audio continue on one composer with five miniature actors. Browser errors: [].
+- Theme remains on isolated TEST preview only; do not replace `deepsyq.app` or canonical `test.deepsyq.pages.dev` Worker.
