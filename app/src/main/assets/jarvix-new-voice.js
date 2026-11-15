@@ -1,6 +1,6 @@
 import {saveStudioHandoff} from './studio-handoff.js';
 import {extractAction} from './jarvix-action-plan.js';
-import {recordedConversationReply as recordedReply,recordedExact,wasRecordedReplyUsed} from './jarvix-new-recorded-dialog.js';
+import {recordedConversationReply as recordedReply,recordedExact,wasRecordedReplyUsed} from './jarvix-new-recorded-dialog.js?v=scenario-catalog-2';
 import {helloRecording,promptRecording,smalltalkReply,smalltalkTextReply,isGreetingOnly} from './jarvix-new-smalltalk.js';
 /* JARVIX NEW — voice-only mode on the OWNER'S EXISTING sphere, TEST host only.
    No new page, code form, paid API or simulated model answer. */
@@ -786,13 +786,14 @@ async function respond(message,id){
  if(production&&/^\/jarvix-chat(?:\.html)?$/.test(location.pathname)&&/^(?:сделай короче|сократи|покажи пример|приведи пример|объясни проще|продолжи|make it shorter|give an example)(?=\s|[,.!?]|$)/iu.test(requestText)){
   if(await openVoiceQuestion(message,id))return;
  }
- if(production&&/^(?:(?:слушай|джарвис|джарвикс|jarvis|jarvix|пожалуйста)[,\s:]+)*(?:объясни|расскажи|подскажи|где|как|какие|сколько|что такое|explain|tell me|how|where)(?=\s|[,.!?]|$)/iu.test(message.trim())&&!/^(?:как дела|как ты|how are you)[?.!]*$/iu.test(command.trim())){
-  if(await openVoiceQuestion(message,id))return;
- }
  const recorded=await recordedReply(command,lang,turns).catch(()=>null);
  if(!on||seq!==id)return;
  if(await playResponse(recorded,id,message))return;
  if(!on||seq!==id)return;
+
+ if(production&&/^(?:(?:слушай|джарвис|джарвикс|jarvis|jarvix|пожалуйста)[,\s:]+)*(?:объясни|расскажи|подскажи|где|как|какие|сколько|что такое|explain|tell me|how|where)(?=\s|[,.!?]|$)/iu.test(message.trim())&&!/^(?:как дела|как ты|how are you)[?.!]*$/iu.test(command.trim())){
+  if(await openVoiceQuestion(message,id))return;
+ }
 
  const smalltalk=await smalltalkReply(message,lang,{findRecording:recordedExact}).catch(()=>null);
  if(!on||seq!==id)return;

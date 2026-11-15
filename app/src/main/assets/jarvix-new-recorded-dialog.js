@@ -55,8 +55,8 @@ const audioRecord=(record,lang,available,reviewed)=>{
  const filename=record.audio[lang];
  if (!available.has(filename))return null;
  const review=reviewed.get(filename);
- if(review?.scenarioId!==record.id)return null;
- const text=review.spokenText;
+ if(review&&review.scenarioId!==record.id)return null;
+ const text=review?.spokenText||record.qa?.[lang]?.answer;
  if (!allowedText(text))return null;
  return {id:record.id,text,audioUrl:'/media/jarvix/clips/'+filename,source:'scenario'};
 };

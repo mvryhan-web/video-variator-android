@@ -70,6 +70,7 @@ def approved_new_assets(paths):
     return frozenset()
 
 HASH_REUSE_RELEASE_SETS = (
+    frozenset({"jarvix-new-voice.js", "jarvix-new-recorded-dialog.js"}),
     frozenset({"jarvix-chat.js", "jarvis-core.js", "generate-studio.js"}),
     frozenset({"jarvix-chat.js", "jarvix-chat.html"}),
     frozenset({"jarvix-chat.js", "jarvix-chat.html", "jarvix-new-voice.js"}),
