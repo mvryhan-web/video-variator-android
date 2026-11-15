@@ -90,7 +90,7 @@ jobs:
           const newAssets='<link rel="stylesheet" href="/deepsyq-christmas-v2.css?v=20261115-scroll-final">'+
             '<script defer src="/deepsyq-christmas-v2.js?v=20261115-scroll-final"></script>'+
             '<link rel="stylesheet" href="/deepsyq-christmas-v3.css?v=20261115-scroll-final">'+
-            '<link rel="stylesheet" href="/deepsyq-christmas-v4.css?v=20261115-fluffy-v1">'+
+            '<link rel="stylesheet" href="/deepsyq-christmas-v4.css?v=20261115-fluffy-v2">'+
             '<script defer src="/deepsyq-christmas-v4.js?v=20261115-fluffy-v1"></script>';
           for(const name of files){
             const p=path.join(dir,name);
