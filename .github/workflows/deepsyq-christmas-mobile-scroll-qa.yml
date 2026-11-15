@@ -80,9 +80,16 @@ jobs:
                     await page.evaluate(async()=>{
                       const cap=document.querySelector('.xmas-mobile-snow-cap');
                       if(!cap)return;
-                      const node=cap.parentElement.querySelector('#homeQuickBar,.quick-tool-item,.tool-card,.app-card,#jChatForm') ||
-                        cap.parentElement.querySelector(':scope > :not(.xmas-mobile-snow-cap)');
-                      if(!node)return;
+                      // Every mobile cap records the exact target's id or class
+                      // fingerprint; do not accidentally compare it to a sibling card.
+                      const matches=[...cap.parentElement.querySelectorAll('*')].filter(el=>
+                        el!==cap&&(el.id||el.className?.toString().slice(0,45))===cap.dataset.snowFor);
+                      const node=matches.sort((a,b)=>{
+                        const y=cap.getBoundingClientRect().bottom;
+                        return Math.abs(a.getBoundingClientRect().top-y)-
+                               Math.abs(b.getBoundingClientRect().top-y);
+                      })[0];
+                      if(!node)throw Error('Could not locate the exact card for its snow cap: '+cap.dataset.snowFor);
                       const ancestor=(()=>{let p=node.parentElement;while(p&&p!==document.body){
                         const st=getComputedStyle(p);
                         if(p.scrollHeight>p.clientHeight+80&&/(auto|scroll)/.test(st.overflowY))return p;
