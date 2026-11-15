@@ -644,3 +644,9 @@ Production `fc8fc614-bbe6-4c78-8aa9-f4a78a38020e`, [выпуск #43501433353](h
 - **Read-only live Chrome mobile + desktop browser QA PASS**: [Actions #43758531884](https://github.com/mvryhan-web/video-variator-android/actions/runs/43758531884) with LIVE assets (no test route interception). Mobile snowfall-to-own-card gap was **0 px over 12 successive scroll steps** on `deepsyq.html`, `free-tools.html` and `jarvix-chat.html?mode=image`; attached canvas counts 19 / 24 / 4 respectively. Desktop original fixed snow canvas remains displayed; no mobile canvases on desktop, no Christmas JavaScript errors.
 - Test preflight on live pages with locally injected candidate code also PASSED [#43757858645](https://github.com/mvryhan-web/video-variator-android/actions/runs/43757858645).
 - LIVE: https://deepsyq.app. No other website features or layouts were touched.
+
+### 2026-11-15 — Christmas-only production UI corrections (GitHub changes, deployment unverified)
+- Scoped changes in `app/src/main/assets/deepsyq-christmas-v4.css`: JARVIX Chat message scrolling reserves 64px under generated images above the input dock.
+- Scoped changes in `app/src/main/assets/home-studio-settings.js`: remove Christmas landscape image from the isolated Studio Settings iframe background; keep existing controls.
+- Scoped changes in `app/src/main/assets/deepsyq-christmas-v4.js`: stop placing snow overlays on the three Home create cards/section and inside `#homeHeroCarousel`; keep surrounding Christmas snow decorations.
+- Committed on `deepsyq-platform` as `a529778e`, `c370af02`, `7183b37d`. No independent mobile visual or Cloudflare production deployment confirmation yet; do not report as published until verified.
