@@ -1,5 +1,5 @@
 name: DEEPSYQ Christmas live Chromium visual QA (no deploy)
-# QA V3.2: owner exact portrait, scroll-driven panorama, elevated snowcaps, JARVIX unified composer.
+# QA V3.2 post-fix: exact portrait and scroll panorama; snowcaps strictly above input panels.
 on:
   push:
     branches: [test]
@@ -90,7 +90,7 @@ jobs:
                 capBottom:cap.getBoundingClientRect().bottom,height:cap.getBoundingClientRect().height};
             });
             console.log('LIVE_XMAS_INPUT_SNOWCAP_GEOMETRY',name,JSON.stringify(capGeometry));
-            assert(capGeometry&&capGeometry.capTop<capGeometry.barTop-4&&capGeometry.capBottom<=capGeometry.barTop+2,name+' fluffy snow must sit ABOVE input, not cover it');
+            assert(capGeometry&&capGeometry.capTop<capGeometry.barTop-4&&capGeometry.capBottom<=capGeometry.barTop,name+' fluffy snow must sit ABOVE input, not cover it');
             await page.evaluate(()=>window.scrollTo({top:Math.min(1400,Math.max(0,document.documentElement.scrollHeight-innerHeight)),behavior:'instant'}));
             await page.waitForFunction(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--xmas-photo-position'))>=25,null,{timeout:12000});
             const pan=await page.evaluate(()=>({position:getComputedStyle(document.documentElement).getPropertyValue('--xmas-photo-position').trim(),
@@ -144,6 +144,16 @@ jobs:
                 attachment:getComputedStyle(document.documentElement).backgroundAttachment
               }));
               assert(pageBg.image.includes('christmas-portrait.webp')&&pageBg.attachment.includes('fixed'),name+' '+route+' long portrait absent');
+              if(route==='free-tools.html'){
+                const pageTravel=await page.evaluate(()=>Math.max(0,document.documentElement.scrollHeight-innerHeight));
+                if(pageTravel>400){
+                  await page.evaluate(()=>window.scrollTo({top:Math.min(900,document.documentElement.scrollHeight-innerHeight),behavior:'instant'}));
+                  await page.waitForFunction(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--xmas-photo-position'))>=20,null,{timeout:8000});
+                  const value=await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--xmas-photo-position').trim());
+                  console.log('LIVE_XMAS_TOOLS_PHOTO_SCROLL',name,value);
+                  await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+                }
+              }
               if(route==='jarvix-chat.html'){
                 const selector='#jChatForm .xmas-mini-universal';
                 await page.waitForFunction(sel=>document.querySelector(sel)?.querySelectorAll('.xmas-person').length===5,selector,{timeout:10000});
