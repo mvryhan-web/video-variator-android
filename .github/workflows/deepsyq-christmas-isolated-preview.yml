@@ -8,6 +8,8 @@ on:
       - 'app/src/main/assets/deepsyq-christmas-v2.js'
       - 'app/src/main/assets/deepsyq-christmas-v2.css'
       - 'app/src/main/assets/deepsyq-christmas-v3.css'
+      - 'app/src/main/assets/deepsyq-christmas-v4.js'
+      - 'app/src/main/assets/deepsyq-christmas-v4.css'
 permissions:
   contents: read
 concurrency:
@@ -41,6 +43,7 @@ jobs:
           test -n "$CLOUDFLARE_ACCOUNT_ID"
           node --check app/src/main/assets/deepsyq-christmas.js
           node --check app/src/main/assets/deepsyq-christmas-v2.js
+          node --check app/src/main/assets/deepsyq-christmas-v4.js
           node --check app/src/main/assets/_worker.js
           node --input-type=module <<'NODE'
           import fs from 'node:fs';import assert from 'node:assert/strict';
@@ -86,7 +89,9 @@ jobs:
             '<script defer src="/deepsyq-christmas.js?v=20261115"></script>';
           const newAssets='<link rel="stylesheet" href="/deepsyq-christmas-v2.css?v=20261115-scroll-final">'+
             '<script defer src="/deepsyq-christmas-v2.js?v=20261115-scroll-final"></script>'+
-            '<link rel="stylesheet" href="/deepsyq-christmas-v3.css?v=20261115-scroll-final">';
+            '<link rel="stylesheet" href="/deepsyq-christmas-v3.css?v=20261115-scroll-final">'+
+            '<link rel="stylesheet" href="/deepsyq-christmas-v4.css?v=20261115-fluffy-v1">'+
+            '<script defer src="/deepsyq-christmas-v4.js?v=20261115-fluffy-v1"></script>';
           for(const name of files){
             const p=path.join(dir,name);
             let html=fs.readFileSync(p,'utf8');
@@ -96,6 +101,7 @@ jobs:
             if(additions){html=html.replace(/<\/head>/i,additions+'\n</head>');fs.writeFileSync(p,html);injected++;}
             assert(html.includes('deepsyq-christmas-v2.js'),name+' missing V2');
             assert(html.includes('deepsyq-christmas-v3.css'),name+' missing global winter background');
+            assert(html.includes('deepsyq-christmas-v4.js')&&html.includes('deepsyq-christmas-v4.css'),name+' missing V4 fluffy snow');
             assert(html.includes('deepsyq-christmas.js'),name+' missing base Christmas layer');
           }
           console.log('CHRISTMAS_ALL_PAGES_CONNECTED',JSON.stringify({pages:files.length,updated:injected}));
@@ -181,7 +187,7 @@ jobs:
           node --input-type=module <<'NODE'
           import assert from 'node:assert/strict';
           const base=process.env.TARGET_URL;
-          const checks=['/deepsyq.html','/deepsyq-christmas.css','/deepsyq-christmas.js','/deepsyq-christmas-v2.css','/deepsyq-christmas-v2.js','/deepsyq-christmas-v3.css','/free-tools.html','/jarvix-chat.html','/pricing.html','/media/christmas/christmas-desktop.webp','/media/christmas/christmas-mobile.webp','/media/christmas/christmas-portrait.webp','/api/config'];
+          const checks=['/deepsyq.html','/deepsyq-christmas.css','/deepsyq-christmas.js','/deepsyq-christmas-v2.css','/deepsyq-christmas-v2.js','/deepsyq-christmas-v3.css','/free-tools.html','/jarvix-chat.html','/pricing.html','/media/christmas/christmas-desktop.webp','/media/christmas/christmas-mobile.webp','/media/christmas/christmas-portrait.webp','/api/config','/deepsyq-christmas-v4.js','/deepsyq-christmas-v4.css'];
           let passed=false;
           for(let trial=0;trial<18;trial++){
             try{
@@ -195,11 +201,14 @@ jobs:
                 assert(css.includes('christmas-desktop.webp')&&js.includes('xmas-mini-stage'));
                 const v3css=await r[5].text();
                 assert(v3css.includes('christmas-portrait.webp')&&v3css.includes('--xmas-photo-position')&&v3css.includes('xmas-mini-universal'),'Missing scrollable full-size owner portrait or JARVIX composer');
+                const v4js=await r[13].text(),v4css=await r[14].text();
+                assert(v4js.includes('xmasRippleCount')&&v4js.includes('xmas-pile-overlay')&&
+                  v4css.includes('--xmas-chimney-shift'),'Missing V4 hover snow or chimney offset');
                 const v2js=await r[4].text();
                 assert(v2js.includes('xmasHitCount')&&v2js.includes('xmas-real-snow')&&v2js.includes('panScenery'),'V2 missing game, snow or scroll-driven portrait');
                 for(const index of [6,7,8]){
                   const routeHtml=await r[index].text();
-                  assert(routeHtml.includes('deepsyq-christmas-v2.js')&&routeHtml.includes('deepsyq-christmas-v3.css'),'Secondary HTML missing seasonal layer');
+                  assert(routeHtml.includes('deepsyq-christmas-v2.js')&&routeHtml.includes('deepsyq-christmas-v3.css')&&routeHtml.includes('deepsyq-christmas-v4.js'),'Secondary HTML missing V4 seasonal layer');
                 }
                 assert((r[10].headers.get('content-type')||'').startsWith('image/'));
                 assert((r[11].headers.get('content-type')||'').startsWith('image/'),'Full-size owner portrait not publicly served');
