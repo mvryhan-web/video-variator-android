@@ -801,6 +801,25 @@ body{background:#090a0c}
  #questions .premium-faq-accordion{grid-template-columns:1fr}
 }
 @media(max-width:700px){#projectForm h2::before{content:none}}
+/* Preset orders and shared branding fields */
+#projectForm .logo-upload-panel[hidden],#studioControls[hidden],#fixedPackage[hidden]{display:none!important}
+#projectForm .logo-upload-panel{padding:10px;border:1px dashed #987848;border-radius:10px;background:#b4893b10}
+#logoUpload{font-size:13px;padding:6px}
+.fixed-package h3{margin:0;font-size:25px}
+.fixed-package p{color:#f4cd88;margin:7px 0}
+.fixed-package ul{margin:10px 0;padding-inline-start:21px;line-height:1.7}
+#questions{margin:34px 0 18px}
+#services-plus{border-top:1px solid #59472d;padding-top:4px}
+#suivi{margin-top:32px;align-items:start}
+#suivi .panel-box{background:linear-gradient(145deg,#191c21,#0c0e11 75%);border:1px solid #6b5435;border-radius:18px;padding:clamp(16px,3vw,28px)}
+#suivi h3{margin:7px 0;font:650 24px/1.2 system-ui}
+.support-fields{display:grid;gap:8px;margin-top:15px}
+.support-fields label{color:#e7dccd;font-size:13px}
+.tracking-controls{display:flex;flex-wrap:wrap;gap:9px}
+.tracking-controls input{min-width:130px}
+.support-fields input,.support-fields textarea{min-width:0;min-height:43px}
+.support-fields textarea{resize:vertical}
+.support-fields .pill{justify-self:start}
 </style></head>
 <body>
 <header class="top"><div class="shell nav">
@@ -1063,7 +1082,12 @@ body{background:#090a0c}
       <header class="cs-heading"><span class="kicker">CUSTOM STUDIO</span><h2 data-i18n="studioTitle">Build Your Custom Video</h2><p data-i18n="studioLead">Choose the details. See your estimated price.</p></header>
       <div class="cs-layout">
       <div class="cs-input-column">
-      <div class="cs-controls">
+      <div class="fixed-package" id="fixedPackage" hidden>
+        <h3 id="fixedPackageTitle"></h3>
+        <p id="fixedPackageMeta"></p>
+        <ul id="fixedPackageFeatures"></ul>
+      </div>
+      <div class="cs-controls" id="studioControls">
       <h3 class="cs-mobile-title"><span>1</span> <b data-i18n="studioConfigure">Configure Your Video</b></h3>
       <div class="custom-studio-grid">
         <label><span data-i18n="csDuration">Durée de la vidéo</span>
@@ -1127,7 +1151,6 @@ body{background:#090a0c}
             <option value="priority_24h">Priorité Express &lt;24h (+15 €)</option>
           </select>
         </label>
-        <label><span data-i18n="csLogo">Logo</span><select id="csLogo"><option value="upload">Use my logo</option><option value="text_only">Text only</option><option value="create_logo">Create a logo (+25 €)</option></select></label>
         <label><span data-i18n="csImages">Additional ad images</span><select id="csImages"><option value="0">None</option><option value="5">5 images (+30 €)</option></select></label>
         <label><span data-i18n="csLanguage">Video language</span><select id="csLanguage"><option value="">Use website language</option><option value="English">English</option><option value="French">Français</option><option value="German">Deutsch</option><option value="Arabic">العربية</option><option value="Spanish">Español</option><option value="Italian">Italiano</option><option value="Dutch">Nederlands</option><option value="Portuguese">Português</option><option value="Russian">Русский</option></select></label>
       </div>
@@ -1162,6 +1185,18 @@ body{background:#090a0c}
       <label class="full"><span data-i18n="lblBrief">Parlez-nous de votre idée (modifiable après commande)</span>
         <textarea id="brief" maxlength="1800" placeholder="Ce que vous souhaitez montrer, votre offre, vos couleurs, votre slogan…"></textarea>
       </label>
+      <label><span data-i18n="lblLogoOption">Option Logo</span>
+        <select id="logoOption" aria-controls="logoUploadPanel">
+          <option value="upload" data-i18n="optLogoUpload">Utiliser mon logo</option>
+          <option value="text_only" data-i18n="optLogoText">Pas de logo — signature texte élégante (0 €)</option>
+          <option value="create_logo" data-i18n="optLogoCreate">Créer un logo sur mesure (+25 €)</option>
+        </select>
+      </label>
+
+      <label id="logoUploadPanel" class="logo-upload-panel" hidden><span data-i18n="lblLogoFile">Fichier logo (possible aussi après paiement)</span>
+        <input id="logoUpload" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+      </label>
+
       <details class="full order-extra"><summary>Package, format and brand details</summary><div class="order-extra-fields">
       <label><span data-i18n="lblPackage">Forfait choisi *</span>
         <select id="packageSelect">
@@ -1201,18 +1236,6 @@ body{background:#090a0c}
       </label>
 
 
-
-      <label><span data-i18n="lblLogoOption">Option Logo</span>
-        <select id="logoOption">
-          <option value="upload" data-i18n="optLogoUpload">Importer mon logo (PNG/JPG/SVG)</option>
-          <option value="text_only" data-i18n="optLogoText">Pas de logo — signature texte élégante (0 €)</option>
-          <option value="create_logo" data-i18n="optLogoCreate">Créer un logo sur mesure (+25 €)</option>
-        </select>
-      </label>
-
-      <label><span data-i18n="lblLogoFile">Fichier logo (possible aussi après paiement)</span>
-        <input id="logoUpload" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
-      </label>
 
       <label class="full"><span data-i18n="lblContactCard">Adresse, téléphone ou site web à afficher dans la vidéo</span>
         <input id="contactCard" maxlength="200" placeholder="Ex. 12 Rue Royale, Paris · +33 1 40 00 00 00 · www.maisonlumiere.fr">
@@ -1284,27 +1307,11 @@ body{background:#090a0c}
     <div class="section-head">
       <div>
         <span class="kicker" data-i18n="addonsKicker">Services complémentaires</span>
-        <h2 data-i18n="addonsTitle">Aidons votre entreprise à devenir encore plus visible</h2>
+        <h2 data-i18n="addonsTitle">Services complémentaires pour votre vidéo</h2>
       </div>
       <p data-i18n="addonsDesc">Ajoutez ces options en un clic à votre commande vidéo ou demandez une proposition personnalisée.</p>
     </div>
     <button class="premium-reveal-extras" id="showAllExtras" type="button" aria-expanded="false" aria-controls="addonsGrid">Voir tous les services <span aria-hidden="true">＋</span></button><div class="addons-grid" id="addonsGrid"></div>
-  </section>
-
-  <!-- 3-STEP PROCESS -->
-  <section id="processus">
-    <div class="section-head">
-      <div>
-        <span class="kicker" data-i18n="procKicker">Un processus simple</span>
-        <h2 data-i18n="procTitle">De l'idée à votre vidéo.</h2>
-      </div>
-      <p data-i18n="procDesc">Pas de jargon. Un brief clair, un paiement sécurisé ou un devis, puis une réalisation validée.</p>
-    </div>
-    <div class="how">
-      <div class="step"><span data-i18n="step1Num">01 / Votre choix</span><h3 data-i18n="step1Title">Sélectionnez le pack &amp; le style</h3><p data-i18n="step1Desc">Choisissez parmi les styles et les formules Basic (4,95 €), Medium (14,95 €), Professional (54,95 €) ou Custom Studio.</p></div>
-      <div class="step"><span data-i18n="step2Num">02 / Vos éléments</span><h3 data-i18n="step2Title">Logo, texte &amp; coordonnées</h3><p data-i18n="step2Desc">Importez votre logo (ou cochez « Pas de logo ») et indiquez l'adresse ou le contact à afficher.</p></div>
-      <div class="step"><span data-i18n="step3Num">03 / Livraison rapide</span><h3 data-i18n="step3Title">Production &amp; validation</h3><p data-i18n="step3Desc">Notre studio prépare votre vidéo et vous recevez le fichier HD prêt pour vos réseaux sociaux.</p></div>
-    </div>
   </section>
 
 <section id="suivi" class="dual-bottom">
@@ -1312,9 +1319,10 @@ body{background:#090a0c}
       <span class="kicker" data-i18n="trackKicker">Suivi en temps réel</span>
       <h3 data-i18n="trackTitle">Vérifier le statut de votre commande</h3>
       <p class="fine" data-i18n="trackDesc">Entrez votre numéro de commande (ex. DSQ-000001) reçu après validation pour suivre la production et télécharger votre vidéo finale.</p>
-      <div style="display:flex;gap:10px;margin-top:14px">
-        <input id="trackOrderInput" placeholder="DSQ-000001" style="flex:1;background:#171d2c;border:1px solid #454a5e;color:#fff;padding:11px 14px;border-radius:10px">
-        <button type="button" class="pill secondary" id="trackOrderBtn" data-i18n="btnTrackCheck">Vérifier</button>
+      <div class="support-fields">
+        <label for="trackOrderInput" data-i18n="trackNumber">Numéro de commande</label>
+        <div class="tracking-controls"><input id="trackOrderInput" placeholder="DSQ-000001" style="flex:1;background:#171d2c;border:1px solid #454a5e;color:#fff;padding:11px 14px;border-radius:10px">
+        <button type="button" class="pill secondary" id="trackOrderBtn" data-i18n="btnTrackCheck">Vérifier</button></div>
       </div>
       <div class="track-result" id="trackResultBox" aria-live="polite"></div>
     </div>
@@ -1323,9 +1331,11 @@ body{background:#090a0c}
       <span class="kicker">Anton — DEEPSYQ Creative Studio</span>
       <h3 data-i18n="agentTitle">Une question avant de commander ?</h3>
       <p class="fine" data-i18n="agentDesc">Écrivez votre question dans votre langue (tarifs, absence de logo, durée personnalisée, exemple). Notre consultant vous répond immédiatement.</p>
-      <div style="display:grid;gap:10px;margin-top:12px">
+      <div class="support-fields">
+        <label for="agentAskEmail" data-i18n="agentEmail">E-mail (facultatif)</label>
         <input id="agentAskEmail" type="email" placeholder="votre@email.com" style="background:#171d2c;border:1px solid #454a5e;color:#fff;padding:10px 14px;border-radius:10px">
-        <input id="agentAskText" placeholder="Ex. Quel est le délai pour le pack Medium à 15 € sans logo ?" style="background:#171d2c;border:1px solid #454a5e;color:#fff;padding:10px 14px;border-radius:10px">
+        <label for="agentAskText" data-i18n="agentQuestion">Votre question</label>
+        <textarea id="agentAskText" rows="3" style="background:#171d2c;border:1px solid #454a5e;color:#fff;padding:10px 14px;border-radius:10px"></textarea>
         <button type="button" class="pill secondary" id="agentAskBtn" data-i18n="btnAgentAsk">Obtenir une réponse immédiate</button>
       </div>
       <div class="track-result" id="agentReplyBox" aria-live="polite" style="white-space:pre-line"></div>
@@ -1437,7 +1447,7 @@ const CURRENCY_RATES={
 
 const I18N={
   fr:{
-    dir:"ltr",
+    trackTitle:"Suivi de commande",agentTitle:"Une question pour le studio ?",optLogoUpload:"Utiliser mon logo",optLogoText:"Signature texte",optLogoCreate:"Créer un logo (+25 €)",lblLogoFile:"Téléverser votre logo",trackNumber:"Numéro de commande",agentEmail:"E-mail (facultatif)",agentQuestion:"Votre question",btnTrackCheck:"Vérifier le statut",btnAgentAsk:"Envoyer la question",dir:"ltr",
     navExamples:"Exemples",heroExamples:"Voir les exemples",btnOrderCustom:"Obtenir un devis",
     navPricing:"Tarifs (5 € – 55 €)",
     navServices:"Services +",
@@ -1452,13 +1462,13 @@ const I18N={
     galleryKicker:"La collection créative DEEPSYQ",
     galleryTitle:"Choisissez votre <em>style vidéo</em>",
     pricingTitle:"Choisissez votre formule",
-    addonsTitle:"Aidons votre entreprise à devenir encore plus visible",
+    addonsTitle:"Services complémentaires",
     orderTitle:"Configurez votre vidéo publicitaire",
     btnPayStripe:"Payer & Commander en ligne",
     btnMailto:"Préparer mon e-mail de demande"
   },
   en:{
-    dir:"ltr",
+    trackTitle:"Order Tracking",agentTitle:"Ask the Studio",optLogoUpload:"Use my logo",optLogoText:"Text only",optLogoCreate:"Create a logo (+25 €)",lblLogoFile:"Upload your logo",trackNumber:"Order number",agentEmail:"Email (optional)",agentQuestion:"Your question",btnTrackCheck:"Check status",btnAgentAsk:"Send question",dir:"ltr",
     navExamples:"Video Examples",
     galleryDesc:"Find a style that suits your business.",
     pricingDesc:"Professional videos for every business.",heroExamples:"See Examples",
@@ -1478,7 +1488,7 @@ const I18N={
     galleryKicker:"VIDEO SHOWCASE",
     galleryTitle:"Choose your <em>video style</em>",
     pricingTitle:"Choose your package",
-    addonsTitle:"Help your business become even more visible",
+    addonsTitle:"Optional Services",
     orderTitle:"Configure your promotional video order",
     btnPayStripe:"Proceed to Checkout",
     btnMailto:"Prepare Inquiry Email"
@@ -1604,7 +1614,7 @@ const I18N={
     btnMailto:"Preparar e-mail de pedido"
   },
   ru:{
-    dir:"ltr",
+    trackTitle:"Статус заказа",agentTitle:"Вопрос студии",optLogoUpload:"Использовать мой логотип",optLogoText:"Только текст",optLogoCreate:"Создать логотип (+25 €)",lblLogoFile:"Загрузить логотип",trackNumber:"Номер заказа",agentEmail:"Эл. почта (необязательно)",agentQuestion:"Ваш вопрос",btnTrackCheck:"Проверить статус",btnAgentAsk:"Отправить вопрос",dir:"ltr",
     navExamples:"Примеры видео",heroExamples:"Смотреть примеры",btnOrderCustom:"Рассчитать стоимость",
     navPricing:"Пакеты (5 € – 55 €)",
     navServices:"Доп. услуги",
@@ -1619,7 +1629,7 @@ const I18N={
     galleryKicker:"Креативная коллекция DEEPSYQ",
     galleryTitle:"примеров рекламных видео.<br>Выберите стиль для вашего бизнеса.",
     pricingTitle:"Три понятных пакета под ваши задачи",
-    addonsTitle:"Поможем вашему бизнесу стать заметнее",
+    addonsTitle:"Дополнительные услуги",
     orderTitle:"Оформление заказа на рекламное видео",
     btnPayStripe:"Оплатить заказ через Stripe Checkout",
     btnMailto:"Подготовить письмо-запрос"
@@ -1861,12 +1871,49 @@ function selectedServices(){
   if(document.getElementById("logoOption").value==="create_logo")services.add("logo_creation");
   return services;
 }
+const packageNames={basic:"Basic",medium:"Medium",professional:"Professional",custom_studio:"Custom Studio"};
+let orderPackageChosen=false;
+function renderPackageSettings(pkg){
+  const fixed=orderPackageChosen&&pkg!=="custom_studio";
+  const panel=document.getElementById("fixedPackage");
+  panel.hidden=!fixed;
+  document.getElementById("studioControls").hidden=fixed;
+  const title=document.querySelector(".cs-heading h2");
+  title.textContent=fixed?packageNames[pkg]+" · "+(I18N[state.lang]?.orderDetailsTitle||"Your Order Details"):I18N[state.lang]?.studioTitle||I18N.en.studioTitle;
+  document.querySelector(".cs-heading p").hidden=fixed;
+  if(!fixed)return;
+  const card=document.querySelector(`[data-pkg-card="${pkg}"]`);
+  document.getElementById("fixedPackageTitle").textContent=packageNames[pkg];
+  document.getElementById("fixedPackageMeta").textContent=`${PKG_DURATIONS[pkg]}s · ${formatMoneyFromEur(PKG_PRICES_EUR[pkg])}`;
+  const features=card.querySelectorAll("li");
+  document.getElementById("fixedPackageFeatures").replaceChildren(...Array.from(features,item=>{
+    const li=document.createElement("li");
+    li.textContent=item.textContent;
+    return li;
+  }));
+}
+function selectOrderPackage(pkg){
+  const previous=state.selectedPkg;
+  orderPackageChosen=true;
+  document.getElementById("packageSelect").value=pkg;
+  if(pkg==="custom_studio"){
+    document.getElementById("videoFormat").value=document.getElementById("csFormat").value;
+  }else if(previous!==pkg||!document.getElementById("fixedPackage").matches(":not([hidden])")){
+    state.selectedAddons.clear();
+    const format=document.getElementById("videoFormat");
+    if(format.value!=="16:9")format.value="9:16";
+    document.getElementById("logoOption").value=state.logoDataUrl?"upload":"text_only";
+    renderAddons();
+  }
+  updateSummary();
+}
 function updateSummary(){
-  document.getElementById("csLogo").value=document.getElementById("logoOption").value;
+  document.getElementById("logoUploadPanel").hidden=document.getElementById("logoOption").value!=="upload";
   document.getElementById("csImages").value=state.selectedAddons.has("social_promo_visuals")?"5":"0";
   const customQuote=calculateCustomStudioLocal();
   const pkg=document.getElementById("packageSelect").value||"medium";
   state.selectedPkg=pkg;
+  renderPackageSettings(pkg);
   const format=document.getElementById("videoFormat").value||"9:16";
 
 
@@ -2034,10 +2081,6 @@ for(const [id,labels] of Object.entries(studioOptions)){
 }
 syncStudioButtons();
 
-document.getElementById("csLogo").addEventListener("change",event=>{
-  document.getElementById("logoOption").value=event.target.value;
-  updateSummary();
-});
 document.getElementById("csImages").addEventListener("change",event=>{
   if(event.target.value==="5")state.selectedAddons.add("social_promo_visuals");
   else state.selectedAddons.delete("social_promo_visuals");
@@ -2076,10 +2119,8 @@ document.getElementById("resetCustomStudioBtn")?.addEventListener("click",()=>{
 document.querySelectorAll("[data-select-pkg]").forEach(btn=>{
   btn.addEventListener("click",()=>{
     const pkg=btn.getAttribute("data-select-pkg");
-    document.getElementById("packageSelect").value=pkg;
-    if(pkg==="custom_studio")document.getElementById("videoFormat").value=document.getElementById("csFormat").value;
-    updateSummary();
-    document.getElementById(pkg==="custom_studio"?"customStudioConfigurator":"commande").scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});
+    selectOrderPackage(pkg);
+    document.getElementById("customStudioConfigurator").scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});
   });
 });
 
@@ -2088,11 +2129,11 @@ document.querySelectorAll("[data-select-pkg]").forEach(btn=>{
   if(el){
     el.addEventListener("change",()=>{
       if(id==="videoFormat"&&state.selectedPkg==="custom_studio")setOrderFormat(el.value);
-      if(id==="packageSelect"&&el.value==="custom_studio")document.getElementById("videoFormat").value=document.getElementById("csFormat").value;
+      if(id==="packageSelect"){selectOrderPackage(el.value);return;}
       renderAddons();
       updateSummary();
     });
-    el.addEventListener("input",updateSummary);
+    if(id!=="packageSelect")el.addEventListener("input",updateSummary);
   }
 });
 
@@ -2104,7 +2145,7 @@ document.getElementById("logoUpload").addEventListener("change",(ev)=>{
     if(typeof reader.result==="string"){
       state.logoDataUrl=reader.result;
       document.getElementById("livePreviewLogoImg").src=reader.result;
-      document.getElementById("logoOption").value="upload";
+      updateSummary();
     }
   };
   reader.readAsDataURL(file);
@@ -2163,7 +2204,7 @@ document.getElementById("stripeCheckoutBtn").addEventListener("click",async(even
     languageCode:state.lang,
     currency:state.currency,
     logoOption:document.getElementById("logoOption").value,
-    logoDataUrl:state.logoDataUrl,
+    logoDataUrl:document.getElementById("logoOption").value==="upload"?state.logoDataUrl:null,
     addressOrContact:document.getElementById("contactCard").value.trim(),
     customWishes:[
       document.getElementById("brief").value.trim(),

@@ -619,3 +619,5 @@ Production `fc8fc614-bbe6-4c78-8aa9-f4a78a38020e`, [выпуск #43501433353](h
 - 2026-11-15 — Sales design preview: generated villa cover, centered Shorts triplet, Custom Studio option buttons and live quotes, checkout details beside FAQ, commercial comparison retained near the bottom. Preview only.
 
 - 2026-11-15 — Unified video configuration, buyer details and live summary in one responsive sales order panel with one Stripe checkout action. FAQ follows the panel. Sales preview only.
+
+- 2026-11-15 — Sales preview: fixed-package order presets and automatic base totals, conditional logo upload in shared form, streamlined FAQ, extras and support panels.
