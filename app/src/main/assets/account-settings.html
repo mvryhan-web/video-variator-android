@@ -457,7 +457,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   try{
    const custom=localStorage.getItem('deepsyq_site_theme');
    if(customThemes.has(custom))return custom;
-   return localStorage.getItem('vu_theme')||'dark';
+   const previous=localStorage.getItem('vu_theme');
+   if(classicThemes.has(previous))return previous;
+   // Match the shared theme loader for first-time visitors only.
+   if(custom===null&&previous===null)return 'christmas';
+   return 'dark';
   }catch{return theme.value||'dark'}
  };
  const reflectTheme=()=>themes.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.accountTheme===activeAppearance())));

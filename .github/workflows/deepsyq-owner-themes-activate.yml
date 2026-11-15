@@ -1,4 +1,5 @@
 name: DEEPSYQ owner appearance carousel — production activation only
+# Owner request 2026-11-15: new visitors default to Christmas; saved choices unchanged.
 # verification rerun: canonical Worker may transform account HTML; UI-content verification only.
 on:
   push:
@@ -26,7 +27,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Verify six original-and-new choices, one scoped JARVIX composer style and unchanged other UI
+      - name: Verify only first-visitor Christmas default and original six choices
         shell: bash
         run: |
           set -euo pipefail
@@ -43,6 +44,10 @@ jobs:
           assert(page.includes("theme.value=classicThemes.has(value)?value:'dark'"));
           const loader=fs.readFileSync('app/src/main/assets/deepsyq-theme-loader.js','utf8');
           assert(loader.includes("const classic=new Set(['light','dark','system'])"));
+          assert(loader.includes("else if(!saved&&previousClassic===null)apply('christmas',false);"));
+          assert(loader.includes("if(variants.has(saved))apply(saved,false);"));
+          assert(loader.includes("else if(classic.has(previousClassic))apply(previousClassic,false);"));
+          assert(page.includes("if(custom===null&&previous===null)return 'christmas';"));
           const snow=fs.readFileSync('app/src/main/assets/deepsyq-christmas-v4.css','utf8');
           assert(snow.includes('main.jarvix-chat .j-chat-bottom form#jChatForm.jarvix-compose'));
           for(const id of ['accountLanguage','accountAppearance','themeChoice','accountTabs','accountHeroSignIn','manageBillingBtn','cancelSubscriptionBtn']){
@@ -54,17 +59,11 @@ jobs:
           assert(shell.includes("import './deepsyq-theme-loader.js';"));
           const diff=await import('node:child_process');
           const changed=diff.execFileSync('git',['diff','--name-only','HEAD^','HEAD'],{encoding:'utf8'}).trim().split('\n').filter(Boolean).sort();
-          const initialScope=[
+          assert.deepEqual(changed,[
             '.github/workflows/deepsyq-owner-themes-activate.yml',
             'app/src/main/assets/account-settings.html',
-            'app/src/main/assets/deepsyq-christmas-v4.css',
-            'app/src/main/assets/deepsyq-theme-loader.js',
-            'scripts/deepsyq_surgical_publish.py'
-          ];
-          const verificationFix=['.github/workflows/deepsyq-owner-themes-activate.yml'];
-          assert(changed.join('|')===initialScope.join('|')||
-                 changed.join('|')===verificationFix.join('|'),
-                 'Unexpected source changes outside approved appearance activation');
+            'app/src/main/assets/deepsyq-theme-loader.js'
+          ],'Unexpected changes outside first-visitor theme default');
           console.log('EXACT_OWNER_APPEARANCE_SCOPE_PASS',buttons);
           NODE
       - name: Verify all Christmas assets were already published BEFORE activating controls
@@ -111,6 +110,7 @@ jobs:
             "https://deepsyq.app/deepsyq-theme-loader.js?owner-themes=$GITHUB_SHA" \
             --output /tmp/deepsyq-owner-theme-loader.js
           grep -Fq "const classic=new Set(['light','dark','system'])" /tmp/deepsyq-owner-theme-loader.js
+          grep -Fq "else if(!saved&&previousClassic===null)apply('christmas',false);" /tmp/deepsyq-owner-theme-loader.js
           curl --fail --silent --show-error --retry 4 --max-time 20 \
             "https://deepsyq.app/deepsyq-christmas-v4.css?owner-themes=$GITHUB_SHA" \
             --output /tmp/deepsyq-owner-christmas-v4.css

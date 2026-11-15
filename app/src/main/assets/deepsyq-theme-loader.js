@@ -71,7 +71,14 @@
  };
  window.deepsyqSetAppearance=value=>apply(value,true);
  const saved=selected();
+ // Christmas is the visual default ONLY for visitors without a saved choice.
+ // Never persist the default: explicit Light/Dark/System/Brown/Black/Christmas
+ // preferences continue to take precedence on subsequent visits.
+ let previousClassic=null;
+ try{previousClassic=localStorage.getItem('vu_theme')}catch{}
  if(variants.has(saved))apply(saved,false);
+ else if(classic.has(previousClassic))apply(previousClassic,false);
+ else if(!saved&&previousClassic===null)apply('christmas',false);
  else if(classic.has(legacyTheme()))apply(legacyTheme(),false);
  ensureStyle('deepsyq-theme-styles.css');
  media.addEventListener('change',()=>{
