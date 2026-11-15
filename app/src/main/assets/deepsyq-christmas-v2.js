@@ -11,6 +11,31 @@
  const make=(tag,cls)=>{const el=document.createElement(tag);el.className=cls||'';return el};
  const later=(fn,ms)=>{const id=setTimeout(()=>{timeouts.delete(id);if(enabled)fn()},ms);timeouts.add(id)};
  const stageEnabled=()=>root.dataset.siteTheme==='christmas';
+
+ // Long owner portrait follows scroll instead of remaining a frozen background.
+ // Works with both window scrolling and nested creator/chat scroll panes.
+ let sceneryRAF=0;
+ let sceneryProgress=0;
+ const panScenery=(scrollTop)=>{
+  const travel=Math.max(1100,Math.min(2400,(innerHeight||800)*2));
+  sceneryProgress=Math.max(0,Math.min(100,scrollTop/travel*100));
+  root.style.setProperty('--xmas-photo-position',sceneryProgress.toFixed(2)+'%');
+  root.dataset.xmasPhotoPan=Math.round(sceneryProgress).toString();
+ };
+ const onScroll=(event)=>{
+  if(!stageEnabled()||sceneryRAF)return;
+  const element=event?.target;
+  const isScrollPane=element instanceof Element &&
+    element.scrollHeight>element.clientHeight+20 &&
+    element.clientHeight>80;
+  const position=isScrollPane?element.scrollTop:
+    (window.scrollY||document.scrollingElement?.scrollTop||0);
+  sceneryRAF=requestAnimationFrame(()=>{
+   sceneryRAF=0;
+   if(stageEnabled())panScenery(position);
+  });
+ };
+
  const costumes=[['#c74753','#c74552'],['#e7d8c7','#ca726c'],['#467092','#6c8ab0'],['#d3a062','#bb7759'],['#5d8373','#546d66']];
  const selectors=['#sidebar','.ds-site-sidebar','.sidebar','.topbar','body>header','header','.hero-stage','.panel','.tool-card','.app-card','.card','.home-create-card','.home-feature-spotlight','.feature-card','.price-card','.studio-card','.tool-tile','.jarvix-compose','.j-neon-composer','.creative-example-card','.studio-panel','.subscription-card','.price-hero','.price-plans-area','.price-credits-area','.price-credit-hero','.price-five-grid','.price-credit-grid','.price-wallet-area','.j-workspace-header','.j-workspace-pane','.j-chat-toolbar'];
  const activeTargets=()=>document.querySelectorAll('.xmas-mini-stage');
@@ -244,6 +269,7 @@
  }
  function start(){
   if(enabled)return;enabled=true;
+  panScenery(window.scrollY||document.scrollingElement?.scrollTop||0);
   snowcaps();walkOnPanels();snow();
   if(!reduced.matches)battleRAF=requestAnimationFrame(combat);
   for(const ms of [600,1900,3800,7000])later(()=>{snowcaps();walkOnPanels()},ms);
@@ -251,6 +277,7 @@
  function stop(){
   if(!enabled)return;enabled=false;
   cancelAnimationFrame(battleRAF);cancelAnimationFrame(snowRAF);
+  cancelAnimationFrame(sceneryRAF);sceneryRAF=0;
   battleRAF=snowRAF=0;
   timeouts.forEach(clearTimeout);timeouts.clear();
   for(const [stage,state] of scenes){
@@ -277,6 +304,8 @@
   // Late-rendered cards are decorated without re-creating earlier effects.
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&enabled){snowcaps();walkOnPanels()}});
   window.addEventListener('resize',resize,{passive:true});
+  document.addEventListener('scroll',onScroll,{capture:true,passive:true});
+  window.addEventListener('scroll',onScroll,{passive:true});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
