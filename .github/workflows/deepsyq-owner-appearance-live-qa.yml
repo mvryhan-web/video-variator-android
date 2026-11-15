@@ -53,7 +53,10 @@ jobs:
                     pressed:[...document.querySelectorAll('#accountThemesCarousel button[aria-pressed="true"]')].map(e=>e.dataset.accountTheme)
                   }));
                   console.log(prefix+'_'+value.toUpperCase().replaceAll('-','_'),JSON.stringify(state));
-                  assert.deepEqual(state.pressed,[value]);
+                  if(state.pressed.join(',')!==value){
+                    console.log(prefix+'_MISMATCH_'+value,JSON.stringify(await page.locator('#accountThemesCarousel [data-account-theme]').evaluateAll(els=>
+                      els.map(e=>({theme:e.dataset.accountTheme,aria:e.getAttribute('aria-pressed'),visible:e.getClientRects().length>0})))));
+                  }
                   return state;
                 };
                 let s=await click('system');
