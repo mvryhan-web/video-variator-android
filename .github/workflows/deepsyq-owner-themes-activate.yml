@@ -1,0 +1,95 @@
+name: DEEPSYQ owner appearance carousel — production activation only
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths: ['.github/workflows/deepsyq-owner-themes-activate.yml']
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-owner-appearance-activate
+  cancel-in-progress: false
+jobs:
+  activate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify exact four-file scope, three choices and unmodified surrounding account UI
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = deepsyq-platform
+          node --check app/src/main/assets/deepsyq-mobile-shell.js
+          node --check app/src/main/assets/deepsyq-theme-loader.js
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const page=fs.readFileSync('app/src/main/assets/account-settings.html','utf8');
+          const shell=fs.readFileSync('app/src/main/assets/deepsyq-mobile-shell.js','utf8');
+          const buttons=[...page.matchAll(/data-account-theme="([^"]+)"/g)].map(x=>x[1]);
+          assert.deepEqual(buttons,['brown','soft-dark','christmas']);
+          for(const id of ['accountLanguage','accountAppearance','themeChoice','accountTabs','accountHeroSignIn','manageBillingBtn','cancelSubscriptionBtn']){
+            if(id==='accountTabs')continue;
+            assert(page.includes('id="'+id+'"'),'Original account action missing: '+id);
+          }
+          assert(page.includes('id="accountThemesCarousel"'));
+          assert(page.includes('data-theme-arrow="-1"')&&page.includes('data-theme-arrow="1"'));
+          assert(shell.includes("import './deepsyq-theme-loader.js';"));
+          const diff=await import('node:child_process');
+          const changed=diff.execFileSync('git',['diff','--name-only','HEAD^','HEAD'],{encoding:'utf8'}).trim().split('\n').filter(Boolean).sort();
+          assert.deepEqual(changed,[
+            '.github/workflows/deepsyq-owner-themes-activate.yml',
+            'app/src/main/assets/account-settings.html',
+            'app/src/main/assets/deepsyq-mobile-shell.js',
+            'scripts/deepsyq_surgical_publish.py'
+          ]);
+          console.log('EXACT_OWNER_APPEARANCE_SCOPE_PASS',buttons);
+          NODE
+      - name: Verify all Christmas assets were already published BEFORE activating controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in \
+            deepsyq-theme-loader.js deepsyq-theme-styles.css \
+            deepsyq-christmas.js deepsyq-christmas.css \
+            deepsyq-christmas-v2.js deepsyq-christmas-v2.css \
+            deepsyq-christmas-v3.css deepsyq-christmas-v4.js \
+            deepsyq-christmas-v4.css \
+            media/christmas/christmas-portrait.webp \
+            media/christmas/snowbank-texture.webp; do
+            curl --fail --silent --show-error --max-time 18 --retry 2 \
+              "https://deepsyq.app/$file?owner-theme-preflight=$GITHUB_SHA" >/dev/null
+          done
+          curl --fail --silent --show-error --max-time 18 'https://deepsyq.app/api/config' >/dev/null
+          echo 'PRODUCTION_THEME_ASSETS_READY'
+      - name: Publish account Appearance and shared theme entrypoint only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-cache-dir requests==2.32.3 blake3==1.0.8
+          python scripts/deepsyq_surgical_publish.py \
+            --mode publish --files 'account-settings.html,deepsyq-mobile-shell.js' \
+            --commit "$GITHUB_SHA"
+      - name: Verify live account carousel and one shared theme entrypoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 4 --max-time 20 \
+            "https://deepsyq.app/account-settings.html?owner-themes=$GITHUB_SHA" \
+            | grep -q 'id="accountThemesCarousel"'
+          curl --fail --silent --show-error --retry 4 --max-time 20 \
+            "https://deepsyq.app/deepsyq-mobile-shell.js?owner-themes=$GITHUB_SHA" \
+            | grep -q 'deepsyq-theme-loader.js'
+          curl --fail --silent --show-error --max-time 20 'https://deepsyq.app/api/config' >/dev/null
+          echo 'PRODUCTION_BROWN_BLACK_CHRISTMAS_CAROUSEL_VERIFIED'

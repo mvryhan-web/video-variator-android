@@ -55,6 +55,7 @@ QUICK_START_V3_RELEASE = QUICK_START_ART_V3 | {"home-inspiration.js", "jarvix-ne
 ACCOUNT_DESIGN_ART = frozenset({"media/account-settings/account-hero.webp", "media/account-settings/account-membership.webp", "media/account-settings/account-android.webp", "media/account-settings/account-pricing.webp"})
 ACCOUNT_DESIGN_RELEASE = ACCOUNT_DESIGN_ART | {"account-settings.html"}
 THEME_ASSET_RELEASE = frozenset(["deepsyq-theme-loader.js","deepsyq-theme-styles.css","deepsyq-christmas.css","deepsyq-christmas.js","deepsyq-christmas-v2.css","deepsyq-christmas-v2.js","deepsyq-christmas-v3.css","deepsyq-christmas-v4.css","deepsyq-christmas-v4.js","media/christmas/christmas-portrait.webp","media/christmas/snowbank-texture.webp"])  # owner-approved staged appearance-only assets
+THEME_ACTIVATION_RELEASE = frozenset({"account-settings.html", "deepsyq-mobile-shell.js"})  # existing UI only
 
 
 def approved_new_assets(paths):
@@ -75,6 +76,7 @@ def approved_new_assets(paths):
 
 HASH_REUSE_RELEASE_SETS = (
     THEME_ASSET_RELEASE,
+    THEME_ACTIVATION_RELEASE,
     frozenset({"admin-access.js", "trial-quality.js", "video-uniquifier.html"}),    frozenset({"jarvix-new-voice.js", "jarvix-new-recorded-dialog.js"}),
     frozenset({"jarvix-chat.js", "jarvis-core.js", "generate-studio.js"}),
     frozenset({"jarvix-chat.js", "jarvix-chat.html"}),
@@ -627,8 +629,8 @@ def main():
         # Frontend-only guest sign-in release reconstructs the untouched Worker
         # from the verified LIVE origin, never from the unrelated DEV HEAD.
         # All other release scopes retain their existing strict Worker equality gate.
-        if paths == ["deepsyq-mobile-shell.js"] or paths == ["contact.html"] or frozenset(paths) in (frozenset({"free-tools.html", "everyday-tools-visual.css"}), THEME_ASSET_RELEASE):
-            if frozenset(paths) == THEME_ASSET_RELEASE:
+        if paths == ["deepsyq-mobile-shell.js"] or paths == ["contact.html"] or frozenset(paths) in (frozenset({"free-tools.html", "everyday-tools-visual.css"}), THEME_ASSET_RELEASE, THEME_ACTIVATION_RELEASE):
+            if frozenset(paths) in (THEME_ASSET_RELEASE, THEME_ACTIVATION_RELEASE):
                 insist(saved_worker == task_worker, "Active production Worker source is different from current GitHub; no theme release")
             insist(bool(saved_worker and task_worker), "Worker provenance unavailable")
             print("GUEST_AUTH_ONLY: canonical LIVE Worker pinned; DEV Worker never published")

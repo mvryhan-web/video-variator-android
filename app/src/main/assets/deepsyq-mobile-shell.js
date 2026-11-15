@@ -1,6 +1,7 @@
 import {applyCanonicalNavIcons} from './deepsyq-canonical-nav-icons.js';
 import {installApprovedJarvixOrb} from './jarvix-approved-orb.js';
 import {installUnifiedPlatformHeader} from './deepsyq-unified-platform-header.js';
+import './deepsyq-theme-loader.js';
 // Owner mobile reference, 2026-11-05. Keep existing buttons and their handlers.
 export function drawerSwipe(start, end, open, width) {
   if (!start || Math.abs(end.y - start.y) > 45 || end.time - start.time > 700) return null;
