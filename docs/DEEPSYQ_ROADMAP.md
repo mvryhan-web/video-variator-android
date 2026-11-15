@@ -868,3 +868,5 @@ For every block:
 - 2026-11-15 — Unified video configuration, buyer details and live summary in one responsive sales order panel with one Stripe checkout action. FAQ follows the panel. Sales preview only.
 
 - 2026-11-15 — Sales preview: fixed-package order presets and automatic base totals, conditional logo upload in shared form, streamlined FAQ, extras and support panels.
+
+- 2026-11-15 — Sales preview: scroll the logo upload into view on selection and route contact to the support mailbox.

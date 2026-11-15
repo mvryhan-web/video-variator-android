@@ -804,7 +804,9 @@ body{background:#090a0c}
 /* Preset orders and shared branding fields */
 #projectForm .logo-upload-panel[hidden],#studioControls[hidden],#fixedPackage[hidden]{display:none!important}
 #projectForm .logo-upload-panel{padding:10px;border:1px dashed #987848;border-radius:10px;background:#b4893b10}
+#projectForm>label.logo-upload-panel{grid-template-columns:minmax(0,1fr);gap:8px;scroll-margin:95px 0 20px}
 #logoUpload{font-size:13px;padding:6px}
+#logoUpload::file-selector-button{background:#f2c675;color:#19120b;border:0;border-radius:7px;padding:9px 11px;margin-inline-end:10px;cursor:pointer}
 .fixed-package h3{margin:0;font-size:25px}
 .fixed-package p{color:#f4cd88;margin:7px 0}
 .fixed-package ul{margin:10px 0;padding-inline-start:21px;line-height:1.7}
@@ -1185,7 +1187,7 @@ body{background:#090a0c}
       <label class="full"><span data-i18n="lblBrief">Parlez-nous de votre idée (modifiable après commande)</span>
         <textarea id="brief" maxlength="1800" placeholder="Ce que vous souhaitez montrer, votre offre, vos couleurs, votre slogan…"></textarea>
       </label>
-      <label><span data-i18n="lblLogoOption">Option Logo</span>
+      <label class="full"><span data-i18n="lblLogoOption">Option Logo</span>
         <select id="logoOption" aria-controls="logoUploadPanel">
           <option value="upload" data-i18n="optLogoUpload">Utiliser mon logo</option>
           <option value="text_only" data-i18n="optLogoText">Pas de logo — signature texte élégante (0 €)</option>
@@ -1193,7 +1195,7 @@ body{background:#090a0c}
         </select>
       </label>
 
-      <label id="logoUploadPanel" class="logo-upload-panel" hidden><span data-i18n="lblLogoFile">Fichier logo (possible aussi après paiement)</span>
+      <label id="logoUploadPanel" class="full logo-upload-panel" hidden aria-live="polite"><span data-i18n="lblLogoFile">Fichier logo (possible aussi après paiement)</span>
         <input id="logoUpload" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
       </label>
 
@@ -1399,7 +1401,7 @@ body{background:#090a0c}
 </div>
 <footer class="shell">
   <span>© DEEPSYQ · Creation Studio (Done For You) · Système international de vente &amp; production vidéo</span>
-  <span>Contact : <a href="mailto:mvryhan@gmail.com">mvryhan@gmail.com</a> · <a href="https://sales-preview-20261115.deepsyq.pages.dev/contact.html">Support (help@deepsyq.app)</a> · <a href="https://sales-preview-20261115.deepsyq.pages.dev/deepsyq.html">Plateforme DEEPSYQ</a> · </span>
+  <span><a href="mailto:help@deepsyq.app">Support (help@deepsyq.app)</a></span>
 </footer>
 
 <script>
@@ -2132,6 +2134,9 @@ document.querySelectorAll("[data-select-pkg]").forEach(btn=>{
       if(id==="packageSelect"){selectOrderPackage(el.value);return;}
       renderAddons();
       updateSummary();
+      if(id==="logoOption"&&el.value==="upload"){
+        document.getElementById("logoUploadPanel").scrollIntoView({block:"nearest"});
+      }
     });
     if(id!=="packageSelect")el.addEventListener("input",updateSummary);
   }
@@ -2264,7 +2269,7 @@ document.getElementById("projectForm").addEventListener("submit",(event)=>{
         brief=document.getElementById("brief").value.trim();
   const subject="DEEPSYQ · Demande de vidéo ("+pkg+") · "+c;
   const message="Bonjour DEEPSYQ,\n\nJe souhaite commander / recevoir une proposition pour une vidéo publicitaire.\n\nEntreprise : "+c+"\nE-mail : "+e+"\nForfait : "+pkg+"\nFormat : "+fmt+"\nSecteur : "+sector+"\nStyle : "+style+"\nCoordonnées vidéo : "+(contactCard||"À préciser")+"\nServices + : "+(Array.from(state.selectedAddons).join(", ")||"Aucun")+"\nBrief : "+(brief||"À préciser ensemble")+"\n\nMerci de me contacter pour le suivi.\n";
-  window.location.href="mailto:mvryhan@gmail.com?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(message);
+  window.location.href="mailto:help@deepsyq.app?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(message);
 });
 
 // Order Tracking Lookup
@@ -2319,10 +2324,10 @@ document.getElementById("agentAskBtn").addEventListener("click",async()=>{
     if(data.ok&&data.agentReply){
       replyBox.textContent=data.agentReply.bodyText;
     }else{
-      replyBox.textContent="Merci ! Contactez-nous directement sur mvryhan@gmail.com.";
+      replyBox.textContent="Merci ! Contactez-nous directement sur help@deepsyq.app.";
     }
   }catch{
-    replyBox.textContent="Merci ! Contactez-nous sur mvryhan@gmail.com.";
+    replyBox.textContent="Merci ! Contactez-nous sur help@deepsyq.app.";
   }
 });
 
