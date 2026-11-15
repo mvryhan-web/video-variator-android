@@ -579,6 +579,9 @@ def main():
     # Never publish a changed or replaced Worker via a front-end-only patch.
     saved_worker = checked_git("rev-parse", origin + ":app/src/main/assets/_worker.js")
     task_worker = checked_git("rev-parse", "HEAD:app/src/main/assets/_worker.js")
+    legacy_voice_cleanup = frozenset(paths) == frozenset(
+        {"jarvis-core.js", "jarvix-composer-design.js", "jarvix-new-voice.js"})
+    deployment_sha = origin if legacy_voice_cleanup else sha
     chat_worker = None
     if args.chat_worker:
         insist(live_id == "542e763c-feb8-4d6f-9312-53f18f904c02" or saved_worker == task_worker,
@@ -632,7 +635,10 @@ def main():
         # Frontend-only guest sign-in release reconstructs the untouched Worker
         # from the verified LIVE origin, never from the unrelated DEV HEAD.
         # All other release scopes retain their existing strict Worker equality gate.
-        if paths == ["deepsyq-mobile-shell.js"] or paths == ["contact.html"] or frozenset(paths) in (frozenset({"free-tools.html", "everyday-tools-visual.css"}), THEME_ASSET_RELEASE, THEME_ACTIVATION_RELEASE, THEME_SEASON_RELEASE):
+        if legacy_voice_cleanup:
+            # This asset-only patch keeps the canonical Worker provenance for future releases.
+            print("JARVIX_ASSETS_ONLY: canonical LIVE Worker pinned")
+        elif paths == ["deepsyq-mobile-shell.js"] or paths == ["contact.html"] or frozenset(paths) in (frozenset({"free-tools.html", "everyday-tools-visual.css"}), THEME_ASSET_RELEASE, THEME_ACTIVATION_RELEASE, THEME_SEASON_RELEASE):
             if frozenset(paths) in (THEME_ASSET_RELEASE, THEME_ACTIVATION_RELEASE, THEME_SEASON_RELEASE):
                 insist(saved_worker == task_worker, "Active production Worker source is different from current GitHub; no theme release")
             insist(bool(saved_worker and task_worker), "Worker provenance unavailable")
@@ -662,13 +668,13 @@ def main():
         # the tour-only escape hatch preserves the original LIVE manifest
         # by hash rather than guessing content or changing unrelated routes.
         try:
-            if args.workspace_security or args.credit_worker or args.chat_worker or args.email_worker or args.new_voice:
+            if legacy_voice_cleanup or args.workspace_security or args.credit_worker or args.chat_worker or args.email_worker or args.new_voice:
                 raise Blocked("Use unchanged production asset manifest")
             stage, candidate, changed, from_live, expected_bytes = build_candidate(
                 live, paths, origin, work)
             direct_manifest = False
         except Blocked as error:
-            insist(args.workspace_security or args.credit_worker or args.chat_worker or args.email_worker or args.new_voice or (allowed_hash_reuse(paths) and
+            insist(legacy_voice_cleanup or args.workspace_security or args.credit_worker or args.chat_worker or args.email_worker or args.new_voice or (allowed_hash_reuse(paths) and
                    str(error).startswith("Could not reproduce unchanged LIVE asset bytes:")),
                    str(error))
             expected_bytes = {rel: (ROOT / rel).read_bytes() for rel in paths}
@@ -725,7 +731,7 @@ def main():
         insist(current_id == live_id and current_worker == worker,
                "Concurrent production update detected; no deploy")
         if direct_manifest:
-            deployed_id = cloudflare.tour_manifest_deploy(candidate, expected_bytes, sha, worker, origin, chat_worker, args.new_voice, args.email_worker)
+            deployed_id = cloudflare.tour_manifest_deploy(candidate, expected_bytes, deployment_sha, worker, origin, chat_worker, args.new_voice, args.email_worker)
         else:
             run_wrangle(stage, sha)
             deployed_id = None
@@ -738,6 +744,7 @@ def main():
                     newest = now
                     insist(not deployed_id or newest == deployed_id, "Concurrent deployment detected")
                     insist(not (args.workspace_security or args.credit_worker or args.chat_worker or args.email_worker) or deployed_commit == sha, "Unexpected Worker release commit")
+                    insist(not legacy_voice_cleanup or deployed_commit == origin, "LIVE Worker provenance changed")
                     insist(actual == candidate, "NEW_DEPLOYMENT_ASSET_DIFFERS")
                     insist(script == worker, "NEW_DEPLOYMENT_WORKER_CHANGED")
                     new_settings = cloudflare.worker_settings(script)
