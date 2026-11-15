@@ -91,7 +91,7 @@ jobs:
                       })[0];
                       if(!node)throw Error('Could not locate the exact card for its snow cap: '+cap.dataset.snowFor);
                       const host=cap.parentElement,hr=host.getBoundingClientRect(),nr=node.getBoundingClientRect(),cr=cap.getBoundingClientRect();
-                      console.log('SNOW_SYNC_GEOMETRY',JSON.stringify({
+                      document.documentElement.dataset.xmasMobileSyncGeometry=JSON.stringify({
                         snowFor:cap.dataset.snowFor,element:node.id||node.className.toString().slice(0,65),
                         cardTop:nr.top,capTop:cr.top,capBottom:cr.bottom,
                         hostTag:host.tagName,hostClass:host.className.toString().slice(0,100),
@@ -119,6 +119,7 @@ jobs:
                     });
                     const sync=await page.evaluate(()=>({
                       maxGap:Number(document.documentElement.dataset.xmasMobileSyncMaxGap),
+                      geometry:JSON.parse(document.documentElement.dataset.xmasMobileSyncGeometry||'{}'),
                       samples:JSON.parse(document.documentElement.dataset.xmasMobileSyncSamples||'[]'),
                       count:Number(document.documentElement.dataset.xmasMobileCaps||0)
                     }));
