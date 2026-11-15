@@ -870,3 +870,5 @@ For every block:
 - 2026-11-15 — Sales preview: fixed-package order presets and automatic base totals, conditional logo upload in shared form, streamlined FAQ, extras and support panels.
 
 - 2026-11-15 — Sales preview: scroll the logo upload into view on selection and route contact to the support mailbox.
+
+- 2026-11-15 — Sales test preview: first landscape carousel slide plays the supplied studio video.

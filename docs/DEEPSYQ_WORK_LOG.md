@@ -623,3 +623,5 @@ Production `fc8fc614-bbe6-4c78-8aa9-f4a78a38020e`, [выпуск #43501433353](h
 - 2026-11-15 — Sales preview: fixed-package order presets and automatic base totals, conditional logo upload in shared form, streamlined FAQ, extras and support panels.
 
 - 2026-11-15 — Sales preview: scroll the logo upload into view on selection and route contact to the support mailbox.
+
+- 2026-11-15 — Sales test preview: added the provided DEEPSYQ studio video to the first 16:9 carousel slide, preserving the top villa photo.

@@ -642,6 +642,7 @@ body{background:#090a0c}
 .section-head h2 em{color:#f0c16c;font-style:normal}
 .carousel-player-wrap{width:76%;max-width:900px}
 .carousel-phone{background:#101216}
+#spotlightPoster[hidden],#spotlightVideo[hidden]{display:none!important}
 #spotlightPoster{display:block;width:100%;height:100%;object-fit:cover;object-position:center 48%}
 .carousel-peek{position:absolute;top:10%;width:24%;height:80%;object-fit:cover;opacity:.55;border:1px solid #897653;border-radius:16px;pointer-events:none}
 .carousel-peek.previous{inset-inline-end:calc(100% + 16px)}
@@ -934,7 +935,8 @@ body{background:#090a0c}
       <div class="carousel-player-wrap">
         <div class="carousel-phone">
           <span class="showcase-aspect">16:9</span>
-          <img id="spotlightPoster" src="https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.jpg" alt="">
+          <video id="spotlightVideo" controls playsinline preload="metadata" aria-label="DEEPSYQ Creative Studio" poster="./media/sales-villa-sunset.webp" src="./media/sales-studio-intro.mp4"></video>
+          <img hidden id="spotlightPoster" src="https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.jpg" alt="">
         </div>
         <img class="carousel-peek previous" id="prevPoster" alt="">
         <img class="carousel-peek next" id="nextPoster" alt="">
@@ -1685,7 +1687,12 @@ function updateSpotlightCarousel(idx){
   const safeIdx=((idx%samples.length)+samples.length)%samples.length;
   spotlightSlot=safeIdx+1;
   const s=samples[safeIdx];
-  document.getElementById("spotlightPoster").src=safeIdx===0?"./media/sales-villa-sunset.webp":s.poster;
+  const video=document.getElementById("spotlightVideo");
+  const poster=document.getElementById("spotlightPoster");
+  video.hidden=safeIdx!==0;
+  if(video.hidden&&!video.paused)video.pause();
+  poster.hidden=!video.hidden;
+  if(video.hidden)poster.src=s.poster;
   const index=spotlightStyles.indexOf(safeIdx);
   document.getElementById("prevPoster").src=samples[spotlightStyles.at(index-1)].poster;
   document.getElementById("nextPoster").src=samples[spotlightStyles[(index+1)%spotlightStyles.length]].poster;

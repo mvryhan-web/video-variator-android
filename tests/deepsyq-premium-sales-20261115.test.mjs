@@ -29,7 +29,8 @@ test("Landscape preview shows the villa poster without a video source",()=>{
  assert.match(hero,/16:9/);
  assert.match(hero,/sales-villa-sunset\.webp/);
  assert.doesNotMatch(hero,/<(?:video|source)\b/);
- assert.doesNotMatch(visibleHtml,/<video\b/);
+ assert.equal((visibleHtml.match(/<video\b/g)||[]).length,1);
+ assert.match(visibleHtml,/<video id="spotlightVideo"[^>]*sales-studio-intro\.mp4/);
  assert.match(visibleHtml,/id="spotlightPoster"/);
 });
 test("Inline scripts parse correctly",()=>{
