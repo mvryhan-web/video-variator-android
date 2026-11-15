@@ -24,9 +24,10 @@ test("Contains desktop and mobile premium systems and correct order integration 
  assert.match(page,/prefers-reduced-motion/);
  assert.match(page,/<meta name="robots" content="noindex,nofollow">/);
 });
-test("Landscape preview has no video source and carousel uses only posters",()=>{
+test("Landscape preview shows the villa poster without a video source",()=>{
  const hero=visibleHtml.slice(visibleHtml.indexOf('id="landscapePreview"'),visibleHtml.indexOf('<hr class="rule">'));
  assert.match(hero,/16:9/);
+ assert.match(hero,/sales-villa-sunset\.webp/);
  assert.doesNotMatch(hero,/<(?:video|source)\b/);
  assert.doesNotMatch(visibleHtml,/<video\b/);
  assert.match(visibleHtml,/id="spotlightPoster"/);
@@ -70,6 +71,7 @@ test("The existing checkout gets the selected style and format without duplicate
  vm.runInNewContext(page.slice(start,end),{
    document:{getElementById:id=>id==="trackOrderInput"?null:get(id)},
    state:{selectedSlot:19,lang:"fr",currency:"EUR",selectedAddons:new Set()},
+   selectedServices:()=>new Set(),
    window:{location},
    fetch:(route,options)=>{
      calls++;

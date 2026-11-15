@@ -4,6 +4,7 @@ on:
     branches: [feature/deepsyq-sales-premium-layout-20261115]
     paths:
       - app/src/main/assets/video-sur-mesure.html
+      - app/src/main/assets/media/sales-villa-sunset.webp
       - tests/deepsyq-premium-sales-20261115.test.mjs
       - .github/workflows/deepsyq-sales-design-preview.yml
   workflow_dispatch:
@@ -32,7 +33,8 @@ jobs:
           curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" \
             | jq -e '.success and (.result.production_branch != "sales-layout-v2")' >/dev/null
-          mkdir -p /tmp/sales-layout-v2
+          mkdir -p /tmp/sales-layout-v2/media
+          cp app/src/main/assets/media/sales-villa-sunset.webp /tmp/sales-layout-v2/media/
           cp app/src/main/assets/video-sur-mesure.html /tmp/sales-layout-v2/video-sur-mesure.html
           printf '/ /video-sur-mesure 302\n' >/tmp/sales-layout-v2/_redirects
           printf 'User-agent: *\nDisallow: /\n' >/tmp/sales-layout-v2/robots.txt
@@ -41,3 +43,5 @@ jobs:
         run: |
           curl -fsSL --retry 4 --retry-delay 4 'https://sales-layout-v2.deepsyq.pages.dev/video-sur-mesure' -o /tmp/live-sales-layout.html
           cmp app/src/main/assets/video-sur-mesure.html /tmp/live-sales-layout.html
+          curl -fsSL --retry 4 --retry-delay 4 https://sales-layout-v2.deepsyq.pages.dev/media/sales-villa-sunset.webp -o /tmp/live-sales-villa.webp
+          cmp app/src/main/assets/media/sales-villa-sunset.webp /tmp/live-sales-villa.webp
