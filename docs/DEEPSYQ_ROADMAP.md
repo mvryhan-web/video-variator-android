@@ -865,3 +865,10 @@ For every block:
 - **DONE:** Christmas is default only for previously uncustomized visitors until the end of 2027-01-10 (Europe/Paris); Dark becomes default automatically starting 2027-01-11 00:00 Paris time. All six explicit user preferences override the seasonal default and remain permanent until changed. No backup restore or manual redeploy is needed in January.
 - **Production deployment PASS:** [GitHub Actions #43739121468](https://github.com/mvryhan-web/video-variator-android/actions/runs/43739121468), Cloudflare `d2b2d498-66ce-4e4a-8884-24613b2859bd`; exactly 2 frontend routes changed, Worker and all bindings verified preserved, all other assets unchanged.
 - **Desktop+mobile Chromium PASS:** [#43739353674](https://github.com/mvryhan-web/video-variator-android/actions/runs/43739353674) for new visitors, refresh, six themes, Christmas chat and simulated 2027-01-11 reset. Browser preference persistence respected.
+
+
+### 2026-11-15 — Christmas mobile card-snow native scrolling (PRODUCTION PASS)
+
+- **DONE:** Fixed mobile Christmas snowbanks on Image/Video/Tools/Audio/card panels to be scroll-content anchored. They now move with their card during touch momentum, not one JS scroll event behind. Original white fluffy snow appearance and interactive brush preserved.
+- **DONE:** Exact top/left initialization; independent Chromium tests verified **0 px gap** on 12 mobile scroll positions for Home, Free Tools and unified JARVIX, while desktop rendering remains unchanged.
+- **Deployed and verified LIVE:** [#43758338864](https://github.com/mvryhan-web/video-variator-android/actions/runs/43758338864), Cloudflare `c6d1c803-eef3-4aa2-9f44-268036e0825d`; [Chromium QA #43758531884](https://github.com/mvryhan-web/video-variator-android/actions/runs/43758531884). Changed only `deepsyq-christmas-v4.js`, `deepsyq-christmas-v4.css` and `deepsyq-theme-loader.js`; other 2840 assets, Worker and bindings untouched.
