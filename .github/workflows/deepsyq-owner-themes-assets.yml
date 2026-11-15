@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: deepsyq-surgical-pages-release
+  group: deepsyq-owner-appearance-assets-stage
   cancel-in-progress: false
 jobs:
   stage-owner-approved-theme-assets:
