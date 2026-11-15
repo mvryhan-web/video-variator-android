@@ -24,12 +24,12 @@ test("Contains desktop and mobile premium systems and correct order integration 
  assert.match(page,/prefers-reduced-motion/);
  assert.match(page,/<meta name="robots" content="noindex,nofollow">/);
 });
-test("Landscape preview shows the villa poster without a video source",()=>{
+test("Landscape preview plays the villa hero video with sunset poster",()=>{
  const hero=visibleHtml.slice(visibleHtml.indexOf('id="landscapePreview"'),visibleHtml.indexOf('<hr class="rule">'));
  assert.match(hero,/16:9/);
  assert.match(hero,/sales-villa-sunset\.webp/);
- assert.doesNotMatch(hero,/<(?:video|source)\b/);
- assert.equal((visibleHtml.match(/<video\b/g)||[]).length,1);
+ assert.match(hero,/<video\b[^>]*class="villa-hero"[^>]*>[\s\S]*sales-villa-hero\.mp4/);
+ assert.equal((visibleHtml.match(/<video\b/g)||[]).length,2);
  assert.match(visibleHtml,/<video id="spotlightVideo"[^>]*sales-studio-intro\.mp4/);
  assert.match(visibleHtml,/id="spotlightPoster"/);
 });
