@@ -99,7 +99,7 @@ jobs:
                         hostOffsetTop:host.offsetTop,hostOffsetParent:host.offsetParent?.tagName,
                         cardOffsetParent:node.offsetParent?.tagName,capOffsetParent:cap.offsetParent?.tagName,
                         capStyleTop:cap.style.top,capComputedTop:getComputedStyle(cap).top
-                      }));
+                      });
                       const ancestor=(()=>{let p=node.parentElement;while(p&&p!==document.body){
                         const st=getComputedStyle(p);
                         if(p.scrollHeight>p.clientHeight+80&&/(auto|scroll)/.test(st.overflowY))return p;
