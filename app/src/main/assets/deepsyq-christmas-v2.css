@@ -1,0 +1,109 @@
+/* DEEPSYQ Christmas V2 — seasonal staging only. Load after base theme CSS. */
+html[data-site-theme="christmas"] #xmas-weather-layer{visibility:hidden!important;opacity:0!important}
+html[data-site-theme="christmas"] #xmas-real-snow{
+ position:fixed;inset:0;width:100vw;height:100vh;z-index:200;
+ pointer-events:none!important;opacity:.91;contain:strict
+}
+html[data-site-theme="christmas"] .xmas-v2-relative{position:relative!important}
+html[data-site-theme="christmas"] .xmas-snowcap{
+ top:-12px!important;bottom:auto!important;inset-inline:0!important;
+ transform:none!important;height:var(--xmas-pile-depth,23px)!important;
+ border-radius:25px 26px 12px 11px/15px 16px 10px 11px;
+ opacity:.96!important;pointer-events:none!important;z-index:22!important;
+ background:
+  radial-gradient(ellipse 25px 13px at 26px 9px,#fff 66%,transparent 73%) var(--xmas-pile-shift,7px) 1px/66px 22px repeat-x,
+  radial-gradient(ellipse 35px 12px at 28px 11px,#f9fcff 68%,transparent 76%) 8px 1px/84px 24px repeat-x,
+  radial-gradient(ellipse 15px 9px at 13px 9px,#ecf7ff 67%,transparent 80%) 5px 6px/35px 20px repeat-x,
+  linear-gradient(180deg,#f9fdff 0%,#eff9ff 46%,#e5eff6 67%,transparent 94%) 0 8px/100% 17px no-repeat!important;
+ filter:drop-shadow(0 2px 2px #8fc4d35c) drop-shadow(0 3px 2px #16263b6b)!important;
+}
+html[data-site-theme="christmas"] .xmas-snowcap.xmas-thin{
+ --xmas-pile-depth:17px;top:-8px!important;
+}
+html[data-site-theme="christmas"] .xmas-snowcap.xmas-header{
+ top:-11px!important;bottom:auto!important;transform:none!important
+}
+html[data-site-theme="christmas"] #homeQuickBar>.xmas-snowcap{top:-9px!important;z-index:29!important}
+html[data-site-theme="christmas"] :is(.tool-card,.app-card,.home-create-card,.card,.panel,.studio-card,.feature-card,.tool-tile,.price-card){
+ box-shadow:inset 0 3px 2px #f6fbff26,0 6px 16px #07172929
+}
+html[data-site-theme="christmas"] .xmas-mini-stage.xmas-v2-battle .xmas-person{
+ animation:none!important;transform:none;
+ transition:none!important;will-change:left;
+}
+html[data-site-theme="christmas"] .xmas-mini-stage.xmas-v2-battle .xmas-person svg{
+ width:100%;height:100%;overflow:visible
+}
+html[data-site-theme="christmas"] .xmas-mini-stage.xmas-v2-battle .xmas-person.xmas-v2-hit{
+ animation:xmas-v2-fall 1.3s ease-in-out both!important;transform-origin:50% 96%;
+}
+html[data-site-theme="christmas"] .xmas-mini-stage.xmas-v2-battle .xmas-person.xmas-v2-recover{
+ animation:xmas-v2-stand .39s ease-out both!important
+}
+html[data-site-theme="christmas"] .xmas-mini-stage.xmas-v2-battle .xmas-person.xmas-v2-throw{
+ animation:xmas-v2-lean .44s ease-out both!important
+}
+html[data-site-theme="christmas"] .xmas-mini-stage.xmas-v2-battle .xmas-person.xmas-v2-hit .leg,
+html[data-site-theme="christmas"] .xmas-mini-stage.xmas-v2-battle .xmas-person.xmas-v2-recover .leg{animation:none!important}
+html[data-site-theme="christmas"] .xmas-mini-stage.xmas-v2-battle .xmas-snowball.left,
+html[data-site-theme="christmas"] .xmas-mini-stage.xmas-v2-battle .xmas-snowball.right{display:none!important}
+html[data-site-theme="christmas"] .xmas-v2-projectile{
+ position:absolute;z-index:32;width:16px;height:16px;
+ transform:translate(-50%,-50%) rotate(12deg);
+ opacity:1;pointer-events:none!important;border-radius:40% 56% 45% 57%;
+ background:radial-gradient(circle at 32% 28%,#fff 0%,#fff 28%,#f3faff 51%,#c9dff4 81%,#aacce7 100%);
+ box-shadow:inset -2px -3px 3px #8faed249,0 0 6px #ffffffab;
+ border:1px solid #f9fdffe8
+}
+html[data-site-theme="christmas"] .xmas-v2-projectile:before{
+ content:"";position:absolute;inset:1px;border:1px solid #d3eafb8a;border-radius:48% 43% 52% 42%
+}
+html[data-site-theme="christmas"] .xmas-v2-splash{
+ position:absolute;bottom:16px;z-index:31;width:30px;height:24px;
+ transform:translateX(-50%);pointer-events:none;
+ background:radial-gradient(ellipse at 50% 65%,#ffffffed 0 23%,transparent 31%),
+  radial-gradient(circle at 5px 7px,#fff 0 3px,transparent 4px),
+  radial-gradient(circle at 25px 3px,#fff 0 3px,transparent 4px),
+  radial-gradient(circle at 15px 0,#fff 0 2px,transparent 3px);
+ animation:xmas-v2-impact .6s ease-out both
+}
+html[data-site-theme="christmas"] .xmas-mini-secondary{
+ top:-51px!important;height:54px!important;left:5%!important;right:5%!important;
+ z-index:34!important;pointer-events:none!important
+}
+html[data-site-theme="christmas"] .xmas-mini-secondary>.xmas-person{
+ width:30px!important;height:42px!important;bottom:4px!important
+}
+html[data-site-theme="christmas"] .xmas-mini-secondary>.xmas-person .leg{animation-duration:.52s}
+html[data-site-theme="christmas"] .xmas-mini-secondary>.xmas-v2-projectile{width:12px;height:12px}
+@keyframes xmas-v2-fall{
+ 0%,8%{transform:rotate(0deg) translateY(0)}
+ 29%{transform:rotate(70deg) translate(9px,5px)}
+ 41%,76%{transform:rotate(84deg) translate(13px,7px)}
+ 92%{transform:rotate(28deg) translateY(4px)}
+ 100%{transform:rotate(3deg)}
+}
+@keyframes xmas-v2-stand{
+ from{transform:rotate(24deg) translateY(5px)}
+ 65%{transform:rotate(-9deg) translateY(-3px)}
+ to{transform:rotate(0deg) translateY(0)}
+}
+@keyframes xmas-v2-lean{
+ 0%{transform:rotate(0)}
+ 45%{transform:rotate(-13deg) translateY(-3px)}
+ 100%{transform:rotate(0)}
+}
+@keyframes xmas-v2-impact{
+ from{opacity:1;transform:translateX(-50%) scale(.75)}
+ to{opacity:0;transform:translateX(-50%) translateY(-21px) scale(1.8)}
+}
+@media(max-width:760px){
+ html[data-site-theme="christmas"] .xmas-snowcap{--xmas-pile-depth:17px}
+ html[data-site-theme="christmas"] .xmas-mini-secondary{top:-42px!important;height:45px!important}
+ html[data-site-theme="christmas"] .xmas-mini-secondary>.xmas-person{width:25px!important;height:34px!important}
+ html[data-site-theme="christmas"] .xmas-v2-projectile{width:14px;height:14px}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-site-theme="christmas"] .xmas-mini-stage.xmas-v2-battle :is(.xmas-person,.leg,.xmas-v2-projectile,.xmas-v2-splash){animation:none!important;transition:none!important}
+ html[data-site-theme="christmas"] .xmas-mini-stage.xmas-v2-battle .xmas-v2-projectile{display:none!important}
+}
