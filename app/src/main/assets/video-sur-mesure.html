@@ -696,6 +696,7 @@ body{background:#090a0c}
 .shorts .showcase[data-position="next"]{grid-row:1;grid-column:3;opacity:.7}
 .shorts .showcase .sample-info{display:none}
 .shorts .showcase:not([data-position="center"]) .video-toggle{visibility:hidden}
+.shorts-caption{text-align:center;margin:8px 0 0;font-weight:600;color:#f4e6ce}
 .shorts-select{display:flex;margin:10px auto 0;width:max-content}
 #customStudioConfigurator{background:none!important;border:0!important;padding:0!important;margin-top:56px!important}
 .cs-heading{text-align:center;margin-bottom:21px}
@@ -754,10 +755,11 @@ body{background:#090a0c}
  .hero-media-caption{padding:15px 9px 7px}
  .hero h1{font-size:clamp(33px,8vw,52px)}
  .locale-bar #currencySwitcher{display:block}
- .shorts-stage{padding-inline:24px}
+ .shorts-stage{padding-inline:0}
+ .shorts .gallery{grid-template-columns:repeat(3,72%)!important;justify-content:center;gap:0!important;overflow:hidden!important;touch-action:pan-y}
+ #shortsPrev{left:4px}
+ #shortsNext{right:4px}
  .shorts-arrows button{width:31px;height:38px}
- #shortsPrev{left:-6px}
- #shortsNext{right:-6px}
  .shorts .showcase{border-radius:8px}
  #projectForm>label:not(.checkbox-row){grid-template-columns:minmax(0,1fr);gap:2px}
  .order-extra-fields{grid-template-columns:1fr}
@@ -803,14 +805,11 @@ body{background:#090a0c}
 }
 @media(max-width:700px){#projectForm h2::before{content:none}}
 /* Preset orders and shared branding fields */
-#projectForm .logo-upload-panel[hidden],#studioControls[hidden],#fixedPackage[hidden]{display:none!important}
+#projectForm .logo-upload-panel[hidden]{display:none!important}
 #projectForm .logo-upload-panel{padding:10px;border:1px dashed #987848;border-radius:10px;background:#b4893b10}
 #projectForm>label.logo-upload-panel{grid-template-columns:minmax(0,1fr);gap:8px;scroll-margin:95px 0 20px}
 #logoUpload{font-size:13px;padding:6px}
 #logoUpload::file-selector-button{background:#f2c675;color:#19120b;border:0;border-radius:7px;padding:9px 11px;margin-inline-end:10px;cursor:pointer}
-.fixed-package h3{margin:0;font-size:25px}
-.fixed-package p{color:#f4cd88;margin:7px 0}
-.fixed-package ul{margin:10px 0;padding-inline-start:21px;line-height:1.7}
 #questions{margin:34px 0 18px}
 #services-plus{border-top:1px solid #59472d;padding-top:4px}
 #suivi{margin-top:32px;align-items:start}
@@ -960,6 +959,7 @@ body{background:#090a0c}
         <div class="gallery" id="videoGallery"></div>
         <div class="shorts-arrows"><button type="button" id="shortsPrev" aria-label="Previous Short">‹</button><button type="button" id="shortsNext" aria-label="Next Short">›</button></div>
       </div>
+      <p class="shorts-caption" id="shortsCaption" aria-live="polite"></p>
       <button type="button" class="pill shorts-select" id="shortsSelect" data-i18n="shortsChoose">Use This Style →</button>
     </section>
     <details class="brand-options">
@@ -1086,11 +1086,6 @@ body{background:#090a0c}
       <header class="cs-heading"><span class="kicker">CUSTOM STUDIO</span><h2 data-i18n="studioTitle">Build Your Custom Video</h2><p data-i18n="studioLead">Choose the details. See your estimated price.</p></header>
       <div class="cs-layout">
       <div class="cs-input-column">
-      <div class="fixed-package" id="fixedPackage" hidden>
-        <h3 id="fixedPackageTitle"></h3>
-        <p id="fixedPackageMeta"></p>
-        <ul id="fixedPackageFeatures"></ul>
-      </div>
       <div class="cs-controls" id="studioControls">
       <h3 class="cs-mobile-title"><span>1</span> <b data-i18n="studioConfigure">Configure Your Video</b></h3>
       <div class="custom-studio-grid">
@@ -1797,10 +1792,6 @@ samples.forEach((s,i)=>{
   badge.className="sample-badge";
   badge.textContent=s.category;
   p.append(badge);
-  const number=document.createElement("span");
-  number.className="sample-number";
-  number.textContent=String(i+1).padStart(2,"0");
-  p.append(number);
   const toggle=document.createElement("button");
   toggle.className="video-toggle";
   toggle.type="button";
@@ -1824,6 +1815,14 @@ samples.forEach((s,i)=>{
     }
   });
   p.append(toggle);
+  video.addEventListener("play",()=>{
+    toggle.textContent="Ⅱ";
+    toggle.setAttribute("aria-label","Mettre en pause la vidéo "+s.title);
+  });
+  video.addEventListener("pause",()=>{
+    toggle.textContent="▶";
+    toggle.setAttribute("aria-label","Lire la vidéo "+s.title);
+  });
   const info=document.createElement("div");
   info.className="sample-info";
   const name=document.createElement("b");
@@ -1881,48 +1880,49 @@ function selectedServices(){
   return services;
 }
 const packageNames={basic:"Basic",medium:"Medium",professional:"Professional",custom_studio:"Custom Studio"};
-let orderPackageChosen=false;
-function renderPackageSettings(pkg){
-  const fixed=orderPackageChosen&&pkg!=="custom_studio";
-  const panel=document.getElementById("fixedPackage");
-  panel.hidden=!fixed;
-  document.getElementById("studioControls").hidden=fixed;
-  const title=document.querySelector(".cs-heading h2");
-  title.textContent=fixed?packageNames[pkg]+" · "+(I18N[state.lang]?.orderDetailsTitle||"Your Order Details"):I18N[state.lang]?.studioTitle||I18N.en.studioTitle;
-  document.querySelector(".cs-heading p").hidden=fixed;
-  if(!fixed)return;
-  const card=document.querySelector(`[data-pkg-card="${pkg}"]`);
-  document.getElementById("fixedPackageTitle").textContent=packageNames[pkg];
-  document.getElementById("fixedPackageMeta").textContent=`${PKG_DURATIONS[pkg]}s · ${formatMoneyFromEur(PKG_PRICES_EUR[pkg])}`;
-  const features=card.querySelectorAll("li");
-  document.getElementById("fixedPackageFeatures").replaceChildren(...Array.from(features,item=>{
-    const li=document.createElement("li");
-    li.textContent=item.textContent;
-    return li;
-  }));
+const packagePresets={
+  basic:{csDuration:"10",logoOption:"text_only"},
+  medium:{},
+  professional:{csDuration:"30",csScript:"bespoke_script",csLogoAnim:"bespoke_reveal",csRevisions:"1"},
+  custom_studio:{}
+};
+const studioDefaults={
+  csDuration:"20",csFormat:"9:16",csResolution:"1080p",csScript:"template_script",
+  csLogoAnim:"standard_fade",csVoiceover:"none",csSubtitles:"none",csRevisions:"0",
+  csPriority:"standard",csLanguage:"",logoOption:"upload"
+};
+const studioField=id=>document.getElementById(id);
+function currentPreset(pkg){
+  return {...studioDefaults,...packagePresets[pkg]};
+}
+function checkoutPackage(pkg){
+  const preset=currentPreset(pkg);
+  const custom=Object.keys(preset).some(id=>{
+    if(id==="csFormat")return !["9:16","16:9"].includes(studioField(id).value);
+    if(id==="csLanguage"||id==="logoOption")return false;
+    return studioField(id).value!==preset[id];
+  });
+  return custom?"custom_studio":pkg;
 }
 function selectOrderPackage(pkg){
-  const previous=state.selectedPkg;
-  orderPackageChosen=true;
-  document.getElementById("packageSelect").value=pkg;
-  if(pkg==="custom_studio"){
-    document.getElementById("videoFormat").value=document.getElementById("csFormat").value;
-  }else if(previous!==pkg||!document.getElementById("fixedPackage").matches(":not([hidden])")){
-    state.selectedAddons.clear();
-    const format=document.getElementById("videoFormat");
-    if(format.value!=="16:9")format.value="9:16";
-    document.getElementById("logoOption").value=state.logoDataUrl?"upload":"text_only";
-    renderAddons();
-  }
-  updateSummary();
+  const format=studioField("csFormat").value;
+  for(const [id,value] of Object.entries(currentPreset(pkg)))studioField(id).value=value;
+  if(format==="16:9")studioField("csFormat").value=format;
+  studioField("packageSelect").value=pkg;
+  state.selectedAddons.delete("social_promo_visuals");
+  renderAddons();
+  applyCustomConfiguration();
 }
 function updateSummary(){
   document.getElementById("logoUploadPanel").hidden=document.getElementById("logoOption").value!=="upload";
   document.getElementById("csImages").value=state.selectedAddons.has("social_promo_visuals")?"5":"0";
   const customQuote=calculateCustomStudioLocal();
-  const pkg=document.getElementById("packageSelect").value||"medium";
-  state.selectedPkg=pkg;
-  renderPackageSettings(pkg);
+  const selected=studioField("packageSelect").value||"medium";
+  const pkg=checkoutPackage(selected);
+  state.selectedPkg=selected;
+  document.querySelector(".cs-heading h2").textContent=selected==="custom_studio"
+    ? I18N[state.lang]?.studioTitle||I18N.en.studioTitle
+    : packageNames[selected]+" · "+(I18N[state.lang]?.studioConfigure||I18N.en.studioConfigure);
   const format=document.getElementById("videoFormat").value||"9:16";
 
 
@@ -1935,14 +1935,14 @@ function updateSummary(){
   const totalEur=pkgEur+addonsEur;
 
   document.querySelectorAll("[data-pkg-card]").forEach(el=>{
-    el.classList.toggle("active-pkg",el.getAttribute("data-pkg-card")===pkg);
+    el.classList.toggle("active-pkg",el.getAttribute("data-pkg-card")===selected);
   });
   document.querySelectorAll("[data-price-eur]").forEach(el=>{
     const eur=Number(el.getAttribute("data-price-eur"))||0;
     el.textContent=formatMoneyFromEur(eur);
   });
 
-  const pkgUpper=pkg.toUpperCase();
+  const pkgUpper=packageNames[selected].toUpperCase();
   const dur=PKG_DURATIONS[pkg]||20;
   renderOrderQuote(pkg,format,totalEur,customQuote);
   document.getElementById("livePreviewPkgTag").textContent=`${pkgUpper} · ${dur}s · ${format}`;
@@ -1966,6 +1966,14 @@ function setOrderFormat(value){
 }
 const shortCards=[...gallery.querySelectorAll(".showcase")];
 let activeShort=shortCards[0];
+let shortsInView=false;
+const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
+function playActiveShort(){
+  const video=activeShort.querySelector("video");
+  if(shortsInView&&!reduceMotion.matches&&video.paused){
+    activeShort.querySelector(".video-toggle").click();
+  }
+}
 function showShorts(step=0){
   const available=shortCards.filter(card=>!card.classList.contains("filtered-out"));
   const previous=available.indexOf(activeShort);
@@ -1976,10 +1984,39 @@ function showShorts(step=0){
     const position=visible.indexOf(card);
     card.dataset.position=card===activeShort?"center":position===0?"previous":position===2?"next":"hidden";
     if(card!==activeShort&&!card.querySelector("video").paused){
-      card.querySelector(".video-toggle").click();
+      card.querySelector("video").pause();
     }
   });
+  document.getElementById("shortsCaption").textContent=samples[shortCards.indexOf(activeShort)].title;
+  playActiveShort();
 }
+const shortsStage=gallery.closest(".shorts-stage");
+new IntersectionObserver(([entry])=>{
+  shortsInView=entry.isIntersecting;
+  if(shortsInView)playActiveShort();
+  else activeShort.querySelector("video").pause();
+},{threshold:0.35}).observe(shortsStage);
+gallery.addEventListener("pointerover",event=>{
+  if(event.pointerType==="mouse"&&event.target.closest('[data-position="center"]')&&
+    !event.relatedTarget?.closest?.('[data-position="center"]'))playActiveShort();
+});
+gallery.addEventListener("click",event=>{
+  const position=event.target.closest(".showcase")?.dataset.position;
+  if(position==="previous"||position==="next")showShorts(position==="previous"?-1:1);
+});
+let swipeStart;
+gallery.addEventListener("touchstart",event=>{
+  swipeStart=event.touches.length===1?event.touches[0]:null;
+},{passive:true});
+gallery.addEventListener("touchend",event=>{
+  if(!swipeStart)return;
+  const touch=event.changedTouches[0];
+  const x=touch.clientX-swipeStart.clientX;
+  const y=touch.clientY-swipeStart.clientY;
+  swipeStart=null;
+  if(Math.abs(x)>40&&Math.abs(x)>Math.abs(y)*1.4)showShorts(x<0?1:-1);
+},{passive:true});
+gallery.addEventListener("touchcancel",()=>{swipeStart=null});
 function selectCenteredShort(){
   activeShort.querySelector(".use-style").click();
 }
@@ -2099,7 +2136,6 @@ document.getElementById("csImages").addEventListener("change",event=>{
 
 // Configuration changes apply directly to the single order.
 function applyCustomConfiguration(){
-  document.getElementById("packageSelect").value="custom_studio";
   document.getElementById("videoFormat").value=document.getElementById("csFormat").value;
   syncStudioButtons();
   updateSummary();
@@ -2108,22 +2144,7 @@ function applyCustomConfiguration(){
   document.getElementById(id).addEventListener("change",applyCustomConfiguration);
 });
 document.getElementById("resetCustomStudioBtn")?.addEventListener("click",()=>{
-  document.getElementById("csDuration").value="20";
-  document.getElementById("csFormat").value="9:16";
-  document.getElementById("csResolution").value="1080p";
-  document.getElementById("csScript").value="template_script";
-  document.getElementById("csLogoAnim").value="standard_fade";
-  document.getElementById("csVoiceover").value="none";
-  document.getElementById("csSubtitles").value="none";
-  document.getElementById("csRevisions").value="0";
-  document.getElementById("csPriority").value="standard";
-  document.getElementById("csLanguage").value="";
-  document.getElementById("logoOption").value="upload";
-  state.selectedAddons.delete("social_promo_visuals");
-  renderAddons();
-  if(state.selectedPkg==="custom_studio")document.getElementById("videoFormat").value="9:16";
-  syncStudioButtons();
-  updateSummary();
+  selectOrderPackage(studioField("packageSelect").value);
 });
 document.querySelectorAll("[data-select-pkg]").forEach(btn=>{
   btn.addEventListener("click",()=>{
@@ -2137,7 +2158,7 @@ document.querySelectorAll("[data-select-pkg]").forEach(btn=>{
   const el=document.getElementById(id);
   if(el){
     el.addEventListener("change",()=>{
-      if(id==="videoFormat"&&state.selectedPkg==="custom_studio")setOrderFormat(el.value);
+      if(id==="videoFormat")setOrderFormat(el.value);
       if(id==="packageSelect"){selectOrderPackage(el.value);return;}
       renderAddons();
       updateSummary();
@@ -2207,7 +2228,7 @@ document.getElementById("stripeCheckoutBtn").addEventListener("click",async(even
   }
   feedback.textContent="Création de votre commande DEEPSYQ et ouverture de Stripe Checkout…";
   const payload={
-    packageCode:document.getElementById("packageSelect").value,
+    packageCode:checkoutPackage(document.getElementById("packageSelect").value),
     videoFormat:document.getElementById("videoFormat").value,
     showcaseSlot:state.selectedSlot,
     companyName:document.getElementById("company").value.trim(),
@@ -2220,7 +2241,7 @@ document.getElementById("stripeCheckoutBtn").addEventListener("click",async(even
     addressOrContact:document.getElementById("contactCard").value.trim(),
     customWishes:[
       document.getElementById("brief").value.trim(),
-      document.getElementById("packageSelect").value==="custom_studio"&&document.getElementById("csLanguage").value
+      document.getElementById("csLanguage").value
         ? "Video language: "+document.getElementById("csLanguage").value : ""
     ].filter(Boolean).join("\n"),
     additionalServices:Array.from(selectedServices()),

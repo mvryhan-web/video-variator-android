@@ -73,6 +73,7 @@ test("The existing checkout gets the selected style and format without duplicate
    document:{getElementById:id=>id==="trackOrderInput"?null:get(id)},
    state:{selectedSlot:19,lang:"fr",currency:"EUR",selectedAddons:new Set()},
    selectedServices:()=>new Set(),
+   checkoutPackage:pkg=>pkg,
    window:{location},
    fetch:(route,options)=>{
      calls++;
