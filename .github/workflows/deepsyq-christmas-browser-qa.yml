@@ -61,7 +61,7 @@ jobs:
             assert(before.carousel && before.previous && before.next && before.composer && before.prompt,name+' original controls missing');
             assert.equal(before.theme,'christmas',name+' theme not active on ?christmas=1');
             assert(before.snowCanvas && before.snowcaps>=3 && before.sprites>=5,name+' snow layers not initialized');
-            assert(before.bg.includes(name==='mobile'?'christmas-mobile.webp':'christmas-desktop.webp'),name+' responsive background not applied');
+            assert(before.bg==='none',name+' legacy body background still covering global image');
             const globalBg=await page.evaluate(()=>{
               const root=getComputedStyle(document.documentElement);
               const body=getComputedStyle(document.body);
