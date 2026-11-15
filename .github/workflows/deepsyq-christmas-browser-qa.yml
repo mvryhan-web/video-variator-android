@@ -1,5 +1,5 @@
 name: DEEPSYQ Christmas live Chromium visual QA (no deploy)
-# QA V4: test fluffy above-card canvas snow, cursor interaction, shared chat chimney offset.
+# QA V4 final: verify published fluffy-canvas snowfall after high-specificity legacy strip fix.
 on:
   push:
     branches: [test]
