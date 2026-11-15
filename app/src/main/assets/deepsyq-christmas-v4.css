@@ -56,3 +56,13 @@ html[data-site-theme="christmas"] main.jarvix-chat #jChatForm textarea#jInput::p
  }
  html:not([data-site-theme="christmas"]) .xmas-mobile-snow-cap{display:none!important}
 }
+
+/* Christmas-only: generated images remain fully scrollable above the composer. */
+html[data-site-theme="christmas"] main.jarvix-chat > #jMessages{
+ padding-bottom:64px!important;
+ scroll-padding-bottom:64px!important;
+ overscroll-behavior-y:contain!important;
+}
+html[data-site-theme="christmas"] main.jarvix-chat > #jMessages .j-message:last-child{
+ margin-bottom:16px!important;
+}
