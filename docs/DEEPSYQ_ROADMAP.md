@@ -652,3 +652,9 @@ For every block:
 - **DONE:** эффекты добавляются на все существующие HTML-страницы при сборке изолированного TEST; мини-сцены до двух на других панелях.
 - **QA PASS:** [#43712439801](https://github.com/mvryhan-web/video-variator-android/actions/runs/43712439801), Chromium desktop/mobile, реальное попадание, Tools, Pricing, JARVIX Chat, theme switching; без JS ошибок.
 - **DO NOT TOUCH:** production и канонический TEST Worker остаются отдельно; переносить сюда без подтверждённого baseline нельзя.
+
+### 2026-11-15 — Christmas V3.1 final owner revision — PASS
+- Deployed owner-supplied **new portrait artwork** behind all pages on isolated preview, resized as desktop 2560×1440 and phone 1080×1920. Fixed background and transparency of full-page shells preserve image across vertical scroll.
+- Replaced hard-edged snow circles with soft realistic depth-layered particle aggregates. Universal JARVIX Chat/Image/Video/Audio keeps exactly five actors on one composer; existing hit/fall/recovery animation preserved.
+- [Cloudflare deploy #43714737627](https://github.com/mvryhan-web/video-variator-android/actions/runs/43714737627): success. [Desktop/mobile Chromium #43714789537](https://github.com/mvryhan-web/video-variator-android/actions/runs/43714789537): PASS, no JS browser errors, all page backgrounds and Image/Video/Audio common composer verified.
+- **Published TEST preview:** https://christmas-preview-20261114.deepsyq.pages.dev/?christmas=1. **Do not touch production or canonical test Worker**.
