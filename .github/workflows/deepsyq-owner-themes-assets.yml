@@ -70,6 +70,27 @@ jobs:
               print('PRODUCTION_THEME_ART_VERIFIED',name,size,(folder/name).stat().st_size)
           print('OWNER_PHOTO_SHA256',digest)
           PY
+      - name: Inspect official read-only Worker content export, no changes
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os,requests
+          account=os.environ['CLOUDFLARE_ACCOUNT_ID']
+          headers={'Authorization':'Bearer '+os.environ['CLOUDFLARE_API_TOKEN']}
+          api='https://api.cloudflare.com/client/v4/accounts/'+account
+          p=requests.get(api+'/pages/projects/deepsyq',headers=headers,timeout=18)
+          p.raise_for_status()
+          worker=p.json()['result']['production_script_name']
+          assert worker.startswith('pages-worker--')
+          for suffix in ['', '/content/v2']:
+              url=api+'/workers/scripts/'+worker+suffix
+              try:
+                  r=requests.get(url,headers=headers,timeout=18)
+                  mime=r.headers.get('content-type','')
+                  print('THEME_WORKER_CONTENT_READ_ONLY',suffix or '/raw',r.status_code,mime[:90],len(r.content))
+              except requests.RequestException as e:
+                  print('THEME_WORKER_CONTENT_READ_ONLY',suffix or '/raw',type(e).__name__)
+          PY
       - name: Publish only the eleven inactive theme assets, preserving LIVE Worker and other files
         shell: bash
         run: |
