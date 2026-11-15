@@ -1,5 +1,5 @@
 name: DEEPSYQ Christmas live Chromium visual QA (no deploy)
-# Live rerun after switcher fix (2026-11-14).
+# Live rerun after adding mini actors to all secondary Christmas pages (2026-11-15).
 on:
   push:
     branches: [test]
