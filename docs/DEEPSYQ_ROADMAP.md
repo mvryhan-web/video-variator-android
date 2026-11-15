@@ -658,3 +658,12 @@ For every block:
 - Replaced hard-edged snow circles with soft realistic depth-layered particle aggregates. Universal JARVIX Chat/Image/Video/Audio keeps exactly five actors on one composer; existing hit/fall/recovery animation preserved.
 - [Cloudflare deploy #43714737627](https://github.com/mvryhan-web/video-variator-android/actions/runs/43714737627): success. [Desktop/mobile Chromium #43714789537](https://github.com/mvryhan-web/video-variator-android/actions/runs/43714789537): PASS, no JS browser errors, all page backgrounds and Image/Video/Audio common composer verified.
 - **Published TEST preview:** https://christmas-preview-20261114.deepsyq.pages.dev/?christmas=1. **Do not touch production or canonical test Worker**.
+
+
+### 2026-11-15 — Christmas V3.2 accepted on isolated TEST Preview
+
+- **DONE:** User's exact latest 941×1672 long winter image uploaded, SHA-256 validated, published as full uncut 1412×2508 WebP. Dynamic background pan with scroll on Home and scrollable secondary pages.
+- **DONE:** Fluffy white snowcaps above form/header/card frames; zero overlap of input, measured 1 px outside input on desktop/mobile.
+- **DONE:** Existing 5-actor snowball fight and one JARVIX chat shared for Image/Video/Audio preserved.
+- **Cloudflare TEST Preview release PASS:** [#43716078258](https://github.com/mvryhan-web/video-variator-android/actions/runs/43716078258); **Desktop/mobile browser QA PASS:** [#43716159814](https://github.com/mvryhan-web/video-variator-android/actions/runs/43716159814).
+- Preview to review: https://christmas-preview-20261114.deepsyq.pages.dev/?christmas=1. Do not change production or canonical TEST Worker.
