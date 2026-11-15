@@ -46,10 +46,14 @@ jobs:
                   await button.click({timeout:10000});
                   await page.waitForTimeout(500);
                   const state=await page.evaluate(()=>({
+                    url:location.href,
+                    documentState:document.readyState,
+                    route:location.pathname,
                     dataTheme:document.documentElement.dataset.theme||null,
                     siteTheme:document.documentElement.dataset.siteTheme||null,
                     vu:localStorage.getItem('vu_theme'),
                     custom:localStorage.getItem('deepsyq_site_theme'),
+                    cardCount:document.querySelectorAll('#accountThemesCarousel [data-account-theme]').length,
                     pressed:[...document.querySelectorAll('#accountThemesCarousel button[aria-pressed="true"]')].map(e=>e.dataset.accountTheme)
                   }));
                   console.log(prefix+'_'+value.toUpperCase().replaceAll('-','_'),JSON.stringify(state));
