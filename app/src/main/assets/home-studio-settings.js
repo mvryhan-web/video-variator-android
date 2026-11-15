@@ -109,6 +109,10 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   style.id='homeNativeStudioSettingsPresentation';
   style.textContent=`
    html,body{background:transparent!important;overflow:hidden!important;}
+   /* Isolated settings iframe only: no Christmas landscape behind controls. */
+   html[data-site-theme="christmas"]{background-image:none!important;background-color:#0a1831!important;}
+   html[data-site-theme="christmas"] body{background-image:none!important;}
+
    #homeNativeStudioFrameBody>:not(dialog):not(script):not(style){
     display:none!important;visibility:hidden!important;pointer-events:none!important;
    }
