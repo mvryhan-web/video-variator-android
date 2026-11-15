@@ -220,17 +220,23 @@
    if(f.x>innerWidth+14)f.x=-10;if(f.x<-14)f.x=innerWidth+10;
    ctx.save();
    ctx.translate(f.x,f.y);
-   ctx.globalAlpha=f.alpha;
-   // Close, out-of-focus flakes gently bloom instead of resembling iconography.
-   if(f.near){ctx.shadowColor='#e5f6ff';ctx.shadowBlur=4.6}
-   ctx.fillStyle='#f7fbff';
+   ctx.rotate(Math.sin(time*.00035+f.phase)*.22);
+   // Translucent, irregular snow aggregates rather than outlined star icons.
+   // A soft radial fade makes near flakes look naturally out of focus.
+   const radius=f.r*(f.near?1.24:1.08);
+   const glow=ctx.createRadialGradient(0,0,0,0,0,radius);
+   glow.addColorStop(0,'rgba(255,255,255,'+Math.min(.83,f.alpha*1.2)+')');
+   glow.addColorStop(.32,'rgba(246,252,255,'+f.alpha*.77+')');
+   glow.addColorStop(.74,'rgba(236,248,255,'+f.alpha*.17+')');
+   glow.addColorStop(1,'rgba(236,248,255,0)');
+   ctx.fillStyle=glow;
    ctx.beginPath();
-   ctx.ellipse(0,0,f.r*f.shape,f.r,Math.sin(time*.0004+f.phase)*.4,0,Math.PI*2);
+   ctx.ellipse(0,0,radius*f.shape,radius,Math.sin(time*.0004+f.phase)*.4,0,Math.PI*2);
    ctx.fill();
-   if(!f.far){
-     ctx.globalAlpha=f.alpha*.48;
+   if(!f.far&&!f.near){
+     ctx.fillStyle='rgba(250,253,255,'+(f.alpha*.32)+')';
      ctx.beginPath();
-     ctx.ellipse(f.r*.38,-f.r*.28,f.r*.48,f.r*.53,.2,0,Math.PI*2);
+     ctx.ellipse(f.r*.18,-f.r*.2,f.r*.31,f.r*.39,.2,0,Math.PI*2);
      ctx.fill();
    }
    ctx.restore();
