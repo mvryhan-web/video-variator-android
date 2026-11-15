@@ -1,0 +1,43 @@
+name: DEEPSYQ sales design preview
+on:
+  push:
+    branches: [feature/deepsyq-sales-premium-layout-20261115]
+    paths:
+      - app/src/main/assets/video-sur-mesure.html
+      - tests/deepsyq-premium-sales-20261115.test.mjs
+      - .github/workflows/deepsyq-sales-design-preview.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deepsyq-sales-design-preview
+  cancel-in-progress: false
+jobs:
+  preview:
+    if: github.ref == 'refs/heads/feature/deepsyq-sales-premium-layout-20261115'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/deepsyq-premium-sales-20261115.test.mjs
+      - name: Publish only the isolated sales design preview
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" \
+            | jq -e '.success and (.result.production_branch != "sales-layout-v2")' >/dev/null
+          mkdir -p /tmp/sales-layout-v2
+          cp app/src/main/assets/video-sur-mesure.html /tmp/sales-layout-v2/video-sur-mesure.html
+          printf '/ /video-sur-mesure 302\n' >/tmp/sales-layout-v2/_redirects
+          printf 'User-agent: *\nDisallow: /\n' >/tmp/sales-layout-v2/robots.txt
+          npx --yes wrangler@4.48.0 pages deploy /tmp/sales-layout-v2 --project-name deepsyq --branch sales-layout-v2 --commit-hash "$GITHUB_SHA"
+      - name: Verify deployed page revision
+        run: |
+          curl -fsSL --retry 4 --retry-delay 4 'https://sales-layout-v2.deepsyq.pages.dev/video-sur-mesure' -o /tmp/live-sales-layout.html
+          cmp app/src/main/assets/video-sur-mesure.html /tmp/live-sales-layout.html

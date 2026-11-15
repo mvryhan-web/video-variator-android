@@ -578,6 +578,61 @@ footer.shell{flex-direction:column;padding-bottom:105px}.mobile-sticky-bar{displ
 .hero-frame[data-video-orientation="portrait"] video,.carousel-phone[data-video-orientation="portrait"] video{object-fit:contain!important;position:absolute;inset:0;width:100%!important;height:100%!important;z-index:1}
 .hero-frame .brand-overlay-top,.hero-frame .hero-caption{position:absolute;z-index:3}
 .carousel-phone[data-video-orientation="portrait"] video{filter:drop-shadow(0 0 16px #0008)}
+/* Approved graphite and gold layout, shared by both video formats. */
+:root{--gold:#f0c16c;--ink:#090b0e}
+body{background:radial-gradient(ellipse at 80% 5%,#33271c 0,transparent 27%),#090b0e}
+.hero{position:relative}
+.hero-frame{aspect-ratio:16/9!important}
+.hero .pill,.carousel-info .pill,#stripeCheckoutBtn,.shorts .use-style{
+ background:linear-gradient(115deg,#fff0c4,#f3c46e 52%,#c78435)!important;color:#111!important;
+ border:1px solid #ffdd95!important;box-shadow:0 3px 18px #dca65045
+}
+.hero .pill.secondary{background:#0c0e12!important;color:#fff!important;box-shadow:none}
+#realisations .section-head,#tarifs .section-head,.shorts-heading{text-align:center}
+#realisations .section-head,#tarifs .section-head{display:block}
+#realisations .section-head p,#tarifs .section-head p{margin-inline:auto}
+.hero .actions .pill,.carousel-info .pill,#stripeCheckoutBtn{border-radius:999px}
+@media(min-width:701px){.hero h1{font-family:Georgia,serif;font-weight:600;letter-spacing:-.045em}}
+@media(max-width:700px){.hero>div:first-of-type+div{text-align:center}.hero-art{min-height:0}.hero .lead,.hero .under{margin-inline:auto}}
+#realisations .filter-pills{justify-content:center}
+.carousel-stage{display:block!important;background:none!important;border:0!important;padding:0!important}
+.carousel-player-wrap{position:relative;max-width:980px;margin:auto}
+.carousel-phone{width:100%!important;aspect-ratio:16/9!important;border:1px solid #deb473!important;box-shadow:0 0 23px #e8b85c4a}
+.carousel-player-wrap .icon-btn{position:absolute;z-index:4;top:50%;transform:translateY(-50%);border-color:#e4bd79;border-radius:50%;background:#0a0c10e8}
+#carouselPrevBtn{left:12px} #carouselNextBtn{right:12px}
+#carouselPlayBtn,#heroPlayBtn{left:50%;transform:translate(-50%,-50%);width:58px;height:58px}
+.hero-frame #heroPlayBtn{position:absolute;top:50%;z-index:5;border-radius:50%;background:#0a0c10ae;color:#fff;border:1px solid #ffe8b9}
+.showcase-aspect{position:absolute;z-index:3;right:15px;top:14px;background:#0a0c10db;color:#f6d595;border:1px solid #ba9457;border-radius:20px;padding:5px 12px}
+.carousel-info{display:grid!important;grid-template-columns:1fr auto;gap:6px 20px;max-width:980px;margin:20px auto 28px}
+.carousel-info .carousel-counter,.carousel-info .carousel-title,.carousel-info .fine{grid-column:1}
+.carousel-info .carousel-nav{grid-column:2;grid-row:1/span 3;align-self:center}
+.shorts{border-block:1px solid #59472e;padding:22px 0 28px;margin:25px auto 30px}
+.shorts-heading h3{margin:0;color:#fff;font:600 clamp(29px,4vw,46px)/1.15 Georgia,serif}
+.shorts-heading h3 span{font:600 14px/1 system-ui;color:#f2cc85;border:1px solid #a77e43;border-radius:99px;padding:5px 9px;vertical-align:middle}
+.shorts-heading p{margin:8px 0 17px;color:#c8c3ba}
+.shorts-stage{position:relative;padding-inline:48px}
+.shorts .gallery{display:flex!important;scroll-snap-type:x mandatory;gap:16px!important;padding:6px 2px 13px!important}
+.shorts .showcase{flex:0 0 clamp(162px,23vw,245px)!important;max-width:none!important;scroll-snap-align:center;border-color:#685338;border-radius:15px}
+.shorts .poster{aspect-ratio:9/16!important}
+.shorts .poster video{object-fit:contain!important;background:#0b0d11}
+.shorts .sample-info{padding:11px}
+.shorts .sample-info span{display:none}
+.shorts .use-style{border-radius:999px;width:100%;min-height:44px;margin-top:8px}
+.shorts-arrows button{position:absolute;z-index:5;top:43%;width:44px;height:44px;border-radius:50%;border:1px solid #dbac65;background:#0c0e12;color:#fff;font-size:23px;cursor:pointer}
+#shortsPrev{left:0} #shortsNext{right:0}
+#brandPreviewSection{margin-top:18px}
+#commande form .btn-group-dual{justify-content:flex-start}
+#commande{scroll-margin-top:82px}
+footer.shell{padding-bottom:32px!important}
+@media(max-width:700px){
+ .carousel-info{grid-template-columns:1fr}
+ .carousel-info .carousel-nav{grid-column:1;grid-row:auto;margin-top:10px}
+ .shorts-stage{padding-inline:16px}
+ .shorts .gallery{padding-inline:calc((100% - min(60vw,220px))/2)!important}
+ .shorts .showcase{flex-basis:min(60vw,220px)!important}
+ .shorts-arrows button{background:#07090ceb}
+ .hero .actions a{justify-content:center}
+}
 </style></head>
 <body>
 <header class="top"><div class="shell nav">
@@ -619,8 +674,8 @@ footer.shell{flex-direction:column;padding-bottom:105px}.mobile-sticky-bar{displ
       <h1 data-i18n-html="heroTitle">Des vidéos publicitaires qui permettent à votre entreprise <em>de se démarquer.</em></h1>
       <p class="lead" data-i18n="heroLead">Des vidéos courtes, soignées et conçues pour attirer de nouveaux clients sur votre site, Instagram Reels, TikTok, YouTube Shorts et Facebook. Choisissez l'un de nos styles, ajoutez votre nom, votre logo et vos coordonnées — nous livrons votre film prêt à diffuser dès 5 €.</p>
       <div class="actions">
-        <a href="#realisations" class="pill"><span data-i18n="btnExplore10">Découvrir les styles</span> <span aria-hidden="true">↓</span></a>
-        <a href="#tarifs" class="pill secondary" data-i18n="btnSeePackages">Voir les packs 5 € · 15 € · 55 €</a>
+        <a href="#tarifs" class="pill"><span data-i18n="navOrderBtn">Commander une vidéo</span> <span aria-hidden="true">→</span></a>
+        <a href="#realisations" class="pill secondary" data-i18n="navExamples">Exemples</a>
       </div>
       <p class="under" data-i18n="heroUnder">Formats 9:16 (Reels/TikTok/Shorts) &amp; 16:9 (Web/YouTube) · Paiement sécurisé Stripe Checkout · Livraison rapide</p>
     </div>
@@ -633,7 +688,8 @@ footer.shell{flex-direction:column;padding-bottom:105px}.mobile-sticky-bar{displ
           </div>
           <span class="brand-overlay-tag" id="livePreviewPkgTag">MEDIUM · 20s · 9:16</span>
         </div>
-        <video id="heroPreviewVideo" autoplay="" muted="" loop="" playsinline="" preload="metadata" poster="https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.jpg" aria-label="Aperçu vidéo cinématographique"><source src="https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.mp4" type="video/mp4"></video>
+        <video id="heroPreviewVideo" muted="" loop="" playsinline="" preload="metadata" poster="https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.jpg" aria-label="Aperçu vidéo cinématographique"><source src="https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.mp4" type="video/mp4"></video>
+        <button type="button" id="heroPlayBtn" class="icon-btn" aria-label="Play preview">▶</button>
         <div class="hero-caption">
           <b id="livePreviewHeadline">Votre histoire. Notre regard.</b>
           <span id="livePreviewSubline">Une signature visuelle qui vous ressemble.</span>
@@ -684,15 +740,16 @@ footer.shell{flex-direction:column;padding-bottom:105px}.mobile-sticky-bar{displ
             <source src="https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.mp4" type="video/mp4">
           </video>
         </div>
+        <span class="showcase-aspect">16:9</span>
+          <button type="button" class="icon-btn" id="carouselPrevBtn" aria-label="Vidéo précédente">←</button>
+          <button type="button" class="icon-btn" id="carouselPlayBtn" aria-label="Lire ou mettre en pause">▶</button>
+          <button type="button" class="icon-btn" id="carouselNextBtn" aria-label="Vidéo suivante">→</button>
       </div>
       <div class="carousel-info">
         <span class="carousel-counter" id="spotlightCounter">STYLE 01 · HÔTEL &amp; LUXE</span>
         <h3 class="carousel-title" id="spotlightTitle">Aurelia Palace · Hôtel &amp; Suites</h3>
         <p class="fine" id="spotlightNote" style="font-size:14px;margin:0">Penthouse · Piscine &amp; Champagne — Prêt à personnaliser avec votre marque, logo et coordonnées.</p>
         <div class="carousel-nav">
-          <button type="button" class="icon-btn" id="carouselPrevBtn" aria-label="Vidéo précédente">←</button>
-          <button type="button" class="icon-btn" id="carouselPlayBtn" aria-label="Lire ou mettre en pause">▶</button>
-          <button type="button" class="icon-btn" id="carouselNextBtn" aria-label="Vidéo suivante">→</button>
           <button type="button" class="pill" id="spotlightSelectBtn">Choisir ce style (#01)</button>
         </div>
       </div>
@@ -719,7 +776,13 @@ footer.shell{flex-direction:column;padding-bottom:105px}.mobile-sticky-bar{displ
       </div>
     </div>
 
-    <div class="gallery" id="videoGallery"></div>
+    <section class="shorts" id="shorts" aria-labelledby="shortsTitle">
+      <div class="shorts-heading"><h3 id="shortsTitle">Shorts <span>9:16</span></h3><p>Reels · TikTok · YouTube Shorts</p></div>
+      <div class="shorts-stage">
+        <div class="gallery" id="videoGallery"></div>
+        <div class="shorts-arrows"><button type="button" id="shortsPrev" aria-label="Previous Short">‹</button><button type="button" id="shortsNext" aria-label="Next Short">›</button></div>
+      </div>
+    </section>
     <p class="gallery-note" data-i18n="galleryNote">Aperçu interactif de composition en temps réel (ne consomme aucun crédit IA payant). Le rendu vidéo final haute définition est produit après validation de commande.</p>
   </section>
 
@@ -1156,15 +1219,6 @@ footer.shell{flex-direction:column;padding-bottom:105px}.mobile-sticky-bar{displ
   <span>Contact : <a href="mailto:mvryhan@gmail.com">mvryhan@gmail.com</a> · <a href="https://sales-preview-20261115.deepsyq.pages.dev/contact.html">Support (help@deepsyq.app)</a> · <a href="https://sales-preview-20261115.deepsyq.pages.dev/deepsyq.html">Plateforme DEEPSYQ</a> · </span>
 </footer>
 
-<!-- Sticky Mobile Checkout Bar (Requirement 10 & 13) -->
-<div class="mobile-sticky-bar" aria-label="Votre commande en cours">
-  <div>
-    <div style="font-size:11px;color:var(--muted)" id="mobileBarPkg">Votre commande · Pack MEDIUM (20s)</div>
-    <strong style="font-size:16px;color:var(--gold)" id="mobileBarPrice">14,95 €</strong>
-  </div>
-  <a href="#commande" class="pill" style="padding:10px 16px;min-height:44px">Continuer ↓</a>
-</div>
-
 <script>
 "use strict";
 const samples=[
@@ -1428,9 +1482,10 @@ const SECTOR_GROUPS={
   prestige:[8,11,15,16,17,18]
 };
 
+let spotlightSlot=1;
 function updateSpotlightCarousel(idx){
   const safeIdx=((idx%samples.length)+samples.length)%samples.length;
-  state.selectedSlot=safeIdx+1;
+  spotlightSlot=safeIdx+1;
   const s=samples[safeIdx];
   const vid=document.getElementById("spotlightVideo");
   if(vid){
@@ -1534,8 +1589,6 @@ samples.forEach((s,i)=>{
     toggle.textContent="▶";
     toggle.setAttribute("aria-label","Lire la vidéo "+s.title);
   };
-  article.addEventListener("mouseenter",()=>{startPlayback()});
-  article.addEventListener("mouseleave",()=>{stopPlayback()});
   toggle.addEventListener("click",async()=>{
     if(video.paused){
       await startPlayback();
@@ -1556,6 +1609,7 @@ samples.forEach((s,i)=>{
   select.textContent="Choisir ce style";
   select.addEventListener("click",()=>{
     state.selectedSlot=i+1;
+    setOrderFormat("9:16");
     styleSelect.value=s.title;
     gallery.querySelectorAll(".showcase").forEach(el=>el.classList.remove("selected"));
     article.classList.add("selected");
@@ -1641,17 +1695,44 @@ function updateSummary(){
   if(mobPrice)mobPrice.textContent=formatMoneyFromEur(totalEur);
 }
 
+function setOrderFormat(value){
+  for(const id of ["videoFormat","csFormat"]){
+    const control=document.getElementById(id);
+    if(control)control.value=value;
+  }
+  if(state.selectedPkg==="custom_studio")calculateCustomStudioLocal();
+}
+function scrollShorts(step){
+  const viewport=gallery.getBoundingClientRect();
+  const center=viewport.left+viewport.width/2;
+  const cards=[...gallery.querySelectorAll(".showcase")].filter(card=>card.getClientRects().length);
+  if(!cards.length)return;
+  const distance=card=>Math.abs(card.getBoundingClientRect().left+card.offsetWidth/2-center);
+  const current=cards.reduce((best,card)=>distance(card)<distance(best)?card:best);
+  const index=cards.indexOf(current);
+  cards[(index+step+cards.length)%cards.length].scrollIntoView({block:"nearest",inline:"center",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+}
+document.getElementById("shortsPrev").addEventListener("click",()=>scrollShorts(-1));
+document.getElementById("shortsNext").addEventListener("click",()=>scrollShorts(1));
+document.getElementById("heroPlayBtn").addEventListener("click",async event=>{
+  const video=document.getElementById("heroPreviewVideo"),button=event.currentTarget;
+  if(!video.paused){video.pause();button.textContent="▶";button.setAttribute("aria-label","Play preview");return;}
+  try{await video.play();button.textContent="Ⅱ";button.setAttribute("aria-label","Pause preview");}catch{}
+});
+
 // Spotlight Carousel & Filter Controls
-document.getElementById("carouselPrevBtn")?.addEventListener("click",()=>updateSpotlightCarousel(state.selectedSlot-2));
-document.getElementById("carouselNextBtn")?.addEventListener("click",()=>updateSpotlightCarousel(state.selectedSlot));
+document.getElementById("carouselPrevBtn")?.addEventListener("click",()=>updateSpotlightCarousel(spotlightSlot-2));
+document.getElementById("carouselNextBtn")?.addEventListener("click",()=>updateSpotlightCarousel(spotlightSlot));
 document.getElementById("carouselPlayBtn")?.addEventListener("click",async(e)=>{
   const v=document.getElementById("spotlightVideo");
   if(!v)return;
-  if(v.paused){try{await v.play();e.currentTarget.textContent="Ⅱ";trackFunnelEvent("video_play",{slot:state.selectedSlot});}catch{}}
+  if(v.paused){try{await v.play();e.currentTarget.textContent="Ⅱ";trackFunnelEvent("video_play",{slot:spotlightSlot});}catch{}}
   else{v.pause();e.currentTarget.textContent="▶";}
 });
 document.getElementById("spotlightSelectBtn")?.addEventListener("click",()=>{
-  const s=samples[state.selectedSlot-1]||samples[0];
+  state.selectedSlot=spotlightSlot;
+  const s=samples[spotlightSlot-1]||samples[0];
+  setOrderFormat("16:9");
   styleSelect.value=s.title;
   document.getElementById("picked").textContent="Style sélectionné : "+String(state.selectedSlot).padStart(2,"0")+" — "+s.title;
   updateSummary();
@@ -1767,6 +1848,11 @@ function applyLanguage(lang){
   updateSummary();
 }
 
+styleSelect.addEventListener("change",()=>{
+  const index=samples.findIndex(sample=>sample.title===styleSelect.value);
+  if(index>=0)state.selectedSlot=index+1;
+  updateSummary();
+});
 document.getElementById("langSwitcher").addEventListener("change",(e)=>applyLanguage(e.target.value));
 document.getElementById("currencySwitcher").addEventListener("change",(e)=>{
   state.currency=e.target.value;
@@ -1775,7 +1861,9 @@ document.getElementById("currencySwitcher").addEventListener("change",(e)=>{
 });
 
 // Stripe Checkout Button Handler
-document.getElementById("stripeCheckoutBtn").addEventListener("click",async()=>{
+document.getElementById("stripeCheckoutBtn").addEventListener("click",async(event)=>{
+  const checkoutButton=event.currentTarget;
+  if(checkoutButton.disabled)return;
   const form=document.getElementById("projectForm");
   if(!form.reportValidity())return;
   const accepted=document.getElementById("acceptTerms").checked;
@@ -1812,6 +1900,7 @@ document.getElementById("stripeCheckoutBtn").addEventListener("click",async()=>{
     },
     acceptedTerms:true
   };
+  checkoutButton.disabled=true;
   try{
     const res=await fetch("/api/sales/orders/checkout",{
       method:"POST",
@@ -1823,13 +1912,16 @@ document.getElementById("stripeCheckoutBtn").addEventListener("click",async()=>{
       feedback.textContent="Erreur : "+(data.message||data.error||"Impossible de créer la commande.");
       return;
     }
-    document.getElementById("trackOrderInput").value=data.orderNumber;
+    const tracking=document.getElementById("trackOrderInput");
+    if(tracking)tracking.value=data.orderNumber;
     feedback.textContent="Commande "+data.orderNumber+" créée ! Redirection vers le paiement…";
     if(data.checkoutUrl){
       window.location.href=data.checkoutUrl;
     }
   }catch{
     feedback.textContent="Service temporairement indisponible. Vous pouvez utiliser le bouton e-mail à côté.";
+  }finally{
+    checkoutButton.disabled=false;
   }
 });
 
