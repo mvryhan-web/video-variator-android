@@ -1,5 +1,5 @@
 name: DEEPSYQ Christmas live Chromium visual QA (no deploy)
-# QA V4 mobile card coverage: inspect snow AFTER scrolling hidden cards into view.
+# QA V4 final visual quality: separated fluffy snow mounds, not a white ribbon; browser-only.
 on:
   push:
     branches: [test]
@@ -110,6 +110,24 @@ jobs:
                 paintedPixels:pixels,opaqueOld:parseFloat(getComputedStyle(bar.querySelector(':scope > .xmas-snowcap')).opacity)};
             });
             console.log('LIVE_XMAS_V4_FLUFFY_SNOW',name,JSON.stringify(pileProof));
+
+            const snowProfile=await page.evaluate(()=>{
+              const canvas=document.getElementById('xmas-pile-overlay'),bar=document.getElementById('homeQuickBar');
+              const box=bar.getBoundingClientRect(),scale=canvas.width/innerWidth;
+              const x=Math.max(0,Math.round((box.left+8)*scale));
+              const y=Math.max(0,Math.round((box.top-12)*scale));
+              const width=Math.min(canvas.width-x,Math.round((box.width-16)*scale));
+              const data=canvas.getContext('2d').getImageData(x,y,width,1).data;
+              let covered=0,total=0;
+              for(let i=3;i<data.length;i+=Math.max(4,Math.round(scale*6)*4)){
+                total++;if(data[i]>65)covered++;
+              }
+              return {covered,total,ratio:Number((covered/Math.max(total,1)).toFixed(3))};
+            });
+            console.log('LIVE_XMAS_V4_PATCHY_PROFILE',name,JSON.stringify(snowProfile));
+            assert(snowProfile.ratio>.06&&snowProfile.ratio<.82,
+              name+' snow must form separated natural cushions, not a continuous painted ribbon');
+
             assert(pileProof&&pileProof.visiblePiles>=3&&pileProof.paintedPixels>=50&&pileProof.opaqueOld===0,
               name+' fluffy canvas snow must replace old gradient strips and draw above input');
             const snowPoint=await page.evaluate(()=>{
