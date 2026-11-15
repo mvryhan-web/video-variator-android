@@ -1,4 +1,5 @@
 name: DEEPSYQ owner appearance carousel — production activation only
+# verification rerun: canonical Worker may transform account HTML; UI-content verification only.
 on:
   push:
     branches: [deepsyq-platform]
