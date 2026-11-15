@@ -1,5 +1,5 @@
 name: DEEPSYQ Christmas live Chromium visual QA (no deploy)
-# QA V3.2 post-fix: exact portrait and scroll panorama; snowcaps strictly above input panels.
+# QA V4: test fluffy above-card canvas snow, cursor interaction, shared chat chimney offset.
 on:
   push:
     branches: [test]
@@ -91,6 +91,43 @@ jobs:
             });
             console.log('LIVE_XMAS_INPUT_SNOWCAP_GEOMETRY',name,JSON.stringify(capGeometry));
             assert(capGeometry&&capGeometry.capTop<capGeometry.barTop-4&&capGeometry.capBottom<=capGeometry.barTop,name+' fluffy snow must sit ABOVE input, not cover it');
+
+            const pileProof=await page.evaluate(()=>{
+              const overlay=document.getElementById('xmas-pile-overlay');
+              const bar=document.getElementById('homeQuickBar');
+              if(!overlay||!bar)return null;
+              const rect=bar.getBoundingClientRect(), dpr=overlay.width/innerWidth;
+              const sx=Math.max(0,Math.round((rect.left+rect.width*.18)*dpr));
+              const sy=Math.max(0,Math.round((rect.top-27)*dpr));
+              const sw=Math.min(overlay.width-sx,Math.round(rect.width*.64*dpr));
+              const sh=Math.min(overlay.height-sy,Math.round(29*dpr));
+              let pixels=0;
+              if(sw>0&&sh>0){
+                const data=overlay.getContext('2d').getImageData(sx,sy,sw,sh).data;
+                for(let i=3;i<data.length;i+=4)if(data[i]>35)pixels++;
+              }
+              return {present:!!overlay,visiblePiles:Number(overlay.dataset.xmasPiles||0),
+                paintedPixels:pixels,opaqueOld:parseFloat(getComputedStyle(bar.querySelector(':scope > .xmas-snowcap')).opacity)};
+            });
+            console.log('LIVE_XMAS_V4_FLUFFY_SNOW',name,JSON.stringify(pileProof));
+            assert(pileProof&&pileProof.visiblePiles>=3&&pileProof.paintedPixels>=50&&pileProof.opaqueOld===0,
+              name+' fluffy canvas snow must replace old gradient strips and draw above input');
+            const snowPoint=await page.evaluate(()=>{
+              const box=document.getElementById('homeQuickBar').getBoundingClientRect();
+              return {x:box.left+box.width/2,y:box.top-13};
+            });
+            if(isMobile){
+              await page.evaluate(p=>document.dispatchEvent(new PointerEvent('pointermove',
+                {bubbles:true,clientX:p.x-25,clientY:p.y,pointerType:'touch',isPrimary:true})),snowPoint);
+              await page.evaluate(p=>document.dispatchEvent(new PointerEvent('pointermove',
+                {bubbles:true,clientX:p.x+25,clientY:p.y,pointerType:'touch',isPrimary:true})),snowPoint);
+            }else{
+              await page.mouse.move(snowPoint.x-35,snowPoint.y);
+              await page.mouse.move(snowPoint.x+35,snowPoint.y,{steps:5});
+            }
+            await page.waitForFunction(()=>Number(document.getElementById('xmas-pile-overlay')?.dataset.xmasRippleCount||0)>=1,null,{timeout:5000});
+            console.log('LIVE_XMAS_V4_POINTER_BRUSH',name,await page.evaluate(()=>Number(document.getElementById('xmas-pile-overlay').dataset.xmasRippleCount)));
+
             await page.evaluate(()=>window.scrollTo({top:Math.min(1400,Math.max(0,document.documentElement.scrollHeight-innerHeight)),behavior:'instant'}));
             await page.waitForFunction(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--xmas-photo-position'))>=25,null,{timeout:12000});
             const pan=await page.evaluate(()=>({position:getComputedStyle(document.documentElement).getPropertyValue('--xmas-photo-position').trim(),
@@ -139,6 +176,9 @@ jobs:
               }));
               console.log('LIVE_XMAS_V2_SECONDARY_PAGE',name,route,JSON.stringify(other));
               assert(other.snowcaps>=1&&other.mini>=1&&other.toggle,name+' '+route+' decorations not distributed');
+              const pileCount=await page.evaluate(()=>Number(document.getElementById('xmas-pile-overlay')?.dataset.xmasPiles||0));
+              console.log('LIVE_XMAS_V4_CARD_SNOW',name,route,pileCount);
+              assert(pileCount>=2,name+' '+route+' missing on-card fluffy snow');
               const pageBg=await page.evaluate(()=>({
                 image:getComputedStyle(document.documentElement).backgroundImage,
                 attachment:getComputedStyle(document.documentElement).backgroundAttachment
@@ -158,6 +198,12 @@ jobs:
                 const selector='#jChatForm .xmas-mini-universal';
                 await page.waitForFunction(sel=>document.querySelector(sel)?.querySelectorAll('.xmas-person').length===5,selector,{timeout:10000});
                 console.log('LIVE_XMAS_V3_UNIVERSAL_CHAT',name,route,'five actors mounted');
+                const chimney=await page.evaluate(()=>({
+                  shift:getComputedStyle(document.documentElement).getPropertyValue('--xmas-chimney-shift').trim(),
+                  position:getComputedStyle(document.documentElement).backgroundPosition
+                }));
+                console.log('LIVE_XMAS_V4_CHIMNEY',name,JSON.stringify(chimney));
+                assert(chimney.shift.includes('px')||chimney.shift.includes('clamp'),name+' chat chimney offset absent');
               }
             }
             // Image, Video and Audio all use the SAME JARVIX chat composer.
