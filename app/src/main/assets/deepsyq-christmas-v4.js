@@ -230,8 +230,8 @@
   const width=Math.max(0,r.width);
   const left=r.left-p.left+host.scrollLeft-host.clientLeft;
   const top=r.top-p.top+host.scrollTop-host.clientTop-MOBILE_H;
-  if(Math.abs(record.left-left)>.75)cap.style.left=left.toFixed(2)+'px';
-  if(Math.abs(record.top-top)>.75)cap.style.top=top.toFixed(2)+'px';
+  if(!Number.isFinite(record.left)||Math.abs(record.left-left)>.75)cap.style.left=left.toFixed(2)+'px';
+  if(!Number.isFinite(record.top)||Math.abs(record.top-top)>.75)cap.style.top=top.toFixed(2)+'px';
   if(Math.abs(record.width-width)>.75||refresh){
    const dpr=Math.min(devicePixelRatio||1,1.5);
    const nextW=Math.max(1,Math.round(width*dpr)),nextH=Math.round(MOBILE_H*dpr);
