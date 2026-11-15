@@ -16,7 +16,7 @@ jobs:
           node-version: '22'
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
-      - name: Test six cards, legacy theme persistence and Christmas chat readability
+      - name: Test real new visitor, six saved preferences, January 11 cutoff and Christmas chat
         shell: bash
         run: |
           set -euo pipefail
@@ -37,6 +37,21 @@ jobs:
               try{
                 await page.goto('https://deepsyq.app/account-settings.html?appearance_live_qa='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
                 await page.locator('#accountThemesCarousel').waitFor({timeout:25000});
+                await page.waitForFunction(()=>document.documentElement.dataset.siteTheme==='christmas',null,{timeout:16000});
+                const fresh=await page.evaluate(()=>({
+                  theme:document.documentElement.dataset.siteTheme,
+                  persistedClassic:localStorage.getItem('vu_theme'),
+                  persistedCustom:localStorage.getItem('deepsyq_site_theme'),
+                  selected:[...document.querySelectorAll('#accountThemesCarousel button[aria-pressed="true"]')].map(el=>el.dataset.accountTheme)
+                }));
+                console.log(prefix+'_NEW_VISITOR_DEFAULT',JSON.stringify(fresh));
+                assert.equal(fresh.theme,'christmas');
+                assert.equal(fresh.persistedClassic,null);
+                assert.equal(fresh.persistedCustom,null);
+                assert.deepEqual(fresh.selected,['christmas']);
+                await page.reload({waitUntil:'domcontentloaded'});
+                await page.waitForFunction(()=>document.documentElement.dataset.siteTheme==='christmas',null,{timeout:15000});
+                console.log(prefix+'_NEW_VISITOR_RELOAD_PASS');
                 const actual=await page.locator('#accountThemesCarousel [data-account-theme]').evaluateAll(els=>els.map(e=>e.dataset.accountTheme));
                 console.log(prefix+'_CARDS',JSON.stringify(actual));
                 assert.deepEqual(actual,['light','dark','system','brown','soft-dark','christmas']);
@@ -113,8 +128,33 @@ jobs:
                 await page.screenshot({path:'/tmp/owner-appearance-qa/'+name+'-failure.png',fullPage:false}).catch(()=>{});
                 throw error;
               }finally{await context.close()}
+              // Freeze the browser clock AFTER 10 January 2027 and prove
+              // the standard Dark default comes back without touching storage.
+              const expired=await browser.newContext({viewport,colorScheme:'dark'});
+              await expired.addInitScript(()=>{
+                Date.now=()=>Date.parse('2027-01-11T00:00:00+01:00');
+              });
+              const cutoffPage=await expired.newPage();
+              try{
+                await cutoffPage.goto('https://deepsyq.app/account-settings.html?expire_qa='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
+                await cutoffPage.locator('#accountThemesCarousel').waitFor({timeout:25000});
+                await cutoffPage.waitForFunction(()=>document.documentElement.dataset.theme==='dark',null,{timeout:15000});
+                const reverted=await cutoffPage.evaluate(()=>({
+                  theme:document.documentElement.dataset.theme,
+                  special:document.documentElement.dataset.siteTheme||null,
+                  classic:localStorage.getItem('vu_theme'),
+                  custom:localStorage.getItem('deepsyq_site_theme'),
+                  pressed:[...document.querySelectorAll('#accountThemesCarousel button[aria-pressed="true"]')].map(e=>e.dataset.accountTheme)
+                }));
+                console.log(prefix+'_JAN_11_DEFAULT_RESTORED',JSON.stringify(reverted));
+                assert.equal(reverted.theme,'dark');
+                assert.equal(reverted.special,null);
+                assert.equal(reverted.classic,null);
+                assert.equal(reverted.custom,null);
+                assert.deepEqual(reverted.pressed,['dark']);
+              }finally{await expired.close()}
             }
-            console.log('LIVE_OWNER_SIX_THEMES_AND_CHAT_PASS');
+            console.log('LIVE_OWNER_SIX_THEMES_NEW_VISITOR_AND_2027_EXPIRY_PASS');
           }finally{await browser.close()}
           NODE
       - uses: actions/upload-artifact@v4
