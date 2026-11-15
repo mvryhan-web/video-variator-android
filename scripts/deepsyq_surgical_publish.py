@@ -531,6 +531,7 @@ def main():
     parser.add_argument("--files", required=True, help="Comma-separated EXACT asset paths")
     parser.add_argument("--commit", default=os.environ.get("GITHUB_SHA", ""))
     parser.add_argument("--chat-worker", action="store_true")
+    parser.add_argument("--workspace-security", action="store_true")
     parser.add_argument("--email-worker", action="store_true")
     parser.add_argument("--credit-worker", action="store_true")
     parser.add_argument("--new-voice", action="store_true")
@@ -541,6 +542,9 @@ def main():
            "Email auth Worker release cannot include other Worker or asset changes")
     insist(not args.credit_worker or not (args.chat_worker or args.email_worker or args.new_voice or args.files), "Credit Worker release cannot include assets or other Worker changes")
     paths = [] if args.credit_worker or args.chat_worker or args.email_worker or args.new_voice else allowed_paths(args.files)
+    if args.workspace_security:
+        insist(not (args.credit_worker or args.chat_worker or args.email_worker or args.new_voice)
+               and set(paths) == {"jarvix-chat.js", "jarvix-chat.html"}, "Invalid workspace security release scope")
     voice_sources = {}
     if args.new_voice:
         tracked = checked_git("ls-files", "app/src/main/assets/media/jarvix/clips", "app/src/main/assets/media/jarvix/conversation").splitlines()
@@ -582,6 +586,15 @@ def main():
         insist(old.split(start, 1)[0] == chat_worker.split(new_start, 1)[0] and
                old.split(end, 1)[1] == chat_worker.split(end, 1)[1],
                "Worker diff extends beyond chat provider handling")
+    elif args.workspace_security:
+        original_worker = subprocess.check_output(["git", "show", origin + ":app/src/main/assets/_worker.js"])
+        old_headers = b"          'Content-Type': 'text/html; charset=utf-8',\n          'Cache-Control': 'no-cache'"
+        new_headers = b'          \'Content-Type\': \'text/html; charset=utf-8\',\n          \'Cache-Control\': \'no-cache\',\n          ...([\'/deepsyq\', \'/jarvix-chat\', \'/account-settings\', \'/pricing\'].includes(assetKey) ? {\n            \'Content-Security-Policy\': "frame-ancestors \'self\'",\n            \'X-Frame-Options\': \'SAMEORIGIN\'\n          } : {})'
+        insist(original_worker.count(old_headers) == 1, "Could not identify the live HTML response headers")
+        expected_worker = original_worker.replace(old_headers, new_headers, 1)
+        insist(expected_worker == (ROOT / "_worker.js").read_bytes(),
+               "Worker diff extends beyond the four page framing headers")
+        chat_worker = expected_worker
     elif args.credit_worker:
         original_worker = subprocess.check_output(["git", "show", origin + ":app/src/main/assets/_worker.js"])
         expected_worker = original_worker.replace(
@@ -637,13 +650,13 @@ def main():
         # the tour-only escape hatch preserves the original LIVE manifest
         # by hash rather than guessing content or changing unrelated routes.
         try:
-            if args.credit_worker or args.chat_worker or args.email_worker or args.new_voice:
+            if args.workspace_security or args.credit_worker or args.chat_worker or args.email_worker or args.new_voice:
                 raise Blocked("Use unchanged production asset manifest")
             stage, candidate, changed, from_live, expected_bytes = build_candidate(
                 live, paths, origin, work)
             direct_manifest = False
         except Blocked as error:
-            insist(args.credit_worker or args.chat_worker or args.email_worker or args.new_voice or (allowed_hash_reuse(paths) and
+            insist(args.workspace_security or args.credit_worker or args.chat_worker or args.email_worker or args.new_voice or (allowed_hash_reuse(paths) and
                    str(error).startswith("Could not reproduce unchanged LIVE asset bytes:")),
                    str(error))
             expected_bytes = {rel: (ROOT / rel).read_bytes() for rel in paths}
@@ -655,7 +668,7 @@ def main():
             from_live = 0
             stage = None
             direct_manifest = True
-        if not changed and not args.credit_worker and not args.chat_worker and not args.email_worker:
+        if not changed and not args.workspace_security and not args.credit_worker and not args.chat_worker and not args.email_worker:
             # A previous Pages deployment can have committed both new hashes
             # while its first public read was served from an older edge cache.
             # Verify the actual bytes for every requested asset before declaring
@@ -703,7 +716,7 @@ def main():
                 if now != live_id:
                     newest = now
                     insist(not deployed_id or newest == deployed_id, "Concurrent deployment detected")
-                    insist(not (args.credit_worker or args.chat_worker or args.email_worker) or deployed_commit == sha, "Unexpected Worker release commit")
+                    insist(not (args.workspace_security or args.credit_worker or args.chat_worker or args.email_worker) or deployed_commit == sha, "Unexpected Worker release commit")
                     insist(actual == candidate, "NEW_DEPLOYMENT_ASSET_DIFFERS")
                     insist(script == worker, "NEW_DEPLOYMENT_WORKER_CHANGED")
                     new_settings = cloudflare.worker_settings(script)
@@ -851,7 +864,7 @@ def main():
         print(json.dumps({"status": "PUBLISHED_VERIFIED", "deployment": newest,
                           "previous": live_id, "files": sorted(changed),
                           "all_other_assets_unchanged": True,
-                          "worker_and_bindings_preserved": not (args.credit_worker or args.chat_worker or args.email_worker), "bindings_preserved": True, "published": True}))
+                          "worker_and_bindings_preserved": not (args.workspace_security or args.credit_worker or args.chat_worker or args.email_worker), "bindings_preserved": True, "published": True}))
     return 0
 
 if __name__ == "__main__":

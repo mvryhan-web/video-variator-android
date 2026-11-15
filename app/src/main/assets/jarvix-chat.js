@@ -1460,8 +1460,12 @@ export function expandWorkspace() {
   }
 }
 
-// Listen to postMessage from embedded tools
+// Only the active Video Uniquifier frame may update the processing status.
 window.addEventListener('message', (e) => {
+  const frame = $('jWorkspaceFrame');
+  if (e.origin !== location.origin || !frame?.contentWindow || e.source !== frame.contentWindow) return;
+  const frameUrl = new URL(frame.src, location.href);
+  if (frameUrl.origin !== location.origin || !['/video-uniquifier', '/video-uniquifier.html'].includes(frameUrl.pathname)) return;
   if (e.data?.type === 'vu:processing_started') {
     const vc = e.data.variants || '2';
     const msg = ({

@@ -189,6 +189,7 @@ jobs:
        (github.event_name == 'push' &&
         (github.event.head_commit.message == 'release(JARVIX Tour): publish tour-only fix' ||
          github.event.head_commit.message == 'release(Canvas): open Home photos and simplify controls' ||
+         github.event.head_commit.message == 'release(Security): protect JARVIX workspace messages and framing' ||
          github.event.head_commit.message == 'release(Video Uniquifier): preserve output quality selection' ||
          github.event.head_commit.message == 'release(JARVIX): activate scenario recordings on production' ||
          github.event.head_commit.message == 'release(JARVIX): connect voice to active media conversation' ||
@@ -243,6 +244,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Security): protect JARVIX workspace messages and framing' }}" == "true" ]]; then
+            python scripts/deepsyq_surgical_publish.py --mode publish --files "jarvix-chat.js,jarvix-chat.html" --commit "$GITHUB_SHA" --workspace-security
+            exit
+          fi
           if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Video Uniquifier): preserve output quality selection' }}" == "true" ]]; then
             SCOPE_FILES="admin-access.js,trial-quality.js,video-uniquifier.html"
           fi

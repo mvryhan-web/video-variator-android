@@ -1874,7 +1874,11 @@ export default {
         status: 200,
         headers: {
           'Content-Type': 'text/html; charset=utf-8',
-          'Cache-Control': 'no-cache'
+          'Cache-Control': 'no-cache',
+          ...(['/deepsyq', '/jarvix-chat', '/account-settings', '/pricing'].includes(assetKey) ? {
+            'Content-Security-Policy': "frame-ancestors 'self'",
+            'X-Frame-Options': 'SAMEORIGIN'
+          } : {})
         }
       });
     }
