@@ -781,6 +781,26 @@ body{background:#090a0c}
 .cs-heading .kicker{border:1px solid #735932;border-radius:20px;padding:5px 14px}
 .cs-heading h2{color:#f9f4e9}
 .cs-quote-bar h3::before{content:"◇";margin-inline-end:8px;color:#ffd48d}
+/* One order surface from configuration to payment. */
+.cs-layout{border:1px solid #d6ad63;border-radius:20px;padding:clamp(14px,2.4vw,30px);background:radial-gradient(ellipse at top right,#3b2c1954,transparent 52%),#111317;box-shadow:inset 0 0 25px #aa773719;gap:clamp(16px,2.4vw,30px)}
+.cs-input-column,.cs-quote-bar{min-width:0}
+.cs-layout .cs-controls,.cs-layout .cs-quote-bar,.cs-layout #projectForm{padding:0!important;background:none!important;border:0!important;border-radius:0!important;box-shadow:none}
+.cs-layout .cs-mobile-title{display:block;margin:0 0 10px;font-size:23px;color:#f5f1e9}
+.cs-layout .cs-mobile-title>span{display:none}
+.cs-layout #commande{margin-top:20px;padding-top:20px;border-top:1px solid #8f7041}
+.cs-layout #projectForm{display:grid;grid-template-columns:minmax(0,1fr);margin:0}
+.cs-layout .cs-quote-bar{border-inline-start:1px solid #8f7041!important;padding-inline-start:clamp(16px,2.4vw,30px)!important}
+.cs-layout .cs-quote-bar .unified-total{display:flex!important;align-items:center;justify-content:space-between;border-top:1px solid #8f7041;padding-top:10px;font-size:19px;font-weight:700}
+.cs-layout .cs-quote-bar .unified-total strong{color:#f7ce81!important;font-size:28px}
+.checkout-security{text-align:center;margin:0;font-size:13px;color:#dcd1bf}
+.cs-layout .order-breakdown{margin-top:9px}
+#questions .premium-faq-grid{display:block}
+#questions .premium-faq-accordion{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:start;gap:10px}
+@media(max-width:800px){
+ .cs-layout .cs-quote-bar{border-inline-start:0!important;border-top:1px solid #8f7041!important;padding:17px 0 0!important}
+ #questions .premium-faq-accordion{grid-template-columns:1fr}
+}
+@media(max-width:700px){#projectForm h2::before{content:none}}
 </style></head>
 <body>
 <header class="top"><div class="shell nav">
@@ -1042,6 +1062,7 @@ body{background:#090a0c}
     <div class="custom-studio-box" id="customStudioConfigurator" aria-label="Configurateur Custom Studio">
       <header class="cs-heading"><span class="kicker">CUSTOM STUDIO</span><h2 data-i18n="studioTitle">Build Your Custom Video</h2><p data-i18n="studioLead">Choose the details. See your estimated price.</p></header>
       <div class="cs-layout">
+      <div class="cs-input-column">
       <div class="cs-controls">
       <h3 class="cs-mobile-title"><span>1</span> <b data-i18n="studioConfigure">Configure Your Video</b></h3>
       <div class="custom-studio-grid">
@@ -1112,79 +1133,7 @@ body{background:#090a0c}
       </div>
       <button type="button" class="pill secondary" id="resetCustomStudioBtn" data-i18n="studioReset">Reset options</button>
       </div>
-      <div class="cs-quote-bar" aria-live="polite">
-        <h3 data-i18n="studioSummary">Your Order</h3>
-        <div class="cs-preview"><img src="./media/sales-villa-sunset.webp" alt="" width="128" height="72" loading="lazy"><strong id="csStylePreview">Custom Video</strong></div>
-        <ul id="csQuoteLines"></ul>
-        <div>
-          <div style="font-size:12px;color:#6ee7b7;font-weight:700" id="csSpecSummary">Spécification : 20s · 9:16 · 1080p · Musique incluse</div>
-          <div style="font-size:12px;color:var(--muted)" id="csPriceBreakdown">Base 14,95 € + Options 0,00 € + Taxes 0,00 €</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:14px">
-          <strong style="font-size:28px;color:#ecfdf5" id="csLiveTotal">14,95 €</strong>
-          <button type="button" class="pill" id="applyCustomStudioToOrderBtn" data-i18n="studioContinue">Continue to Order Details →</button>
-        </div>
-      </div>
-      </div>
-    </div>
-
-  </section>
-
-  <!-- ADDITIONAL SERVICES BLOCK -->
-  <section id="services-plus">
-    <div class="section-head">
-      <div>
-        <span class="kicker" data-i18n="addonsKicker">Services complémentaires</span>
-        <h2 data-i18n="addonsTitle">Aidons votre entreprise à devenir encore plus visible</h2>
-      </div>
-      <p data-i18n="addonsDesc">Ajoutez ces options en un clic à votre commande vidéo ou demandez une proposition personnalisée.</p>
-    </div>
-    <button class="premium-reveal-extras" id="showAllExtras" type="button" aria-expanded="false" aria-controls="addonsGrid">Voir tous les services <span aria-hidden="true">＋</span></button><div class="addons-grid" id="addonsGrid"></div>
-  </section>
-
-  <!-- 3-STEP PROCESS -->
-  <section id="processus">
-    <div class="section-head">
-      <div>
-        <span class="kicker" data-i18n="procKicker">Un processus simple</span>
-        <h2 data-i18n="procTitle">De l'idée à votre vidéo.</h2>
-      </div>
-      <p data-i18n="procDesc">Pas de jargon. Un brief clair, un paiement sécurisé ou un devis, puis une réalisation validée.</p>
-    </div>
-    <div class="how">
-      <div class="step"><span data-i18n="step1Num">01 / Votre choix</span><h3 data-i18n="step1Title">Sélectionnez le pack &amp; le style</h3><p data-i18n="step1Desc">Choisissez parmi les styles et les formules Basic (4,95 €), Medium (14,95 €), Professional (54,95 €) ou Custom Studio.</p></div>
-      <div class="step"><span data-i18n="step2Num">02 / Vos éléments</span><h3 data-i18n="step2Title">Logo, texte &amp; coordonnées</h3><p data-i18n="step2Desc">Importez votre logo (ou cochez « Pas de logo ») et indiquez l'adresse ou le contact à afficher.</p></div>
-      <div class="step"><span data-i18n="step3Num">03 / Livraison rapide</span><h3 data-i18n="step3Title">Production &amp; validation</h3><p data-i18n="step3Desc">Notre studio prépare votre vidéo et vous recevez le fichier HD prêt pour vos réseaux sociaux.</p></div>
-    </div>
-  </section>
-
-  <!-- ORDER FORM & STRIPE CHECKOUT -->
-  <div class="checkout-faq-layout"><section id="commande" class="order" aria-label="Commander votre vidéo">
-    <details class="order-breakdown">
-      <summary>Order summary</summary>
-      <span class="kicker" data-i18n="orderKicker">Commande en ligne &amp; Devis</span>
-      <h2 data-i18n="orderTitle">Configurez votre vidéo publicitaire</h2>
-      <p class="lead" data-i18n="orderLead">Réglez directement par carte via Stripe Checkout ou préparez une demande par e-mail. Aperçu en direct sur l'écran ci-dessus.</p>
-
-      <div class="price"><span id="orderSummaryBigPrice">14,95 €</span> <small id="orderSummaryPkgLabel">/ Pack MEDIUM (20s)</small></div>
-
-      <div class="summary-box" aria-live="polite">
-        <div class="summary-row"><span data-i18n="sumPackage">Forfait vidéo sélectionné</span><strong id="sumPkgVal">MEDIUM (14,95 €)</strong></div>
-        <div class="summary-row"><span data-i18n="sumStyle">Style visuel</span><strong id="sumStyleVal">Aurelia Palace · Hôtel &amp; Suites</strong></div>
-        <div class="summary-row"><span data-i18n="sumFormat">Format</span><strong id="sumFormatVal">9:16</strong></div>
-        <div class="summary-row"><span data-i18n="sumAddons">Services complémentaires</span><strong id="sumAddonsVal">0 €</strong></div>
-        <div class="summary-row total"><span data-i18n="sumTotal">Total commande</span><strong id="sumTotalVal">14,95 €</strong></div>
-      </div>
-
-      <ul class="details">
-        <li data-i18n="ordDet1">Fichier MP4 Full HD prêt pour Instagram, TikTok, YouTube &amp; Web</li>
-        <li data-i18n="ordDet2">Intégration soignée de votre nom, logo et coordonnées</li>
-        <li data-i18n="ordDet3">Contrôle qualité par le studio DEEPSYQ avant livraison</li>
-        <li data-i18n="ordDet4">Numéro de suivi unique (ex. DSQ-000001) dès validation</li>
-      </ul>
-      <p class="fine">Prix indicatif à confirmer selon vos fichiers, le travail nécessaire et le régime de TVA applicable. Aucun paiement n'est encaissé sur cette page sans validation explicite via Stripe Checkout.</p>
-    </details>
-
+      <section id="commande" aria-label="Order details">
     <form id="projectForm">
       <h2 class="full" data-i18n="orderDetailsTitle">Your Order Details</h2>
       <label><span data-i18n="lblCompany">Nom de votre entreprise *</span>
@@ -1279,20 +1228,44 @@ body{background:#090a0c}
       </label>
 
       <div class="btn-group-dual full">
-        <button class="pill" type="button" id="stripeCheckoutBtn">
-          <span data-i18n="btnPayStripe">Payer &amp; Commander en ligne</span> (<span id="btnPayAmount">14,95 €</span>)
-        </button>
         <button class="pill secondary" type="submit">
           <span data-i18n="btnMailto">Préparer mon e-mail de demande</span> <span aria-hidden="true">↗</span>
         </button>
       </div>
 
-      <p class="note full" id="checkoutFeedback" aria-live="polite">Le bouton « Payer &amp; Commander » crée votre commande officielle DSQ et ouvre le paiement sécurisé Stripe. Le second bouton ouvre votre application e-mail (mvryhan@gmail.com).</p>
     </form>
+    <details class="order-breakdown">
+      <summary data-i18n="deliveryDetails">Delivery details</summary>
+      <ul class="details">
+        <li data-i18n="ordDet1">Fichier MP4 Full HD prêt pour Instagram, TikTok, YouTube &amp; Web</li>
+        <li data-i18n="ordDet2">Intégration soignée de votre nom, logo et coordonnées</li>
+        <li data-i18n="ordDet3">Contrôle qualité par le studio DEEPSYQ avant livraison</li>
+        <li data-i18n="ordDet4">Numéro de suivi unique (ex. DSQ-000001) dès validation</li>
+      </ul>
+      <p class="fine">Prix indicatif à confirmer selon vos fichiers, le travail nécessaire et le régime de TVA applicable. Aucun paiement n'est encaissé sur cette page sans validation explicite via Stripe Checkout.</p>
+    </details>
+
+      </section>
+      </div>
+      <div class="cs-quote-bar">
+        <h3 data-i18n="studioSummary">Your Order</h3>
+        <div class="cs-preview"><img src="./media/sales-villa-sunset.webp" alt="" width="128" height="72" loading="lazy"><strong id="csStylePreview">Custom Video</strong></div>
+        <ul id="csQuoteLines" aria-live="polite"></ul>
+        <div>
+          <div style="font-size:12px;color:#6ee7b7;font-weight:700" id="csSpecSummary">Spécification : 20s · 9:16 · 1080p · Musique incluse</div>
+        </div>
+        <div class="unified-total" aria-live="polite"><span data-i18n="sumTotal">Total</span><strong id="csLiveTotal">14,95 €</strong></div>
+        <button class="pill" type="button" id="stripeCheckoutBtn" form="projectForm" aria-describedby="checkoutFeedback">
+          <span data-i18n="btnPayStripe">Payer &amp; Commander en ligne</span> <span aria-hidden="true">→</span>
+        </button>
+        <p class="checkout-security" data-i18n="checkoutSecurity">Secure payment via Stripe</p>
+      <p class="note full" id="checkoutFeedback" aria-live="polite"></p>
+      </div>
+      </div>
+    </div>
+
   </section>
 
-  <!-- LIVE ORDER TRACKING & AI SALES CONSULTANT (ANTON) -->
-  
 <section class="premium-faq" id="questions" aria-labelledby="premiumFaqHeading">
  
  <div class="premium-faq-grid">
@@ -1304,7 +1277,36 @@ body{background:#090a0c}
    <details><summary id="premiumQ4">Les vidéos existent-elles dans plusieurs langues ?</summary><p id="premiumA4">Vous pouvez préciser la langue souhaitée dans le brief. La disponibilité de la voix et des sous-titres dépend du pack.</p></details>
   </div>
  </div>
-</section></div>
+</section>
+
+  <!-- ADDITIONAL SERVICES BLOCK -->
+  <section id="services-plus">
+    <div class="section-head">
+      <div>
+        <span class="kicker" data-i18n="addonsKicker">Services complémentaires</span>
+        <h2 data-i18n="addonsTitle">Aidons votre entreprise à devenir encore plus visible</h2>
+      </div>
+      <p data-i18n="addonsDesc">Ajoutez ces options en un clic à votre commande vidéo ou demandez une proposition personnalisée.</p>
+    </div>
+    <button class="premium-reveal-extras" id="showAllExtras" type="button" aria-expanded="false" aria-controls="addonsGrid">Voir tous les services <span aria-hidden="true">＋</span></button><div class="addons-grid" id="addonsGrid"></div>
+  </section>
+
+  <!-- 3-STEP PROCESS -->
+  <section id="processus">
+    <div class="section-head">
+      <div>
+        <span class="kicker" data-i18n="procKicker">Un processus simple</span>
+        <h2 data-i18n="procTitle">De l'idée à votre vidéo.</h2>
+      </div>
+      <p data-i18n="procDesc">Pas de jargon. Un brief clair, un paiement sécurisé ou un devis, puis une réalisation validée.</p>
+    </div>
+    <div class="how">
+      <div class="step"><span data-i18n="step1Num">01 / Votre choix</span><h3 data-i18n="step1Title">Sélectionnez le pack &amp; le style</h3><p data-i18n="step1Desc">Choisissez parmi les styles et les formules Basic (4,95 €), Medium (14,95 €), Professional (54,95 €) ou Custom Studio.</p></div>
+      <div class="step"><span data-i18n="step2Num">02 / Vos éléments</span><h3 data-i18n="step2Title">Logo, texte &amp; coordonnées</h3><p data-i18n="step2Desc">Importez votre logo (ou cochez « Pas de logo ») et indiquez l'adresse ou le contact à afficher.</p></div>
+      <div class="step"><span data-i18n="step3Num">03 / Livraison rapide</span><h3 data-i18n="step3Title">Production &amp; validation</h3><p data-i18n="step3Desc">Notre studio prépare votre vidéo et vous recevez le fichier HD prêt pour vos réseaux sociaux.</p></div>
+    </div>
+  </section>
+
 <section id="suivi" class="dual-bottom">
     <div class="panel-box">
       <span class="kicker" data-i18n="trackKicker">Suivi en temps réel</span>
@@ -1442,7 +1444,7 @@ const I18N={
     navTrack:"Suivi commande",
     navOrderBtn:"Commander une vidéo",
     heroKicker:"Création vidéo publicitaire internationale",
-    heroBrand:"Votre marque, logo et coordonnées",heroReady:"Prêt pour les réseaux sociaux et les sites web",heroPrepared:"Une vidéo réalisée par le studio",studioConfigure:"Configurez votre vidéo",studioTitle:"Créez votre vidéo sur mesure",csDuration:"Durée de la vidéo",csFormat:"Formats d’export",csResolution:"Résolution",csScript:"Scénario et textes",csLogoAnim:"Animation du logo",csVoiceover:"Voix off et audio",csSubtitles:"Sous-titres",csRevisions:"Révisions",csPriority:"Priorité",csLogo:"Logo",csImages:"Visuels publicitaires supplémentaires",csLanguage:"Langue de la vidéo",studioReset:"Réinitialiser",studioContinue:"Continuer vers la commande →",shortsChoose:"Choisir ce style →",studioLead:"Choisissez les options et consultez le prix estimé.",studioSummary:"Votre commande",orderDetailsTitle:"Vos coordonnées",
+    heroBrand:"Votre marque, logo et coordonnées",heroReady:"Prêt pour les réseaux sociaux et les sites web",heroPrepared:"Une vidéo réalisée par le studio",studioConfigure:"Configurez votre vidéo",studioTitle:"Créez votre vidéo sur mesure",checkoutSecurity:"Paiement sécurisé via Stripe",deliveryDetails:"Détails de livraison",csDuration:"Durée de la vidéo",csFormat:"Formats d’export",csResolution:"Résolution",csScript:"Scénario et textes",csLogoAnim:"Animation du logo",csVoiceover:"Voix off et audio",csSubtitles:"Sous-titres",csRevisions:"Révisions",csPriority:"Priorité",csLogo:"Logo",csImages:"Visuels publicitaires supplémentaires",csLanguage:"Langue de la vidéo",studioReset:"Réinitialiser",studioContinue:"Continuer vers la commande →",shortsChoose:"Choisir ce style →",studioLead:"Choisissez les options et consultez le prix estimé.",studioSummary:"Votre commande",orderDetailsTitle:"Vos coordonnées",
     heroTitle:"Des vidéos publicitaires <em>pour votre entreprise.</em>",
     heroLead:"Des vidéos courtes, soignées et conçues pour attirer de nouveaux clients sur votre site, Instagram Reels, TikTok, YouTube Shorts et Facebook. Choisissez l'un de nos styles, ajoutez votre nom, votre logo et vos coordonnées — nous livrons votre film prêt à diffuser dès 5 €.",
     btnExplore10:"Découvrir les styles",
@@ -1468,7 +1470,7 @@ const I18N={
     navTrack:"Track Order",
     navOrderBtn:"Create My Video",
     heroKicker:"Creative Video Studio",
-    heroBrand:"Your brand, logo and contact details",heroReady:"Ready for social media and websites",heroPrepared:"Professionally prepared video",studioConfigure:"Configure Your Video",studioTitle:"Build Your Custom Video",csDuration:"Video Length",csFormat:"Format",csResolution:"Resolution",csScript:"Script",csLogoAnim:"Logo Animation",csVoiceover:"Voice-over",csSubtitles:"Subtitles",csRevisions:"Revisions",csPriority:"Priority",csLogo:"Logo",csImages:"Additional Ad Images",csLanguage:"Video Language",studioReset:"Reset options",studioContinue:"Continue to Order Details →",shortsChoose:"Use This Style →",studioLead:"Choose the details. See your estimated price.",studioSummary:"Your Order",orderDetailsTitle:"Your Order Details",
+    heroBrand:"Your brand, logo and contact details",heroReady:"Ready for social media and websites",heroPrepared:"Professionally prepared video",studioConfigure:"Configure Your Video",studioTitle:"Build Your Custom Video",checkoutSecurity:"Secure payment via Stripe",deliveryDetails:"Delivery details",csDuration:"Video Length",csFormat:"Format",csResolution:"Resolution",csScript:"Script",csLogoAnim:"Logo Animation",csVoiceover:"Voice-over",csSubtitles:"Subtitles",csRevisions:"Revisions",csPriority:"Priority",csLogo:"Logo",csImages:"Additional Ad Images",csLanguage:"Video Language",studioReset:"Reset options",studioContinue:"Continue to Order Details →",shortsChoose:"Use This Style →",studioLead:"Choose the details. See your estimated price.",studioSummary:"Your Order",orderDetailsTitle:"Your Order Details",
     heroTitle:"<span class='hero-desktop-title'>Professional<br>Promotional Videos<br>for <em>Your Business</em></span><span class='hero-mobile-title'>Your business deserves a powerful <em>video ad</em></span>",
     heroLead:"We create customised advertising videos for hotels, restaurants, beauty brands, real estate and other businesses.",
     btnExplore10:"Explore Video Styles",
@@ -1478,7 +1480,7 @@ const I18N={
     pricingTitle:"Choose your package",
     addonsTitle:"Help your business become even more visible",
     orderTitle:"Configure your promotional video order",
-    btnPayStripe:"Pay & Order via Stripe Checkout",
+    btnPayStripe:"Proceed to Checkout",
     btnMailto:"Prepare Inquiry Email"
   },
   de:{
@@ -1609,7 +1611,7 @@ const I18N={
     navTrack:"Статус заказа",
     navOrderBtn:"Заказать видео",
     heroKicker:"Международная студия рекламных видео DEEPSYQ",
-    heroBrand:"Ваш бренд, логотип и контакты",heroReady:"Для соцсетей и сайтов",heroPrepared:"Профессиональная подготовка видео",studioConfigure:"Настройте видео",studioTitle:"Создайте видео под заказ",csDuration:"Длительность видео",csFormat:"Формат",csResolution:"Разрешение",csScript:"Сценарий",csLogoAnim:"Анимация логотипа",csVoiceover:"Озвучка",csSubtitles:"Субтитры",csRevisions:"Правки",csPriority:"Срочность",csLogo:"Логотип",csImages:"Рекламные изображения",csLanguage:"Язык видео",studioReset:"Сбросить настройки",studioContinue:"Перейти к оформлению →",shortsChoose:"Выбрать стиль →",studioLead:"Выберите настройки и посмотрите предварительную стоимость.",studioSummary:"Ваш заказ",orderDetailsTitle:"Данные для заказа",
+    heroBrand:"Ваш бренд, логотип и контакты",heroReady:"Для соцсетей и сайтов",heroPrepared:"Профессиональная подготовка видео",studioConfigure:"Настройте видео",studioTitle:"Создайте видео под заказ",checkoutSecurity:"Безопасная оплата через Stripe",deliveryDetails:"Условия доставки",csDuration:"Длительность видео",csFormat:"Формат",csResolution:"Разрешение",csScript:"Сценарий",csLogoAnim:"Анимация логотипа",csVoiceover:"Озвучка",csSubtitles:"Субтитры",csRevisions:"Правки",csPriority:"Срочность",csLogo:"Логотип",csImages:"Рекламные изображения",csLanguage:"Язык видео",studioReset:"Сбросить настройки",studioContinue:"Перейти к оформлению →",shortsChoose:"Выбрать стиль →",studioLead:"Выберите настройки и посмотрите предварительную стоимость.",studioSummary:"Ваш заказ",orderDetailsTitle:"Данные для заказа",
     heroTitle:"Рекламные видео, которые помогают вашему бизнесу <em>выделиться.</em>",
     heroLead:"Короткие эффектные видеоролики для вашего сайта, Instagram Reels, TikTok, YouTube Shorts и Facebook. Выберите один из стилей, укажите название компании, логотип и контакты — готовый ролик от 5 €.",
     btnExplore10:"Смотреть примеров",
@@ -1725,22 +1727,26 @@ function calculateCustomStudioLocal(){
   PKG_PRICES_EUR.custom_studio=total;
   PKG_DURATIONS.custom_studio=dur;
 
+  return {base,paidOptions};
+}
+
+function renderOrderQuote(pkg,format,totalEur,customQuote){
+  const custom=pkg==="custom_studio";
+  const dur=PKG_DURATIONS[pkg];
+  const fmt=format;
+  const res=custom?document.getElementById("csResolution").value:"";
   const specEl=document.getElementById("csSpecSummary");
-  const french=state.lang==="fr";
   const formatLabel={dual_916_169:"9:16 + 16:9",all_ratios:"9:16 + 16:9 + 1:1"}[fmt]||fmt;
-  if(specEl)specEl.textContent=`${dur}s · ${formatLabel} · ${res==="4k_master"?"4K":res}`;
-  const brkEl=document.getElementById("csPriceBreakdown");
-  if(brkEl)brkEl.textContent=`Base ${formatMoneyFromEur(base)} + ${french?"options":"add-ons"} ${formatMoneyFromEur(opts)}`;
-  const totEl=document.getElementById("csLiveTotal");
-  if(totEl)totEl.textContent=formatMoneyFromEur(total);
+  if(specEl)specEl.textContent=`${dur}s · ${formatLabel}${res?" · "+(res==="4k_master"?"4K":res):""}`;
   const cardEl=document.getElementById("customStudioCardPrice");
   if(cardEl){cardEl.removeAttribute("data-price-eur");cardEl.textContent=state.lang==="fr"?"Sur devis":"Custom Quote";}
   document.getElementById("csStylePreview").textContent=document.getElementById("style").value||"Custom Video";
-  const lines=[[state.lang==="fr"?"Production":"Video production",base]];
-  lines.push(...paidOptions);
+  const names={basic:"Basic",medium:"Medium",professional:"Professional",custom_studio:"Custom Studio"};
+  const lines=[[names[pkg],custom?customQuote.base:PKG_PRICES_EUR[pkg]]];
+  if(custom)lines.push(...customQuote.paidOptions);
   const extras=Array.from(selectedServices(),code=>ADDONS_CATALOG.find(item=>item.code===code)).filter(Boolean);
   lines.push(...extras.map(item=>[item.titles[state.lang]||item.titles.en,item.priceEur]));
-  if(totEl)totEl.textContent=formatMoneyFromEur(total+extras.reduce((sum,item)=>sum+item.priceEur,0));
+  document.getElementById("csLiveTotal").textContent=formatMoneyFromEur(totalEur);
   document.getElementById("csQuoteLines").replaceChildren(...lines.map(([label,price])=>{
     const line=document.createElement("li");
     const amount=document.createElement("strong");
@@ -1748,7 +1754,6 @@ function calculateCustomStudioLocal(){
     line.append(label,amount);
     return line;
   }));
-  return total;
 }
 
 const gallery=document.getElementById("videoGallery"),styleSelect=document.getElementById("style");
@@ -1859,7 +1864,7 @@ function selectedServices(){
 function updateSummary(){
   document.getElementById("csLogo").value=document.getElementById("logoOption").value;
   document.getElementById("csImages").value=state.selectedAddons.has("social_promo_visuals")?"5":"0";
-  calculateCustomStudioLocal();
+  const customQuote=calculateCustomStudioLocal();
   const pkg=document.getElementById("packageSelect").value||"medium";
   state.selectedPkg=pkg;
   const format=document.getElementById("videoFormat").value||"9:16";
@@ -1883,14 +1888,7 @@ function updateSummary(){
 
   const pkgUpper=pkg.toUpperCase();
   const dur=PKG_DURATIONS[pkg]||20;
-  document.getElementById("orderSummaryBigPrice").textContent=formatMoneyFromEur(totalEur);
-  document.getElementById("orderSummaryPkgLabel").textContent=`/ Pack ${pkgUpper} (${dur}s)`;
-  document.getElementById("sumPkgVal").textContent=`${pkgUpper} (${formatMoneyFromEur(pkgEur)})`;
-  document.getElementById("sumStyleVal").textContent=styleSelect.value||"01 — Portrait signature";
-  document.getElementById("sumFormatVal").textContent=format;
-  document.getElementById("sumAddonsVal").textContent=addonsEur>0?`+${formatMoneyFromEur(addonsEur)} (${selectedServices().size})`:"0 €";
-  document.getElementById("sumTotalVal").textContent=formatMoneyFromEur(totalEur);
-  document.getElementById("btnPayAmount").textContent=formatMoneyFromEur(totalEur);
+  renderOrderQuote(pkg,format,totalEur,customQuote);
   document.getElementById("livePreviewPkgTag").textContent=`${pkgUpper} · ${dur}s · ${format}`;
 
   const compVal=document.getElementById("company").value.trim()||document.getElementById("quickBrandName")?.value.trim();
@@ -1908,7 +1906,6 @@ function setOrderFormat(value){
     const control=document.getElementById(id);
     if(control)control.value=value;
   }
-  if(state.selectedPkg==="custom_studio")calculateCustomStudioLocal();
   syncStudioButtons();
 }
 const shortCards=[...gallery.querySelectorAll(".showcase")];
@@ -2048,14 +2045,15 @@ document.getElementById("csImages").addEventListener("change",event=>{
   updateSummary();
 });
 
-// Custom Studio Configurator Listeners
-["csDuration","csFormat","csResolution","csScript","csLogoAnim","csVoiceover","csSubtitles","csRevisions","csPriority"].forEach(id=>{
-  document.getElementById(id)?.addEventListener("change",event=>{
-    syncStudioButtons();
-    if(id==="csFormat"&&state.selectedPkg==="custom_studio")document.getElementById("videoFormat").value=event.target.value;
-    calculateCustomStudioLocal();
-    if(state.selectedPkg==="custom_studio")updateSummary();
-  });
+// Configuration changes apply directly to the single order.
+function applyCustomConfiguration(){
+  document.getElementById("packageSelect").value="custom_studio";
+  document.getElementById("videoFormat").value=document.getElementById("csFormat").value;
+  syncStudioButtons();
+  updateSummary();
+}
+["csDuration","csFormat","csResolution","csScript","csLogoAnim","csVoiceover","csSubtitles","csRevisions","csPriority","csLanguage"].forEach(id=>{
+  document.getElementById(id).addEventListener("change",applyCustomConfiguration);
 });
 document.getElementById("resetCustomStudioBtn")?.addEventListener("click",()=>{
   document.getElementById("csDuration").value="20";
@@ -2073,18 +2071,8 @@ document.getElementById("resetCustomStudioBtn")?.addEventListener("click",()=>{
   renderAddons();
   if(state.selectedPkg==="custom_studio")document.getElementById("videoFormat").value="9:16";
   syncStudioButtons();
-  calculateCustomStudioLocal();
   updateSummary();
 });
-document.getElementById("applyCustomStudioToOrderBtn")?.addEventListener("click",()=>{
-  calculateCustomStudioLocal();
-  document.getElementById("packageSelect").value="custom_studio";
-  document.getElementById("videoFormat").value=document.getElementById("csFormat").value;
-  updateSummary();
-  trackFunnelEvent("custom_studio_applied",{quoteEur:state.customQuoteEur});
-  document.getElementById("commande").scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});
-});
-
 document.querySelectorAll("[data-select-pkg]").forEach(btn=>{
   btn.addEventListener("click",()=>{
     const pkg=btn.getAttribute("data-select-pkg");
