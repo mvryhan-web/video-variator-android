@@ -847,3 +847,10 @@ For every block:
 - **DONE:** `My Account → App Preferences → Appearance` has exactly six scrollable theme choices: Light, Dark, System, Brown Style, Black, Christmas. Existing Light/Dark/System behavior remains (including OS choice), extra themes persist between pages.
 - **DONE:** Christmas JARVIX Chat composer is slightly darkened, with white readable text; entire winter background/snow/characters remain untouched.
 - **LIVE AND VERIFIED:** [production release #43727814930](https://github.com/mvryhan-web/video-variator-android/actions/runs/43727814930), Cloudflare deployment `ccbba282-d182-4ece-8a9a-900f2bec83ca`, 3 CSS/HTML/JS files only; **Chromium desktop/mobile #43729047890 PASS** (all six selections, persistence and Christmas chat contrast). Original Worker, all other assets, bindings unchanged.
+
+
+### 2026-11-15 — Default Christmas for new visitors (READY IN GITHUB, NOT LIVE)
+
+- Logic committed [b86ffd5](https://github.com/mvryhan-web/video-variator-android/commit/b86ffd5d67bad3abbae441ff295a077a17527bea): Christmas automatically when neither theme storage key exists; all six user choices remain and existing explicit preferences are respected, no automatic persistence.
+- **Production blocked for safety**: [#43737397296](https://github.com/mvryhan-web/video-variator-android/actions/runs/43737397296) detected Worker binding differences after candidate Pages deployment; verified automatic rollback to baseline `ccbba282-d182-4ece-8a9a-900f2bec83ca`. No production activation, no unrelated changes.
+- Next: resolve Pages deployment binding preservation without weakening protection, then verify real incognito/no-localStorage first visit and returning user with Light/Dark/System/Brown/Black/Christmas prior choice.
