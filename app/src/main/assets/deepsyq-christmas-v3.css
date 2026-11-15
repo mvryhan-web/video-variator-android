@@ -1,0 +1,187 @@
+/* DEEPSYQ Christmas V3 — isolated Cloudflare preview only.
+   The user-supplied long chalet image must remain visible behind ALL pages,
+   not just inside Home, and the original carousel/chat functionality is untouched. */
+html[data-site-theme="christmas"]{
+ background-color:#1b2a49!important;
+ background-image:linear-gradient(180deg,rgba(7,15,31,.07),rgba(9,22,45,.13)),
+   url("/media/christmas/christmas-portrait.webp")!important;
+ background-position:center top!important;
+ background-size:cover!important;
+ background-attachment:fixed!important;
+ background-repeat:no-repeat!important;
+ min-height:100%!important;
+}
+html[data-site-theme="christmas"] body{
+ background:transparent!important;
+ background-color:transparent!important;
+ background-image:none!important;
+ background-attachment:scroll!important;
+ min-height:100vh!important;
+}
+/* Main page shells formerly painted solid navy/black over the body background.
+   Clear ONLY these full-page surfaces; keep actual cards/inputs legible. */
+html[data-site-theme="christmas"] :is(
+ body>main,body>.main,body>#app,body>.app,body>.app-shell,
+ body>.page-shell,body>.page-wrap,body>.studio-shell,
+ .jarvix-chat,.j-messages,.j-chat-bottom,
+ .studio-shell,.studio-main,.studio-stage,.page-content,
+ .app-main,.content-area,.content-wrap,.home-shell,.home-main,
+ .hero,.home-hero,.page-container,.creator-pages
+){
+ background-color:transparent!important;
+ background-image:none!important;
+}
+html[data-site-theme="christmas"] :is(
+ .price-plans-area,.price-credits-area,.price-wallet-area,
+ .j-workspace-pane,.studio-container,.stage.result,.intro
+){
+ background-color:rgba(9,17,34,.17)!important;
+ background-image:none!important;
+}
+/* Preserve readable glass panels while letting the winter world show through. */
+html[data-site-theme="christmas"] :is(
+ .j-chat-toolbar,.j-workspace-header,.tool-card,.app-card,
+ .price-five-grid,.price-hero,.studio-card,.composer,.panel,.card
+){
+ backdrop-filter:blur(7px);
+}
+html[data-site-theme="christmas"] :is(
+ #homeHeroCarousel,.hero-stage,.home-feature-spotlight
+){
+ background-color:rgba(6,16,35,.19)!important;
+}
+/* Reuse exactly five sprites on the SINGLE JARVIX composer on Chat/Image/Video/Audio. */
+html[data-site-theme="christmas"] #jChatForm,
+html[data-site-theme="christmas"] .composer:has(#prompt){
+ overflow:visible!important;
+ isolation:isolate;
+}
+html[data-site-theme="christmas"] .xmas-mini-universal{
+ position:absolute!important;
+ left:4%!important;right:4%!important;
+ top:-67px!important;height:70px!important;
+ z-index:75!important;
+ pointer-events:none!important;
+ overflow:visible!important;
+}
+html[data-site-theme="christmas"] .xmas-mini-universal .xmas-person{
+ width:42px!important;height:56px!important;
+ bottom:5px!important;
+}
+html[data-site-theme="christmas"] .xmas-mini-universal .xmas-v2-projectile{width:16px;height:16px}
+html[data-site-theme="christmas"] #xmas-real-snow{opacity:.75!important}
+/* Keep no angular/six-ray icon snowflakes; organic near-focus flakes are soft. */
+@media(min-width:880px){
+ html[data-site-theme="christmas"]{
+  background-image:linear-gradient(180deg,rgba(5,16,31,.08),rgba(8,19,40,.14)),
+    url("/media/christmas/christmas-portrait.webp")!important;
+  background-position:center top!important;
+  background-size:cover!important;
+ }
+}
+@media(max-width:760px),(orientation:portrait){
+ html[data-site-theme="christmas"]{
+  background-image:linear-gradient(180deg,rgba(6,12,30,.05),rgba(8,18,38,.12)),
+    url("/media/christmas/christmas-portrait.webp")!important;
+  background-size:cover!important;
+  background-position:center top!important;
+ }
+ html[data-site-theme="christmas"] .xmas-mini-universal{
+  top:-52px!important;height:55px!important;left:2%!important;right:2%!important
+ }
+ html[data-site-theme="christmas"] .xmas-mini-universal .xmas-person{
+  width:32px!important;height:44px!important
+ }
+ html[data-site-theme="christmas"] .xmas-mini-universal .xmas-v2-projectile{width:13px;height:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-site-theme="christmas"] .xmas-mini-universal .xmas-person{animation:none!important}
+}
+
+/* V3.1: Keep the winter landscape visible through the complete scrolling Home
+   and through shared Chat/Image/Video/Audio shells. Do not flatten actual cards. */
+html[data-site-theme="christmas"] body.home-neon,
+html[data-site-theme="christmas"] body.home-neon :is(.content,.main,.home-page,.home-layout,.home-content,.home-sections),
+html[data-site-theme="christmas"] body:not(.home-neon) :is(.content,.main,.tools,.app-shell,.j-workspace-body,.j-chat-bottom,.studio-page,.studio-content,.studio-workspace){
+ background-color:transparent!important;
+ background-image:none!important;
+}
+html[data-site-theme="christmas"] :is(.content,.main,.home-content,.home-sections,.jarvix-chat,.j-workspace-body,.studio-main){
+ min-height:0;
+}
+html[data-site-theme="christmas"] body.home-neon :is(.hero-section,.home-hero,.content,.home-create-section){
+ background-color:transparent!important;
+}
+html[data-site-theme="christmas"] :is(.j-messages,.j-chat-bottom,.j-workspace-body){
+ background-color:rgba(6,15,31,.12)!important;
+}
+html[data-site-theme="christmas"] :is(#homeQuickBar,#jChatForm,.jarvix-compose){
+ overflow:visible!important;
+}
+html[data-site-theme="christmas"] .xmas-mini-universal{
+ pointer-events:none!important;
+ z-index:75!important;
+}
+@media (prefers-reduced-motion:reduce){
+ html[data-site-theme="christmas"] #xmas-real-snow{display:none!important}
+}
+
+/* V3.2 — the FULL owner-supplied portrait is a scrollable scene, not a
+   cropped still behind a black page. The viewport stays covered while
+   --xmas-photo-position travels from 0% to 100% on page/inner scroll. */
+html[data-site-theme="christmas"]{
+ --xmas-photo-position:0%;
+ background-color:#13223c!important;
+ background-image:
+   linear-gradient(180deg,rgba(8,16,33,.055),rgba(8,18,36,.13)),
+   url("/media/christmas/christmas-portrait.webp")!important;
+ background-repeat:no-repeat,no-repeat!important;
+ background-attachment:fixed,fixed!important;
+ background-size:cover,max(100vw,68vh) auto!important;
+ background-position:center center,center var(--xmas-photo-position,0%)!important;
+}
+html[data-site-theme="christmas"] body{
+ background:transparent!important;
+ background-image:none!important;
+ background-color:transparent!important;
+}
+@media(max-width:760px),(orientation:portrait){
+ html[data-site-theme="christmas"]{
+  background-image:
+   linear-gradient(180deg,rgba(8,16,33,.045),rgba(8,18,36,.095)),
+   url("/media/christmas/christmas-portrait.webp")!important;
+  background-size:cover,max(100vw,68vh) auto!important;
+  background-position:center center,24% var(--xmas-photo-position,0%)!important;
+ }
+}
+
+/* Fluffy accumulation above—not inside—the input, headers and card edges.
+   Each cap's bottom ends precisely at the parent's top border. */
+html[data-site-theme="christmas"] .xmas-snowcap,
+html[data-site-theme="christmas"] .xmas-snowcap.xmas-thin,
+html[data-site-theme="christmas"] .xmas-snowcap.xmas-header,
+html[data-site-theme="christmas"] #homeQuickBar > .xmas-snowcap,
+html[data-site-theme="christmas"] #jChatForm > .xmas-snowcap {
+ top:calc(0px - var(--xmas-pile-depth,20px) - 2px)!important;
+ bottom:auto!important;
+ height:var(--xmas-pile-depth,20px)!important;
+ transform:none!important;
+ border:0!important;
+ border-radius:0!important;
+ z-index:30!important;
+ opacity:1!important;
+ pointer-events:none!important;
+ background:
+  radial-gradient(ellipse 33px 16px at 19px 17px,#fff 0 54%,#eef8fd 61%,transparent 76%) calc(var(--xmas-pile-shift,13px) + 1px) 2px/79px 29px repeat-x,
+  radial-gradient(ellipse 24px 14px at 15px 13px,#fff 0 59%,#ecf8ff 68%,transparent 77%) 15px 1px/54px 24px repeat-x,
+  radial-gradient(ellipse 42px 18px at 34px 19px,#fafdff 0 53%,#e3f3fd 67%,transparent 77%) 30px 3px/94px 30px repeat-x,
+  linear-gradient(180deg,transparent 0%,#fafdff 34%,#fff 67%,#e6f4fc 91%,#d4e9f6 100%) 0 0/100% 100% no-repeat!important;
+ filter:drop-shadow(0 -2px 2px #ffffff5e) drop-shadow(0 2px 2px #35577c78)!important;
+}
+/* Never deposit snow across the editable field itself. */
+html[data-site-theme="christmas"] #homeQuickBar > .xmas-snowcap,
+html[data-site-theme="christmas"] #jChatForm > .xmas-snowcap {
+ --xmas-pile-depth:18px;
+ top:-20px!important;
+ height:18px!important;
+}

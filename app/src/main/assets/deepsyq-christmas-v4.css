@@ -1,0 +1,31 @@
+/* DEEPSYQ Christmas V4 – soft white snow above card edges, pointer-reactive.
+   Old repeating gradient strips are hidden, but DOM geometry stays measurable. */
+html[data-site-theme="christmas"] body .xmas-snowcap,
+html[data-site-theme="christmas"] #homeQuickBar > .xmas-snowcap,
+html[data-site-theme="christmas"] #jChatForm > .xmas-snowcap,
+html[data-site-theme="christmas"] .xmas-snowcap.xmas-header,
+html[data-site-theme="christmas"] .xmas-snowcap.xmas-thin{
+ opacity:0!important;visibility:hidden!important;
+ filter:none!important;
+}
+#xmas-pile-overlay{
+ position:fixed;inset:0;width:100%;height:100%;z-index:191;
+ pointer-events:none!important;background:transparent!important;
+ contain:strict;
+}
+html:not([data-site-theme="christmas"]) #xmas-pile-overlay{display:none!important}
+@media (prefers-reduced-motion:reduce){
+ html[data-site-theme="christmas"] #xmas-pile-overlay{opacity:.92}
+}
+/* Bring the LEFT chimney close to the top in the one shared JARVIX Chat,
+   including ?mode=image, ?mode=video and ?mode=audio. Home is untouched. */
+html[data-site-theme="christmas"]:has(#jChatForm){
+ --xmas-chimney-shift:clamp(130px,12.5vw,220px);
+ background-position:center center,center calc(var(--xmas-photo-position,0%) - var(--xmas-chimney-shift))!important;
+}
+@media(max-width:760px),(orientation:portrait){
+ html[data-site-theme="christmas"]:has(#jChatForm){
+  --xmas-chimney-shift:68px;
+  background-position:center center,24% calc(var(--xmas-photo-position,0%) - var(--xmas-chimney-shift))!important;
+ }
+}

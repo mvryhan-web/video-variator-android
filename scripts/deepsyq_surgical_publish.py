@@ -54,9 +54,13 @@ QUICK_START_V3_RELEASE = QUICK_START_ART_V3 | {"home-inspiration.js", "jarvix-ne
 
 ACCOUNT_DESIGN_ART = frozenset({"media/account-settings/account-hero.webp", "media/account-settings/account-membership.webp", "media/account-settings/account-android.webp", "media/account-settings/account-pricing.webp"})
 ACCOUNT_DESIGN_RELEASE = ACCOUNT_DESIGN_ART | {"account-settings.html"}
+THEME_ASSET_RELEASE = frozenset(["deepsyq-theme-loader.js","deepsyq-theme-styles.css","deepsyq-christmas.css","deepsyq-christmas.js","deepsyq-christmas-v2.css","deepsyq-christmas-v2.js","deepsyq-christmas-v3.css","deepsyq-christmas-v4.css","deepsyq-christmas-v4.js","media/christmas/christmas-portrait.webp","media/christmas/snowbank-texture.webp"])  # owner-approved staged appearance-only assets
+
 
 def approved_new_assets(paths):
     scope = frozenset(paths)
+    if scope == THEME_ASSET_RELEASE:
+        return THEME_ASSET_RELEASE
     if scope == ACCOUNT_DESIGN_RELEASE:
         return ACCOUNT_DESIGN_ART
     if scope == QUICK_START_V3_RELEASE:
@@ -70,6 +74,7 @@ def approved_new_assets(paths):
     return frozenset()
 
 HASH_REUSE_RELEASE_SETS = (
+    THEME_ASSET_RELEASE,
     frozenset({"admin-access.js", "trial-quality.js", "video-uniquifier.html"}),    frozenset({"jarvix-new-voice.js", "jarvix-new-recorded-dialog.js"}),
     frozenset({"jarvix-chat.js", "jarvis-core.js", "generate-studio.js"}),
     frozenset({"jarvix-chat.js", "jarvix-chat.html"}),
@@ -302,7 +307,7 @@ class Cloudflare:
             time.sleep(2)
         raise Blocked("AUTOMATIC_ROLLBACK_NOT_CONFIRMED")
 
-    def tour_manifest_deploy(self, candidate, assets, sha, worker, origin, chat_worker=None, voice_release=False, email_worker=False):
+    def tour_manifest_deploy(self, candidate, assets, sha, worker, origin, chat_worker=None, voice_release=False, email_worker=False, strict_worker_copy=False):
         """Tour-only Pages upload: unchanged routes reuse canonical LIVE hashes.
 
         Fetch the *currently deployed* Worker payload rather than recompiling
@@ -368,6 +373,7 @@ class Cloudflare:
             else:
                 raise Blocked("Original Worker format unsupported; no production deployment")
         except Blocked as error:
+            insist(not strict_worker_copy, "Appearance-only release refuses to rebuild an unverified production Worker")
             # Pages-managed Workers may not expose their code through the
             # standard Workers download endpoint. Bundle ONLY the exact
             # canonical production commit, never current DEV imports.
@@ -622,7 +628,7 @@ def main():
         # Frontend-only guest sign-in release reconstructs the untouched Worker
         # from the verified LIVE origin, never from the unrelated DEV HEAD.
         # All other release scopes retain their existing strict Worker equality gate.
-        if paths == ["deepsyq-mobile-shell.js"] or paths == ["contact.html"] or frozenset(paths) == frozenset({"free-tools.html", "everyday-tools-visual.css"}):
+        if paths == ["deepsyq-mobile-shell.js"] or paths == ["contact.html"] or frozenset(paths) in (frozenset({"free-tools.html", "everyday-tools-visual.css"}), THEME_ASSET_RELEASE):
             insist(bool(saved_worker and task_worker), "Worker provenance unavailable")
             print("GUEST_AUTH_ONLY: canonical LIVE Worker pinned; DEV Worker never published")
         else:
@@ -704,7 +710,7 @@ def main():
         insist(current_id == live_id and current_worker == worker,
                "Concurrent production update detected; no deploy")
         if direct_manifest:
-            deployed_id = cloudflare.tour_manifest_deploy(candidate, expected_bytes, sha, worker, origin, chat_worker, args.new_voice, args.email_worker)
+            deployed_id = cloudflare.tour_manifest_deploy(candidate, expected_bytes, sha, worker, origin, chat_worker, args.new_voice, args.email_worker, frozenset(paths) == THEME_ASSET_RELEASE)
         else:
             run_wrangle(stage, sha)
             deployed_id = None

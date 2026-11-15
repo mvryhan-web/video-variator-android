@@ -1,0 +1,81 @@
+/* DEEPSYQ Christmas — isolated TEST-only appearance layer, 2026-11-14 */
+html[data-site-theme="christmas"]{--ds-text:#f5faff;color-scheme:dark}
+html[data-site-theme="christmas"] body{
+ background-color:#0a1629!important;
+ background-image:linear-gradient(180deg,#08142b32 0%,#08142968 75%,#071021a3 100%),url("/media/christmas/christmas-portrait.webp")!important;
+ background-position:center center!important;background-size:cover!important;background-attachment:fixed!important;background-repeat:no-repeat!important;
+ min-height:100vh;color:#f5faff
+}
+html[data-site-theme="christmas"] :is(#sidebar,.ds-site-sidebar,.top,.topbar,body>header){
+ background:rgba(5,14,31,.84)!important;backdrop-filter:blur(12px);border-color:#dcecff55!important
+}
+html[data-site-theme="christmas"] :is(.hero-stage,#homeHeroCarousel,#homeQuickBar,.jarvix-compose,.home-create-card,.home-feature-spotlight,.tool-card,.app-card){
+ border-color:#e2f4ff61!important
+}
+html[data-site-theme="christmas"] :is(.hero-stage,#homeHeroCarousel){background-color:transparent!important}
+html[data-site-theme="christmas"] #homeQuickBar{isolation:isolate;overflow:visible!important}
+html[data-site-theme="christmas"] .xmas-position-parent{position:relative}
+html[data-site-theme="christmas"] .xmas-snowcap{position:absolute;inset:-3px 0 auto;height:18px;z-index:18;pointer-events:none!important;opacity:.95;filter:drop-shadow(0 2px 2px #5a7595a6);
+ background:radial-gradient(ellipse 14px 9px at 10px 4px,#ffffff 62%,transparent 74%) 0 3px/32px 16px repeat-x,
+ radial-gradient(ellipse 19px 9px at 18px 1px,#eaf6ff 68%,transparent 77%) 0 0/49px 17px repeat-x,
+ linear-gradient(#fff,#eaf5fdcc 60%,transparent) 0 0/100% 8px no-repeat}
+html[data-site-theme="christmas"] .xmas-snowcap.xmas-thin{height:12px;opacity:.88;background-size:25px 11px,36px 11px,100% 6px}
+html[data-site-theme="christmas"] #homeQuickBar>.xmas-snowcap{top:-10px;height:22px;z-index:28}
+html[data-site-theme="christmas"] .xmas-snowcap.xmas-header{top:auto;bottom:-7px;transform:scaleY(-1)}
+#xmas-weather-layer{position:fixed;inset:0;z-index:200;pointer-events:none!important}
+html[data-site-theme="christmas"] .xmas-mini-stage{position:absolute;left:3%;right:3%;top:-69px;height:72px;z-index:68;pointer-events:none!important;overflow:visible}
+html[data-site-theme="christmas"] .xmas-mini-ground{position:absolute;left:0;right:0;bottom:2px;height:13px;border-radius:50%;background:linear-gradient(180deg,#fff,#e1effa 70%,transparent);filter:drop-shadow(0 2px 2px #4c6b80a8)}
+html[data-site-theme="christmas"] .xmas-person{position:absolute;bottom:7px;width:45px;height:58px;transform-origin:50% 100%;filter:drop-shadow(0 2px 1px #152d4f99)}
+html[data-site-theme="christmas"] .xmas-person svg{width:100%;height:100%;overflow:visible}
+html[data-site-theme="christmas"] .xmas-person .leg{transform-box:fill-box;transform-origin:50% 0;animation:xmas-leg .34s ease-in-out infinite alternate}
+html[data-site-theme="christmas"] .xmas-person .leg.right{animation-direction:alternate-reverse}
+html[data-site-theme="christmas"] .xmas-person.one{left:5%;animation:xmas-run 4.2s ease-in-out infinite}
+html[data-site-theme="christmas"] .xmas-person.two{left:26%;animation:xmas-run 5.5s ease-in-out -1.7s infinite}
+html[data-site-theme="christmas"] .xmas-person.three{left:49%;animation:xmas-fall 8s ease-in-out infinite}
+html[data-site-theme="christmas"] .xmas-person.four{left:71%;animation:xmas-run-rev 5s ease-in-out -2s infinite}
+html[data-site-theme="christmas"] .xmas-person.five{left:91%;animation:xmas-rest 7s ease-in-out infinite}
+html[data-site-theme="christmas"] .xmas-snowball{position:absolute;bottom:51px;width:10px;height:10px;opacity:0;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#edfaff 60%,#b0cce9);box-shadow:0 0 7px #fff9}
+html[data-site-theme="christmas"] .xmas-snowball.left{left:30%;animation:xmas-snowball-right 6s cubic-bezier(.25,.2,.6,.85) infinite}
+html[data-site-theme="christmas"] .xmas-snowball.right{left:76%;animation:xmas-snowball-left 6s cubic-bezier(.3,.1,.8,.7) -3s infinite}
+html[data-site-theme="christmas"] .xmas-smoke{position:fixed;left:11.5vw;top:11vh;width:74px;height:140px;pointer-events:none;z-index:3}
+html[data-site-theme="christmas"] .xmas-smoke span{position:absolute;bottom:0;width:34px;height:40px;border-radius:50%;opacity:0;filter:blur(9px);background:radial-gradient(ellipse,#f5f9ffd4 0%,#f4fbff75 45%,transparent 73%);animation:xmas-smoke-float 5s ease-out infinite}
+html[data-site-theme="christmas"] .xmas-smoke span:nth-child(2){animation-delay:-1.7s}
+html[data-site-theme="christmas"] .xmas-smoke span:nth-child(3){animation-delay:-3.4s}
+html[data-site-theme="christmas"] .xmas-lantern{position:fixed;right:2vw;top:30vh;width:32px;height:55px;z-index:6;transform-origin:50% -20px;pointer-events:none;filter:drop-shadow(0 0 15px #ffc35dba);animation:xmas-lantern-sway 5.7s ease-in-out infinite}
+html[data-site-theme="christmas"] .xmas-lantern svg{width:100%;height:100%}
+@keyframes xmas-leg{from{transform:rotate(-23deg)}to{transform:rotate(25deg)}}
+@keyframes xmas-run{0%,100%{transform:translate(0,0) rotate(-3deg)}25%{transform:translate(17px,-4px) rotate(2deg)}50%{transform:translate(33px,0)}75%{transform:translate(14px,-5px)}}
+@keyframes xmas-run-rev{0%,100%{transform:scaleX(-1) translate(0,0)}50%{transform:scaleX(-1) translate(28px,-3px)}}
+@keyframes xmas-fall{0%,27%,63%,100%{transform:rotate(0) translateY(0)}38%,46%{transform:rotate(78deg) translateY(12px)}51%{transform:rotate(40deg) translateY(9px)}}
+@keyframes xmas-rest{0%,38%,100%{transform:rotate(0)}55%,70%{transform:rotate(15deg) translateY(4px)}}
+@keyframes xmas-snowball-right{0%,18%{opacity:0;transform:translate(0,0)}22%{opacity:1}50%{opacity:1;transform:translate(145px,-47px)}65%{opacity:0;transform:translate(195px,14px)}100%{opacity:0}}
+@keyframes xmas-snowball-left{0%,18%{opacity:0;transform:translate(0,0)}22%{opacity:1}50%{opacity:1;transform:translate(-140px,-42px)}66%{opacity:0;transform:translate(-195px,13px)}100%{opacity:0}}
+@keyframes xmas-smoke-float{0%{opacity:0;transform:translate(0,0) scale(.45)}13%{opacity:.55}65%{opacity:.3}100%{opacity:0;transform:translate(48px,-150px) scale(2.4)}}
+@keyframes xmas-lantern-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(4deg)}}
+html[data-site-theme="soft-dark"]{--ds-bg:#000;--ds-sidebar:#050505;--ds-surface:#0b0b0b;--ds-raised:#111;color-scheme:dark}
+html[data-site-theme="soft-dark"] body{background:#000!important}
+html[data-site-theme="soft-dark"] :is(#sidebar,.ds-site-sidebar,.top,.topbar,body>header){background:#050505!important;border-color:#292929!important}
+html[data-site-theme="soft-dark"] :is(.card,.panel,.tool-card,.app-card,.home-create-card){background-color:#0b0b0b!important;border-color:#292929!important}
+html[data-site-theme="soft-dark"] :is(input,textarea,select){background-color:#111!important}
+.xmas-theme-tool{position:fixed;bottom:14px;right:14px;z-index:301;font:600 12px/1.25 system-ui,sans-serif;color:#fff}
+.xmas-theme-toggle{border:1px solid #dcecff80;border-radius:999px;padding:9px 14px;background:#0b1629ed;color:#fff;box-shadow:0 3px 12px #0009;cursor:pointer}
+.xmas-theme-options{position:absolute;bottom:47px;right:0;min-width:153px;padding:7px;background:#081425f5;border:1px solid #bedfff55;border-radius:13px;display:grid;gap:3px;box-shadow:0 7px 22px #000b}
+.xmas-theme-options[hidden]{display:none}
+.xmas-theme-options button{color:#fff;background:transparent;border:0;border-radius:8px;padding:10px 12px;text-align:left;cursor:pointer;font:inherit}
+.xmas-theme-options button[aria-pressed="true"],.xmas-theme-options button:hover{background:#d5edff2b}
+@media(max-width:760px),(orientation:portrait){
+ html[data-site-theme="christmas"] body{background-image:linear-gradient(180deg,#08142729,#0712266a 75%,#0810229c),url("/media/christmas/christmas-portrait.webp")!important;background-size:cover!important;background-position:center center!important}
+ html[data-site-theme="christmas"] .xmas-mini-stage{top:-58px;height:62px;left:2%;right:2%}
+ html[data-site-theme="christmas"] .xmas-person{width:32px;height:45px}
+ html[data-site-theme="christmas"] .xmas-person.one{left:3%}
+ html[data-site-theme="christmas"] .xmas-person.two{left:25%}
+ html[data-site-theme="christmas"] .xmas-person.three{left:46%}
+ html[data-site-theme="christmas"] .xmas-person.four{left:68%}
+ html[data-site-theme="christmas"] .xmas-person.five{left:88%}
+ html[data-site-theme="christmas"] .xmas-snowball{width:7px;height:7px}
+ html[data-site-theme="christmas"] .xmas-smoke{left:10vw;top:8vh;transform:scale(.7);transform-origin:top left}
+ html[data-site-theme="christmas"] .xmas-lantern{right:6vw;top:22vh;width:26px}
+ .xmas-theme-tool{right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}
+ .xmas-theme-toggle{padding:7px 10px}
+}
+@media(prefers-reduced-motion:reduce){html[data-site-theme="christmas"] :is(.xmas-person,.xmas-person .leg,.xmas-snowball,.xmas-smoke span,.xmas-lantern){animation:none!important}html[data-site-theme="christmas"] .xmas-snowball{display:none!important}}
