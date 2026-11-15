@@ -1,0 +1,2342 @@
+<!DOCTYPE html><html lang="fr" dir="ltr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style rel="stylesheet" type="text/css">@charset "utf-8";
+
+:root { --bg: #080c18; --card: #141927; --edge: #323847; --text: #f5f1ea; --muted: #a9b0be; --gold: #f0cca0; --lilac: #bda7ed; --emerald: #34d399; --radius: 17px; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body { margin: 0px; background: var(--bg); color: var(--text); line-height: 1.52; -webkit-font-smoothing: antialiased; }
+
+html[dir="rtl"] body { font-family: "Segoe UI", Tahoma, "Noto Sans Arabic", Inter, sans-serif; }
+
+body::before { content: ""; position: absolute; inset: 0px 0px auto; height: 660px; pointer-events: none; background: radial-gradient(44% 55% at 85% 7%, rgba(81, 64, 120, 0.27), transparent), radial-gradient(36% 48% at 10% 25%, rgba(52, 65, 101, 0.19), transparent); }
+
+a { color: inherit; text-decoration: none; }
+
+button, input, select, textarea { font: inherit; }
+
+button, a, input, select, textarea { outline-offset: 4px; }
+
+button { cursor: pointer; }
+
+.shell { width: min(1220px, 100% - 48px); margin: auto; position: relative; }
+
+.top { position: sticky; top: 0px; z-index: 40; background: rgba(8, 12, 24, 0.9); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255, 255, 255, 0.086); }
+
+.nav { display: flex; align-items: center; justify-content: space-between; min-height: 80px; gap: 14px; flex-wrap: wrap; }
+
+.brand { display: flex; align-items: center; gap: 11px; font-weight: 800; font-size: 17px; letter-spacing: -0.035em; }
+
+.brand img { width: 35px; height: 35px; object-fit: contain; }
+
+.brand small { display: block; font-size: 9px; letter-spacing: 0.23em; font-weight: 700; color: var(--muted); }
+
+.navlinks { display: flex; align-items: center; gap: 18px; font-size: 13px; color: rgb(212, 214, 226); flex-wrap: wrap; }
+
+.navlinks a:hover { color: rgb(255, 255, 255); }
+
+.locale-bar { display: flex; align-items: center; gap: 8px; }
+
+.locale-select { background: rgb(19, 25, 41); border: 1px solid rgb(60, 67, 88); color: var(--text); border-radius: 999px; padding: 7px 12px; font-size: 12px; font-weight: 600; }
+
+.pill { border-radius: 999px; background: var(--gold); color: rgb(27, 24, 32); font-weight: 800; font-size: 13px; padding: 13px 20px; border: 1px solid transparent; display: inline-flex; align-items: center; gap: 8px; justify-content: center; transition: transform 0.18s, background 0.18s; }
+
+.pill:hover { transform: translateY(-2px); background: rgb(255, 223, 184); }
+
+.pill.secondary { background: transparent; color: var(--text); border-color: rgb(119, 113, 128); }
+
+.pill.secondary:hover { background: rgba(255, 255, 255, 0.08); }
+
+.hero { display: grid; grid-template-columns: 1.05fr 0.95fr; align-items: center; gap: 56px; padding: 72px 0px 68px; }
+
+.kicker { color: var(--gold); letter-spacing: 0.18em; text-transform: uppercase; font-size: 11px; font-weight: 800; display: inline-block; }
+
+h1, h2, h3, p { margin-top: 0px; }
+
+h1 { font-weight: 650; letter-spacing: -0.05em; font-size: clamp(38px, 4.8vw, 68px); line-height: 1.06; margin: 18px 0px; }
+
+html[dir="rtl"] h1, html[dir="rtl"] h2, html[dir="rtl"] h3 { letter-spacing: 0px; }
+
+h1 em { font-style: normal; color: var(--gold); }
+
+.lead { font-size: 17px; max-width: 560px; color: rgb(188, 192, 206); line-height: 1.72; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0px; }
+
+.under { color: rgb(137, 146, 162); font-size: 12px; }
+
+.hero-art { position: relative; min-height: 535px; display: flex; justify-content: center; align-items: center; }
+
+.hero-frame { width: min(100%, 350px); aspect-ratio: 9 / 14; border: 9px solid rgb(33, 36, 53); border-radius: 26px; overflow: hidden; background: rgb(17, 17, 17); position: relative; box-shadow: rgba(0, 0, 0, 0.667) 24px 34px 75px, rgba(149, 131, 175, 0.208) 0px 0px 0px 1px; transform: rotate(2deg); }
+
+.hero-frame video { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.hero-frame::after { content: ""; position: absolute; inset: 38% 0px 0px; background: linear-gradient(transparent, rgba(7, 9, 18, 0.92)); pointer-events: none; }
+
+.brand-overlay-top { position: absolute; top: 16px; left: 16px; right: 16px; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: rgba(10, 14, 26, 0.8); border: 1px solid rgba(255, 255, 255, 0.17); padding: 8px 12px; border-radius: 12px; backdrop-filter: blur(8px); }
+
+.brand-overlay-logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 12px; color: var(--gold); }
+
+.brand-overlay-logo img { width: 24px; height: 24px; border-radius: 6px; object-fit: contain; background: rgba(255, 255, 255, 0.067); }
+
+.brand-overlay-tag { font-size: 10px; padding: 3px 8px; border-radius: 999px; background: rgba(240, 204, 160, 0.15); color: var(--gold); border: 1px solid rgba(240, 204, 160, 0.333); }
+
+.hero-caption { position: absolute; bottom: 22px; left: 20px; right: 20px; z-index: 2; }
+
+.hero-caption b { display: block; font-size: 21px; letter-spacing: -0.03em; margin-bottom: 4px; }
+
+.hero-caption span { display: block; font-size: 12px; color: rgb(229, 217, 218); margin-bottom: 8px; }
+
+.hero-caption small { display: block; font-size: 11px; color: var(--gold); background: rgba(13, 19, 35, 0.8); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(240, 204, 160, 0.25); }
+
+.floatlabel { position: absolute; z-index: 3; background: rgba(18, 24, 41, 0.937); border: 1px solid rgba(255, 255, 255, 0.19); padding: 11px 16px; border-radius: 12px; font-size: 12px; box-shadow: rgba(0, 0, 0, 0.6) 0px 14px 48px; backdrop-filter: blur(12px); }
+
+.floatlabel.one { top: 16px; right: -4px; }
+
+.floatlabel.two { bottom: 26px; left: -14px; color: var(--gold); }
+
+.rule { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgba(255, 255, 255, 0.125) currentcolor currentcolor; border-image: none; margin: 0px; }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); padding: 24px 0px 32px; gap: 20px; }
+
+.stats div { border-inline-start: 1px solid rgba(255, 255, 255, 0.21); padding-inline-start: 18px; }
+
+.stats strong { font-size: 19px; display: block; font-weight: 700; letter-spacing: -0.025em; }
+
+.stats span { color: var(--muted); font-size: 12px; }
+
+section { scroll-margin-top: 92px; }
+
+.section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 28px; margin: 76px 0px 26px; flex-wrap: wrap; }
+
+.section-head h2 { font-size: clamp(30px, 3.2vw, 44px); font-weight: 650; line-height: 1.14; letter-spacing: -0.04em; margin: 8px 0px; }
+
+.section-head p { color: var(--muted); font-size: 14px; max-width: 410px; margin-bottom: 2px; }
+
+.gallery { display: grid; grid-template-columns: repeat(5, minmax(0px, 1fr)); gap: 18px; }
+
+.showcase { background: rgb(17, 23, 36); border: 1px solid rgb(58, 64, 84); border-radius: var(--radius); overflow: hidden; min-width: 0px; transition: border-color 0.2s, transform 0.2s; position: relative; display: flex; flex-direction: column; }
+
+.showcase:hover, .showcase.selected { border-color: rgb(229, 193, 157); transform: translateY(-3px); box-shadow: rgba(0, 0, 0, 0.467) 0px 14px 34px; }
+
+.poster { aspect-ratio: 9 / 12; position: relative; background: linear-gradient(150deg, rgb(52, 48, 75), rgb(17, 24, 36)); overflow: hidden; }
+
+.poster video { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.poster::after { content: ""; position: absolute; inset: 55% 0px 0px; background: linear-gradient(transparent, rgba(4, 7, 19, 0.65)); pointer-events: none; }
+
+.video-toggle { position: absolute; z-index: 2; left: 12px; bottom: 12px; background: rgba(5, 7, 17, 0.682); color: rgb(255, 255, 255); border: 1px solid rgba(255, 255, 255, 0.467); min-width: 41px; min-height: 41px; border-radius: 50%; font-size: 16px; display: grid; place-items: center; backdrop-filter: blur(9px); }
+
+.video-toggle:hover { background: rgb(37, 28, 57); }
+
+.sample-number { position: absolute; right: 13px; top: 10px; color: rgb(255, 255, 255); background: rgba(10, 13, 24, 0.8); z-index: 1; font-size: 11px; border: 1px solid rgba(255, 255, 255, 0.337); padding: 3px 8px; border-radius: 20px; }
+
+.sample-badge { position: absolute; left: 12px; top: 10px; color: var(--gold); background: rgba(10, 13, 24, 0.8); z-index: 1; font-size: 10px; font-weight: 700; border: 1px solid rgba(240, 204, 160, 0.333); padding: 3px 8px; border-radius: 20px; }
+
+.sample-info { padding: 16px; display: flex; flex-direction: column; flex: 1 1 0%; }
+
+.sample-info b { font-weight: 650; font-size: 13px; display: block; min-height: 38px; line-height: 1.35; }
+
+.sample-info span { display: block; font-size: 11px; color: var(--muted); min-height: 30px; margin-bottom: auto; }
+
+.use-style { width: 100%; min-height: 38px; margin-top: 10px; border: 1px solid rgb(119, 112, 135); border-radius: 9px; background: transparent; color: rgb(246, 230, 210); font-size: 12px; font-weight: 700; }
+
+.use-style:hover, .showcase.selected .use-style { background: rgb(240, 204, 160); color: rgb(17, 19, 28); border-color: rgb(240, 204, 160); }
+
+.gallery-note { margin: 18px 0px 0px; color: rgb(135, 144, 161); font-size: 12px; }
+
+.pricing-grid { display: grid; grid-template-columns: repeat(4, minmax(0px, 1fr)); gap: 18px; margin-top: 24px; align-items: stretch; }
+
+.pkg-card { background: rgb(17, 22, 36); border: 1px solid rgb(46, 54, 74); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; position: relative; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; }
+
+.pkg-card:hover, .pkg-card.active-pkg { transform: translateY(-4px); box-shadow: rgba(0, 0, 0, 0.6) 0px 18px 42px; }
+
+.pkg-card[data-pkg-card="basic"] { background: linear-gradient(165deg, rgb(24, 29, 43), rgb(16, 20, 31)); border-color: rgb(75, 85, 104); }
+
+.pkg-card[data-pkg-card="basic"] .pkg-name { color: rgb(226, 232, 240); }
+
+.pkg-card[data-pkg-card="basic"] .pkg-price { color: rgb(241, 245, 249); }
+
+.pkg-card[data-pkg-card="basic"]:hover, .pkg-card[data-pkg-card="basic"].active-pkg { border-color: rgb(203, 213, 225); }
+
+.pkg-card[data-pkg-card="medium"] { background: linear-gradient(165deg, rgb(19, 35, 66), rgb(13, 23, 43)); border: 2px solid rgb(96, 165, 250); }
+
+.pkg-card[data-pkg-card="medium"] .pkg-name { color: rgb(147, 197, 253); }
+
+.pkg-card[data-pkg-card="medium"] .pkg-price { color: rgb(239, 246, 255); }
+
+.pkg-card[data-pkg-card="medium"] .pkg-ribbon { background: rgb(59, 130, 246); color: rgb(255, 255, 255); }
+
+.pkg-card[data-pkg-card="medium"]:hover, .pkg-card[data-pkg-card="medium"].active-pkg { border-color: rgb(147, 197, 253); }
+
+.pkg-card[data-pkg-card="professional"] { background: linear-gradient(165deg, rgb(31, 28, 24), rgb(18, 19, 26)); border: 1.5px solid rgb(212, 175, 55); }
+
+.pkg-card[data-pkg-card="professional"] .pkg-name { color: rgb(240, 204, 160); }
+
+.pkg-card[data-pkg-card="professional"] .pkg-price { color: rgb(240, 204, 160); }
+
+.pkg-card[data-pkg-card="professional"]:hover, .pkg-card[data-pkg-card="professional"].active-pkg { border-color: rgb(255, 226, 184); }
+
+.pkg-card[data-pkg-card="custom_studio"] { background: linear-gradient(165deg, rgb(13, 38, 34), rgb(11, 22, 28)); border: 1.5px solid rgb(16, 185, 129); }
+
+.pkg-card[data-pkg-card="custom_studio"] .pkg-name { color: rgb(110, 231, 183); }
+
+.pkg-card[data-pkg-card="custom_studio"] .pkg-price { color: rgb(236, 253, 245); }
+
+.pkg-card[data-pkg-card="custom_studio"]:hover, .pkg-card[data-pkg-card="custom_studio"].active-pkg { border-color: rgb(52, 211, 153); }
+
+.pkg-mini-preview { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 12px; margin-bottom: 14px; border-radius: 11px; background: rgba(8, 12, 22, 0.7); border: 1px solid rgba(255, 255, 255, 0.09); font-size: 11px; color: rgb(203, 213, 225); }
+
+.pkg-mini-preview strong { font-weight: 700; color: rgb(255, 255, 255); }
+
+.pkg-ribbon { position: absolute; top: -12px; inset-inline-end: 18px; background: var(--gold); color: rgb(21, 19, 28); font-size: 10px; font-weight: 800; padding: 4px 11px; border-radius: 999px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+.pkg-name { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 4px; }
+
+.pkg-sub { font-size: 12px; color: var(--muted); min-height: 36px; line-height: 1.4; }
+
+.pkg-price { font-size: 38px; font-weight: 800; letter-spacing: -0.04em; color: var(--gold); margin: 12px 0px 6px; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+
+.pkg-price small { font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0px; }
+
+.pkg-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+
+.pkg-chip { font-size: 11px; padding: 4px 9px; border-radius: 999px; background: rgba(255, 255, 255, 0.07); color: rgb(228, 231, 240); }
+
+.pkg-features { list-style: none; padding: 0px; margin: 0px 0px 20px; font-size: 12.5px; color: rgb(208, 213, 226); flex: 1 1 0%; }
+
+.pkg-features li { padding: 6px 0px; border-bottom: 1px solid rgba(255, 255, 255, 0.063); display: flex; align-items: flex-start; gap: 8px; }
+
+.pkg-features li::before { content: "✓"; color: var(--gold); font-weight: 800; }
+
+.pkg-btn { width: 100%; min-height: 46px; margin-top: auto; }
+
+.gallery-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+
+.filter-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.filter-btn { background: rgb(18, 24, 39); border: 1px solid rgb(50, 57, 78); color: rgb(203, 213, 225); padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 650; min-height: 40px; transition: 0.16s; }
+
+.filter-btn:hover, .filter-btn.active { background: var(--gold); color: rgb(20, 18, 29); border-color: var(--gold); }
+
+.carousel-stage { display: grid; grid-template-columns: 1fr 1.15fr; gap: 24px; background: linear-gradient(145deg, rgb(19, 25, 41), rgb(13, 18, 31)); border: 1px solid rgb(52, 60, 82); border-radius: 22px; padding: 24px; margin-bottom: 22px; align-items: center; }
+
+.carousel-player-wrap { display: flex; justify-content: center; align-items: center; position: relative; }
+
+.carousel-phone { width: min(100%, 300px); aspect-ratio: 9 / 14; border-radius: 22px; overflow: hidden; border: 6px solid rgb(35, 41, 61); background: rgb(9, 13, 22); position: relative; box-shadow: rgba(0, 0, 0, 0.667) 0px 18px 46px; }
+
+.carousel-phone video { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.carousel-info { display: flex; flex-direction: column; gap: 12px; }
+
+.carousel-counter { font-size: 12px; font-weight: 800; color: var(--gold); letter-spacing: 0.12em; text-transform: uppercase; }
+
+.carousel-title { font-size: clamp(22px, 2.5vw, 32px); font-weight: 700; letter-spacing: -0.03em; margin: 0px; }
+
+.carousel-nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+
+.icon-btn { width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgb(69, 78, 104); background: rgb(22, 29, 47); color: rgb(255, 255, 255); display: inline-grid; place-items: center; font-size: 16px; transition: background 0.16s, border-color 0.16s; }
+
+.icon-btn:hover { border-color: var(--gold); background: rgb(32, 41, 66); }
+
+.custom-studio-box { background: linear-gradient(155deg, rgb(12, 33, 30), rgb(12, 20, 29)); border: 1.5px solid rgba(16, 185, 129, 0.4); border-radius: 22px; padding: 28px; margin-top: 26px; }
+
+.custom-studio-grid { display: grid; grid-template-columns: repeat(3, minmax(0px, 1fr)); gap: 14px; margin-top: 18px; }
+
+.cs-quote-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-top: 20px; padding: 18px 22px; background: rgb(7, 17, 20); border: 1px solid rgba(16, 185, 129, 0.333); border-radius: 16px; }
+
+.brand-studio-bar { background: rgb(17, 23, 38); border: 1px solid rgb(53, 61, 84); border-radius: 20px; padding: 22px 26px; margin: 28px 0px; display: grid; grid-template-columns: repeat(4, minmax(0px, 1fr)); gap: 14px; align-items: end; }
+
+.mobile-sticky-bar { display: none; position: fixed; bottom: 0px; left: 0px; right: 0px; z-index: 50; background: rgba(10, 15, 29, 0.95); backdrop-filter: blur(14px); border-top: 1px solid rgba(255, 255, 255, 0.15); padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); align-items: center; justify-content: space-between; gap: 12px; }
+
+.compare-wrap { margin-top: 28px; background: rgb(16, 22, 36); border: 1px solid rgb(49, 56, 77); border-radius: 18px; overflow-x: auto; }
+
+.compare-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: start; }
+
+.compare-table th, .compare-table td { padding: 13px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+
+.compare-table th { color: var(--gold); font-weight: 700; background: rgb(22, 30, 49); }
+
+.compare-table tr:last-child td { border-bottom: 0px; }
+
+.addons-grid { display: grid; grid-template-columns: repeat(4, minmax(0px, 1fr)); gap: 16px; margin-top: 22px; }
+
+.addon-card { background: rgb(18, 24, 39); border: 1px solid rgb(50, 57, 78); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; transition: border-color 0.18s; }
+
+.addon-card.selected { border-color: var(--gold); background: rgb(27, 32, 53); }
+
+.addon-card h3 { font-size: 14px; font-weight: 700; margin: 0px 0px 6px; line-height: 1.35; }
+
+.addon-card p { font-size: 12px; color: var(--muted); margin: 0px; }
+
+.addon-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+
+.addon-price { font-weight: 800; color: var(--gold); font-size: 14px; }
+
+.addon-toggle { background: transparent; border: 1px solid rgb(107, 114, 136); color: var(--text); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+
+.addon-card.selected .addon-toggle { background: var(--gold); color: rgb(20, 18, 29); border-color: var(--gold); }
+
+.how { display: grid; grid-template-columns: repeat(3, minmax(0px, 1fr)); gap: 15px; margin: 32px 0px 64px; }
+
+.step { border-top: 1px solid rgb(87, 83, 107); padding: 21px 4px; }
+
+.step span { color: var(--gold); font-size: 12px; }
+
+.step h3 { margin: 8px 0px; font-size: 20px; letter-spacing: -0.035em; }
+
+.step p { font-size: 13px; color: var(--muted); }
+
+.order { display: grid; grid-template-columns: 0.86fr 1.14fr; gap: 48px; padding: 42px; background: linear-gradient(135deg, rgb(29, 30, 50), rgb(19, 27, 42) 65%, rgb(15, 24, 37)); border: 1px solid rgb(60, 65, 89); border-radius: 23px; margin-bottom: 54px; }
+
+.order h2 { font-size: clamp(30px, 3.2vw, 44px); line-height: 1.12; letter-spacing: -0.04em; font-weight: 650; margin: 12px 0px; }
+
+.price { font-size: 42px; letter-spacing: -0.05em; font-weight: 800; margin: 18px 0px 0px; color: var(--gold); }
+
+.price small { font-size: 12px; letter-spacing: 0px; font-weight: 450; color: var(--muted); }
+
+.details { padding-inline-start: 18px; font-size: 13px; line-height: 1.9; color: rgb(195, 200, 214); }
+
+.fine { color: rgb(153, 163, 182); font-size: 12px; line-height: 1.65; }
+
+.summary-box { background: rgb(11, 16, 29); border: 1px solid rgb(57, 64, 88); border-radius: 14px; padding: 16px; margin: 16px 0px; font-size: 13px; }
+
+.summary-row { display: flex; justify-content: space-between; padding: 5px 0px; border-bottom: 1px dashed rgba(255, 255, 255, 0.1); }
+
+.summary-row.total { border-bottom: 0px; font-weight: 800; font-size: 16px; color: var(--gold); padding-top: 10px; }
+
+form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 13px; background: rgba(9, 14, 26, 0.61); border-radius: 18px; padding: 26px; border: 1px solid rgb(85, 82, 102); }
+
+label { display: block; color: rgb(214, 217, 224); font-size: 12px; font-weight: 650; }
+
+label input, label select, label textarea { display: block; width: 100%; margin-top: 7px; background: rgb(23, 29, 44); border: 1px solid rgb(69, 74, 94); color: rgb(245, 242, 238); padding: 12px 14px; border-radius: 10px; min-height: 45px; }
+
+label input[type="file"] { padding: 9px 12px; }
+
+label textarea { resize: vertical; min-height: 92px; }
+
+label :is(input, textarea, select):focus { border-color: var(--gold); }
+
+.checkbox-row { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; color: rgb(207, 212, 226); line-height: 1.45; }
+
+.checkbox-row input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--gold); }
+
+.full { grid-column: 1 / -1; }
+
+.order form .pill { width: 100%; min-height: 49px; }
+
+.selected-style { color: rgb(201, 183, 239); font-size: 12px; margin: -3px 0px 0px; }
+
+.note { margin: 0px; color: rgb(170, 176, 192); font-size: 11px; line-height: 1.55; }
+
+.btn-group-dual { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; }
+
+.dual-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 84px; }
+
+.panel-box { background: rgb(17, 23, 38); border: 1px solid rgb(52, 59, 82); border-radius: 20px; padding: 26px; }
+
+.panel-box h3 { font-size: 21px; margin: 6px 0px 10px; }
+
+.status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: rgba(52, 211, 153, 0.133); color: var(--emerald); border: 1px solid rgba(52, 211, 153, 0.333); }
+
+.track-result { margin-top: 14px; padding: 16px; border-radius: 12px; background: rgb(11, 16, 28); border: 1px solid rgb(43, 50, 70); font-size: 13px; display: none; }
+
+.track-result.visible { display: block; }
+
+footer { border-top: 1px solid rgba(255, 255, 255, 0.14); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 18px; padding: 32px 0px 44px; color: rgb(145, 153, 168); font-size: 12px; }
+
+footer a { color: rgb(232, 200, 164); }
+
+@media (max-width: 1100px) {
+  .gallery { grid-template-columns: repeat(4, minmax(0px, 1fr)); }
+  .pricing-grid { grid-template-columns: repeat(2, minmax(0px, 1fr)); }
+  .custom-studio-grid, .brand-studio-bar, .addons-grid { grid-template-columns: repeat(2, minmax(0px, 1fr)); }
+  .hero { gap: 35px; }
+  .order { gap: 25px; }
+}
+
+@media (max-width: 780px) {
+  .navlinks a:not(.pill) { display: none; }
+  .shell { width: min(100% - 28px, 650px); }
+  .hero { grid-template-columns: 1fr; padding: 40px 0px 24px; gap: 14px; }
+  .hero-art { min-height: 380px; }
+  .hero-frame { width: 260px; aspect-ratio: 9 / 13; }
+  .floatlabel.one { right: 2%; }
+  .floatlabel.two { left: 0px; }
+  .carousel-stage, .pricing-grid, .custom-studio-grid, .brand-studio-bar, .addons-grid, .dual-bottom, .btn-group-dual { grid-template-columns: 1fr; }
+  .gallery { grid-template-columns: repeat(2, minmax(0px, 1fr)); gap: 12px; }
+  .sample-info { padding: 12px; }
+  .section-head { display: block; margin-top: 52px; }
+  .how { grid-template-columns: 1fr; gap: 4px; margin-bottom: 44px; }
+  .order { grid-template-columns: 1fr; padding: 22px; gap: 18px; }
+  .stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stats strong { font-size: 15px; }
+  .mobile-sticky-bar { display: flex; }
+  body { padding-bottom: 78px; }
+}
+
+@media (max-width: 460px) {
+  .nav { min-height: 64px; }
+  .brand { font-size: 15px; }
+  .brand img { width: 27px; height: 27px; }
+  .nav .pill { padding: 10px 12px; font-size: 11px; min-height: 44px; }
+  .hero { padding-top: 32px; }
+  h1 { font-size: clamp(30px, 8.5vw, 40px); }
+  .hero-art { min-height: 330px; }
+  .floatlabel { font-size: 10px; }
+  .hero-frame { width: 228px; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .stats div { padding: 6px 12px; }
+  .gallery { gap: 9px; }
+  .poster { aspect-ratio: 9 / 12; }
+  .sample-info b { font-size: 12px; }
+  .order { padding: 16px; }
+  form { grid-template-columns: 1fr; padding: 16px; }
+  .full { grid-column: auto; }
+  footer { flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, ::before, ::after { transition: none !important; animation: auto ease 0s 1 normal none running none !important; }
+}</style>
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#080c18">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="DEEPSYQ Creative Studio — vidéos publicitaires sur mesure pour les entreprises. Découvrez les styles, choisissez votre formule et commandez en ligne.">
+<title>DEEPSYQ Creation Studio · Done For You — Vidéos Publicitaires Sur Mesure</title>
+
+<style id="deepsyq-premium-v1">
+/* DEEPSYQ premium studio visual system | standalone sales-only redesign, 2026-11-15 */
+:root{--bg:#07090e;--card:#111722;--edge:#343b4b;--text:#f7f5ef;--muted:#aab1bc;--gold:#f2cd84;--lilac:#aea2db;--emerald:#28bda4;--radius:18px}
+html{scroll-padding-top:100px}
+body{background:#07090e;color:var(--text);font-family:Inter,"Segoe UI",Arial,sans-serif;letter-spacing:-.008em}
+body::before{height:940px;background:radial-gradient(ellipse 40% 37% at 82% 10%,rgba(121,83,26,.13),transparent),radial-gradient(ellipse 38% 33% at 9% 18%,rgba(45,53,96,.22),transparent);z-index:-1}
+.shell{width:min(1320px,calc(100% - 72px))}
+.top{background:rgba(7,9,14,.94);backdrop-filter:blur(18px);border-bottom:1px solid rgba(236,200,131,.13);box-shadow:0 10px 40px rgba(0,0,0,.22)}
+.nav{min-height:80px;gap:20px}
+.brand{font-size:21px;letter-spacing:-.055em}.brand small{letter-spacing:.22em;font-weight:650;color:#d4b883}
+.navlinks{gap:21px;font-size:12px}.navlinks a:not(.pill){color:#bbbfc9;transition:color .2s}.navlinks a:not(.pill):hover{color:var(--gold)}
+.locale-select{background:#131823;border:1px solid #454048;color:#f5e9d7;border-radius:30px;font-size:12px;padding:9px;max-width:106px}
+.pill{border:1px solid transparent;border-radius:12px;background:linear-gradient(112deg,#f7de9b 0%,#eec173 55%,#d8a959 100%);color:#13120f;box-shadow:0 6px 23px rgba(204,152,66,.12);font-weight:760;letter-spacing:-.012em;min-height:46px;padding:13px 22px;transition:transform .2s ease,filter .2s ease,box-shadow .2s}
+.pill:hover{background:linear-gradient(112deg,#ffe5a9,#eec47a);transform:translateY(-2px);box-shadow:0 10px 30px rgba(215,166,87,.22);filter:none}
+.pill.secondary{background:rgba(13,16,23,.35);border-color:rgba(245,204,133,.62);color:#f1d7a5;box-shadow:none}
+.pill.secondary:hover{background:rgba(221,181,105,.1);border-color:#f9d698}
+:is(a,button,input,select,textarea,summary):focus-visible{outline:2px solid #ffdda1;outline-offset:3px}
+.premium-menu-toggle,.premium-mobile-menu{display:none}
+.hero{position:relative;display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:clamp(32px,4.5vw,78px);align-items:center;padding:90px 0 92px;min-height:620px;isolation:isolate}
+.premium-hero-orbit{position:absolute;pointer-events:none;z-index:-1;inset:8% -10% -3% 21%;background:radial-gradient(ellipse at center,rgba(187,130,49,.12),transparent 62%);transform:rotate(-8deg)}
+.hero h1{font-size:clamp(46px,4.8vw,74px);line-height:1.045;font-weight:750;letter-spacing:-.062em;max-width:650px;margin:18px 0 22px;color:#faf7f0}
+.hero h1 em{font-style:normal;color:#f0cb89}
+.hero .lead{font-size:clamp(15px,1.35vw,18px);line-height:1.7;color:#c6c9d2;max-width:580px}
+.hero .kicker{display:inline-flex;align-items:center;border:1px solid #7c623d7a;background:#231e1a;border-radius:40px;padding:8px 12px;letter-spacing:.11em;font-size:10px;color:#f2d39f}
+.hero .actions{gap:14px;flex-wrap:wrap;margin:34px 0 26px}.hero .actions .pill{min-width:186px}
+.hero .under{font-size:12px;color:#aeb4bf;line-height:1.6;max-width:570px}
+.hero-art{display:flex;align-items:center;justify-content:center;min-height:405px}
+.hero-frame{width:100%!important;aspect-ratio:16/10!important;height:auto!important;max-height:none!important;transform:none!important;inset:auto!important;border:1px solid #ba8e4d!important;border-radius:24px!important;overflow:hidden!important;box-shadow:0 22px 75px rgba(0,0,0,.65),0 0 0 5px rgba(238,189,108,.045)!important;background:#11151b}
+.hero-frame video{position:absolute;inset:0;width:100%!important;height:100%!important;object-fit:cover!important}
+.hero-frame::after{content:"";position:absolute;inset:30% 0 0;pointer-events:none;background:linear-gradient(transparent,rgba(7,9,14,.76))}
+.hero-frame .brand-overlay-top{z-index:3}.hero-frame .hero-caption{z-index:3;bottom:21px;left:25px;right:22px}.hero-caption b{font-size:clamp(18px,2.2vw,30px);line-height:1.16;letter-spacing:-.04em}
+.floatlabel{background:#0b1019d9;border:1px solid #d5b47c89;color:#f7e8ca;backdrop-filter:blur(12px);border-radius:11px}
+.stats{margin:4px 0 0;padding:26px 0 38px;border-top:1px solid #c8a46c29;border-bottom:1px solid #c8a46c29}
+.stats div{border-left:1px solid #b5946947;padding-left:20px}.stats strong{font-size:21px;color:#f4e8d5;letter-spacing:-.035em}.stats span{color:#a9b0bd;font-size:12px}
+section{scroll-margin-top:100px}
+.premium-index{display:flex;justify-content:space-between;align-items:center;gap:12px;color:#bdaa86;border-top:1px solid #7d654a55;padding-top:17px;font-size:10px;letter-spacing:.17em;font-weight:730;margin-top:14px;text-transform:uppercase}
+.premium-index span:last-child{font-weight:450;color:#7c8799}
+.section-head{margin:48px 0 26px;gap:25px}.section-head h2{color:#f7f3e9;font-family:Georgia,"Times New Roman",serif;font-weight:500;letter-spacing:-.045em;font-size:clamp(31px,3.45vw,48px);line-height:1.13}
+.section-head p{max-width:455px;color:#aab1c0;font-size:14px;line-height:1.7}
+.kicker{color:#e5bf80;letter-spacing:.16em;font-size:10px;font-weight:750}
+.gallery-controls{overflow:hidden;margin:25px 0 20px}
+.filter-pills{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;gap:9px;padding:4px 1px 12px;max-width:100%}
+.filter-btn{flex:0 0 auto;border-radius:100px!important;border:1px solid #51515b!important;background:#141821!important;color:#d1d2d6!important;padding:11px 16px!important;font-size:12px!important;white-space:nowrap;min-height:40px}
+.filter-btn.active,.filter-btn:hover{background:#f0cf8e!important;border-color:#f0cf8e!important;color:#11131c!important;font-weight:800}
+.carousel-stage{display:grid!important;grid-template-columns:minmax(0,1.17fr) minmax(0,.83fr)!important;align-items:center;gap:36px!important;border:1px solid #54505a!important;border-radius:22px!important;padding:26px!important;background:linear-gradient(145deg,#161a24,#10141e)!important;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.carousel-player-wrap{min-width:0}.carousel-phone{width:100%!important;max-width:none!important;aspect-ratio:16/9!important;min-height:0!important;height:auto!important;border-radius:16px!important;transform:none!important;border:1px solid #b69059aa!important;box-shadow:0 13px 35px #0009!important}
+.carousel-phone video{width:100%!important;height:100%!important;object-fit:cover!important}
+.carousel-info{min-width:0;text-align:left}.carousel-counter{color:#d6b577;letter-spacing:.15em;font-weight:700;font-size:11px}
+.carousel-title{font-family:Georgia,serif;font-weight:500;letter-spacing:-.04em;color:#f8f5ec;font-size:clamp(25px,2.65vw,37px);line-height:1.13;margin:14px 0}
+.carousel-info .fine{line-height:1.75;color:#b6bdc7}
+.carousel-nav{gap:8px;display:flex;align-items:center;flex-wrap:wrap;margin:20px 0}.carousel-nav button{background:#151a24;border-color:#686777;border-radius:12px;min-height:42px}
+.gallery{display:flex!important;grid-template-columns:none!important;gap:14px!important;overflow-x:auto!important;scroll-snap-type:x mandatory;overscroll-behavior-inline:contain;padding:22px 2px 20px;scrollbar-width:thin;scrollbar-color:#a88953 #121721}
+.gallery .showcase{flex:0 0 clamp(170px,18vw,218px)!important;scroll-snap-align:start;background:#121924;border:1px solid #353f50;border-radius:15px;box-shadow:none;transform:none}
+.gallery .showcase.selected,.gallery .showcase:hover{border-color:#e3bc77;transform:translateY(-3px)}
+.poster{aspect-ratio:16/11!important;min-height:0}.poster video{object-fit:cover}.sample-info{padding:13px}.sample-info b{font-size:12px;line-height:1.4}.sample-info span{font-size:11px}.use-style{min-height:38px;font-size:12px;border-color:#987f5b;color:#e6d2ac}
+.gallery-note{color:#8f98a6;font-size:11px;line-height:1.6}
+#brandPreviewSection{border:1px solid #6657407a;border-radius:19px;background:linear-gradient(125deg,#171b27,#11131a);padding:clamp(20px,3vw,33px)!important;margin:38px 0 24px}
+#brandPreviewSection h3{font-family:Georgia,serif;font-weight:500}
+#tarifs{padding-top:32px}
+.pricing-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important;align-items:stretch}
+.pkg-card{position:relative;display:flex;flex-direction:column;padding:20px!important;min-width:0;border-radius:18px!important;min-height:490px;border:1px solid #424a5a!important;background:linear-gradient(155deg,#1b2431,#0e141e)!important;box-shadow:0 11px 30px #0005;transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
+.pkg-card:hover{transform:translateY(-4px)!important}
+.pkg-card[data-pkg-card="basic"]{background:linear-gradient(158deg,#202c3a,#10151e)!important;border-color:#637183!important}
+.pkg-card[data-pkg-card="medium"]{background:linear-gradient(158deg,#102b4a,#0a1427)!important;border-color:#2d78c0!important}
+.pkg-card[data-pkg-card="professional"]{background:linear-gradient(156deg,#35281a,#11161c 74%)!important;border-color:#e3b86e!important;box-shadow:0 0 0 1px #c69b50,0 11px 35px #c3963a2b!important}
+.pkg-card[data-pkg-card="custom"]{background:linear-gradient(158deg,#103b34,#071b20)!important;border-color:#328c7f!important}
+.pkg-card .pkg-mini-preview{position:relative;display:flex;flex-direction:column;justify-content:flex-end;gap:5px;border-radius:11px;overflow:hidden;height:108px;min-height:108px;padding:13px;background:linear-gradient(transparent,#000b),url("https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/03-specialty-coffee.jpg") center/cover;color:#fff;font-size:11px;margin:0 0 17px}
+.pkg-card[data-pkg-card="medium"] .pkg-mini-preview{background-image:linear-gradient(transparent,#07112ed9),url("https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/02-wagyu-restaurant.jpg")}
+.pkg-card[data-pkg-card="professional"] .pkg-mini-preview{background-image:linear-gradient(transparent,#0f0c08df),url("https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.jpg")}
+.pkg-card[data-pkg-card="custom"] .pkg-mini-preview{background-image:linear-gradient(transparent,#05211cdb),url("https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/13-luxury-real-estate.jpg")}
+.pkg-name{font-size:13px;letter-spacing:.11em;font-weight:800;color:#e9e8e8}.pkg-card[data-pkg-card="medium"] .pkg-name{color:#aad3ff}.pkg-card[data-pkg-card="professional"] .pkg-name{color:#f1ca80}.pkg-card[data-pkg-card="custom"] .pkg-name{color:#7ef5d5}
+.pkg-sub{min-height:54px;line-height:1.6;font-size:12px;color:#adb7c6}
+.pkg-price{margin:12px 0 12px;font-size:clamp(27px,2.6vw,38px)!important;line-height:1;letter-spacing:-.05em;color:#faf8f3;font-weight:780}
+.pkg-price small{font-size:11px;font-weight:450;letter-spacing:0;color:#abb3bd}
+.pkg-features{margin:15px 0 20px;padding:0;list-style:none;flex:1}.pkg-features li{font-size:11.5px;line-height:1.6;margin:0 0 9px;color:#d1d5de}
+.pkg-btn{margin-top:auto!important;min-height:45px}
+.pkg-ribbon{position:absolute;right:15px;top:-12px;background:#e9bc72!important;color:#19140c!important;border-radius:30px!important;padding:5px 11px!important;font-size:10px!important;letter-spacing:.05em;font-weight:800}
+.pkg-card[data-pkg-card="professional"] .pkg-btn{background:linear-gradient(100deg,#ffe3a0,#e3b66f)!important;color:#1b1307!important}
+.custom-studio-box,#customStudioConfigurator{background:linear-gradient(130deg,#101922,#141c25)!important;border:1px solid #625c4e!important;border-radius:20px!important;margin-top:20px!important}
+#customStudioConfigurator :is(input,select,textarea){background:#101722;border:1px solid #4c5260;border-radius:10px;color:#f4f0e7}
+#customStudioConfigurator :is(button,[role="button"]){min-height:40px}
+#services-plus{padding-top:25px}
+#services-plus .section-head{margin-top:36px}
+.addons-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+.addon-card{min-height:132px;background:#121821!important;border:1px solid #414b5b!important;border-radius:15px!important;padding:18px}
+.addon-card h3{font-size:13px;color:#f6f0e7}.addon-card p{font-size:12px;color:#aeb7c4;line-height:1.5}
+.addon-toggle{border-radius:9px!important;border-color:#847457!important;color:#efcd8a!important}
+#services-plus:not(.premium-expanded) .addon-card:nth-child(n+4){display:none!important}
+.premium-reveal-extras{display:inline-flex;align-items:center;gap:12px;background:transparent;border:1px solid #998268;border-radius:12px;color:#f0cc88;padding:11px 17px;margin:0 0 16px;font-weight:700;font-size:12px}
+#processus{margin:48px 0 25px}.how{gap:18px}.step{padding:22px;border:1px solid #353d4e;border-radius:15px;background:#131822}.step h3{font-family:Georgia,serif;font-size:20px;font-weight:500}
+.order{grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr)!important;gap:32px!important;border:1px solid #6d5c42!important;border-radius:22px!important;padding:clamp(25px,4vw,45px)!important;background:linear-gradient(128deg,#181a25,#0d1420)!important}
+.order h2{font-family:Georgia,serif;font-weight:500;letter-spacing:-.055em;font-size:clamp(32px,3.2vw,45px)}
+.order .lead{font-size:14px;line-height:1.7;color:#b9beca}
+.order .price{font-size:clamp(30px,3.2vw,44px);color:#f2cc88}
+.summary-box{border:1px solid #625642;border-radius:15px;background:#101720;padding:18px}
+.summary-row{padding:9px 0;gap:12px}.summary-row strong{color:#f4eadb}.summary-row.total{border-top:1px solid #8c7559}.summary-row.total strong{color:#f4c67a;font-size:20px}
+form{background:#0d141fe8!important;border:1px solid #414c5f!important;border-radius:17px!important;padding:clamp(18px,2.4vw,28px)!important;gap:15px!important}
+form label{font-size:12px;color:#d2d9e1}
+form label input,form label select,form label textarea{background:#171d29!important;border:1px solid #465366!important;border-radius:9px!important;min-height:46px;color:#f5f5f6}
+form .pill{min-height:48px}
+.premium-faq{margin:72px 0 42px}.premium-faq-grid{display:grid;grid-template-columns:.83fr 1.17fr;gap:44px;padding:33px 0}.premium-faq h2{font-family:Georgia,serif;font-size:clamp(30px,3.2vw,45px);font-weight:500;line-height:1.13;letter-spacing:-.045em;margin:11px 0 20px}.premium-faq-lead{color:#abb4c2;font-size:14px;line-height:1.75;max-width:390px}
+.premium-faq-accordion details{border:1px solid #384251;border-radius:12px;background:#131922;margin:0 0 10px;overflow:hidden}
+.premium-faq-accordion summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:19px;font-size:13px;font-weight:700;color:#eee9e1}
+.premium-faq-accordion summary::-webkit-details-marker{display:none}
+.premium-faq-accordion summary::after{content:"+";color:#e6c187;font-size:22px;font-weight:400;line-height:1}
+.premium-faq-accordion details[open] summary::after{content:"−"}
+.premium-faq-accordion details p{margin:0;padding:0 19px 20px;color:#acb7c4;font-size:13px;line-height:1.7}
+.dual-bottom{gap:18px;margin:35px 0 70px}.panel-box{background:#121821!important;border:1px solid #41485a!important;border-radius:16px;padding:23px!important}
+.premium-trust{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;padding:22px 0 28px;border-top:1px solid #9c764b77;border-bottom:1px solid #9c764b44;margin-top:50px}
+.premium-trust>div{display:grid;grid-template-columns:34px 1fr;grid-template-rows:auto auto;align-items:center;padding:10px 20px;border-right:1px solid #42404a}.premium-trust>div:last-child{border:0}
+.premium-trust span{grid-row:1/3;color:#eac484;font-size:24px}.premium-trust strong{font-size:13px;letter-spacing:-.01em}.premium-trust small{color:#929cae;font-size:11px}
+footer.shell{padding:28px 0 38px;color:#8d96a6;font-size:11px;line-height:1.8;gap:18px}
+footer.shell a{color:#d4b47d}footer.shell a[href*="business-control"]{display:none}
+.mobile-sticky-bar{box-shadow:0 -8px 30px #0008;background:#0b0e15f2!important;border-top:1px solid #a7875580!important}
+@media(max-width:1160px){
+.shell{width:min(100% - 52px,1100px)}
+.navlinks{gap:12px}.navlinks a:not(.pill){font-size:11px}
+.hero{gap:26px;padding:65px 0;min-height:510px}.hero h1{font-size:clamp(42px,5.8vw,64px)}
+.carousel-stage{gap:22px!important}.pkg-card{padding:15px!important;min-height:495px}.pkg-features li{font-size:11px}
+}
+@media(max-width:850px){
+.shell{width:calc(100% - 38px)}
+.navlinks>a:not(.pill){display:none!important}.navlinks .pill{display:none!important}
+.premium-menu-toggle{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;width:42px;height:42px;border:1px solid #8e7756;background:#141924;border-radius:11px;margin-left:auto}
+.premium-menu-toggle span{height:2px;width:19px;border-radius:3px;background:#e9c888}
+.premium-mobile-menu{display:flex;flex-direction:column;gap:3px;padding:12px 20px 20px;background:#10141c;border-top:1px solid #383d49}
+.premium-mobile-menu[hidden]{display:none}.premium-mobile-menu a{display:block;color:#e8e8eb;padding:12px;border-radius:9px}.premium-mobile-menu a:hover{background:#343038}
+.hero{grid-template-columns:1fr;gap:29px;padding:52px 0 45px;min-height:0}.hero h1{font-size:clamp(42px,8vw,70px);max-width:640px}.hero-art{min-height:0}.hero-frame{max-width:740px}
+.carousel-stage{grid-template-columns:1fr!important}.carousel-phone{aspect-ratio:16/9!important}.carousel-info{display:grid;grid-template-columns:1fr;gap:5px}
+.pricing-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.pkg-card{min-height:430px;padding:21px!important}
+.addons-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.order{grid-template-columns:1fr!important;gap:23px!important}
+.premium-faq-grid{grid-template-columns:1fr;gap:14px}.premium-trust{grid-template-columns:repeat(2,1fr)}.premium-trust>div:nth-child(2){border:0}
+}
+@media(max-width:530px){
+.shell{width:calc(100% - 28px)}
+.top .nav{min-height:66px;gap:8px}.brand{font-size:16px}.brand img{width:27px;height:27px}.brand small{font-size:8px}
+.locale-bar{display:flex;gap:5px}.locale-select{max-width:76px;font-size:10px;padding:8px 3px}.locale-bar #currencySwitcher{display:none}
+.premium-menu-toggle{width:39px;height:39px;flex:0 0 39px}
+.hero{padding:40px 0 33px}.hero h1{font-size:clamp(38px,10vw,54px);line-height:1.08;margin:19px 0}
+.hero .lead{font-size:14px;line-height:1.65}.hero .kicker{font-size:9px}
+.hero .actions{display:grid;grid-template-columns:1fr;gap:10px;margin:24px 0 18px}.hero .actions .pill{width:100%;min-height:50px;justify-content:center}.hero .under{font-size:10px}
+.hero-frame{aspect-ratio:15/11!important;border-radius:17px!important}.hero .hero-caption{bottom:10px;left:12px;right:12px}.hero-caption b{font-size:18px}.hero-frame .brand-overlay-top{padding:9px!important}.floatlabel{display:none}
+.stats{grid-template-columns:repeat(2,minmax(0,1fr));padding:14px 0;gap:0}.stats div{padding:12px 11px}.stats strong{font-size:17px}.stats span{font-size:10px}
+.premium-index{font-size:9px;letter-spacing:.1em}.premium-index span:last-child{display:none}
+.section-head{margin:30px 0 19px}.section-head h2{font-size:clamp(29px,8vw,38px)}.section-head p{font-size:13px;line-height:1.6}
+.gallery-controls{margin:14px 0 12px}.filter-pills{gap:6px}.filter-btn{padding:9px 12px!important;font-size:11px!important;min-height:36px}
+.carousel-stage{padding:13px!important;gap:16px!important;border-radius:16px!important}
+.carousel-phone{aspect-ratio:16/10!important;border-radius:12px!important}.carousel-title{font-size:25px}.carousel-counter{font-size:9px}.carousel-info .fine{font-size:12px!important}
+.gallery{gap:11px!important;padding:15px 0 20px}.gallery .showcase{flex-basis:72vw!important;max-width:300px!important}.poster{aspect-ratio:16/10!important}
+.pricing-grid{grid-template-columns:1fr!important;gap:11px!important}.pkg-card{min-height:0;padding:17px!important}.pkg-card .pkg-mini-preview{height:94px;min-height:94px;margin-bottom:12px}.pkg-sub{min-height:0}.pkg-features{margin:12px 0}.pkg-price{font-size:32px!important}.pkg-btn{min-height:45px}
+#brandPreviewSection{padding:18px!important}
+.addons-grid{grid-template-columns:1fr!important}.addon-card{min-height:0}
+#processus{margin:38px 0 15px}.how{grid-template-columns:1fr;gap:9px}.step{padding:18px}
+.order{padding:17px!important;gap:21px!important}.order .price{font-size:30px}.order h2{font-size:32px}
+form{grid-template-columns:1fr!important;padding:16px!important}.summary-box{padding:14px}
+.premium-faq{margin:44px 0 25px}.premium-faq-grid{padding:18px 0}.premium-faq h2{font-size:31px}
+.dual-bottom{grid-template-columns:1fr;gap:12px!important}.panel-box{padding:17px!important}
+.premium-trust{gap:0;margin-top:26px}.premium-trust>div{grid-template-columns:28px 1fr;padding:12px 5px;border-bottom:1px solid #323d49}.premium-trust span{font-size:20px}.premium-trust strong{font-size:11px}.premium-trust small{font-size:10px}
+footer.shell{flex-direction:column;padding-bottom:105px}.mobile-sticky-bar{display:flex!important;z-index:70;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:reduce){.pkg-card,.pill{transition:none!important;transform:none!important}}
+
+/* Preserve original 9:16 videos in premium 16:9 presentation, ready for optional future landscape assets */
+.hero-frame .brand-overlay-top,.hero-frame .hero-caption{position:absolute;z-index:3}
+/* Approved graphite and gold layout, shared by both video formats. */
+:root{--gold:#f0c16c;--ink:#090b0e}
+body{background:radial-gradient(ellipse at 80% 5%,#33271c 0,transparent 27%),#090b0e}
+.hero{position:relative}
+.hero-frame{aspect-ratio:16/9!important}
+.hero .pill,.carousel-info .pill,#stripeCheckoutBtn,.shorts .use-style{
+ background:linear-gradient(115deg,#fff0c4,#f3c46e 52%,#c78435)!important;color:#111!important;
+ border:1px solid #ffdd95!important;box-shadow:0 3px 18px #dca65045
+}
+.hero .pill.secondary{background:#0c0e12!important;color:#fff!important;box-shadow:none}
+#realisations .section-head,#tarifs .section-head,.shorts-heading{text-align:center}
+#realisations .section-head,#tarifs .section-head{display:block}
+#realisations .section-head p,#tarifs .section-head p{margin-inline:auto}
+.hero .actions .pill,.carousel-info .pill,#stripeCheckoutBtn{border-radius:999px}
+@media(min-width:701px){.hero h1{font-family:Georgia,serif;font-weight:600;letter-spacing:-.045em}}
+@media(max-width:700px){.hero>div:first-of-type+div{text-align:center}.hero-art{min-height:0}.hero .lead,.hero .under{margin-inline:auto}#realisations .filter-pills{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}#realisations .filter-btn{width:100%;min-height:42px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;line-height:1.25;padding:9px 10px!important}#realisations .filter-btn[data-filter="all"]{grid-column:1/-1}}
+#realisations .filter-pills{justify-content:center}
+.carousel-stage{display:block!important;background:none!important;border:0!important;padding:0!important}
+.carousel-player-wrap{position:relative;max-width:980px;margin:auto}
+.carousel-phone{width:100%!important;aspect-ratio:16/9!important;border:1px solid #deb473!important;box-shadow:0 0 23px #e8b85c4a}
+.carousel-player-wrap .icon-btn{position:absolute;z-index:4;top:50%;transform:translateY(-50%);border-color:#e4bd79;border-radius:50%;background:#0a0c10e8}
+#carouselPrevBtn{left:12px} #carouselNextBtn{right:12px}
+.showcase-aspect{position:absolute;z-index:3;right:15px;top:14px;background:#0a0c10db;color:#f6d595;border:1px solid #ba9457;border-radius:20px;padding:5px 12px}
+.carousel-info{display:grid!important;grid-template-columns:1fr auto;gap:6px 20px;max-width:980px;margin:20px auto 28px}
+.carousel-info .carousel-counter,.carousel-info .carousel-title,.carousel-info .fine{grid-column:1}
+.carousel-info .carousel-nav{grid-column:2;grid-row:1/span 3;align-self:center}
+.shorts{border-block:0;padding:8px 0 22px;margin:10px auto 20px}
+.shorts-heading h3{margin:0 0 14px;color:#fff;font:600 clamp(22px,3vw,34px)/1.2 Georgia,serif}
+#realisations .section-head{margin:40px 0 16px}
+.shorts-heading h3 span{font:600 14px/1 system-ui;color:#f2cc85;border:1px solid #a77e43;border-radius:99px;padding:5px 9px;vertical-align:middle}
+.shorts-heading p{margin:8px 0 17px;color:#c8c3ba}
+.shorts-stage{position:relative;padding-inline:48px}
+.shorts .gallery{display:flex!important;scroll-snap-type:x mandatory;gap:16px!important;padding:6px 2px 13px!important}
+.shorts .showcase{flex:0 0 clamp(162px,23vw,245px)!important;max-width:none!important;scroll-snap-align:center;border-color:#685338;border-radius:15px}
+.shorts .poster{aspect-ratio:9/16!important}
+.shorts .poster video{object-fit:contain!important;background:#0b0d11}
+.shorts .sample-info{padding:11px}
+.shorts .sample-info span{display:none}
+.shorts .use-style{border-radius:999px;width:100%;min-height:44px;margin-top:8px}
+.shorts-arrows button{position:absolute;z-index:5;top:43%;width:44px;height:44px;border-radius:50%;border:1px solid #dbac65;background:#0c0e12;color:#fff;font-size:23px;cursor:pointer}
+#shortsPrev{left:0} #shortsNext{right:0}
+#brandPreviewSection{margin-top:18px}
+#commande form .btn-group-dual{justify-content:flex-start}
+#commande{scroll-margin-top:82px}
+footer.shell{padding-bottom:32px!important}
+@media(max-width:700px){
+ .carousel-info{grid-template-columns:1fr}
+ .carousel-info .carousel-nav{grid-column:1;grid-row:auto;margin-top:10px}
+ .shorts-stage{padding-inline:16px}
+ .shorts .gallery{padding-inline:calc((100% - min(60vw,220px))/2)!important}
+ .shorts .showcase{flex-basis:min(60vw,220px)!important}
+ .shorts-arrows button{background:#07090ceb}
+ .hero .actions a{justify-content:center}
+}
+
+/* The landscape frame is reserved for the studio's own 16:9 footage. */
+html,body{overflow-x:clip}
+body{background:#090a0c}
+.hero{padding:clamp(32px,5vw,70px) 0;min-height:0;gap:clamp(20px,3vw,46px)}
+.hero-art{min-height:0}
+.hero h1{font-size:clamp(36px,4.1vw,69px);line-height:1.03}
+.premium-hero-orbit{inset:6% 0 0 0;background:radial-gradient(ellipse at 70% 55%,#8b5b292e,transparent 66%);transform:none}
+.hero-frame::after{content:none}
+.hero-frame:not(.show-brand) :is(.brand-overlay-top,.hero-caption){display:none}
+.hero-frame{background:linear-gradient(145deg,#15171b,#0a0b0d 62%)!important}
+.studio-play{color:#f5ca74;font:700 47px/.8 Georgia,serif;filter:drop-shadow(0 0 8px #ce8b42aa)}
+.section-head h2 em{color:#f0c16c;font-style:normal}
+.carousel-player-wrap{width:76%;max-width:900px}
+.carousel-phone{background:#101216}
+#spotlightPoster[hidden],#spotlightVideo[hidden]{display:none!important}
+#spotlightPoster{display:block;width:100%;height:100%;object-fit:cover;object-position:center 48%}
+.carousel-peek{position:absolute;top:10%;width:24%;height:80%;object-fit:cover;opacity:.55;border:1px solid #897653;border-radius:16px;pointer-events:none}
+.carousel-peek.previous{inset-inline-end:calc(100% + 16px)}
+.carousel-peek.next{inset-inline-start:calc(100% + 16px)}
+#carouselPrevBtn{left:-23px}
+#carouselNextBtn{right:-23px}
+#realisations .filter-pills{flex-wrap:wrap;overflow:visible}
+.brand-options{margin-bottom:35px}
+.brand-options summary{cursor:pointer;color:#edc982}
+.shorts .gallery{--short-width:clamp(162px,23vw,245px);padding-inline:calc((100% - var(--short-width))/2)!important}
+.shorts .showcase{flex-basis:var(--short-width)!important}
+.pkg-card[data-pkg-card="basic"]{background:linear-gradient(145deg,#343d48,#101214 70%)!important}
+.pkg-card[data-pkg-card="medium"]{background:linear-gradient(145deg,#153a65,#081322 70%)!important}
+.pkg-card[data-pkg-card="professional"]{background:linear-gradient(145deg,#53391c,#14110d 70%)!important}
+.pkg-card[data-pkg-card="custom_studio"]{background:linear-gradient(145deg,#06463d,#071815 70%)!important}
+.pkg-card .pkg-mini-preview{display:none!important}
+@media(max-width:700px){
+ .hero .actions{display:grid;margin:20px auto;max-width:410px}
+ .hero .actions .pill{min-width:0}
+ .hero h1{font-family:system-ui,sans-serif;letter-spacing:-.055em}
+ .hero .under{margin-bottom:0}
+ .carousel-player-wrap{width:82%}
+ .shorts .gallery{--short-width:min(60vw,220px)}
+ .pricing-grid{grid-template-columns:minmax(0,1fr)!important}
+}
+/* Creative Studio reference layout */
+.hero{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);padding-block:clamp(40px,5vw,76px)}
+.hero h1{font-size:clamp(40px,4.15vw,72px)}
+.hero .actions{margin:22px 0 0}
+.hero .under{margin-top:15px}
+.hero-mobile-title{display:none}
+.hero-benefits{list-style:none;padding:0;margin:16px 0}
+.hero-benefits li{margin:7px 0}
+.hero-benefits li::before{content:"✓";display:inline-block;color:#ffe1a4;font-weight:700;margin-inline-end:9px}
+.hero-art{padding-inline-end:clamp(90px,11vw,150px)}
+.villa-hero{display:block;width:100%;height:100%;object-fit:cover}
+.hero-media-caption{position:absolute;left:0;bottom:0;right:0;padding:26px 20px 16px;background:linear-gradient(transparent,#08090ed9);display:grid;color:#fff}
+.hero-media-caption strong{font:600 clamp(23px,3vw,45px)/1.1 Georgia,serif}
+.hero-media-caption span{color:#ffda9a}
+.hero-industries{position:absolute;inset-inline-end:0;top:50%;transform:translateY(-50%);display:grid;gap:9px;z-index:5}
+.hero-industries a{text-decoration:none;font-size:clamp(10px,1vw,14px);border:1px solid #a78757;border-radius:999px;padding:9px 12px;background:#131313de;color:#fff}
+.hero-industries a:hover{background:#40311e;border-color:#ffdda1}
+.carousel-dots{display:flex;gap:9px;justify-content:center;margin:14px 0}
+.carousel-dots button{width:10px;height:10px;padding:0;border:0;border-radius:99px;background:#464749;cursor:pointer}
+.carousel-dots button[aria-pressed="true"]{width:24px;background:#ffcd79}
+.shorts-stage{max-width:1000px;margin-inline:auto;padding-inline:52px}
+.shorts .gallery{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;align-items:center;gap:clamp(7px,2vw,24px)!important;max-width:740px;margin-inline:auto;padding:9px 4px!important;overflow:visible!important}
+.shorts .showcase[data-position="hidden"]{display:none!important}
+.shorts .showcase[data-position="previous"]{grid-row:1;grid-column:1;opacity:.7}
+.shorts .showcase[data-position="center"]{grid-row:1;grid-column:2;border:2px solid #ffd07d;box-shadow:0 0 17px #e9ad514d}
+.shorts .showcase[data-position="next"]{grid-row:1;grid-column:3;opacity:.7}
+.shorts .showcase .sample-info{display:none}
+.shorts .showcase:not([data-position="center"]) .video-toggle{visibility:hidden}
+.shorts-caption{text-align:center;margin:8px 0 0;font-weight:600;color:#f4e6ce}
+.shorts-select{display:flex;margin:10px auto 0;width:max-content}
+#customStudioConfigurator{background:none!important;border:0!important;padding:0!important;margin-top:56px!important}
+.cs-heading{text-align:center;margin-bottom:21px}
+.cs-heading h2{font:700 clamp(31px,4vw,54px)/1.1 system-ui;margin:9px 0 4px}
+.cs-heading p{margin:4px 0;color:#d5d2ca}
+.cs-layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:20px;align-items:start}
+.cs-controls,.cs-quote-bar,.checkout-faq-layout #projectForm,.checkout-faq-layout .premium-faq{background:linear-gradient(145deg,#181a1e,#0c0e11 65%)!important;border:1px solid #5f5b54!important;border-radius:17px;padding:clamp(13px,2vw,24px)!important}
+.cs-mobile-title{display:none}
+.custom-studio-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:0;margin:0 0 10px}
+.custom-studio-grid>:is(label,.cs-segments){display:grid;grid-template-columns:minmax(92px,.75fr) minmax(0,1.55fr);gap:9px;align-items:center;border-bottom:1px solid #ffffff1e;padding:8px 0;color:#f3f1ed;font-size:14px}
+.custom-studio-grid label span{margin:0}
+.custom-studio-grid select{width:100%;min-width:0;padding:7px}
+#customStudioConfigurator select[hidden]{display:none}
+.custom-studio-grid .cs-segments{display:flex;gap:4px}
+.cs-segments>label{flex:0 0 31%;min-width:0}
+.cs-segments button{flex:1;min-width:0;min-height:37px!important;padding:4px 2px;background:linear-gradient(#23262a,#111316);color:#fff;border:1px solid #66615a;border-radius:8px;cursor:pointer;font-size:clamp(10px,1.05vw,13px)}
+.cs-segments button[aria-pressed="true"]{background:linear-gradient(145deg,#ffe5a7,#d99940);border-color:#ffe2a5;color:#17100a;font-weight:750}
+.cs-quote-bar{display:grid;gap:12px;margin:0;border-color:#aa8758!important;box-shadow:inset 0 0 32px #b2803922}
+.cs-quote-bar h3{margin:0;color:#fff;font-size:23px}
+.cs-preview{display:flex;align-items:center;gap:14px}
+.cs-preview img{border-radius:9px;max-width:40%;object-fit:cover}
+#csQuoteLines{list-style:none;padding:0;margin:2px 0}
+#csQuoteLines li{display:flex;justify-content:space-between;border-top:1px solid #ffffff1e;padding:6px 0;gap:8px}
+.cs-quote-bar>div:last-child{display:grid!important;width:100%}
+.cs-quote-bar>div:last-child strong{border-top:1px solid #8d744c;padding-top:7px;text-align:end;color:#f7ce81!important}
+#applyCustomStudioToOrderBtn,#stripeCheckoutBtn{width:100%;text-align:center;justify-content:center}
+.checkout-faq-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:20px;margin-top:26px}
+.checkout-faq-layout .order{display:flex!important;flex-direction:column;background:none!important;border:0!important;padding:0!important;gap:8px!important;margin:0!important}
+.checkout-faq-layout #projectForm{display:grid;grid-template-columns:minmax(0,1fr);margin:0}
+#projectForm h2{margin:0 0 6px;font:700 25px/1.15 system-ui;letter-spacing:-.025em}
+#projectForm>label:not(.checkbox-row){display:grid;grid-template-columns:minmax(0,.7fr) minmax(0,1.4fr);gap:9px;align-items:center}
+#projectForm input,#projectForm select,#projectForm textarea{width:100%;min-width:0}
+#projectForm input[type=checkbox]{width:auto;min-height:0}
+.order-breakdown{order:2;width:100%;padding:12px;border:1px solid #6a5534;border-radius:10px}
+.order-extra summary,.order-breakdown summary,.package-comparison summary{color:#f5cf91;cursor:pointer}
+.order-extra-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0}
+.checkout-faq-layout .premium-faq{margin:0}
+.checkout-faq-layout .premium-faq-grid{display:block;padding:0}
+.checkout-faq-layout .premium-faq-grid h2{font:700 25px/1.15 system-ui;letter-spacing:0;margin:0 0 16px}
+#premiumFaqEyebrow,#premiumFaqLead{display:none}
+.package-comparison{margin:24px 0}
+.pkg-card[data-pkg-card="custom_studio"] .pkg-price small{display:none}
+@media(max-width:800px){
+ .cs-layout,.checkout-faq-layout{grid-template-columns:minmax(0,1fr)}
+ .cs-mobile-title{display:flex;align-items:center;gap:10px;margin:0 0 9px}
+ .cs-mobile-title span{border-radius:50%;background:#f1c365;color:#17110a;display:grid;place-items:center;width:32px;height:32px}
+ #projectForm h2::before{content:"2";display:inline-grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#f1c365;color:#17110a;margin-inline-end:9px}
+}
+@media(max-width:700px){
+ .hero{grid-template-columns:1fr}
+ .hero-desktop-title,.hero-benefits{display:none}
+ .hero-mobile-title{display:inline}
+ .hero-art{padding:0 8px;min-height:0}
+ .hero-industries{inset-inline-end:9px;top:12px;transform:none;gap:4px}
+ .hero-industries a{padding:3px 6px}
+ .hero-media-caption{padding:15px 9px 7px}
+ .hero h1{font-size:clamp(33px,8vw,52px)}
+ .locale-bar #currencySwitcher{display:block}
+ .shorts-stage{padding-inline:0}
+ .shorts .gallery{grid-template-columns:repeat(3,72%)!important;justify-content:center;gap:0!important;overflow:hidden!important;touch-action:pan-y}
+ #shortsPrev{left:4px}
+ #shortsNext{right:4px}
+ .shorts-arrows button{width:31px;height:38px}
+ .shorts .showcase{border-radius:8px}
+ #projectForm>label:not(.checkbox-row){grid-template-columns:minmax(0,1fr);gap:2px}
+ .order-extra-fields{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+ .pkg-card{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:5px 10px!important}
+ .pkg-card .pkg-sub{grid-column:1}
+ .pkg-card .pkg-price{grid-column:2;grid-row:1/span 2;align-self:center;margin:0}
+ .pkg-card :is(.pkg-meta,ul,.pkg-btn){grid-column:1/-1}
+ .pkg-card .pkg-btn{min-height:40px}
+}
+@media(max-width:390px){
+ .nav{gap:6px}
+ .locale-select{max-width:60px}
+ .studio-play{font-size:33px}
+ .brand{gap:4px}
+}
+@media(min-width:701px){
+ html[lang="en"] .hero h1{font-size:clamp(29px,3.65vw,65px)}
+ .hero{padding-block:44px}
+}
+.cs-heading .kicker{border:1px solid #735932;border-radius:20px;padding:5px 14px}
+.cs-heading h2{color:#f9f4e9}
+.cs-quote-bar h3::before{content:"◇";margin-inline-end:8px;color:#ffd48d}
+/* One order surface from configuration to payment. */
+.cs-layout{border:1px solid #d6ad63;border-radius:20px;padding:clamp(14px,2.4vw,30px);background:radial-gradient(ellipse at top right,#3b2c1954,transparent 52%),#111317;box-shadow:inset 0 0 25px #aa773719;gap:clamp(16px,2.4vw,30px)}
+.cs-input-column,.cs-quote-bar{min-width:0}
+.cs-layout .cs-controls,.cs-layout .cs-quote-bar,.cs-layout #projectForm{padding:0!important;background:none!important;border:0!important;border-radius:0!important;box-shadow:none}
+.cs-layout .cs-mobile-title{display:block;margin:0 0 10px;font-size:23px;color:#f5f1e9}
+.cs-layout .cs-mobile-title>span{display:none}
+.cs-layout #commande{margin-top:20px;padding-top:20px;border-top:1px solid #8f7041}
+.cs-layout #projectForm{display:grid;grid-template-columns:minmax(0,1fr);margin:0}
+.cs-layout .cs-quote-bar{border-inline-start:1px solid #8f7041!important;padding-inline-start:clamp(16px,2.4vw,30px)!important}
+.cs-layout .cs-quote-bar .unified-total{display:flex!important;align-items:center;justify-content:space-between;border-top:1px solid #8f7041;padding-top:10px;font-size:19px;font-weight:700}
+.cs-layout .cs-quote-bar .unified-total strong{color:#f7ce81!important;font-size:28px}
+.checkout-security{text-align:center;margin:0;font-size:13px;color:#dcd1bf}
+.cs-layout .order-breakdown{margin-top:9px}
+#questions .premium-faq-grid{display:block}
+#questions .premium-faq-accordion{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:start;gap:10px}
+@media(max-width:800px){
+ .cs-layout .cs-quote-bar{border-inline-start:0!important;border-top:1px solid #8f7041!important;padding:17px 0 0!important}
+ #questions .premium-faq-accordion{grid-template-columns:1fr}
+}
+@media(max-width:700px){#projectForm h2::before{content:none}}
+/* Preset orders and shared branding fields */
+#projectForm .logo-upload-panel[hidden]{display:none!important}
+#projectForm .logo-upload-panel{padding:10px;border:1px dashed #987848;border-radius:10px;background:#b4893b10}
+#projectForm>label.logo-upload-panel{grid-template-columns:minmax(0,1fr);gap:8px;scroll-margin:95px 0 20px}
+#logoUpload{font-size:13px;padding:6px}
+#logoUpload::file-selector-button{background:#f2c675;color:#19120b;border:0;border-radius:7px;padding:9px 11px;margin-inline-end:10px;cursor:pointer}
+#questions{margin:34px 0 18px}
+#services-plus{border-top:1px solid #59472d;padding-top:4px}
+#suivi{margin-top:32px;align-items:start}
+#suivi .panel-box{background:linear-gradient(145deg,#191c21,#0c0e11 75%);border:1px solid #6b5435;border-radius:18px;padding:clamp(16px,3vw,28px)}
+#suivi h3{margin:7px 0;font:650 24px/1.2 system-ui}
+.support-fields{display:grid;gap:8px;margin-top:15px}
+.support-fields label{color:#e7dccd;font-size:13px}
+.tracking-controls{display:flex;flex-wrap:wrap;gap:9px}
+.tracking-controls input{min-width:130px}
+.support-fields input,.support-fields textarea{min-width:0;min-height:43px}
+.support-fields textarea{resize:vertical}
+.support-fields .pill{justify-self:start}
+</style></head>
+<body>
+<header class="top"><div class="shell nav">
+<a href="https://sales-preview-20261115.deepsyq.pages.dev/deepsyq.html" class="brand" aria-label="Retour à DEEPSYQ"><span class="studio-play" aria-hidden="true">▷</span><span>DEEPSYQ<small>CREATIVE STUDIO</small></span></a>
+<nav class="navlinks" aria-label="Navigation">
+  <a href="#home">Home</a>
+  <a href="#realisations" data-i18n="navExamples">Exemples</a>
+  <a href="#tarifs" data-i18n="navPricing">Tarifs (5 € – 55 €)</a>
+  <a href="#customStudioConfigurator">Custom Studio</a>
+  <a href="#questions">FAQ</a>
+  <div class="locale-bar">
+    <select id="langSwitcher" class="locale-select" aria-label="Language">
+      <option value="fr">🇫🇷 Français</option>
+      <option value="en">🇬🇧 English</option>
+      <option value="de">🇩🇪 Deutsch</option>
+      <option value="ar">🇦🇪 العربية (RTL)</option>
+      <option value="es">🇪🇸 Español</option>
+      <option value="it">🇮🇹 Italiano</option>
+      <option value="nl">🇳🇱 Nederlands</option>
+      <option value="pt">🇵🇹 Português</option>
+      <option value="ru">🇷🇺 Русский</option>
+    </select>
+    <select id="currencySwitcher" class="locale-select" aria-label="Currency">
+      <option value="EUR">EUR (€)</option>
+      <option value="USD">USD ($)</option>
+      <option value="GBP">GBP (£)</option>
+      <option value="CHF">CHF</option>
+      <option value="AED">AED</option>
+    </select>
+  </div>
+  <a class="pill" href="#commande"><span data-i18n="navOrderBtn">Commander une vidéo</span> <span aria-hidden="true">↗</span></a>
+</nav><button type="button" id="premiumMenuToggle" class="premium-menu-toggle" aria-expanded="false" aria-controls="premiumMobileMenu" aria-label="Open navigation"><span></span><span></span><span></span></button>
+</div><div id="premiumMobileMenu" class="premium-mobile-menu" hidden><a href="#realisations">Video styles</a><a href="#tarifs">Packages</a><a href="#customStudioConfigurator">Custom Studio</a><a href="#questions">FAQ</a><a href="#commande">Order a video</a></div></header>
+
+<main>
+<div class="shell">
+  <section class="hero" id="home"><div class="premium-hero-orbit" aria-hidden="true"></div>
+    <div>
+      <span class="kicker" data-i18n="heroKicker">Création vidéo publicitaire internationale</span>
+      <h1 data-i18n-html="heroTitle">Des vidéos publicitaires <em>pour votre entreprise.</em></h1>
+      <p class="lead" data-i18n="heroLead">Des vidéos courtes, soignées et conçues pour attirer de nouveaux clients sur votre site, Instagram Reels, TikTok, YouTube Shorts et Facebook. Choisissez l'un de nos styles, ajoutez votre nom, votre logo et vos coordonnées — nous livrons votre film prêt à diffuser dès 5 €.</p>
+      <ul class="hero-benefits"><li data-i18n="heroBrand">Your brand, logo and contact details</li><li data-i18n="heroReady">Ready for social media and websites</li><li data-i18n="heroPrepared">Professionally prepared video</li></ul>
+      <div class="actions">
+        <a href="#tarifs" class="pill"><span data-i18n="navOrderBtn">Commander une vidéo</span> <span aria-hidden="true">→</span></a>
+        <a href="#realisations" class="pill secondary" data-i18n="heroExamples">Voir les exemples</a>
+      </div>
+    </div>
+    <div class="hero-art" aria-label="Exemple de vidéo cinématographique">
+      <div class="hero-frame" id="landscapePreview">
+        <video class="villa-hero" autoplay muted loop playsinline preload="auto" oncanplay="this.play().catch(()=>{})" width="1600" height="900" aria-label="Luxury coastal villa with an infinity pool at sunset"><source src="./media/sales-villa-hero.mp4" type="video/mp4"></video>
+        <div class="hero-media-caption" aria-hidden="true"><strong>Luxury Hotel</strong><span>Hotel &amp; Resort</span></div>
+        <div class="brand-overlay-top">
+          <div class="brand-overlay-logo">
+            <img id="livePreviewLogoImg" src="https://sales-preview-20261115.deepsyq.pages.dev/deepsyq-icon-192.png" alt="Logo preview">
+            <span id="livePreviewBrandName">Maison Lumière</span>
+          </div>
+          <span class="brand-overlay-tag" id="livePreviewPkgTag">MEDIUM · 20s · 9:16</span>
+        </div>
+        <span class="showcase-aspect">16:9</span>
+        <div class="hero-caption">
+          <b id="livePreviewHeadline">Votre histoire. Notre regard.</b>
+          <span id="livePreviewSubline">Une signature visuelle qui vous ressemble.</span>
+          <small id="livePreviewContact">📍 Paris · www.votre-entreprise.fr</small>
+        </div>
+      </div>
+      <div class="hero-industries" aria-label="Video styles">
+        <a href="#realisations" data-hero-filter="hospitality" data-hero-slide="0">♜ Hotel</a>
+        <a href="#realisations" data-hero-filter="hospitality" data-hero-slide="1">♨ Restaurant</a>
+        <a href="#realisations" data-hero-filter="beauty">❋ Beauty</a>
+        <a href="#realisations" data-hero-filter="realestate">⌂ Real Estate</a>
+        <a href="#realisations" data-hero-filter="prestige" data-hero-slide="8">◇ Automotive</a>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+  <div class="stats" aria-label="Offre">
+    <div><strong data-i18n="stat1Val">Styles vidéo</strong><span data-i18n="stat1Sub">prêts pour tous les secteurs</span></div>
+    <div><strong data-i18n="stat2Val">10–30 sec</strong><span data-i18n="stat2Sub">impact maximal sur mobile &amp; web</span></div>
+    <div><strong data-i18n="stat3Val">Dès 5 €</strong><span data-i18n="stat3Sub">tarifs clairs : 5 €, 15 € ou 55 €</span></div>
+    <div><strong data-i18n="stat4Val">8+ langues</strong><span data-i18n="stat4Sub">FR · EN · DE · AR · ES · IT · NL · PT</span></div>
+  </div>
+</div>
+
+<div class="shell">
+  <!-- VIDEO SHOWCASE GALLERY + V6 INTERACTIVE SPOTLIGHT CAROUSEL -->
+  <section id="realisations">
+    <div class="section-head">
+      <div>
+        <h2 data-i18n-html="galleryTitle">Vous choisissez l'idée —<br>DEEPSYQ crée la publicité.</h2>
+      </div>
+    </div>
+
+    <!-- Industry Smart Filter Bar -->
+    <div class="gallery-controls" role="toolbar" aria-label="Filtrer par secteur">
+      <div class="filter-pills" id="industryFilterBar">
+        <button type="button" class="filter-btn active" data-filter="all">Tous</button>
+        <button type="button" class="filter-btn" data-filter="hospitality">Hôtels &amp; Restaurants</button>
+        <button type="button" class="filter-btn" data-filter="beauty">Beauté, Spa &amp; Mode</button>
+        <button type="button" class="filter-btn" data-filter="realestate">Immobilier &amp; Design</button>
+        <button type="button" class="filter-btn" data-filter="prestige">Auto, Yacht, Horlogerie &amp; Pro</button>
+      </div>
+    </div>
+
+    <section class="shorts" id="shorts" aria-labelledby="shortsTitle">
+      <div class="shorts-heading"><h3 id="shortsTitle">Reels · TikTok · YouTube Shorts</h3></div>
+      <div class="shorts-stage">
+        <div class="gallery" id="videoGallery"></div>
+        <div class="shorts-arrows"><button type="button" id="shortsPrev" aria-label="Previous Short">‹</button><button type="button" id="shortsNext" aria-label="Next Short">›</button></div>
+      </div>
+      <p class="shorts-caption" id="shortsCaption" aria-live="polite"></p>
+      <button type="button" class="pill shorts-select" id="shortsSelect" data-i18n="shortsChoose">Use This Style →</button>
+    </section>
+    <details class="brand-options">
+      <summary>Aperçu avec votre marque</summary>
+    <!-- Interactive Brand Preview ("See your brand in the video") -->
+    <div class="brand-studio-bar" id="brandPreviewSection" aria-label="See your brand in the video">
+      <label><span>✦ See your brand in the video (Nom)</span>
+        <input id="quickBrandName" maxlength="80" placeholder="Ex. Maison Lumière">
+      </label>
+      <label><span>Coordonnées / Ville / Site</span>
+        <input id="quickBrandContact" maxlength="120" placeholder="Ex. Paris · www.votre-site.fr">
+      </label>
+      <label><span>Couleur d'accentuation</span>
+        <select id="quickBrandAccent">
+          <option value="#f0cca0">Or Champagne (#F0CCA0)</option>
+          <option value="#93c5fd">Bleu Saphir (#93C5FD)</option>
+          <option value="#6ee7b7">Émeraude Platine (#6EE7B7)</option>
+          <option value="#f8fafc">Argent Pur (#F8FAFC)</option>
+        </select>
+      </label>
+      <div>
+        <button type="button" class="pill secondary" id="applyBrandPreviewBtn" style="width:100%;min-height:45px">Aperçu instantané (0 € · Sans coût IA)</button>
+      </div>
+    </div>
+
+    </details>
+  </section>
+
+  <!-- 4 PRICING PACKAGES (BASIC 4,95€, MEDIUM 14,95€, PROFESSIONAL 54,95€, CUSTOM STUDIO) -->
+  <section id="tarifs">
+    <div class="section-head">
+      <div>
+        <span class="kicker" data-i18n="pricingKicker">Tarifs clairs · Paiement unique</span>
+        <h2 data-i18n="pricingTitle">Quatre formules claires selon votre objectif</h2>
+      </div>
+      <p data-i18n="pricingDesc">Choisissez votre niveau de création. Le total et les conditions exactes sont confirmés avant paiement.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- 1. BASIC 4,95€ (Silver Minimalist) -->
+      <article class="pkg-card" data-pkg-card="basic">
+        <div class="pkg-mini-preview"><span>Aperçu Basic</span><strong>10s · Modèle direct</strong></div>
+        <div class="pkg-name">BASIC</div>
+        <div class="pkg-sub" data-i18n="pkgBasicSub">Vidéo simple basée sur modèle pour découvrir le service.</div>
+        <div class="pkg-price"><span data-price-eur="4.95">4,95 €</span> <small data-i18n="perVideo">/ vidéo</small></div>
+        <div class="pkg-meta">
+          <span class="pkg-chip" data-i18n="chip10s">10 sec</span>
+          <span class="pkg-chip">9:16 ou 16:9</span>
+        </div>
+        <ul class="pkg-features">
+          <li data-i18n="basicF1">Vidéo sur modèle de la collection DEEPSYQ</li>
+          <li data-i18n="basicF2">Nom de votre entreprise intégré</li>
+          <li data-i18n="basicF3">Signature texte claire en carte finale</li>
+          <li data-i18n="basicF4">1 ligne d'adresse ou contact</li>
+          <li data-i18n="basicF5">Musique commerciale incluse</li>
+        </ul>
+        <button type="button" class="pill secondary pkg-btn" data-select-pkg="basic" data-i18n="btnOrderBasic">Choisir Basic — 4,95 €</button>
+      </article>
+
+      <!-- 2. MEDIUM 14,95€ (Deep Sapphire Blue) -->
+      <article class="pkg-card popular active-pkg" data-pkg-card="medium">
+        <span class="pkg-ribbon" data-i18n="pkgPopularRibbon">★ Recommandé</span>
+        <div class="pkg-mini-preview"><span>Aperçu Medium</span><strong>20s · Logo + Textes</strong></div>
+        <div class="pkg-name">MEDIUM</div>
+        <div class="pkg-sub" data-i18n="pkgMediumSub">Vidéo publicitaire complète avec textes sur mesure et logo intégré.</div>
+        <div class="pkg-price"><span data-price-eur="14.95">14,95 €</span> <small data-i18n="perVideo">/ vidéo</small></div>
+        <div class="pkg-meta">
+          <span class="pkg-chip" data-i18n="chip20s">20 sec</span>
+          <span class="pkg-chip" data-i18n="chipLogoInc">Logo inclus</span>
+        </div>
+        <ul class="pkg-features">
+          <li data-i18n="medF1">Vidéo publicitaire jusqu'à 20 secondes</li>
+          <li data-i18n="medF2">Titres publicitaires personnalisés</li>
+          <li data-i18n="medF3">Intégration de votre logo (ou badge studio)</li>
+          <li data-i18n="medF4">Adresse, téléphone, site web &amp; réseaux</li>
+          <li data-i18n="medF5">Montage adapté à votre secteur</li>
+        </ul>
+        <button type="button" class="pill pkg-btn" data-select-pkg="medium" data-i18n="btnOrderMedium">Choisir Medium — 14,95 €</button>
+      </article>
+
+      <!-- 3. PROFESSIONAL 54,95€ (Graphite, Champagne & Gold) -->
+      <article class="pkg-card" data-pkg-card="professional">
+        <div class="pkg-mini-preview"><span>Aperçu Pro</span><strong>30s · Scénario + Retouche</strong></div>
+        <div class="pkg-name">PROFESSIONAL</div>
+        <div class="pkg-sub" data-i18n="pkgProSub">Production premium avec scénario dédié, animation de marque et 1 révision.</div>
+        <div class="pkg-price"><span data-price-eur="54.95">54,95 €</span> <small data-i18n="perVideo">/ vidéo</small></div>
+        <div class="pkg-meta">
+          <span class="pkg-chip" data-i18n="chip30s">30 sec</span>
+          <span class="pkg-chip" data-i18n="chip1Rev">1 révision incluse</span>
+        </div>
+        <ul class="pkg-features">
+          <li data-i18n="proF1">Film publicitaire sur mesure jusqu'à 30s</li>
+          <li data-i18n="proF2">Scénario &amp; storyboard personnalisés</li>
+          <li data-i18n="proF3">Animation dédiée du logo &amp; charte couleur</li>
+          <li data-i18n="proF4">Titres commerciaux, contacts &amp; CTA</li>
+          <li data-i18n="proF5">Design sonore premium + 1 cycle de révision</li>
+        </ul>
+        <button type="button" class="pill secondary pkg-btn" data-select-pkg="professional" data-i18n="btnOrderPro">Choisir Professional — 54,95 €</button>
+      </article>
+
+      <!-- 4. CUSTOM STUDIO (Dark Emerald & Platinum) -->
+      <article class="pkg-card" data-pkg-card="custom_studio">
+        <div class="pkg-mini-preview"><span>Sur Mesure</span><strong>10–60s · Multi-options</strong></div>
+        <div class="pkg-name">CUSTOM STUDIO</div>
+        <div class="pkg-sub">Configurez librement durée, formats, voix-off, sous-titres, 4K et séries.</div>
+        <div class="pkg-price"><span id="customStudioCardPrice" data-price-eur="14.95">14,95 €</span> <small>/ devis live</small></div>
+        <div class="pkg-meta">
+          <span class="pkg-chip">Configurateur Live</span>
+          <span class="pkg-chip">9:16 + 16:9 + 4K</span>
+        </div>
+        <ul class="pkg-features">
+          <li>Choix précis de la durée (10s à 60s)</li>
+          <li>Voix-off native, sous-titres &amp; multi-langues</li>
+          <li>Création ou animation avancée de logo</li>
+          <li>Pack multi-formats &amp; visuels réseaux sociaux</li>
+          <li>Calculateur de prix serveur en temps réel</li>
+        </ul>
+        <button type="button" class="pill secondary pkg-btn" data-select-pkg="custom_studio" id="openCustomStudioBtn" data-i18n="btnOrderCustom">Configurer Custom Studio</button>
+      </article>
+    </div>
+
+    <!-- V6 INTERACTIVE CUSTOM STUDIO CONFIGURATOR -->
+    <div class="custom-studio-box" id="customStudioConfigurator" aria-label="Configurateur Custom Studio">
+      <header class="cs-heading"><span class="kicker">CUSTOM STUDIO</span><h2 data-i18n="studioTitle">Build Your Custom Video</h2><p data-i18n="studioLead">Choose the details. See your estimated price.</p></header>
+      <div class="cs-layout">
+      <div class="cs-input-column">
+      <div class="cs-controls" id="studioControls">
+      <h3 class="cs-mobile-title"><span>1</span> <b data-i18n="studioConfigure">Configure Your Video</b></h3>
+      <div class="custom-studio-grid">
+        <label><span data-i18n="csDuration">Durée de la vidéo</span>
+          <select id="csDuration">
+            <option value="10">10s — Spot Express (-5 €)</option>
+            <option value="20" selected="">20s — Standard Commercial (Base)</option>
+            <option value="30">30s — Film Complet (+15 €)</option>
+            <option value="45">45s — Présentation Étendue (+30 €)</option>
+            <option value="60">60s — Film de Marque (+45 €)</option>
+          </select>
+        </label>
+        <label><span data-i18n="csFormat">Formats d'export</span>
+          <select id="csFormat">
+            <option value="9:16" selected="">9:16 Vertical uniquement (0 €)</option>
+            <option value="16:9">16:9 Horizontal uniquement (0 €)</option>
+            <option value="dual_916_169">Pack Duo 9:16 + 16:9 (+12 €)</option>
+            <option value="all_ratios">Pack Omni 9:16 + 16:9 + 1:1 (+20 €)</option>
+          </select>
+        </label>
+        <label><span data-i18n="csResolution">Résolution</span>
+          <select id="csResolution">
+            <option value="1080p" selected="">Full HD 1080p (Inclus)</option>
+            <option value="4k_master">Master 4K UHD (+15 €)</option>
+          </select>
+        </label>
+        <label><span data-i18n="csScript">Scénario &amp; Textes</span>
+          <select id="csScript">
+            <option value="template_script" selected="">Structure Studio Adaptée (Inclus)</option>
+            <option value="bespoke_script">Scénario &amp; Copywriting dédié (+15 €)</option>
+          </select>
+        </label>
+        <label><span data-i18n="csLogoAnim">Animation du Logo</span>
+          <select id="csLogoAnim">
+            <option value="standard_fade" selected="">Apparition fluide standard (Inclus)</option>
+            <option value="bespoke_reveal">Animation Signature sur mesure (+12 €)</option>
+          </select>
+        </label>
+        <label><span data-i18n="csVoiceover">Voix-off &amp; Audio</span>
+          <select id="csVoiceover">
+            <option value="none" selected="">Musique sous licence uniquement (0 €)</option>
+            <option value="native_voiceover">Voix-off studio dans votre langue (+18 €)</option>
+          </select>
+        </label>
+        <label><span data-i18n="csSubtitles">Sous-titres</span>
+          <select id="csSubtitles">
+            <option value="none" selected="">Titres principaux uniquement (0 €)</option>
+            <option value="burned_subtitles">Sous-titres synchronisés + SRT (+8 €)</option>
+            <option value="bilingual_subtitles">Version bilingue 2 langues (+15 €)</option>
+          </select>
+        </label>
+        <label><span data-i18n="csRevisions">Cycles de révision</span>
+          <select id="csRevisions">
+            <option value="0" selected="">0 révision — Rendu direct (0 €)</option>
+            <option value="1">1 cycle de modifications (+10 €)</option>
+            <option value="2">2 cycles de modifications (+20 €)</option>
+          </select>
+        </label>
+        <label><span data-i18n="csPriority">Priorité &amp; Nombre de vidéos</span>
+          <select id="csPriority">
+            <option value="standard" selected="">File standard 24–48h · 1 vidéo (0 €)</option>
+            <option value="priority_24h">Priorité Express &lt;24h (+15 €)</option>
+          </select>
+        </label>
+        <label><span data-i18n="csImages">Additional ad images</span><select id="csImages"><option value="0">None</option><option value="5">5 images (+30 €)</option></select></label>
+        <label><span data-i18n="csLanguage">Video language</span><select id="csLanguage"><option value="">Use website language</option><option value="English">English</option><option value="French">Français</option><option value="German">Deutsch</option><option value="Arabic">العربية</option><option value="Spanish">Español</option><option value="Italian">Italiano</option><option value="Dutch">Nederlands</option><option value="Portuguese">Português</option><option value="Russian">Русский</option></select></label>
+      </div>
+      <button type="button" class="pill secondary" id="resetCustomStudioBtn" data-i18n="studioReset">Reset options</button>
+      </div>
+      <section id="commande" aria-label="Order details">
+    <form id="projectForm">
+      <h2 class="full" data-i18n="orderDetailsTitle">Your Order Details</h2>
+      <label><span data-i18n="lblCompany">Nom de votre entreprise *</span>
+        <input id="company" autocomplete="organization" required="" maxlength="120" placeholder="Ex. Maison Lumière">
+      </label>
+      <label><span data-i18n="lblEmail">Votre e-mail professionnel *</span>
+        <input id="email" type="email" autocomplete="email" required="" maxlength="180" placeholder="bonjour@entreprise.fr">
+      </label>
+      <label><span data-i18n="lblSector">Votre secteur</span>
+        <select id="sector">
+          <option value="Hôtel / tourisme">Hôtel / tourisme</option>
+          <option value="Restaurant / café">Restaurant / café</option>
+          <option value="Beauté / bien-être">Beauté / bien-être</option>
+          <option value="Immobilier">Immobilier</option>
+          <option value="Mode / boutique">Mode / boutique</option>
+          <option value="Vignoble / gastronomie">Vignoble / gastronomie</option>
+          <option value="Fitness / sport">Fitness / sport</option>
+          <option value="Automobile">Automobile</option>
+          <option value="Fleurs / art de vivre">Fleurs / art de vivre</option>
+          <option value="Autre">Autre</option>
+        </select>
+      </label>
+      <label class="full"><span data-i18n="lblStyle">Style vidéo choisi</span>
+        <select id="style"><option value="À définir ensemble">À définir ensemble</option></select>
+      </label>
+      <label class="full"><span data-i18n="lblBrief">Parlez-nous de votre idée (modifiable après commande)</span>
+        <textarea id="brief" maxlength="1800" placeholder="Ce que vous souhaitez montrer, votre offre, vos couleurs, votre slogan…"></textarea>
+      </label>
+      <label class="full"><span data-i18n="lblLogoOption">Option Logo</span>
+        <select id="logoOption" aria-controls="logoUploadPanel">
+          <option value="upload" data-i18n="optLogoUpload">Utiliser mon logo</option>
+          <option value="text_only" data-i18n="optLogoText">Pas de logo — signature texte élégante (0 €)</option>
+          <option value="create_logo" data-i18n="optLogoCreate">Créer un logo sur mesure (+25 €)</option>
+        </select>
+      </label>
+
+      <label id="logoUploadPanel" class="full logo-upload-panel" hidden aria-live="polite"><span data-i18n="lblLogoFile">Fichier logo (possible aussi après paiement)</span>
+        <input id="logoUpload" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+      </label>
+
+      <details class="full order-extra"><summary>Package, format and brand details</summary><div class="order-extra-fields">
+      <label><span data-i18n="lblPackage">Forfait choisi *</span>
+        <select id="packageSelect">
+          <option value="basic">BASIC — 4,95 € (10 sec)</option>
+          <option value="medium" selected="">MEDIUM — 14,95 € (20 sec · Recommandé)</option>
+          <option value="professional">PROFESSIONAL — 54,95 € (30 sec · Sur mesure)</option>
+          <option value="custom_studio">CUSTOM STUDIO — Configuration sur mesure</option>
+        </select>
+      </label>
+
+      <label><span data-i18n="lblFormat">Format vidéo *</span>
+        <select id="videoFormat">
+          <option value="9:16">9:16 — Vertical (Reels, TikTok, Shorts)</option>
+          <option value="16:9">16:9 — Horizontal (Site web, YouTube, Écran)</option>
+          <option value="dual_916_169">Duo 9:16 + 16:9</option>
+          <option value="all_ratios">Omni 9:16 + 16:9 + 1:1</option>
+        </select>
+      </label>
+
+
+
+      <label><span data-i18n="lblCountry">Pays</span>
+        <select id="countrySelect">
+          <option value="FR">France (FR)</option>
+          <option value="DE">Deutschland (DE)</option>
+          <option value="GB">United Kingdom (GB)</option>
+          <option value="US">United States (US)</option>
+          <option value="AE">United Arab Emirates (AE)</option>
+          <option value="SA">Saudi Arabia (SA)</option>
+          <option value="ES">España (ES)</option>
+          <option value="IT">Italia (IT)</option>
+          <option value="NL">Nederland (NL)</option>
+          <option value="PT">Portugal / Brasil (PT)</option>
+          <option value="BE">Belgique / België (BE)</option>
+          <option value="CH">Suisse / Schweiz (CH)</option>
+        </select>
+      </label>
+
+
+
+      <label class="full"><span data-i18n="lblContactCard">Adresse, téléphone ou site web à afficher dans la vidéo</span>
+        <input id="contactCard" maxlength="200" placeholder="Ex. 12 Rue Royale, Paris · +33 1 40 00 00 00 · www.maisonlumiere.fr">
+      </label>
+
+
+      </div></details>
+      <p class="selected-style full" id="picked" aria-live="polite">Vous pouvez sélectionner un style dans la collection ci-dessus.</p>
+
+      <label class="checkbox-row full">
+        <input type="checkbox" id="acceptTerms" required="">
+        <span data-i18n="lblTerms">J'accepte les conditions commerciales DEEPSYQ, la politique de confidentialité RGPD et confirme l'exactitude des éléments fournis pour la production. *</span>
+      </label>
+
+      <div class="btn-group-dual full">
+        <button class="pill secondary" type="submit">
+          <span data-i18n="btnMailto">Préparer mon e-mail de demande</span> <span aria-hidden="true">↗</span>
+        </button>
+      </div>
+
+    </form>
+    <details class="order-breakdown">
+      <summary data-i18n="deliveryDetails">Delivery details</summary>
+      <ul class="details">
+        <li data-i18n="ordDet1">Fichier MP4 Full HD prêt pour Instagram, TikTok, YouTube &amp; Web</li>
+        <li data-i18n="ordDet2">Intégration soignée de votre nom, logo et coordonnées</li>
+        <li data-i18n="ordDet3">Contrôle qualité par le studio DEEPSYQ avant livraison</li>
+        <li data-i18n="ordDet4">Numéro de suivi unique (ex. DSQ-000001) dès validation</li>
+      </ul>
+      <p class="fine">Prix indicatif à confirmer selon vos fichiers, le travail nécessaire et le régime de TVA applicable. Aucun paiement n'est encaissé sur cette page sans validation explicite via Stripe Checkout.</p>
+    </details>
+
+      </section>
+      </div>
+      <div class="cs-quote-bar">
+        <h3 data-i18n="studioSummary">Your Order</h3>
+        <div class="cs-preview"><img src="./media/sales-villa-sunset.webp" alt="" width="128" height="72" loading="lazy"><strong id="csStylePreview">Custom Video</strong></div>
+        <ul id="csQuoteLines" aria-live="polite"></ul>
+        <div>
+          <div style="font-size:12px;color:#6ee7b7;font-weight:700" id="csSpecSummary">Spécification : 20s · 9:16 · 1080p · Musique incluse</div>
+        </div>
+        <div class="unified-total" aria-live="polite"><span data-i18n="sumTotal">Total</span><strong id="csLiveTotal">14,95 €</strong></div>
+        <button class="pill" type="button" id="stripeCheckoutBtn" form="projectForm" aria-describedby="checkoutFeedback">
+          <span data-i18n="btnPayStripe">Payer &amp; Commander en ligne</span> <span aria-hidden="true">→</span>
+        </button>
+        <p class="checkout-security" data-i18n="checkoutSecurity">Secure payment via Stripe</p>
+      <p class="note full" id="checkoutFeedback" aria-live="polite"></p>
+      </div>
+      </div>
+    </div>
+
+  </section>
+
+<section class="premium-faq" id="questions" aria-labelledby="premiumFaqHeading">
+ 
+ <div class="premium-faq-grid">
+  <div><span class="kicker" id="premiumFaqEyebrow">EN TOUTE CLARTÉ</span><h2 id="premiumFaqHeading">FAQ</h2><p class="premium-faq-lead" id="premiumFaqLead">Vous choisissez un style, nous préparons votre création. Les conditions exactes sont confirmées avant paiement.</p></div>
+  <div class="premium-faq-accordion">
+   <details><summary id="premiumQ1">Quand recevrai-je ma vidéo ?</summary><p id="premiumA1">Le délai dépend du pack, des éléments fournis et de la complexité. Il est confirmé avant votre achat.</p></details>
+   <details><summary id="premiumQ2">Puis-je utiliser mon propre logo ?</summary><p id="premiumA2">Oui. Vous pouvez importer votre logo ou demander une création adaptée à votre projet.</p></details>
+   <details><summary id="premiumQ3">Puis-je personnaliser le résultat ?</summary><p id="premiumA3">Oui. Choisissez un style, les textes, le format et, si besoin, les options Custom Studio.</p></details>
+   <details><summary id="premiumQ4">Les vidéos existent-elles dans plusieurs langues ?</summary><p id="premiumA4">Vous pouvez préciser la langue souhaitée dans le brief. La disponibilité de la voix et des sous-titres dépend du pack.</p></details>
+  </div>
+ </div>
+</section>
+
+  <!-- ADDITIONAL SERVICES BLOCK -->
+  <section id="services-plus">
+    <div class="section-head">
+      <div>
+        <span class="kicker" data-i18n="addonsKicker">Services complémentaires</span>
+        <h2 data-i18n="addonsTitle">Services complémentaires pour votre vidéo</h2>
+      </div>
+    </div>
+    <button class="premium-reveal-extras" id="showAllExtras" type="button" aria-expanded="false" aria-controls="addonsGrid">Voir tous les services <span aria-hidden="true">＋</span></button><div class="addons-grid" id="addonsGrid"></div>
+  </section>
+
+<style>.dual-bottom{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:stretch;margin:24px auto}.dual-bottom .panel-box{display:flex;flex-direction:column;padding:18px 20px}.dual-bottom .panel-box h3{margin:4px 0 12px;font-size:20px}.dual-bottom .support-fields{display:grid;gap:8px;margin-top:auto}.dual-bottom .tracking-controls{display:flex;gap:8px;flex-wrap:wrap}.dual-bottom input,.dual-bottom textarea{background:#171d2c;border:1px solid #454a5e;color:#fff;padding:9px 12px;border-radius:10px;font-size:13px}.dual-bottom .pill.secondary{min-height:40px;padding:9px 16px}@media(max-width:700px){.dual-bottom{grid-template-columns:1fr}}</style>
+<section id="suivi" class="dual-bottom">
+    <div class="panel-box">
+      <span class="kicker" data-i18n="trackKicker">Suivi en temps réel</span>
+      <h3 data-i18n="trackTitle">Vérifier le statut de votre commande</h3>
+      <div class="support-fields">
+        <label for="trackOrderInput" data-i18n="trackNumber">Numéro de commande</label>
+        <div class="tracking-controls"><input id="trackOrderInput" placeholder="DSQ-000001" style="flex:1">
+        <button type="button" class="pill secondary" id="trackOrderBtn" data-i18n="btnTrackCheck">Vérifier</button></div>
+      </div>
+      <div class="track-result" id="trackResultBox" aria-live="polite"></div>
+    </div>
+
+    <div class="panel-box">
+      <span class="kicker">Anton — DEEPSYQ Creative Studio</span>
+      <h3 data-i18n="agentTitle">Une question avant de commander ?</h3>
+      <div class="support-fields">
+        <label for="agentAskEmail" data-i18n="agentEmail">E-mail (facultatif)</label>
+        <input id="agentAskEmail" type="email" placeholder="votre@email.com">
+        <label for="agentAskText" data-i18n="agentQuestion">Votre question</label>
+        <textarea id="agentAskText" rows="2"></textarea>
+        <button type="button" class="pill secondary" id="agentAskBtn" data-i18n="btnAgentAsk">Obtenir une réponse immédiate</button>
+      </div>
+      <div class="track-result" id="agentReplyBox" aria-live="polite" style="white-space:pre-line"></div>
+    </div>
+  </section>
+  <details class="package-comparison"><summary>Compare package features</summary>
+    <!-- Package Comparison Table -->
+    <div class="compare-wrap">
+      <table class="compare-table" aria-label="Comparaison des forfaits">
+        <thead>
+          <tr>
+            <th data-i18n="cmpColFeature">Caractéristique</th>
+            <th>BASIC (4,95 €)</th>
+            <th>MEDIUM (14,95 €) ★</th>
+            <th>PROFESSIONAL (54,95 €)</th>
+            <th>CUSTOM STUDIO</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-i18n="cmpDuration">Durée maximale</td>
+            <td>10 sec</td>
+            <td>20 sec</td>
+            <td>30 sec</td>
+            <td>10 à 60 sec</td>
+          </tr>
+          <tr>
+            <td data-i18n="cmpLogo">Logo &amp; identité visuelle</td>
+            <td data-i18n="cmpLogoBasic">Nom en texte</td>
+            <td data-i18n="cmpLogoMed">Logo client ou badge studio</td>
+            <td data-i18n="cmpLogoPro">Logo animé + charte couleur</td>
+            <td>Au choix (texte, logo, création)</td>
+          </tr>
+          <tr>
+            <td data-i18n="cmpCaptions">Titres &amp; coordonnées</td>
+            <td data-i18n="cmpCapBasic">1 ligne + 1 contact</td>
+            <td data-i18n="cmpCapMed">Titres complets + contacts</td>
+            <td data-i18n="cmpCapPro">Scénario sur mesure + CTA</td>
+            <td>Voix-off, sous-titres &amp; multi-langues</td>
+          </tr>
+          <tr>
+            <td data-i18n="cmpRevisions">Cycles de révision</td>
+            <td>—</td>
+            <td data-i18n="cmpRevMed">Vérification qualité</td>
+            <td data-i18n="cmpRevPro">1 cycle de retouches inclus</td>
+            <td>0, 1 ou 2 cycles au choix</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</div>
+</main>
+
+
+<div class="premium-trust shell" role="list" aria-label="Informations sur la commande">
+ <div role="listitem"><span aria-hidden="true">◇</span><strong>Stripe</strong><small>Paiement sécurisé</small></div>
+ <div role="listitem"><span aria-hidden="true">◈</span><strong>Suivi</strong><small>Votre commande</small></div>
+ <div role="listitem"><span aria-hidden="true">✧</span><strong>Studio DEEPSYQ</strong><small>Création sur mesure</small></div>
+ <div role="listitem"><span aria-hidden="true">✉</span><strong>Livraison</strong><small>Fichier numérique</small></div>
+</div>
+<footer class="shell">
+  <span>© DEEPSYQ · Creation Studio (Done For You) · Système international de vente &amp; production vidéo</span>
+  <span><a href="mailto:help@deepsyq.app">Support (help@deepsyq.app)</a></span>
+</footer>
+
+<script>
+"use strict";
+const samples=[
+{title:"Aurelia Palace · Hôtel & Suites",category:"Hôtel & Luxe",note:"Penthouse · Piscine & Champagne",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/01-luxury-hotel.jpg"},
+{title:"Maison Noir · Gastronomie Wagyu",category:"Restaurant & Steakhouse",note:"Haute cuisine · Flamme & Wagyu",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/02-wagyu-restaurant.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/02-wagyu-restaurant.jpg"},
+{title:"Kult Roasters · Café & Latte Art",category:"Café & Torréfaction",note:"Espresso · Latte art artisanal",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/03-specialty-coffee.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/03-specialty-coffee.jpg"},
+{title:"Maison Dorée · Pâtisserie Française",category:"Boulangerie & Pâtisserie",note:"Croissants dorés · Haute pâtisserie",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/04-french-patisserie.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/04-french-patisserie.jpg"},
+{title:"Château de Roche · Vignoble & Grand Cru",category:"Domaine Viticole & Vin",note:"Chai aux chandelles · Dégustation",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/05-chateau-winery.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/05-chateau-winery.jpg"},
+{title:"Lumière Skin · Cosmétique & Soin",category:"Beauté & Skincare",note:"Sérum doré · Éclat naturel",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/06-skincare-beauty.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/06-skincare-beauty.jpg"},
+{title:"Sérénité Spa · Bien-être & Rituel",category:"Spa & Wellness",note:"Bains thermaux · Massage & détente",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/07-luxury-spa-wellness.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/07-luxury-spa-wellness.jpg"},
+{title:"Atelier Valmont · Mode & Couture",category:"Mode & Boutique",note:"Silhouette couture · Showroom Milan",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/08-fashion-boutique.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/08-fashion-boutique.jpg"},
+{title:"Chrono & Co. · Haute Horlogerie",category:"Horlogerie & Joaillerie",note:"Tourbillon macro ·Précision suisse",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/09-chrono-luxury-watch.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/09-chrono-luxury-watch.jpg"},
+{title:"Gentlemen’s Club · Barber & Grooming",category:"Barbershop & Grooming",note:"Coupe précision · Rituel serviette chaude",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/10-barbershop-grooming.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/10-barbershop-grooming.jpg"},
+{title:"Apex Athletic · Fitness & Performance",category:"Fitness & Sport Club",note:"Énergie · Entraînement & coaching",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/11-fitness-club.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/11-fitness-club.jpg"},
+{title:"Apex Motorwerks · Showroom & Detailing",category:"Automobile & Detailing",note:"Céramique · Coupé sport & LED",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/12-automotive-showroom.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/12-automotive-showroom.jpg"},
+{title:"Vanguard Estates · Immobilier de Prestige",category:"Immobilier & Villas",note:"Villa vue mer · Piscine à débordement",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/13-luxury-real-estate.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/13-luxury-real-estate.jpg"},
+{title:"Studio Forma · Design d’Intérieur",category:"Design d’Intérieur",note:"Marbre travertin · Mobilier sculptural",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/14-interior-design-studio.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/14-interior-design-studio.jpg"},
+{title:"Atelier Ligne · Architecture & Mobilier",category:"Architecture & Décoration",note:"Loft minimaliste · Lumière naturelle",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/15-architectural-living.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/15-architectural-living.jpg"},
+{title:"Azure Yachting · Superyacht & Charter",category:"Yachting & Croisière",note:"Méditerranée · Pont soleil & luxe",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/16-superyacht-charter.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/16-superyacht-charter.jpg"},
+{title:"Maison Céleste · Mariages & Événements",category:"Mariage & Événementiel",note:"Arche florale · Réception aux chandelles",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/17-luxury-wedding-events.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/17-luxury-wedding-events.jpg"},
+{title:"Keller & Associés · Droit & Gestion Privée",category:"Cabinet d’Avocats & Finance",note:"Conseil exécutif · Prestige & confiance",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/18-corporate-law-wealth.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/18-corporate-law-wealth.jpg"},
+{title:"Château Paw · Toilettage & Pet Spa",category:"Toilettage & Animaux",note:"Soin doux · Salon de toilettage",file:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/19-luxury-pet-grooming.mp4",poster:"https://sales-preview-20261115.deepsyq.pages.dev/media/showcase-20261115/19-luxury-pet-grooming.jpg"}
+];
+
+const ADDONS_CATALOG=[
+  {code:"logo_creation",priceEur:25,titles:{fr:"Création de logo professionnel",en:"Custom Logo Design",de:"Professionelles Logo-Design",ar:"تصميم شعار احترافي",es:"Diseño de logotipo profesional",it:"Creazione logo professionale",nl:"Professioneel logo-ontwerp",pt:"Criação de logótipo profissional",ru:"Разработка логотипа"},desc:{fr:"Création d'un logo vectoriel moderne adapté à la vidéo.",en:"Clean modern brand mark tailored for video & social.",ru:"Создание современного фирменного знака под видео и соцсети."}},
+  {code:"ad_copywriting",priceEur:15,titles:{fr:"Textes publicitaires & slogans",en:"Ad Copywriting & Slogans",de:"Werbetexte & Slogans",ar:"كتابة النصوص الإعلانية والشعارات",es:"Textos publicitarios y eslóganes",it:"Copywriting e slogan pubblicitari",nl:"Advertentieteksten & slogans",pt:"Textos publicitários e slogans",ru:"Рекламный текст и слоганы"},desc:{fr:"Accroches persuasives dans la langue de vos clients.",en:"High-converting hooks and captions in your target language.",ru:"Продающие титры и слоганы на языке вашей аудитории."}},
+  {code:"social_adaptation",priceEur:20,titles:{fr:"Adaptation Instagram, TikTok, FB, YouTube",en:"Multi-Platform Social Pack (9:16, 1:1, 16:9)",de:"Social-Media-Anpassung (IG, TikTok, YT)",ar:"تكييف الفيديو لمنصات التواصل",es:"Adaptación para Instagram, TikTok, YouTube",it:"Adattamento per Instagram, TikTok, YouTube",nl:"Social media adaptatie (IG, TikTok, YT)",pt:"Adaptação para Instagram, TikTok, YouTube",ru:"Адаптация под Instagram, TikTok, FB, YouTube"},desc:{fr:"Exports optimisés 9:16, 1:1 et 16:9 prêts à publier.",en:"Ready-to-post exports across all major social ratios.",ru:"Комплект форматов 9:16, 1:1 и 16:9 для всех соцсетей."}},
+  {code:"website_audit",priceEur:35,titles:{fr:"Audit complet de votre site web",en:"Express Website Conversion Audit",de:"Website-Conversion-Audit",ar:"تدقيق شامل للموقع الإلكتروني",es:"Auditoría de conversión del sitio web",it:"Audit di conversione del sito web",nl:"Website conversie-audit",pt:"Auditoria de conversão do site",ru:"Аудит сайта"},desc:{fr:"Analyse de la clarté, de la vitesse et de la conversion.",en:"Actionable review of speed, clarity, and conversion.",ru:"Проверка удобства, скорости и конверсии вашего сайта."}},
+  {code:"seo_diagnostics",priceEur:40,titles:{fr:"Diagnostic SEO de base",en:"Basic SEO & Local Search Diagnostics",de:"Basis-SEO-Diagnose",ar:"تشخيص أساسي لمحركات البحث SEO",es:"Diagnóstico SEO básico",it:"Diagnostica SEO di base",nl:"Basis SEO-diagnose",pt:"Diagnóstico básico de SEO",ru:"Базовая SEO-диагностика"},desc:{fr:"Vérification des balises, indexation Google et visibilité locale.",en:"Meta tags, schema.org, and Google visibility check.",ru:"Проверка мета-тегов, индексации и локальной видимости."}},
+  {code:"brand_recommendations",priceEur:45,titles:{fr:"Recommandations site & image de marque",en:"Website & Brand Positioning Blueprint",de:"Website- & Markenempfehlungen",ar:"توصيات تطوير الموقع والهوية البصرية",es:"Recomendaciones de marca y web",it:"Raccomandazioni sito e brand",nl:"Website- & merkadvies",pt:"Recomendações de site e marca",ru:"Рекомендации по улучшению сайта и подаче бренда"},desc:{fr:"Plan concret pour renforcer la confiance et les ventes.",en:"Step-by-step recommendations to boost trust and sales.",ru:"Пошаговый план усиления визуальной подачи и доверия."}},
+  {code:"social_promo_visuals",priceEur:30,titles:{fr:"Visuels promo pour réseaux sociaux (5x)",en:"Social Media Promo Visuals Pack (5 Stills)",de:"5 Promo-Visuals für Social Media",ar:"باقة تصاميم ترويجية للتواصل الاجتماعي",es:"Pack de 5 visuales promocionales",it:"Pack 5 visual promozionali social",nl:"5 promo-visuals voor social media",pt:"Pack de 5 visuais promocionais",ru:"Промо-материалы и визуалы для соцсетей"},desc:{fr:"5 visuels haute définition assortis à votre vidéo.",en:"5 matching high-res campaign stills for posts & stories.",ru:"5 фирменных обложек и постов в стиле вашего видео."}},
+  {code:"seasonal_video_series",priceEur:95,titles:{fr:"Série de 3 vidéos pour promotions & saisons",en:"Series of 3 Seasonal Campaign Videos",de:"Serie von 3 Kampagnenvideos",ar:"سلسلة من 3 فيديوهات للحملات الموسمية",es:"Serie de 3 videos para campañas",it:"Serie di 3 video per campagne stagionali",nl:"Reeks van 3 seizoensvideo's",pt:"Série de 3 vídeos para campanhas",ru:"Серия рекламных видео для разных акций и сезонов"},desc:{fr:"3 vidéos déclinées pour vos temps forts de l'année.",en:"3 coordinated videos for seasonal offers and launches.",ru:"Пакет из 3 роликов под разные акции и сезонные предложения."}}
+];
+
+const CURRENCY_RATES={
+  EUR:{symbol:"€",rate:1},
+  USD:{symbol:"$",rate:1.08},
+  GBP:{symbol:"£",rate:0.86},
+  CHF:{symbol:"CHF ",rate:0.96},
+  AED:{symbol:"AED ",rate:3.97}
+};
+
+const I18N={
+  fr:{
+    trackTitle:"Suivi de commande",agentTitle:"Une question pour le studio ?",optLogoUpload:"Utiliser mon logo",optLogoText:"Signature texte",optLogoCreate:"Créer un logo (+25 €)",lblLogoFile:"Téléverser votre logo",trackNumber:"Numéro de commande",agentEmail:"E-mail (facultatif)",agentQuestion:"Votre question",btnTrackCheck:"Vérifier le statut",btnAgentAsk:"Envoyer la question",dir:"ltr",
+    navExamples:"Exemples",heroExamples:"Voir les exemples",btnOrderCustom:"Obtenir un devis",
+    navPricing:"Tarifs (5 € – 55 €)",
+    navServices:"Services +",
+    navTrack:"Suivi commande",
+    navOrderBtn:"Commander une vidéo",
+    heroKicker:"Création vidéo publicitaire internationale",
+    heroBrand:"Votre marque, logo et coordonnées",heroReady:"Prêt pour les réseaux sociaux et les sites web",heroPrepared:"Une vidéo réalisée par le studio",studioConfigure:"Configurez votre vidéo",studioTitle:"Créez votre vidéo sur mesure",checkoutSecurity:"Paiement sécurisé via Stripe",deliveryDetails:"Détails de livraison",csDuration:"Durée de la vidéo",csFormat:"Formats d’export",csResolution:"Résolution",csScript:"Scénario et textes",csLogoAnim:"Animation du logo",csVoiceover:"Voix off et audio",csSubtitles:"Sous-titres",csRevisions:"Révisions",csPriority:"Priorité",csLogo:"Logo",csImages:"Visuels publicitaires supplémentaires",csLanguage:"Langue de la vidéo",studioReset:"Réinitialiser",studioContinue:"Continuer vers la commande →",shortsChoose:"Choisir ce style →",studioLead:"Choisissez les options et consultez le prix estimé.",studioSummary:"Votre commande",orderDetailsTitle:"Vos coordonnées",
+    heroTitle:"Des vidéos publicitaires <em>pour votre entreprise.</em>",
+    heroLead:"Des vidéos courtes, soignées et conçues pour attirer de nouveaux clients sur votre site, Instagram Reels, TikTok, YouTube Shorts et Facebook. Choisissez l'un de nos styles, ajoutez votre nom, votre logo et vos coordonnées — nous livrons votre film prêt à diffuser dès 5 €.",
+    btnExplore10:"Découvrir les styles",
+    btnSeePackages:"Voir les packs 5 € · 15 € · 55 €",
+    galleryKicker:"La collection créative DEEPSYQ",
+    galleryTitle:"Choisissez votre <em>style vidéo</em>",
+    pricingTitle:"Choisissez votre formule",
+    addonsTitle:"Services complémentaires",
+    orderTitle:"Configurez votre vidéo publicitaire",
+    btnPayStripe:"Payer & Commander en ligne",
+    btnMailto:"Préparer mon e-mail de demande"
+  },
+  en:{
+    trackTitle:"Order Tracking",agentTitle:"Ask the Studio",optLogoUpload:"Use my logo",optLogoText:"Text only",optLogoCreate:"Create a logo (+25 €)",lblLogoFile:"Upload your logo",trackNumber:"Order number",agentEmail:"Email (optional)",agentQuestion:"Your question",btnTrackCheck:"Check status",btnAgentAsk:"Send question",dir:"ltr",
+    navExamples:"Video Examples",
+    galleryDesc:"Find a style that suits your business.",
+    pricingDesc:"Professional videos for every business.",heroExamples:"See Examples",
+    lblCompany:"Company Name *",lblEmail:"Email Address *",lblSector:"Business Type",
+    lblBrief:"Notes (Optional)",btnOrderBasic:"Choose Basic",btnOrderMedium:"Choose Medium",
+    btnOrderPro:"Choose Professional",btnOrderCustom:"Get a Custom Quote",
+    navPricing:"Pricing",
+    navServices:"Add-on Services",
+    navTrack:"Track Order",
+    navOrderBtn:"Create My Video",
+    heroKicker:"Creative Video Studio",
+    heroBrand:"Your brand, logo and contact details",heroReady:"Ready for social media and websites",heroPrepared:"Professionally prepared video",studioConfigure:"Configure Your Video",studioTitle:"Build Your Custom Video",checkoutSecurity:"Secure payment via Stripe",deliveryDetails:"Delivery details",csDuration:"Video Length",csFormat:"Format",csResolution:"Resolution",csScript:"Script",csLogoAnim:"Logo Animation",csVoiceover:"Voice-over",csSubtitles:"Subtitles",csRevisions:"Revisions",csPriority:"Priority",csLogo:"Logo",csImages:"Additional Ad Images",csLanguage:"Video Language",studioReset:"Reset options",studioContinue:"Continue to Order Details →",shortsChoose:"Use This Style →",studioLead:"Choose the details. See your estimated price.",studioSummary:"Your Order",orderDetailsTitle:"Your Order Details",
+    heroTitle:"<span class='hero-desktop-title'>Professional<br>Promotional Videos<br>for <em>Your Business</em></span><span class='hero-mobile-title'>Your business deserves a powerful <em>video ad</em></span>",
+    heroLead:"We create customised advertising videos for hotels, restaurants, beauty brands, real estate and other businesses.",
+    btnExplore10:"Explore Video Styles",
+    btnSeePackages:"See Packages: €5 · €15 · €55",
+    galleryKicker:"VIDEO SHOWCASE",
+    galleryTitle:"Choose your <em>video style</em>",
+    pricingTitle:"Choose your package",
+    addonsTitle:"Optional Services",
+    orderTitle:"Configure your promotional video order",
+    btnPayStripe:"Proceed to Checkout",
+    btnMailto:"Prepare Inquiry Email"
+  },
+  de:{
+    dir:"ltr",
+    navExamples:"Videostile",
+    navPricing:"Pakete (5 € – 55 €)",
+    navServices:"Zusatzleistungen",
+    navTrack:"Bestellstatus",
+    navOrderBtn:"Video bestellen",
+    heroKicker:"Internationales Werbevideo-Studio",
+    heroTitle:"Werbevideos, mit denen Ihr Unternehmen <em>heraussticht.</em>",
+    heroLead:"Kurze, ausdrucksstarke Werbevideos für Ihre Website, Instagram Reels, TikTok und YouTube Shorts. Wählen Sie einen von Stilen, fügen Sie Firmenname, Logo und Kontaktdaten hinzu — ab 5 €.",
+    btnExplore10:"Stile entdecken",
+    btnSeePackages:"Pakete ansehen: 5 € · 15 € · 55 €",
+    galleryKicker:"DEEPSYQ Kreativkollektion",
+    galleryTitle:"Werbevideo-Beispiele.<br>Wählen Sie Ihren Stil.",
+    pricingTitle:"Drei transparente Pakete für Ihr Unternehmen",
+    addonsTitle:"Wir helfen Ihrem Unternehmen, noch sichtbarer zu werden",
+    orderTitle:"Konfigurieren Sie Ihr Werbevideo",
+    btnPayStripe:"Jetzt online bestellen & bezahlen",
+    btnMailto:"Anfrage per E-Mail vorbereiten"
+  },
+  ar:{
+    dir:"rtl",
+    navExamples:"نموذج فيديو",
+    navPricing:"الباقات (5 € – 55 €)",
+    navServices:"خدمات إضافية",
+    navTrack:"تتبع الطلب",
+    navOrderBtn:"اطلب فيديو الآن",
+    heroKicker:"استوديو DEEPSYQ العالمي للفيديو الإعلاني",
+    heroTitle:"فيديوهات إعلانية تساعد عملك <em>على التميز.</em>",
+    heroLead:"فيديوهات إعلانية قصيرة وعالية الجاذبية مصممة لموقعك الإلكتروني وإنستغرام ريلز وتيك توك ويوتيوب شورتس. اختر من بين نمطاً بصرياً وأضف اسم شركتك وشعارك وبيانات التواصل ابتداءً من 5 يورو.",
+    btnExplore10:"استكشف نموذج فيديو",
+    btnSeePackages:"عرض الباقات: 5 € · 15 € · 55 €",
+    galleryKicker:"مجموعة DEEPSYQ الإبداعية",
+    galleryTitle:"نموذجاً لفيديوهات إعلانية.<br>اختر الأسلوب المناسب لعلامتك.",
+    pricingTitle:"ثلاث باقات واضحة تناسب أهدافك",
+    addonsTitle:"نساعد عملك على الظهور بشكل أقوى",
+    orderTitle:"اطلب الفيديو الإعلاني الخاص بشركتك",
+    btnPayStripe:"الدفع وتأكيد الطلب عبر Stripe",
+    btnMailto:"إعداد رسالة طلب عبر البريد"
+  },
+  es:{
+    dir:"ltr",
+    navExamples:"Estilos",
+    navPricing:"Paquetes (5 € – 55 €)",
+    navServices:"Servicios Extra",
+    navTrack:"Seguimiento",
+    navOrderBtn:"Pedir Video",
+    heroKicker:"Estudio Internacional de Video Publicitario",
+    heroTitle:"Videos publicitarios que ayudan a su negocio <em>a destacar.</em>",
+    heroLead:"Videos cortos y elegantes diseñados para captar clientes en su web, Instagram Reels, TikTok y YouTube Shorts. Elija uno de nuestros estilos y añada su marca desde 5 €.",
+    btnExplore10:"Ver estilos",
+    btnSeePackages:"Ver paquetes: 5 € · 15 € · 55 €",
+    galleryKicker:"Colección Creativa DEEPSYQ",
+    galleryTitle:"ejemplos de videos publicitarios.<br>Elija su estilo.",
+    pricingTitle:"Tres paquetes claros para su empresa",
+    addonsTitle:"Ayudamos a que su negocio sea más visible",
+    orderTitle:"Configure su pedido de video",
+    btnPayStripe:"Pagar y pedir online (Stripe)",
+    btnMailto:"Preparar correo de consulta"
+  },
+  it:{
+    dir:"ltr",
+    navExamples:"Stili Video",
+    navPricing:"Pacchetti (5 € – 55 €)",
+    navServices:"Servizi Extra",
+    navTrack:"Stato Ordine",
+    navOrderBtn:"Ordina Video",
+    heroKicker:"Studio Internazionale di Video Pubblicitari",
+    heroTitle:"Video pubblicitari che aiutano la tua azienda <em>a distinguersi.</em>",
+    heroLead:"Video brevi e curati per attirare clienti sul tuo sito, Instagram Reels, TikTok e YouTube Shorts. Scegli tra stili visivi e aggiungi il tuo logo a partire da 5 €.",
+    btnExplore10:"Scopri stili",
+    btnSeePackages:"Vedi pacchetti: 5 € · 15 € · 55 €",
+    galleryKicker:"Collezione Creativa DEEPSYQ",
+    galleryTitle:"esempi di video pubblicitari.<br>Scegli la tua direzione.",
+    pricingTitle:"Tre pacchetti chiari per il tuo brand",
+    addonsTitle:"Aiutiamo la tua attività a diventare più visibile",
+    orderTitle:"Configura il tuo video pubblicitario",
+    btnPayStripe:"Paga e ordina online (Stripe)",
+    btnMailto:"Prepara e-mail di richiesta"
+  },
+  nl:{
+    dir:"ltr",
+    navExamples:"Videostijlen",
+    navPricing:"Pakketten (5 € – 55 €)",
+    navServices:"Extra Diensten",
+    navTrack:"Bestelling volgen",
+    navOrderBtn:"Video bestellen",
+    heroKicker:"Internationale Promotievideo Studio",
+    heroTitle:"Promotievideo's waarmee uw bedrijf <em>opvalt.</em>",
+    heroLead:"Korte, krachtige promotievideo's voor uw website, Instagram Reels, TikTok en YouTube Shorts. Kies uit stijlen en voeg uw bedrijfsnaam en logo toe vanaf 5 €.",
+    btnExplore10:"Bekijk stijlen",
+    btnSeePackages:"Pakketten: 5 € · 15 € · 55 €",
+    galleryKicker:"DEEPSYQ Creatieve Collectie",
+    galleryTitle:"voorbeelden van promotievideo's.<br>Kies uw stijl.",
+    pricingTitle:"Drie heldere pakketten voor uw merk",
+    addonsTitle:"Wij helpen uw bedrijf nog zichtbaarder te worden",
+    orderTitle:"Stel uw promotievideo samen",
+    btnPayStripe:"Direct online bestellen & betalen",
+    btnMailto:"Aanvraag per e-mail voorbereiden"
+  },
+  pt:{
+    dir:"ltr",
+    navExamples:"Estilos",
+    navPricing:"Pacotes (5 € – 55 €)",
+    navServices:"Serviços Extra",
+    navTrack:"Acompanhar Pedido",
+    navOrderBtn:"Encomendar Vídeo",
+    heroKicker:"Estúdio Internacional de Vídeo Publicitário",
+    heroTitle:"Vídeos promocionais que ajudam o seu negócio <em>a destacar-se.</em>",
+    heroLead:"Vídeos curtos e impactantes para o seu site, Instagram Reels, TikTok e YouTube Shorts. Escolha um dos estilos e adicione a sua marca a partir de 5 €.",
+    btnExplore10:"Explorar estilos",
+    btnSeePackages:"Ver pacotes: 5 € · 15 € · 55 €",
+    galleryKicker:"Coleção Criativa DEEPSYQ",
+    galleryTitle:"exemplos de vídeos publicitários.<br>Escolha o seu estilo.",
+    pricingTitle:"Três pacotes claros para a sua empresa",
+    addonsTitle:"Ajudamos o seu negócio a tornar-se mais visível",
+    orderTitle:"Configure a sua encomenda de vídeo",
+    btnPayStripe:"Pagar e encomendar online (Stripe)",
+    btnMailto:"Preparar e-mail de pedido"
+  },
+  ru:{
+    trackTitle:"Статус заказа",agentTitle:"Вопрос студии",optLogoUpload:"Использовать мой логотип",optLogoText:"Только текст",optLogoCreate:"Создать логотип (+25 €)",lblLogoFile:"Загрузить логотип",trackNumber:"Номер заказа",agentEmail:"Эл. почта (необязательно)",agentQuestion:"Ваш вопрос",btnTrackCheck:"Проверить статус",btnAgentAsk:"Отправить вопрос",dir:"ltr",
+    navExamples:"Примеры видео",heroExamples:"Смотреть примеры",btnOrderCustom:"Рассчитать стоимость",
+    navPricing:"Пакеты (5 € – 55 €)",
+    navServices:"Доп. услуги",
+    navTrack:"Статус заказа",
+    navOrderBtn:"Заказать видео",
+    heroKicker:"Международная студия рекламных видео DEEPSYQ",
+    heroBrand:"Ваш бренд, логотип и контакты",heroReady:"Для соцсетей и сайтов",heroPrepared:"Профессиональная подготовка видео",studioConfigure:"Настройте видео",studioTitle:"Создайте видео под заказ",checkoutSecurity:"Безопасная оплата через Stripe",deliveryDetails:"Условия доставки",csDuration:"Длительность видео",csFormat:"Формат",csResolution:"Разрешение",csScript:"Сценарий",csLogoAnim:"Анимация логотипа",csVoiceover:"Озвучка",csSubtitles:"Субтитры",csRevisions:"Правки",csPriority:"Срочность",csLogo:"Логотип",csImages:"Рекламные изображения",csLanguage:"Язык видео",studioReset:"Сбросить настройки",studioContinue:"Перейти к оформлению →",shortsChoose:"Выбрать стиль →",studioLead:"Выберите настройки и посмотрите предварительную стоимость.",studioSummary:"Ваш заказ",orderDetailsTitle:"Данные для заказа",
+    heroTitle:"Рекламные видео, которые помогают вашему бизнесу <em>выделиться.</em>",
+    heroLead:"Короткие эффектные видеоролики для вашего сайта, Instagram Reels, TikTok, YouTube Shorts и Facebook. Выберите один из стилей, укажите название компании, логотип и контакты — готовый ролик от 5 €.",
+    btnExplore10:"Смотреть примеров",
+    btnSeePackages:"Пакеты: 5 € · 15 € · 55 €",
+    galleryKicker:"Креативная коллекция DEEPSYQ",
+    galleryTitle:"примеров рекламных видео.<br>Выберите стиль для вашего бизнеса.",
+    pricingTitle:"Три понятных пакета под ваши задачи",
+    addonsTitle:"Дополнительные услуги",
+    orderTitle:"Оформление заказа на рекламное видео",
+    btnPayStripe:"Оплатить заказ через Stripe Checkout",
+    btnMailto:"Подготовить письмо-запрос"
+  }
+};
+
+const state={
+  lang:"fr",
+  currency:"EUR",
+  selectedPkg:"medium",
+  selectedSlot:1,
+  selectedAddons:new Set(),
+  logoDataUrl:"",
+  customQuoteEur:14.95
+};
+
+const PKG_PRICES_EUR={basic:4.95,medium:14.95,professional:54.95,custom_studio:14.95};
+const PKG_DURATIONS={basic:10,medium:20,professional:30,custom_studio:20};
+
+function formatMoneyFromEur(eurAmount){
+  const cur=CURRENCY_RATES[state.currency]||CURRENCY_RATES.EUR;
+  const converted=(eurAmount*cur.rate);
+  const formatted=Number.isInteger(converted)?String(converted):converted.toFixed(2).replace(".",state.lang==="fr"||state.lang==="de"||state.lang==="es"||state.lang==="it"||state.lang==="nl"||state.lang==="pt"||state.lang==="ru"?",":".");
+  return state.currency==="EUR"?`${formatted} €`:`${cur.symbol}${formatted}`;
+}
+
+function trackFunnelEvent(eventName,extra={}){
+  try{
+    fetch("/api/sales/analytics/event",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({event:eventName,packageCode:state.selectedPkg,slot:state.selectedSlot,language:state.lang,currency:state.currency,...extra})
+    }).catch(()=>{});
+  }catch(_){}
+}
+
+const SECTOR_GROUPS={
+  hospitality:[0,1,2,3,4],
+  beauty:[5,6,7,9,10],
+  realestate:[12,13,14],
+  prestige:[8,11,15,16,17,18]
+};
+
+function calculateCustomStudioLocal(){
+  const dur=Number(document.getElementById("csDuration")?.value||20);
+  const fmt=document.getElementById("csFormat")?.value||"9:16";
+  const res=document.getElementById("csResolution")?.value||"1080p";
+  const scr=document.getElementById("csScript")?.value||"template_script";
+  const anim=document.getElementById("csLogoAnim")?.value||"standard_fade";
+  const vo=document.getElementById("csVoiceover")?.value||"none";
+  const sub=document.getElementById("csSubtitles")?.value||"none";
+  const rev=Number(document.getElementById("csRevisions")?.value||0);
+  const prio=document.getElementById("csPriority")?.value||"standard";
+
+  let base=14.95;
+  if(dur===10)base-=5;
+  else if(dur===30)base+=15;
+  else if(dur===45)base+=30;
+  else if(dur===60)base+=45;
+
+  const quoteOptions=[
+    ["Export formats",{dual_916_169:12,all_ratios:20}[fmt]],["4K",res==="4k_master"&&15],
+    ["Custom script",scr==="bespoke_script"&&15],["Logo animation",anim==="bespoke_reveal"&&12],
+    ["Voice-over",vo==="native_voiceover"&&18],["Subtitles",{burned_subtitles:8,bilingual_subtitles:15}[sub]],
+    ["Revisions",rev*10],["Express delivery",prio==="priority_24h"&&15]
+  ];
+  const paidOptions=quoteOptions.filter(([,price])=>price);
+  const opts=paidOptions.reduce((sum,[,price])=>sum+price,0);
+
+  const total=Math.max(4.95,Number((base+opts).toFixed(2)));
+  state.customQuoteEur=total;
+  PKG_PRICES_EUR.custom_studio=total;
+  PKG_DURATIONS.custom_studio=dur;
+
+  return {base,paidOptions};
+}
+
+function renderOrderQuote(pkg,format,totalEur,customQuote){
+  const custom=pkg==="custom_studio";
+  const dur=PKG_DURATIONS[pkg];
+  const fmt=format;
+  const res=custom?document.getElementById("csResolution").value:"";
+  const specEl=document.getElementById("csSpecSummary");
+  const formatLabel={dual_916_169:"9:16 + 16:9",all_ratios:"9:16 + 16:9 + 1:1"}[fmt]||fmt;
+  if(specEl)specEl.textContent=`${dur}s · ${formatLabel}${res?" · "+(res==="4k_master"?"4K":res):""}`;
+  const cardEl=document.getElementById("customStudioCardPrice");
+  if(cardEl){cardEl.removeAttribute("data-price-eur");cardEl.textContent=state.lang==="fr"?"Sur devis":"Custom Quote";}
+  document.getElementById("csStylePreview").textContent=document.getElementById("style").value||"Custom Video";
+  const names={basic:"Basic",medium:"Medium",professional:"Professional",custom_studio:"Custom Studio"};
+  const lines=[[names[pkg],custom?customQuote.base:PKG_PRICES_EUR[pkg]]];
+  if(custom)lines.push(...customQuote.paidOptions);
+  const extras=Array.from(selectedServices(),code=>ADDONS_CATALOG.find(item=>item.code===code)).filter(Boolean);
+  lines.push(...extras.map(item=>[item.titles[state.lang]||item.titles.en,item.priceEur]));
+  document.getElementById("csLiveTotal").textContent=formatMoneyFromEur(totalEur);
+  document.getElementById("csQuoteLines").replaceChildren(...lines.map(([label,price])=>{
+    const line=document.createElement("li");
+    const amount=document.createElement("strong");
+    amount.textContent=formatMoneyFromEur(price);
+    line.append(label,amount);
+    return line;
+  }));
+}
+
+const gallery=document.getElementById("videoGallery"),styleSelect=document.getElementById("style");
+samples.forEach((s,i)=>{
+  const article=document.createElement("article");
+  article.className="showcase"+(i===0?" selected":"");
+  const p=document.createElement("div");
+  p.className="poster";
+  const video=document.createElement("video");
+  video.muted=true;
+  video.loop=true;
+  video.playsInline=true;
+  video.preload="none";
+  video.poster=s.poster;
+  video.setAttribute("aria-label","Aperçu "+s.title);
+  const source=document.createElement("source");
+  source.src=s.file;
+  source.type="video/mp4";
+  video.append(source);
+  p.append(video);
+  const badge=document.createElement("span");
+  badge.className="sample-badge";
+  badge.textContent=s.category;
+  p.append(badge);
+  const toggle=document.createElement("button");
+  toggle.className="video-toggle";
+  toggle.type="button";
+  toggle.setAttribute("aria-label","Lire la vidéo "+s.title);
+  toggle.textContent="▶";
+  const startPlayback=async()=>{
+    document.querySelectorAll(".poster video").forEach(v=>{if(v!==video)v.pause()});
+    document.querySelectorAll(".video-toggle").forEach(b=>{b.textContent="▶";b.setAttribute("aria-label",b.getAttribute("aria-label").replace("Mettre en pause","Lire"))});
+    try{await video.play();toggle.textContent="Ⅱ";toggle.setAttribute("aria-label","Mettre en pause la vidéo "+s.title)}catch{toggle.textContent="▶"}
+  };
+  const stopPlayback=()=>{
+    video.pause();
+    toggle.textContent="▶";
+    toggle.setAttribute("aria-label","Lire la vidéo "+s.title);
+  };
+  toggle.addEventListener("click",async()=>{
+    if(video.paused){
+      await startPlayback();
+    }else{
+      stopPlayback();
+    }
+  });
+  p.append(toggle);
+  video.addEventListener("play",()=>{
+    toggle.textContent="Ⅱ";
+    toggle.setAttribute("aria-label","Mettre en pause la vidéo "+s.title);
+  });
+  video.addEventListener("pause",()=>{
+    toggle.textContent="▶";
+    toggle.setAttribute("aria-label","Lire la vidéo "+s.title);
+  });
+  const info=document.createElement("div");
+  info.className="sample-info";
+  const name=document.createElement("b");
+  name.textContent=s.title;
+  const sub=document.createElement("span");
+  sub.textContent=s.note;
+  const select=document.createElement("button");
+  select.type="button";
+  select.className="use-style";
+  select.textContent="Choisir ce style";
+  select.addEventListener("click",()=>{
+    state.selectedSlot=i+1;
+    setOrderFormat("9:16");
+    styleSelect.value=s.title;
+    gallery.querySelectorAll(".showcase").forEach(el=>el.classList.remove("selected"));
+    article.classList.add("selected");
+    document.getElementById("picked").textContent="Style sélectionné : "+String(i+1).padStart(2,"0")+" — "+s.title;
+    updateSummary();
+    document.getElementById("commande").scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});
+  });
+  info.append(name,sub,select);
+  article.append(p,info);
+  gallery.append(article);
+  const option=document.createElement("option");
+  option.value=s.title;
+  option.textContent=String(i+1).padStart(2,"0")+" — "+s.title+" ("+s.category+")";
+  if(i===0)option.selected=true;
+  styleSelect.append(option);
+});
+
+function renderAddons(){
+  const grid=document.getElementById("addonsGrid");
+  if(!grid)return;
+  grid.innerHTML="";
+  ADDONS_CATALOG.forEach(item=>{
+    const card=document.createElement("article");
+    const isSel=state.selectedAddons.has(item.code);
+    card.className="addon-card"+(isSel?" selected":"");
+    const title=item.titles[state.lang]||item.titles.en||item.titles.fr;
+    const desc=item.desc[state.lang]||item.desc.en||item.desc.fr;
+    card.innerHTML=`<div><h3>${title}</h3><p>${desc}</p></div><div class="addon-foot"><span class="addon-price">+${formatMoneyFromEur(item.priceEur)}</span><button type="button" class="addon-toggle">${isSel?"✓ Ajouté":"+ Ajouter"}</button></div>`;
+    card.querySelector("button").addEventListener("click",()=>{
+      if(state.selectedAddons.has(item.code))state.selectedAddons.delete(item.code);
+      else state.selectedAddons.add(item.code);
+      renderAddons();
+      updateSummary();
+    });
+    grid.append(card);
+  });
+}
+
+function selectedServices(){
+  const services=new Set(state.selectedAddons);
+  if(document.getElementById("logoOption").value==="create_logo")services.add("logo_creation");
+  return services;
+}
+const packageNames={basic:"Basic",medium:"Medium",professional:"Professional",custom_studio:"Custom Studio"};
+const packagePresets={
+  basic:{csDuration:"10",logoOption:"text_only"},
+  medium:{},
+  professional:{csDuration:"30",csScript:"bespoke_script",csLogoAnim:"bespoke_reveal",csRevisions:"1"},
+  custom_studio:{}
+};
+const studioDefaults={
+  csDuration:"20",csFormat:"9:16",csResolution:"1080p",csScript:"template_script",
+  csLogoAnim:"standard_fade",csVoiceover:"none",csSubtitles:"none",csRevisions:"0",
+  csPriority:"standard",csLanguage:"",logoOption:"upload"
+};
+const studioField=id=>document.getElementById(id);
+function currentPreset(pkg){
+  return {...studioDefaults,...packagePresets[pkg]};
+}
+function checkoutPackage(pkg){
+  const preset=currentPreset(pkg);
+  const custom=Object.keys(preset).some(id=>{
+    if(id==="csFormat")return !["9:16","16:9"].includes(studioField(id).value);
+    if(id==="csLanguage"||id==="logoOption")return false;
+    return studioField(id).value!==preset[id];
+  });
+  return custom?"custom_studio":pkg;
+}
+function selectOrderPackage(pkg){
+  const format=studioField("csFormat").value;
+  for(const [id,value] of Object.entries(currentPreset(pkg)))studioField(id).value=value;
+  if(format==="16:9")studioField("csFormat").value=format;
+  studioField("packageSelect").value=pkg;
+  state.selectedAddons.delete("social_promo_visuals");
+  renderAddons();
+  applyCustomConfiguration();
+}
+function updateSummary(){
+  document.getElementById("logoUploadPanel").hidden=document.getElementById("logoOption").value!=="upload";
+  document.getElementById("csImages").value=state.selectedAddons.has("social_promo_visuals")?"5":"0";
+  const customQuote=calculateCustomStudioLocal();
+  const selected=studioField("packageSelect").value||"medium";
+  const pkg=checkoutPackage(selected);
+  state.selectedPkg=selected;
+  document.querySelector(".cs-heading h2").textContent=selected==="custom_studio"
+    ? I18N[state.lang]?.studioTitle||I18N.en.studioTitle
+    : packageNames[selected]+" · "+(I18N[state.lang]?.studioConfigure||I18N.en.studioConfigure);
+  const format=document.getElementById("videoFormat").value||"9:16";
+
+
+  const pkgEur=PKG_PRICES_EUR[pkg]||15;
+  let addonsEur=0;
+  selectedServices().forEach(code=>{
+    const found=ADDONS_CATALOG.find(a=>a.code===code);
+    if(found)addonsEur+=found.priceEur;
+  });
+  const totalEur=pkgEur+addonsEur;
+
+  document.querySelectorAll("[data-pkg-card]").forEach(el=>{
+    el.classList.toggle("active-pkg",el.getAttribute("data-pkg-card")===selected);
+  });
+  document.querySelectorAll("[data-price-eur]").forEach(el=>{
+    const eur=Number(el.getAttribute("data-price-eur"))||0;
+    el.textContent=formatMoneyFromEur(eur);
+  });
+
+  const pkgUpper=packageNames[selected].toUpperCase();
+  const dur=PKG_DURATIONS[pkg]||20;
+  renderOrderQuote(pkg,format,totalEur,customQuote);
+  document.getElementById("livePreviewPkgTag").textContent=`${pkgUpper} · ${dur}s · ${format}`;
+
+  const compVal=document.getElementById("company").value.trim()||document.getElementById("quickBrandName")?.value.trim();
+  document.getElementById("livePreviewBrandName").textContent=compVal||"Maison Lumière";
+  const contactVal=document.getElementById("contactCard").value.trim()||document.getElementById("quickBrandContact")?.value.trim();
+  document.getElementById("livePreviewContact").textContent=contactVal?("📍 "+contactVal):"📍 Paris · www.votre-entreprise.fr";
+  const mobPkg=document.getElementById("mobileBarPkg");
+  if(mobPkg)mobPkg.textContent=`Votre commande · Pack ${pkgUpper} (${dur}s)`;
+  const mobPrice=document.getElementById("mobileBarPrice");
+  if(mobPrice)mobPrice.textContent=formatMoneyFromEur(totalEur);
+}
+
+function setOrderFormat(value){
+  for(const id of ["videoFormat","csFormat"]){
+    const control=document.getElementById(id);
+    if(control)control.value=value;
+  }
+  syncStudioButtons();
+}
+const shortCards=[...gallery.querySelectorAll(".showcase")];
+let activeShort=shortCards[0];
+let shortsInView=false;
+const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
+function playActiveShort(){
+  const video=activeShort.querySelector("video");
+  if(shortsInView&&!reduceMotion.matches&&video.paused){
+    activeShort.querySelector(".video-toggle").click();
+  }
+}
+function showShorts(step=0){
+  const available=shortCards.filter(card=>!card.classList.contains("filtered-out"));
+  const previous=available.indexOf(activeShort);
+  const index=(Math.max(previous,0)+step+available.length)%available.length;
+  activeShort=available[index];
+  const visible=[available.at(index-1),activeShort,available[(index+1)%available.length]];
+  shortCards.forEach(card=>{
+    const position=visible.indexOf(card);
+    card.dataset.position=card===activeShort?"center":position===0?"previous":position===2?"next":"hidden";
+    if(card!==activeShort&&!card.querySelector("video").paused){
+      card.querySelector("video").pause();
+    }
+  });
+  document.getElementById("shortsCaption").textContent=samples[shortCards.indexOf(activeShort)].title;
+  playActiveShort();
+}
+const shortsStage=gallery.closest(".shorts-stage");
+new IntersectionObserver(([entry])=>{
+  shortsInView=entry.isIntersecting;
+  if(shortsInView)playActiveShort();
+  else activeShort.querySelector("video").pause();
+},{threshold:0.35}).observe(shortsStage);
+gallery.addEventListener("pointerover",event=>{
+  if(event.pointerType==="mouse"&&event.target.closest('[data-position="center"]')&&
+    !event.relatedTarget?.closest?.('[data-position="center"]'))playActiveShort();
+});
+gallery.addEventListener("click",event=>{
+  const position=event.target.closest(".showcase")?.dataset.position;
+  if(position==="previous"||position==="next")showShorts(position==="previous"?-1:1);
+});
+let swipeStart;
+gallery.addEventListener("touchstart",event=>{
+  swipeStart=event.touches.length===1?event.touches[0]:null;
+},{passive:true});
+gallery.addEventListener("touchend",event=>{
+  if(!swipeStart)return;
+  const touch=event.changedTouches[0];
+  const x=touch.clientX-swipeStart.clientX;
+  const y=touch.clientY-swipeStart.clientY;
+  swipeStart=null;
+  if(Math.abs(x)>40&&Math.abs(x)>Math.abs(y)*1.4)showShorts(x<0?1:-1);
+},{passive:true});
+gallery.addEventListener("touchcancel",()=>{swipeStart=null});
+function selectCenteredShort(){
+  activeShort.querySelector(".use-style").click();
+}
+document.getElementById("shortsSelect").addEventListener("click",selectCenteredShort);
+document.getElementById("shortsPrev").addEventListener("click",()=>showShorts(-1));
+document.getElementById("shortsNext").addEventListener("click",()=>showShorts(1));
+gallery.addEventListener("keydown",event=>{
+  if(event.key==="ArrowLeft"||event.key==="ArrowRight"){
+    event.preventDefault();
+    showShorts(event.key==="ArrowLeft"?-1:1);
+    gallery.querySelector('[data-position="center"] .video-toggle')?.focus();
+  }
+});
+showShorts();
+
+document.querySelectorAll("#industryFilterBar .filter-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll("#industryFilterBar .filter-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    const f=btn.getAttribute("data-filter");
+    const allowed=SECTOR_GROUPS[f]||null;
+    gallery.querySelectorAll(".showcase").forEach((card,idx)=>{
+      card.classList.toggle("filtered-out",Boolean(allowed&&!allowed.includes(idx)));
+    });
+    if(allowed&&allowed.length&&shortCards[allowed[0]]){
+      activeShort=shortCards[allowed[0]];
+    }
+    shortsInView=true;
+    showShorts(0);
+    trackFunnelEvent("industry_filter",{industry:f});
+  });
+});
+
+document.querySelectorAll("[data-hero-filter]").forEach(link=>{
+  link.addEventListener("click",()=>{
+    document.querySelector(`#industryFilterBar [data-filter="${link.dataset.heroFilter}"]`)?.click();
+    if(link.dataset.heroSlide&&shortCards[Number(link.dataset.heroSlide)]){
+      activeShort=shortCards[Number(link.dataset.heroSlide)];
+      shortsInView=true;
+      showShorts(0);
+    }
+  });
+});
+
+// Interactive Brand Preview Bar
+["quickBrandName","quickBrandContact","quickBrandAccent"].forEach(id=>{
+  document.getElementById(id)?.addEventListener("input",()=>{
+    const n=document.getElementById("quickBrandName")?.value.trim();
+    const c=document.getElementById("quickBrandContact")?.value.trim();
+    const acc=document.getElementById("quickBrandAccent")?.value||"#f0cca0";
+    if(n)document.getElementById("company").value=n;
+    if(c)document.getElementById("contactCard").value=c;
+    document.getElementById("livePreviewBrandName").style.color=acc;
+    updateSummary();
+  });
+});
+document.getElementById("applyBrandPreviewBtn")?.addEventListener("click",()=>{
+  updateSummary();
+  document.getElementById("landscapePreview").classList.add("show-brand");
+  document.querySelector(".hero-art")?.scrollIntoView({behavior:"smooth"});
+  trackFunnelEvent("brand_preview_applied");
+});
+
+const studioOptions={
+  csDuration:["10s","20s","30s","45s","60s"],
+  csFormat:["9:16","16:9","Both","All"],
+  csResolution:["Full HD","4K"],
+  csScript:["Standard","Custom"],
+  csLogoAnim:["Standard","Premium"],
+  csSubtitles:["Off","On","Bilingual"],
+  csRevisions:["0","1","2"],
+  csPriority:["Standard","Express"]
+};
+function syncStudioButtons(){
+  document.querySelectorAll("[data-studio-field]").forEach(button=>{
+    button.setAttribute("aria-pressed",String(document.getElementById(button.dataset.studioField).value===button.value));
+  });
+}
+for(const [id,labels] of Object.entries(studioOptions)){
+  const select=document.getElementById(id);
+  const row=select.parentElement;
+  const group=document.createElement("div");
+  group.className="cs-segments";
+  group.setAttribute("role","group");
+  group.setAttribute("aria-label",row.querySelector("span").textContent);
+  select.hidden=true;
+  [...select.options].forEach((option,index)=>{
+    const button=document.createElement("button");
+    button.type="button";
+    button.dataset.studioField=id;
+    button.value=option.value;
+    button.title=option.textContent.trim();
+    button.textContent=labels[index];
+    button.addEventListener("click",()=>{
+      select.value=button.value;
+      select.dispatchEvent(new Event("change",{bubbles:true}));
+    });
+    group.append(button);
+  });
+  row.after(group);
+  group.prepend(row);
+}
+syncStudioButtons();
+
+document.getElementById("csImages").addEventListener("change",event=>{
+  if(event.target.value==="5")state.selectedAddons.add("social_promo_visuals");
+  else state.selectedAddons.delete("social_promo_visuals");
+  renderAddons();
+  updateSummary();
+});
+
+// Configuration changes apply directly to the single order.
+function applyCustomConfiguration(){
+  document.getElementById("videoFormat").value=document.getElementById("csFormat").value;
+  syncStudioButtons();
+  updateSummary();
+}
+["csDuration","csFormat","csResolution","csScript","csLogoAnim","csVoiceover","csSubtitles","csRevisions","csPriority","csLanguage"].forEach(id=>{
+  document.getElementById(id).addEventListener("change",applyCustomConfiguration);
+});
+document.getElementById("resetCustomStudioBtn")?.addEventListener("click",()=>{
+  selectOrderPackage(studioField("packageSelect").value);
+});
+document.querySelectorAll("[data-select-pkg]").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const pkg=btn.getAttribute("data-select-pkg");
+    selectOrderPackage(pkg);
+    document.getElementById("customStudioConfigurator").scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});
+  });
+});
+
+["packageSelect","videoFormat","style","logoOption","company","contactCard"].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el){
+    el.addEventListener("change",()=>{
+      if(id==="videoFormat")setOrderFormat(el.value);
+      if(id==="packageSelect"){selectOrderPackage(el.value);return;}
+      renderAddons();
+      updateSummary();
+      if(id==="logoOption"&&el.value==="upload"){
+        document.getElementById("logoUploadPanel").scrollIntoView({block:"nearest"});
+      }
+    });
+    if(id!=="packageSelect")el.addEventListener("input",updateSummary);
+  }
+});
+
+document.getElementById("logoUpload").addEventListener("change",(ev)=>{
+  const file=ev.target.files&&ev.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    if(typeof reader.result==="string"){
+      state.logoDataUrl=reader.result;
+      document.getElementById("livePreviewLogoImg").src=reader.result;
+      updateSummary();
+    }
+  };
+  reader.readAsDataURL(file);
+});
+
+function applyLanguage(lang){
+  const dict=I18N[lang]||I18N.fr;
+  state.lang=lang;
+  document.documentElement.lang=lang;
+  document.documentElement.dir=dict.dir||"ltr";
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const key=el.getAttribute("data-i18n");
+    if(dict[key])el.textContent=dict[key];
+  });
+  document.querySelectorAll("[data-i18n-html]").forEach(el=>{
+    const key=el.getAttribute("data-i18n-html");
+    if(dict[key])el.innerHTML=dict[key];
+  });
+  document.querySelectorAll(".cs-segments").forEach(group=>group.setAttribute("aria-label",group.querySelector("label span").textContent));
+  renderAddons();
+  updateSummary();
+}
+
+styleSelect.addEventListener("change",()=>{
+  const index=samples.findIndex(sample=>sample.title===styleSelect.value);
+  if(index>=0)state.selectedSlot=index+1;
+  updateSummary();
+});
+document.getElementById("langSwitcher").addEventListener("change",(e)=>applyLanguage(e.target.value));
+document.getElementById("currencySwitcher").addEventListener("change",(e)=>{
+  state.currency=e.target.value;
+  renderAddons();
+  updateSummary();
+});
+
+// Stripe Checkout Button Handler
+document.getElementById("stripeCheckoutBtn").addEventListener("click",async(event)=>{
+  const checkoutButton=event.currentTarget;
+  if(checkoutButton.disabled)return;
+  const form=document.getElementById("projectForm");
+  if(!form.reportValidity())return;
+  const accepted=document.getElementById("acceptTerms").checked;
+  const feedback=document.getElementById("checkoutFeedback");
+  if(!accepted){
+    feedback.textContent="Veuillez accepter les conditions commerciales avant de continuer.";
+    return;
+  }
+  feedback.textContent="Création de votre commande DEEPSYQ et ouverture de Stripe Checkout…";
+  const payload={
+    packageCode:checkoutPackage(document.getElementById("packageSelect").value),
+    videoFormat:document.getElementById("videoFormat").value,
+    showcaseSlot:state.selectedSlot,
+    companyName:document.getElementById("company").value.trim(),
+    customerEmail:document.getElementById("email").value.trim(),
+    countryCode:document.getElementById("countrySelect").value,
+    languageCode:state.lang,
+    currency:state.currency,
+    logoOption:document.getElementById("logoOption").value,
+    logoDataUrl:document.getElementById("logoOption").value==="upload"?state.logoDataUrl:null,
+    addressOrContact:document.getElementById("contactCard").value.trim(),
+    customWishes:[
+      document.getElementById("brief").value.trim(),
+      document.getElementById("csLanguage").value
+        ? "Video language: "+document.getElementById("csLanguage").value : ""
+    ].filter(Boolean).join("\n"),
+    additionalServices:Array.from(selectedServices()),
+    customSpec:{
+      durationSeconds:Number(document.getElementById("csDuration")?.value||20),
+      format:document.getElementById("csFormat")?.value||"9:16",
+      resolution:document.getElementById("csResolution")?.value||"1080p",
+      scriptOption:document.getElementById("csScript")?.value||"template_script",
+      logoAnimation:document.getElementById("csLogoAnim")?.value||"standard_fade",
+      voiceoverOption:document.getElementById("csVoiceover")?.value||"none",
+      subtitlesOption:document.getElementById("csSubtitles")?.value||"none",
+      revisionRounds:Number(document.getElementById("csRevisions")?.value||0),
+      priorityOption:document.getElementById("csPriority")?.value||"standard"
+    },
+    acceptedTerms:true
+  };
+  checkoutButton.disabled=true;
+  try{
+    const res=await fetch("/api/sales/orders/checkout",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
+    const data=await res.json();
+    if(!res.ok||!data.ok){
+      feedback.textContent="Erreur : "+(data.message||data.error||"Impossible de créer la commande.");
+      return;
+    }
+    const tracking=document.getElementById("trackOrderInput");
+    if(tracking)tracking.value=data.orderNumber;
+    feedback.textContent="Commande "+data.orderNumber+" créée ! Redirection vers le paiement…";
+    if(data.checkoutUrl){
+      window.location.href=data.checkoutUrl;
+    }
+  }catch{
+    feedback.textContent="Service temporairement indisponible. Vous pouvez utiliser le bouton e-mail à côté.";
+  }finally{
+    checkoutButton.disabled=false;
+  }
+});
+
+// Honest mailto submission fallback (preserves direct email request option)
+document.getElementById("projectForm").addEventListener("submit",(event)=>{
+  event.preventDefault();
+  if(!event.currentTarget.reportValidity())return;
+  const c=document.getElementById("company").value.trim(),
+        e=document.getElementById("email").value.trim(),
+        sector=document.getElementById("sector").value,
+        pkg=document.getElementById("packageSelect").value.toUpperCase(),
+        fmt=document.getElementById("videoFormat").value,
+        style=styleSelect.value,
+        contactCard=document.getElementById("contactCard").value.trim(),
+        brief=document.getElementById("brief").value.trim();
+  const subject="DEEPSYQ · Demande de vidéo ("+pkg+") · "+c;
+  const message="Bonjour DEEPSYQ,\n\nJe souhaite commander / recevoir une proposition pour une vidéo publicitaire.\n\nEntreprise : "+c+"\nE-mail : "+e+"\nForfait : "+pkg+"\nFormat : "+fmt+"\nSecteur : "+sector+"\nStyle : "+style+"\nCoordonnées vidéo : "+(contactCard||"À préciser")+"\nServices + : "+(Array.from(state.selectedAddons).join(", ")||"Aucun")+"\nBrief : "+(brief||"À préciser ensemble")+"\n\nMerci de me contacter pour le suivi.\n";
+  window.location.href="mailto:help@deepsyq.app?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(message);
+});
+
+// Order Tracking Lookup
+async function lookupOrder(orderNum){
+  const box=document.getElementById("trackResultBox");
+  if(!orderNum)return;
+  box.classList.add("visible");
+  box.textContent="Recherche de la commande "+orderNum+"…";
+  try{
+    const res=await fetch("/api/sales/orders/"+encodeURIComponent(orderNum.trim()));
+    const data=await res.json();
+    if(!res.ok||!data.ok){
+      box.textContent="Commande introuvable : "+orderNum;
+      return;
+    }
+    const o=data.order;
+    // Only render escaped server data; the authorization check belongs on the API.
+    const esc=(v)=>String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+    let deliveryHref="";
+    if(o.deliveryVideoUrl){try{const u=new URL(o.deliveryVideoUrl,window.location.origin);if(u.protocol==="https:"||u.protocol==="http:")deliveryHref=esc(u.href)}catch{}}
+    box.innerHTML=`<div class="status-badge">● ${esc(o.status).toUpperCase()}</div><p style="margin:10px 0 4px"><strong>${esc(o.orderNumber)}</strong> — ${esc(o.companyName)} · Pack ${esc(o.packageName)} (${esc(o.videoFormat)}, ${esc(o.durationSeconds)}s)</p><p style="margin:0;color:var(--muted)">Statut production : ${esc(o.productionStatus)}</p>${deliveryHref?`<p style="margin-top:10px"><a class="pill" href="${deliveryHref}" download rel="noopener noreferrer">⬇ Télécharger la vidéo finale</a></p>`:""}`;
+  }catch{
+    box.textContent="Impossible de vérifier la commande pour le moment.";
+  }
+}
+
+document.getElementById("trackOrderBtn").addEventListener("click",()=>{
+  lookupOrder(document.getElementById("trackOrderInput").value);
+});
+
+// AI Sales Consultant (Anton) Instant Inquiry
+document.getElementById("agentAskBtn").addEventListener("click",async()=>{
+  const email=document.getElementById("agentAskEmail").value.trim()||"prospect@example.com";
+  const message=document.getElementById("agentAskText").value.trim();
+  const replyBox=document.getElementById("agentReplyBox");
+  if(!message)return;
+  replyBox.classList.add("visible");
+  replyBox.textContent="Anton prépare votre réponse…";
+  try{
+    const res=await fetch("/api/sales/inquiry",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        email,
+        companyName:document.getElementById("company").value.trim()||"Votre Entreprise",
+        countryCode:document.getElementById("countrySelect").value,
+        languageCode:state.lang,
+        message
+      })
+    });
+    const data=await res.json();
+    if(data.ok&&data.agentReply){
+      replyBox.textContent=data.agentReply.bodyText;
+    }else{
+      replyBox.textContent="Merci ! Contactez-nous directement sur help@deepsyq.app.";
+    }
+  }catch{
+    replyBox.textContent="Merci ! Contactez-nous sur help@deepsyq.app.";
+  }
+});
+
+// Auto-detect URL query parameters (?lang=..., ?order=DSQ-...)
+(function initFromQuery(){
+  const params=new URLSearchParams(window.location.search);
+  const qLang=params.get("lang");
+  if(qLang&&I18N[qLang.toLowerCase()]){
+    document.getElementById("langSwitcher").value=qLang.toLowerCase();
+    applyLanguage(qLang.toLowerCase());
+  }else{
+    renderAddons();
+    updateSummary();
+  }
+  const qOrder=params.get("order");
+  if(qOrder){
+    document.getElementById("trackOrderInput").value=qOrder;
+    lookupOrder(qOrder);
+  }
+})();
+</script>
+
+<script id="deepsyq-premium-behavior">
+"use strict";
+(function(){
+const menu=document.getElementById("premiumMenuToggle");
+const panel=document.getElementById("premiumMobileMenu");
+if(menu&&panel){menu.addEventListener("click",()=>{const willOpen=panel.hasAttribute("hidden");if(willOpen)panel.removeAttribute("hidden");else panel.setAttribute("hidden","");menu.setAttribute("aria-expanded",String(willOpen));});panel.addEventListener("click",event=>{if(event.target.closest("a")){panel.setAttribute("hidden","");menu.setAttribute("aria-expanded","false");}});document.addEventListener("keydown",event=>{if(event.key==="Escape"){panel.setAttribute("hidden","");menu.setAttribute("aria-expanded","false");}});}
+const section=document.getElementById("services-plus"),extras=document.getElementById("showAllExtras");
+const extraDict={fr:["Voir tous les services","Réduire les services"],en:["See all services","Show less"],de:["Alle Leistungen","Weniger anzeigen"],es:["Ver todos los servicios","Mostrar menos"],it:["Tutti i servizi","Mostra meno"],pt:["Ver todos os serviços","Mostrar menos"],nl:["Alle diensten","Minder tonen"],ru:["Все дополнительные услуги","Свернуть"],ar:["عرض جميع الخدمات","عرض أقل"]};
+const faqDict={fr:["EN TOUTE CLARTÉ","FAQ","Vous choisissez un style, nous préparons votre création. Les conditions exactes sont confirmées avant paiement.","Quand recevrai-je ma vidéo ?","Le délai dépend du pack et des éléments fournis. Il est confirmé avant l'achat.","Puis-je utiliser mon propre logo ?","Oui, vous pouvez importer votre logo ou demander sa création.","Puis-je personnaliser le résultat ?","Oui, choisissez le style, les textes, le format et les options.","Les vidéos existent-elles dans plusieurs langues ?","Précisez la langue souhaitée dans le brief; les options dépendent du pack."],en:["GOOD TO KNOW","FAQ","Choose a style, tell us about your brand, and we will prepare your creative. Exact terms are confirmed before payment.","When will I receive my video?","Timing depends on your package and materials and will be confirmed before purchase.","Can I use my own logo?","Yes. Upload your logo or request a new one.","Can I order a custom version?","Yes. Choose the style, text, format and available options.","Do you support multiple languages?","Specify the language in your brief; available options depend on the package."],de:["GUT ZU WISSEN","Die wichtigsten Antworten.","Wählen Sie einen Stil. Wir stimmen die Details vor der Zahlung mit Ihnen ab.","Wann erhalte ich mein Video?","Die Lieferzeit hängt vom Paket und den Materialien ab und wird vor dem Kauf bestätigt.","Kann ich mein eigenes Logo nutzen?","Ja. Laden Sie Ihr Logo hoch oder fragen Sie eine Neugestaltung an.","Kann ich das Video anpassen?","Ja. Wählen Sie Stil, Text, Format und Optionen.","Gibt es Videos in mehreren Sprachen?","Bitte nennen Sie die gewünschte Sprache im Briefing; Optionen sind paketabhängig."],es:["PREGUNTAS FRECUENTES","Todo lo que necesitas saber.","Elige un estilo; confirmaremos las condiciones antes del pago.","¿Cuándo recibiré mi vídeo?","El plazo depende del paquete y los materiales; se confirmará antes de comprar.","¿Puedo usar mi logotipo?","Sí. Sube tu logotipo o solicita uno nuevo.","¿Puedo personalizar el vídeo?","Sí: estilo, texto, formato y opciones.","¿En varios idiomas?","Indica el idioma en el brief; depende del paquete."],it:["DOMANDE FREQUENTI","Tutto quello che vuoi sapere.","Scegli uno stile. Confermeremo le condizioni prima del pagamento.","Quando riceverò il video?","Dipende dal pacchetto e dai materiali; verrà confermato prima dell'acquisto.","Posso usare il mio logo?","Sì. Carica il logo oppure richiedine uno.","Posso personalizzarlo?","Sì: stile, testi, formato e opzioni.","Sono disponibili altre lingue?","Indica la lingua nel brief; le opzioni variano secondo il pacchetto."],pt:["PERGUNTAS FREQUENTES","Tudo o que precisa de saber.","Escolha um estilo; confirmaremos os detalhes antes do pagamento.","Quando recebo o vídeo?","O prazo depende do pacote e dos materiais e será confirmado antes da compra.","Posso usar o meu logótipo?","Sim, pode carregar o seu logótipo ou pedir um novo.","Posso personalizar o vídeo?","Sim: estilo, texto, formato e opções.","Em diferentes idiomas?","Indique o idioma no briefing; as opções dependem do pacote."],nl:["VEELGESTELDE VRAGEN","Alles wat u wilt weten.","Kies een stijl. Voor betaling bevestigen we de voorwaarden.","Wanneer krijg ik mijn video?","Dit hangt af van het pakket en de bestanden. We bevestigen dit vóór aankoop.","Kan ik mijn eigen logo gebruiken?","Ja. Upload uw logo of vraag een nieuw ontwerp aan.","Kan ik de video aanpassen?","Ja: stijl, tekst, formaat en extra's.","Zijn meerdere talen mogelijk?","Vermeld de taal in uw briefing. Mogelijkheden verschillen per pakket."],ru:["ЧАСТЫЕ ВОПРОСЫ","Всё, что нужно знать.","Выберите стиль и расскажите о компании. Условия подтвердим до оплаты.","Когда будет готово видео?","Срок зависит от пакета и материалов; он подтверждается до покупки.","Можно использовать свой логотип?","Да. Загрузите свой логотип или закажите новый.","Можно изменить видео под свой бренд?","Да: стиль, тексты, формат и дополнительные услуги.","Есть ли другие языки?","Укажите язык в задании; доступность зависит от тарифа."],ar:["الأسئلة الشائعة","كل ما تحتاج معرفته","اختر النمط المناسب، وسنؤكد الشروط قبل الدفع.","متى أتلقى الفيديو؟","يعتمد الموعد على الباقة والملفات، ويُؤكَّد قبل الشراء.","هل يمكنني استخدام شعاري؟","نعم، يمكنك رفع شعارك أو طلب تصميم جديد.","هل يمكن تخصيص الفيديو؟","نعم، اختر النمط والنص والتنسيق والخيارات.","هل تتوفر لغات متعددة؟","حدد اللغة المطلوبة في الوصف؛ الخيارات حسب الباقة."]};
+const faqIds=["premiumFaqEyebrow","premiumFaqHeading","premiumFaqLead","premiumQ1","premiumA1","premiumQ2","premiumA2","premiumQ3","premiumA3","premiumQ4","premiumA4"];
+function localize(){const lang=document.getElementById("langSwitcher")?.value||"fr";const labels=faqDict[lang]||faqDict.en;faqIds.forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=labels[i]});if(extras){const l=extraDict[lang]||extraDict.en;extras.firstChild.textContent=section.classList.contains("premium-expanded")?l[1]:l[0];}const c=document.getElementById("spotlightCounter");if(c)c.textContent=c.textContent.replace(/\s*\/\s*\d+/g,"").replace(/\s*OF\s*\d+/ig,"");}
+if(extras&&section){extras.addEventListener("click",()=>{const expanded=section.classList.toggle("premium-expanded");extras.setAttribute("aria-expanded",String(expanded));localize()});}
+document.getElementById("langSwitcher")?.addEventListener("change",()=>queueMicrotask(localize));
+const observeCount=document.getElementById("spotlightCounter");
+if(observeCount){const obs=new MutationObserver(()=>{const clean=observeCount.textContent.replace(/\s*\/\s*\d+/g,"").replace(/\s*OF\s*\d+/ig,"");if(clean!==observeCount.textContent)observeCount.textContent=clean});obs.observe(observeCount,{childList:true,characterData:true,subtree:true});}
+localize();
+})();
+</script>
+
+<script id="deepsyq-premium-final-pass">
+(function(){
+ const statLabels={fr:"Styles vidéo",en:"Video styles",de:"Videostile",ar:"أنماط الفيديو",es:"Estilos de vídeo",it:"Stili video",nl:"Videostijlen",pt:"Estilos de vídeo",ru:"Стили видео"};
+ const selectedStyleLabels={fr:"Style vidéo choisi",en:"Preferred Video Style",de:"Gewählter Videostil",ar:"نمط الفيديو المختار",es:"Estilo de vídeo elegido",it:"Stile video selezionato",nl:"Gekozen videostijl",pt:"Estilo de vídeo escolhido",ru:"Выбранный стиль видео"};
+ function alignLabels(){
+  const lang=document.getElementById("langSwitcher")?.value||"fr";
+  const stat=document.querySelector('[data-i18n="stat1Val"]');
+  if(stat)stat.textContent=statLabels[lang]||statLabels.en;
+  const label=document.querySelector('[data-i18n="lblStyle"]');
+  if(label)label.textContent=selectedStyleLabels[lang]||selectedStyleLabels.en;
+ }
+ document.getElementById("langSwitcher")?.addEventListener("change",()=>queueMicrotask(alignLabels));
+ alignLabels();
+})();
+</script></body></html>
