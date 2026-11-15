@@ -571,6 +571,13 @@ form{grid-template-columns:1fr!important;padding:16px!important}.summary-box{pad
 footer.shell{flex-direction:column;padding-bottom:105px}.mobile-sticky-bar{display:flex!important;z-index:70;padding-bottom:max(10px,env(safe-area-inset-bottom))}
 }
 @media(prefers-reduced-motion:reduce){.pkg-card,.pill{transition:none!important;transform:none!important}}
+
+/* Preserve original 9:16 videos in premium 16:9 presentation, ready for optional future landscape assets */
+.hero-frame[data-video-orientation="portrait"],.carousel-phone[data-video-orientation="portrait"]{position:relative;background-color:#0f1722}
+.hero-frame[data-video-orientation="portrait"]::before,.carousel-phone[data-video-orientation="portrait"]::before{content:"";position:absolute;inset:-25px;background-image:var(--video-poster);background-position:center;background-size:cover;filter:blur(23px) brightness(.46) saturate(.83);transform:scale(1.1);z-index:0;pointer-events:none}
+.hero-frame[data-video-orientation="portrait"] video,.carousel-phone[data-video-orientation="portrait"] video{object-fit:contain!important;position:absolute;inset:0;width:100%!important;height:100%!important;z-index:1}
+.hero-frame .brand-overlay-top,.hero-frame .hero-caption{position:absolute;z-index:3}
+.carousel-phone[data-video-orientation="portrait"] video{filter:drop-shadow(0 0 16px #0008)}
 </style></head>
 <body>
 <header class="top"><div class="shell nav">
@@ -640,7 +647,7 @@ footer.shell{flex-direction:column;padding-bottom:105px}.mobile-sticky-bar{displ
 
   <hr class="rule">
   <div class="stats" aria-label="Offre">
-    <div><strong data-i18n="stat1Val">styles</strong><span data-i18n="stat1Sub">prêts pour tous les secteurs</span></div>
+    <div><strong data-i18n="stat1Val">Styles vidéo</strong><span data-i18n="stat1Sub">prêts pour tous les secteurs</span></div>
     <div><strong data-i18n="stat2Val">10–30 sec</strong><span data-i18n="stat2Sub">impact maximal sur mobile &amp; web</span></div>
     <div><strong data-i18n="stat3Val">Dès 5 €</strong><span data-i18n="stat3Sub">tarifs clairs : 5 €, 15 € ou 55 €</span></div>
     <div><strong data-i18n="stat4Val">8+ langues</strong><span data-i18n="stat4Sub">FR · EN · DE · AR · ES · IT · NL · PT</span></div>
@@ -652,7 +659,7 @@ footer.shell{flex-direction:column;padding-bottom:105px}.mobile-sticky-bar{displ
   <section id="realisations"><div class="premium-index"><span>01 / VIDEO SHOWCASE</span><span>DEEPSYQ CREATIVE STUDIO</span></div>
     <div class="section-head">
       <div>
-        <span class="kicker" data-i18n="galleryKicker">La collection créative DEEPSYQ · Styles</span>
+        <span class="kicker" data-i18n="galleryKicker">La collection créative DEEPSYQ</span>
         <h2 data-i18n-html="galleryTitle">Vous choisissez l'idée —<br>DEEPSYQ crée la publicité.</h2>
       </div>
       <p data-i18n="galleryDesc">Explorez les réalisations par secteur en mode carrousel interactif ou catalogue complet.</p>
@@ -720,10 +727,10 @@ footer.shell{flex-direction:column;padding-bottom:105px}.mobile-sticky-bar{displ
   <section id="tarifs"><div class="premium-index"><span>02 / VIDEO PACKAGES</span><span>CHOISIR · PERSONNALISER · COMMANDER</span></div>
     <div class="section-head">
       <div>
-        <span class="kicker" data-i18n="pricingKicker">Tarifs transparents · Paiement unique · Zéro fausse remise</span>
+        <span class="kicker" data-i18n="pricingKicker">Tarifs clairs · Paiement unique</span>
         <h2 data-i18n="pricingTitle">Quatre formules claires selon votre objectif</h2>
       </div>
-      <p data-i18n="pricingDesc">Prix nets affichés sans faux prix barrés (conformité UE Omnibus). Les tarifs Stripe en vigueur (5 € / 15 € / 55 €) restent verrouillés jusqu'à validation finale.</p>
+      <p data-i18n="pricingDesc">Choisissez votre niveau de création. Le total et les conditions exactes sont confirmés avant paiement.</p>
     </div>
 
     <div class="pricing-grid">
@@ -738,7 +745,7 @@ footer.shell{flex-direction:column;padding-bottom:105px}.mobile-sticky-bar{displ
           <span class="pkg-chip">9:16 ou 16:9</span>
         </div>
         <ul class="pkg-features">
-          <li data-i18n="basicF1">Vidéo 10s sur modèle parmi styles</li>
+          <li data-i18n="basicF1">Vidéo sur modèle de la collection DEEPSYQ</li>
           <li data-i18n="basicF2">Nom de votre entreprise intégré</li>
           <li data-i18n="basicF3">Signature texte claire en carte finale</li>
           <li data-i18n="basicF4">1 ligne d'adresse ou contact</li>
@@ -1052,7 +1059,7 @@ footer.shell{flex-direction:column;padding-bottom:105px}.mobile-sticky-bar{displ
         </select>
       </label>
 
-      <label class="full"><span data-i18n="lblStyle">Style choisi dans la galerie (1 à 19)</span>
+      <label class="full"><span data-i18n="lblStyle">Style vidéo choisi</span>
         <select id="style"><option value="À définir ensemble">À définir ensemble</option></select>
       </label>
 
@@ -1935,4 +1942,32 @@ if(observeCount){const obs=new MutationObserver(()=>{const clean=observeCount.te
 localize();
 })();
 </script>
-</body></html>
+
+<script id="deepsyq-premium-final-pass">
+(function(){
+ const statLabels={fr:"Styles vidéo",en:"Video styles",de:"Videostile",ar:"أنماط الفيديو",es:"Estilos de vídeo",it:"Stili video",nl:"Videostijlen",pt:"Estilos de vídeo",ru:"Стили видео"};
+ const selectedStyleLabels={fr:"Style vidéo choisi",en:"Selected video style",de:"Gewählter Videostil",ar:"نمط الفيديو المختار",es:"Estilo de vídeo elegido",it:"Stile video selezionato",nl:"Gekozen videostijl",pt:"Estilo de vídeo escolhido",ru:"Выбранный стиль видео"};
+ function alignLabels(){
+  const lang=document.getElementById("langSwitcher")?.value||"fr";
+  const stat=document.querySelector('[data-i18n="stat1Val"]');
+  if(stat)stat.textContent=statLabels[lang]||statLabels.en;
+  const label=document.querySelector('[data-i18n="lblStyle"]');
+  if(label)label.textContent=selectedStyleLabels[lang]||selectedStyleLabels.en;
+ }
+ document.getElementById("langSwitcher")?.addEventListener("change",()=>queueMicrotask(alignLabels));
+ function mountOrientation(video){
+  const parent=video.closest(".hero-frame,.carousel-phone");if(!parent)return;
+  function synchronize(){
+   const poster=video.getAttribute("poster")||"";
+   if(poster.startsWith("https://"))parent.style.setProperty("--video-poster",'url("'+poster.replace(/["\\]/g,"")+'")');
+   if(video.videoWidth&&video.videoHeight)parent.dataset.videoOrientation=video.videoHeight>video.videoWidth?"portrait":"landscape";
+   else if(!parent.dataset.videoOrientation)parent.dataset.videoOrientation="portrait";
+  }
+  video.addEventListener("loadedmetadata",synchronize);
+  new MutationObserver(synchronize).observe(video,{attributes:true,attributeFilter:["poster"]});
+  synchronize();
+ }
+ document.querySelectorAll("#heroPreviewVideo,#spotlightVideo").forEach(mountOrientation);
+ alignLabels();
+})();
+</script></body></html>
