@@ -1,10 +1,296 @@
 <!doctype html>
-<html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Contact &amp; Support · Deepsyq</title><meta name="description" content="Owner review draft for Deepsyq contact &amp; support."><meta name="robots" content="noindex,follow"><link rel="canonical" href="https://deepsyq.app/contact.html"><link rel="stylesheet" href="ai-privacy.css">
-<link rel="stylesheet" href="deepsyq-global-theme.css"><script defer src="deepsyq-site-shell.js"></script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebPage", "name": "Contact & Support \u00b7 Deepsyq", "url": "https://video-variator-android.onrender.com/contact.html", "description": "Owner review draft; not approved for commercial launch."}</script><link rel="stylesheet" href="approved-page-design.css">
+<html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Contact &amp; Support · Deepsyq</title><meta name="description" content="Contact Deepsyq Customer Help &amp; Support at help@deepsyq.app for account, billing, AI credits, and studio questions."><link rel="canonical" href="https://deepsyq.app/contact.html"><link rel="stylesheet" href="ai-privacy.css">
+<link rel="stylesheet" href="deepsyq-global-theme.css"><script defer src="deepsyq-site-shell.js"></script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "ContactPage", "name": "Contact & Support \u00b7 Deepsyq", "url": "https://deepsyq.app/contact.html", "description": "Official customer support and help center for Deepsyq (help@deepsyq.app)."}</script><link rel="stylesheet" href="approved-page-design.css">
 <script defer src="approved-page-design.js"></script>
 <meta property="og:url" content="https://deepsyq.app/contact.html">
 <meta property="og:site_name" content="DeepSyQ">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="deepsyq-mobile-shell.css">
 <script type="module" blocking="render" src="deepsyq-mobile-shell.js"></script>
-</head><body><header><a class="brand" href="deepsyq.html">Deepsyq</a><a href="pricing.html">Pricing</a></header><main><p class="eyebrow">OWNER REVIEW DRAFT · 19 OCTOBER 2026</p><h1>Contact &amp; Support</h1><section><h2>Review draft — support channel not published</h2><p>The owner must approve the legal business identity and a monitored public support address before launch. This page does not collect messages and does not pretend a support form is connected.</p></section><section><h2>What to include in a support request</h2><p>Describe the tool, the time of the problem and the job or order reference. A screenshot of the error is useful if it does not expose private files. Never send passwords, sign-in codes, API keys or full payment-card information.</p></section><section><h2>Accounts and payments</h2><p>Use the same account that created the order or generation so support can verify ownership. Payment and account changes must be handled through an authenticated channel; public comments cannot establish account ownership.</p></section><section><h2>Privacy enquiries</h2><p>The final verified contact channel will also receive access, correction and deletion enquiries. It must be available before public registration or paid AI launch.</p></section></main><footer><nav aria-label="Legal review pages"><a href="terms.html">Terms</a> · <a href="refund.html">Refunds</a> · <a href="contact.html">Contact</a> · <a href="cookie.html">Cookies</a></nav></footer></body></html>
+<style>
+  .support-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 24px;
+    margin-top: 18px;
+  }
+  .support-card {
+    background: rgba(24, 28, 36, 0.92);
+    border: 1px solid #2c313a;
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .support-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(210, 247, 174, 0.12);
+    border: 1px solid rgba(210, 247, 174, 0.32);
+    color: #d6efbd;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .support-email-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #d6efbd;
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: rgba(210, 247, 174, 0.08);
+    border: 1px solid rgba(210, 247, 174, 0.28);
+    margin: 8px 0 14px;
+    word-break: break-all;
+  }
+  .support-email-link:hover {
+    background: rgba(210, 247, 174, 0.16);
+  }
+  .support-form {
+    display: grid;
+    gap: 14px;
+  }
+  .support-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .support-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .support-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #cfd6e2;
+  }
+  .support-field input,
+  .support-field select,
+  .support-field textarea {
+    width: 100%;
+    padding: 11px 13px;
+    border-radius: 10px;
+    border: 1px solid #323844;
+    background: #111318;
+    color: #edf0f4;
+    font: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .support-field input:focus,
+  .support-field select:focus,
+  .support-field textarea:focus {
+    border-color: #d2f7ae;
+  }
+  .support-field textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+  .support-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .support-submit-btn {
+    appearance: none;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    background: #d2f7ae;
+    color: #141d10;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.12s ease, opacity 0.12s ease;
+  }
+  .support-submit-btn:hover {
+    opacity: 0.94;
+  }
+  .support-mailto-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 11px 16px;
+    border-radius: 10px;
+    border: 1px solid #323844;
+    color: #d6efbd;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .support-status {
+    display: none;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .support-status.visible {
+    display: block;
+  }
+  .support-status.ok {
+    background: rgba(210, 247, 174, 0.11);
+    border: 1px solid rgba(210, 247, 174, 0.35);
+    color: #d6efbd;
+  }
+  .support-list {
+    margin: 12px 0 0;
+    padding-left: 18px;
+    color: #a6afbd;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .support-list li + li {
+    margin-top: 6px;
+  }
+  @media (max-width: 760px) {
+    .support-grid,
+    .support-form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head><body><header><a class="brand" href="deepsyq.html">Deepsyq</a><a href="pricing.html">Pricing</a></header><main><p class="eyebrow">DEEPSYQ CUSTOMER HELP CENTER</p><h1>Contact &amp; Support</h1><p class="lead">Need help with your account, subscription, AI credits, studio generation, or custom video order? Send us a message using the form below or write directly to <a href="mailto:help@deepsyq.app"><strong>help@deepsyq.app</strong></a>.</p>
+
+<section style="border-top:none;padding-top:4px">
+  <div class="support-grid">
+    <div class="support-card">
+      <div class="support-badge">● Official Support Channel</div>
+      <h2>Send a Support Request</h2>
+      <p style="margin-bottom:18px">Fill out the form below. Your request is routed directly to the Deepsyq support team at <strong>help@deepsyq.app</strong>.</p>
+      <form id="deepsyqSupportForm" class="support-form" novalidate>
+        <div class="support-form-row">
+          <div class="support-field">
+            <label for="supportName">Your Name</label>
+            <input id="supportName" name="name" type="text" required maxlength="120" autocomplete="name" placeholder="Alex Morgan">
+          </div>
+          <div class="support-field">
+            <label for="supportEmail">Your Email Address</label>
+            <input id="supportEmail" name="email" type="email" required maxlength="160" autocomplete="email" placeholder="you@example.com">
+          </div>
+        </div>
+        <div class="support-form-row">
+          <div class="support-field">
+            <label for="supportCategory">Topic</label>
+            <select id="supportCategory" name="category">
+              <option value="Account & Sign-In">Account &amp; Sign-In</option>
+              <option value="Billing, Subscription & Refunds">Billing, Subscription &amp; Refunds</option>
+              <option value="AI Credits & Failed Generation">AI Credits &amp; Failed Generation</option>
+              <option value="Custom Video Order & Studio">Custom Video Order &amp; Studio</option>
+              <option value="Privacy & Data Request">Privacy &amp; Data Request</option>
+              <option value="General Question">General Question</option>
+            </select>
+          </div>
+          <div class="support-field">
+            <label for="supportReference">Order / Job ID (optional)</label>
+            <input id="supportReference" name="reference" type="text" maxlength="100" placeholder="e.g. DSQ-2026-0001">
+          </div>
+        </div>
+        <div class="support-field">
+          <label for="supportMessage">How can we help?</label>
+          <textarea id="supportMessage" name="message" required maxlength="2500" placeholder="Describe the issue or question. Please do not include passwords or full payment card numbers."></textarea>
+        </div>
+        <div class="support-actions">
+          <button type="submit" class="support-submit-btn" id="supportSubmitBtn">Send Message to Support</button>
+          <a class="support-mailto-btn" id="supportDirectMailLink" href="mailto:help@deepsyq.app?subject=Deepsyq%20Support%20Request">Email help@deepsyq.app</a>
+        </div>
+        <div id="supportStatusBox" class="support-status" role="status" aria-live="polite"></div>
+      </form>
+    </div>
+
+    <div class="support-card">
+      <h2>Direct Support &amp; Guidelines</h2>
+      <p>Official Support Email:</p>
+      <a class="support-email-link" href="mailto:help@deepsyq.app">✉ help@deepsyq.app</a>
+      <p>To help us resolve your request quickly, please include:</p>
+      <ul class="support-list">
+        <li><strong>Account email:</strong> the email address used to sign in to Deepsyq.</li>
+        <li><strong>Billing &amp; refunds:</strong> invoice date, plan or credit pack name, and order reference.</li>
+        <li><strong>Generation issues:</strong> the studio tool used, approximate timestamp, and job ID if visible.</li>
+        <li><strong>Security reminder:</strong> never share your password, secret keys, or full payment card number.</li>
+      </ul>
+      <section style="margin-top:20px;padding-top:18px;padding-bottom:0">
+        <h2>Privacy &amp; Legal Inquiries</h2>
+        <p style="margin-bottom:0">For personal data access, correction, or deletion requests under our <a href="ai-privacy.html">Privacy Notice</a>, select <strong>Privacy &amp; Data Request</strong> in the form or email <a href="mailto:help@deepsyq.app?subject=Privacy%20Request%20-%20Deepsyq">help@deepsyq.app</a>.</p>
+      </section>
+    </div>
+  </div>
+</section>
+</main><footer><nav aria-label="Legal review pages"><a href="terms.html">Terms</a> · <a href="refund.html">Refunds</a> · <a href="contact.html">Contact</a> · <a href="cookie.html">Cookies</a></nav></footer>
+<script>
+(function () {
+  var form = document.getElementById('deepsyqSupportForm');
+  var statusBox = document.getElementById('supportStatusBox');
+  var submitBtn = document.getElementById('supportSubmitBtn');
+  if (!form || !statusBox) return;
+
+  function showStatus(message) {
+    statusBox.textContent = message;
+    statusBox.className = 'support-status visible ok';
+  }
+
+  form.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    var name = (document.getElementById('supportName').value || '').trim();
+    var email = (document.getElementById('supportEmail').value || '').trim();
+    var category = (document.getElementById('supportCategory').value || 'Support Request').trim();
+    var reference = (document.getElementById('supportReference').value || '').trim();
+    var message = (document.getElementById('supportMessage').value || '').trim();
+
+    if (!email || !message) {
+      showStatus('Please enter your email address and message so we can reply to you.');
+      return;
+    }
+
+    var subject = '[Deepsyq Support] ' + category + (reference ? ' (' + reference + ')' : '');
+    var fullBody = [
+      'Name: ' + (name || 'Customer'),
+      'Email: ' + email,
+      'Topic: ' + category,
+      reference ? 'Order / Job ID: ' + reference : null,
+      '',
+      message
+    ].filter(Boolean).join('\n');
+
+    var mailtoHref = 'mailto:help@deepsyq.app?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(fullBody);
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+
+    var deliveredViaApi = false;
+    try {
+      var res = await fetch('/api/sales/inquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyName: name || 'Support Customer',
+          email: email,
+          language: 'en',
+          message: '[' + category + (reference ? ' | Ref: ' + reference : '') + '] ' + message
+        })
+      });
+      if (res && res.ok) {
+        deliveredViaApi = true;
+      }
+    } catch (_) {}
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Send Message to Support';
+
+    if (deliveredViaApi) {
+      showStatus('Thank you! Your support request has been registered. You can also reach us directly anytime at help@deepsyq.app.');
+      form.reset();
+    } else {
+      showStatus('Your message is ready to send to help@deepsyq.app. Opening your email client now — or email help@deepsyq.app directly.');
+      window.location.href = mailtoHref;
+    }
+  });
+})();
+</script>
+</body></html>

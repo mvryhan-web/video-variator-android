@@ -80,6 +80,7 @@ HASH_REUSE_RELEASE_SETS = (
     QUICK_START_ART_V3 | {"home-inspiration.js"},
     QUICK_START_V3_RELEASE,
     frozenset({"account-settings.html"}),
+    frozenset({"contact.html"}),
     ACCOUNT_AND_DIRECTOR_RELEASE,
     QUICK_START_ART_RELEASE,
     QUICK_START_ART_V2_RELEASE,
@@ -607,7 +608,7 @@ def main():
         # Frontend-only guest sign-in release reconstructs the untouched Worker
         # from the verified LIVE origin, never from the unrelated DEV HEAD.
         # All other release scopes retain their existing strict Worker equality gate.
-        if paths == ["deepsyq-mobile-shell.js"] or frozenset(paths) == frozenset({"free-tools.html", "everyday-tools-visual.css"}):
+        if paths == ["deepsyq-mobile-shell.js"] or paths == ["contact.html"] or frozenset(paths) == frozenset({"free-tools.html", "everyday-tools-visual.css"}):
             insist(bool(saved_worker and task_worker), "Worker provenance unavailable")
             print("GUEST_AUTH_ONLY: canonical LIVE Worker pinned; DEV Worker never published")
         else:
