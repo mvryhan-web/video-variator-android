@@ -70,26 +70,43 @@
   return true;
  };
  window.deepsyqSetAppearance=value=>apply(value,true);
- const saved=selected();
- // Christmas is the visual default ONLY for visitors without a saved choice.
- // Never persist the default: explicit Light/Dark/System/Brown/Black/Christmas
- // preferences continue to take precedence on subsequent visits.
- let previousClassic=null;
- try{previousClassic=localStorage.getItem('vu_theme')}catch{}
- if(variants.has(saved))apply(saved,false);
- else if(classic.has(previousClassic))apply(previousClassic,false);
- else if(!saved&&previousClassic===null)apply('christmas',false);
- else if(classic.has(legacyTheme()))apply(legacyTheme(),false);
+ // Seasonal default ends AFTER 10 January 2027, at midnight Paris time.
+ // No choice is persisted on behalf of a visitor; all six explicit selections win.
+ const seasonalCutoff=Date.parse('2027-01-11T00:00:00+01:00');
+ const seasonalDefault=()=>Date.now()<seasonalCutoff?'christmas':'dark';
+ const previousChoice=()=>{
+  let value=null;
+  try{value=localStorage.getItem('vu_theme')}catch{}
+  return value;
+ };
+ const reconcileAppearance=()=>{
+  const saved=selected(),previousClassic=previousChoice();
+  if(variants.has(saved))apply(saved,false);
+  else if(classic.has(previousClassic))apply(previousClassic,false);
+  else if(!saved&&previousClassic===null)apply(seasonalDefault(),false);
+  else if(classic.has(legacyTheme()))apply(legacyTheme(),false);
+ };
+ reconcileAppearance();
  ensureStyle('deepsyq-theme-styles.css');
  media.addEventListener('change',()=>{
   if(!variants.has(selected())&&legacyTheme()==='system')apply('system',false);
  });
  new MutationObserver(()=>{if(root.dataset.siteTheme==='christmas')ensureHoliday();})
   .observe(root,{attributes:true,attributeFilter:['data-site-theme']});
+ // An open tab also returns to the normal default after the holiday ends.
+ const checkSeasonBoundary=()=>{
+  if(!selected()&&previousChoice()===null){
+   const expected=seasonalDefault();
+   if(expected==='christmas'&&root.dataset.siteTheme!=='christmas')apply(expected,false);
+   if(expected==='dark'&&root.dataset.siteTheme==='christmas')apply(expected,false);
+  }
+ };
+ window.addEventListener('visibilitychange',()=>{
+  if(!document.hidden)checkSeasonBoundary();
+ });
+ setInterval(checkSeasonBoundary,60_000);
  window.addEventListener('storage',event=>{
   if(event.key!==key&&event.key!=='vu_theme')return;
-  const chosen=selected();
-  if(variants.has(chosen))apply(chosen,false);
-  else apply(legacyTheme(),false);
+  reconcileAppearance();
  });
 })();

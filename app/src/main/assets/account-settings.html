@@ -460,7 +460,10 @@ document.addEventListener('DOMContentLoaded',()=>{
    const previous=localStorage.getItem('vu_theme');
    if(classicThemes.has(previous))return previous;
    // Match the shared theme loader for first-time visitors only.
-   if(custom===null&&previous===null)return 'christmas';
+   // New visitors see seasonal Christmas only through 10 January 2027.
+   // After midnight in Paris on 11 January, default returns to original Dark.
+   if(custom===null&&previous===null)
+    return Date.now()<Date.parse('2027-01-11T00:00:00+01:00')?'christmas':'dark';
    return 'dark';
   }catch{return theme.value||'dark'}
  };

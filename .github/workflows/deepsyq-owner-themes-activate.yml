@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Verify only first-visitor Christmas default and original six choices
+      - name: Verify exact seasonal cutoff and six untouched theme options
         shell: bash
         run: |
           set -euo pipefail
@@ -44,10 +44,14 @@ jobs:
           assert(page.includes("theme.value=classicThemes.has(value)?value:'dark'"));
           const loader=fs.readFileSync('app/src/main/assets/deepsyq-theme-loader.js','utf8');
           assert(loader.includes("const classic=new Set(['light','dark','system'])"));
-          assert(loader.includes("else if(!saved&&previousClassic===null)apply('christmas',false);"));
+          const cutoff="2027-01-11T00:00:00+01:00";
+          assert(loader.includes("Date.parse('"+cutoff+"')"));
+          assert(page.includes("Date.parse('"+cutoff+"')"));
+          assert(loader.includes("else if(!saved&&previousClassic===null)apply(seasonalDefault(),false);"));
           assert(loader.includes("if(variants.has(saved))apply(saved,false);"));
           assert(loader.includes("else if(classic.has(previousClassic))apply(previousClassic,false);"));
-          assert(page.includes("if(custom===null&&previous===null)return 'christmas';"));
+          assert(loader.includes("setInterval(checkSeasonBoundary,60_000)"));
+          assert(page.includes("return Date.now()<Date.parse('"+cutoff+"')?'christmas':'dark'"));
           const snow=fs.readFileSync('app/src/main/assets/deepsyq-christmas-v4.css','utf8');
           assert(snow.includes('main.jarvix-chat .j-chat-bottom form#jChatForm.jarvix-compose'));
           for(const id of ['accountLanguage','accountAppearance','themeChoice','accountTabs','accountHeroSignIn','manageBillingBtn','cancelSubscriptionBtn']){
@@ -62,9 +66,94 @@ jobs:
           assert.deepEqual(changed,[
             '.github/workflows/deepsyq-owner-themes-activate.yml',
             'app/src/main/assets/account-settings.html',
-            'app/src/main/assets/deepsyq-theme-loader.js'
-          ],'Unexpected changes outside first-visitor theme default');
+            'app/src/main/assets/deepsyq-theme-loader.js',
+            'scripts/deepsyq_surgical_publish.py'
+          ],'Unexpected changes outside seasonal theme-only release');
           console.log('EXACT_OWNER_APPEARANCE_SCOPE_PASS',buttons);
+          NODE
+      - name: Simulate the seasonal deadline and preserved user selections (read-only)
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import vm from 'node:vm';
+          import assert from 'node:assert/strict';
+          const code=fs.readFileSync('app/src/main/assets/deepsyq-theme-loader.js','utf8');
+          const cutoff=Date.parse('2027-01-11T00:00:00+01:00');
+          function boot(when,initial={},light=false){
+            let now=when;
+            const values=new Map(Object.entries(initial)),writes=[];
+            const elements=new Map(),timers=[],events={};
+            const root={dataset:{theme:'dark'},removeAttribute(name){if(name==='data-site-theme')delete this.dataset.siteTheme}};
+            const date=class extends Date{static now(){return now}};
+            const storage={
+              getItem(key){return values.has(key)?values.get(key):null},
+              setItem(key,value){writes.push(['set',key,value]);values.set(key,value)},
+              removeItem(key){writes.push(['remove',key]);values.delete(key)}
+            };
+            const doc={
+              documentElement:root,hidden:false,
+              head:{append(el){elements.set(el.id,el)}},
+              getElementById(id){return elements.get(id)||null},
+              createElement(tag){return {tagName:tag,addEventListener(){}}},
+              addEventListener(name,handler){events['document:'+name]=handler}
+            };
+            const window={
+              addEventListener(name,handler){events[name]=handler},
+              dispatchEvent(){},
+            };
+            const sandbox={
+              Date:date,localStorage:storage,document:doc,window,
+              MutationObserver:class{observe(){}},
+              CustomEvent:class{constructor(name,init){this.name=name;this.detail=init?.detail}},
+              matchMedia:()=>({matches:light,addEventListener(){}}),
+              setInterval(fn,ms){assert.equal(ms,60000);timers.push(fn)},
+              console:{warn(){}}
+            };
+            vm.runInNewContext(code,sandbox,{timeout:1500});
+            return {root,values,writes,window,tick(time){now=time;for(const fn of timers)fn()}};
+          }
+          const before=boot(cutoff-1);
+          assert.equal(before.root.dataset.siteTheme,'christmas');
+          assert.equal(before.writes.length,0,'Auto-default MUST NOT overwrite user preferences');
+          before.tick(cutoff);
+          assert.equal(before.root.dataset.siteTheme,undefined);
+          assert.equal(before.root.dataset.theme,'dark');
+          assert.equal(before.writes.length,0);
+          for(const date of [cutoff,cutoff+86400000]){
+            const fresh=boot(date);
+            assert.equal(fresh.root.dataset.siteTheme,undefined,'Christmas must end after Jan 10');
+            assert.equal(fresh.root.dataset.theme,'dark','Restore previous dark default');
+            assert.equal(fresh.writes.length,0);
+          }
+          for(const theme of ['light','dark','system']){
+            for(const date of [cutoff-86400000,cutoff+86400000]){
+              const saved=boot(date,{vu_theme:theme},true);
+              assert.equal(saved.root.dataset.siteTheme,undefined);
+              assert.equal(saved.root.dataset.theme,theme==='system'?'light':theme);
+              assert.equal(saved.values.get('vu_theme'),theme);
+              assert.equal(saved.writes.length,0);
+            }
+          }
+          for(const theme of ['brown','soft-dark','christmas']){
+            for(const date of [cutoff-86400000,cutoff+86400000]){
+              const saved=boot(date,{deepsyq_site_theme:theme});
+              assert.equal(saved.root.dataset.siteTheme,theme);
+              assert.equal(saved.writes.length,0);
+            }
+          }
+          const chosen=boot(cutoff+86400000);
+          chosen.window.deepsyqSetAppearance('christmas');
+          assert.equal(chosen.values.get('deepsyq_site_theme'),'christmas');
+          chosen.tick(cutoff+86400000*3);
+          assert.equal(chosen.root.dataset.siteTheme,'christmas');
+          console.log('SEASONAL_DEFAULT_PASS',JSON.stringify({
+            winterEnds:'2027-01-11T00:00:00+01:00',
+            firstVisitBefore:'christmas',
+            firstVisitAfter:'dark',
+            savedVariants:6,
+            explicitlySelectedChristmasPersists:true
+          }));
           NODE
       - name: Verify all Christmas assets were already published BEFORE activating controls
         shell: bash
@@ -83,15 +172,15 @@ jobs:
           done
           curl --fail --silent --show-error --max-time 18 'https://deepsyq.app/api/config' >/dev/null
           echo 'PRODUCTION_THEME_ASSETS_READY'
-      - name: Publish exactly Account carousel, theme loader and Christmas input contrast
+      - name: Publish only the two seasonal-default files (Worker binding checks mandatory)
         shell: bash
         run: |
           set -euo pipefail
           python -m pip install --disable-pip-version-check --no-cache-dir requests==2.32.3 blake3==1.0.8
           python scripts/deepsyq_surgical_publish.py \
-            --mode publish --files 'account-settings.html,deepsyq-theme-loader.js,deepsyq-christmas-v4.css' \
+            --mode publish --files 'account-settings.html,deepsyq-theme-loader.js' \
             --commit "$GITHUB_SHA"
-      - name: Verify six live theme controls, normal system behavior and chat contrast
+      - name: Verify 2027 expiry, existing six theme controls and unchanged chat CSS
         shell: bash
         run: |
           set -euo pipefail
@@ -110,7 +199,8 @@ jobs:
             "https://deepsyq.app/deepsyq-theme-loader.js?owner-themes=$GITHUB_SHA" \
             --output /tmp/deepsyq-owner-theme-loader.js
           grep -Fq "const classic=new Set(['light','dark','system'])" /tmp/deepsyq-owner-theme-loader.js
-          grep -Fq "else if(!saved&&previousClassic===null)apply('christmas',false);" /tmp/deepsyq-owner-theme-loader.js
+          grep -Fq "const seasonalCutoff=Date.parse('2027-01-11T00:00:00+01:00');" /tmp/deepsyq-owner-theme-loader.js
+          grep -Fq "else if(!saved&&previousClassic===null)apply(seasonalDefault(),false);" /tmp/deepsyq-owner-theme-loader.js
           curl --fail --silent --show-error --retry 4 --max-time 20 \
             "https://deepsyq.app/deepsyq-christmas-v4.css?owner-themes=$GITHUB_SHA" \
             --output /tmp/deepsyq-owner-christmas-v4.css
