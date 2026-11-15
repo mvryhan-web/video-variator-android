@@ -14,7 +14,10 @@
     const mode=document.getElementById('mode');
     if(mode){Array.from(mode.options).forEach(o=>o.disabled=false);}
     const quality=document.getElementById('quality');
-    if(quality){Array.from(quality.options).forEach(o=>o.disabled=false);quality.value='2160';quality.disabled=true;}
+    if(quality){
+      for(const option of quality.options)if(option.disabled)option.disabled=false;
+      if(quality.disabled)quality.disabled=false;
+    }
     setText('usageLabel','Administrator access');
     setText('creditText','Unlimited');
     setText('remainingCount','∞');
@@ -22,7 +25,7 @@
     setText('currentPlan','Administrator');
     setText('planLabel','Administrator');
     setText('planStatus','Full premium access');
-    setText('planAccessHint','Administrator: all modes · 4K · unlimited processing');
+    setText('planAccessHint','Administrator: all modes · 720p / 1080p / 4K · unlimited processing');
     setText('profilePlan','Administrator');
     setText('profileStatus','Full premium access');
     const bar=document.getElementById('creditBar');if(bar)bar.style.width='100%';
@@ -38,7 +41,7 @@
       const r=await fetch(base+'/api/me',{headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},cache:'no-store'});
       if(!r.ok)return;
       const data=await r.json();
-      if(data?.user?.isAdmin)unlockAll();
+      if(data?.user?.isAdmin&&(localStorage.getItem('vv_token')||'')===token)unlockAll();
     }catch(_){ }
   }
 

@@ -28,6 +28,10 @@ on:
       - 'app/src/main/assets/canvas-workspace.js'
       - 'app/src/main/assets/jarvix-new-voice.js'
       - 'app/src/main/assets/jarvix-new-recorded-dialog.js'
+      - 'app/src/main/assets/admin-access.js'
+      - 'app/src/main/assets/trial-quality.js'
+      - 'app/src/main/assets/video-uniquifier.html'
+      - 'tests/video-uniquifier-quality-lock.test.mjs'
       - 'app/src/main/assets/auth-email.js'
       - 'app/src/main/assets/auth-email.css'
       - 'app/src/main/assets/deepsyq-mobile-shell.js'
@@ -173,7 +177,7 @@ jobs:
         run: |
           python -m py_compile scripts/deepsyq_surgical_publish.py
           PYTHONPATH=scripts python -m unittest discover -s tests -p 'test_deepsyq_surgical_publish.py' -v
-          node --test tests/jarvix-remove-background-viewer.test.mjs
+          node --test tests/jarvix-remove-background-viewer.test.mjs tests/video-uniquifier-quality-lock.test.mjs
 
   surgical:
     # Push publishes ONLY the exact owner-approved Tour or Chat asset with its guarded release commit.
@@ -185,6 +189,7 @@ jobs:
        (github.event_name == 'push' &&
         (github.event.head_commit.message == 'release(JARVIX Tour): publish tour-only fix' ||
          github.event.head_commit.message == 'release(Canvas): open Home photos and simplify controls' ||
+         github.event.head_commit.message == 'release(Video Uniquifier): preserve output quality selection' ||
          github.event.head_commit.message == 'release(JARVIX): activate scenario recordings on production' ||
          github.event.head_commit.message == 'release(JARVIX): connect voice to active media conversation' ||
          github.event.head_commit.message == 'release(JARVIX): connect voice generation tools and tour controls' ||
@@ -238,6 +243,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Video Uniquifier): preserve output quality selection' }}" == "true" ]]; then
+            SCOPE_FILES="admin-access.js,trial-quality.js,video-uniquifier.html"
+          fi
           if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(JARVIX): activate scenario recordings on production' }}" == "true" ]]; then
             SCOPE_FILES="jarvix-new-voice.js,jarvix-new-recorded-dialog.js"
           fi

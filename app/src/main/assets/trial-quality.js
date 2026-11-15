@@ -15,16 +15,17 @@
       if(!isTrial())return;
       const quality=$('quality');
       if(quality){
-        Array.from(quality.options).forEach(option=>{option.disabled=false;});
-        quality.disabled=false;
+        for(const option of quality.options)if(option.disabled)option.disabled=false;
+        if(quality.disabled)quality.disabled=false;
       }
       const mode=$('mode');
       if(mode){
-        Array.from(mode.options).forEach(option=>{option.disabled=false;});
-        mode.disabled=false;
+        for(const option of mode.options)if(option.disabled)option.disabled=false;
+        if(mode.disabled)mode.disabled=false;
       }
       const hint=$('planAccessHint');
-      if(hint)hint.textContent='Free trial: Gentle + Balance + Dynamic · 720p / 1080p / 4K';
+      const trialHint='Free trial: Gentle + Balance + Dynamic · 720p / 1080p / 4K';
+      if(hint&&hint.textContent!==trialHint)hint.textContent=trialHint;
     }finally{
       syncing=false;
     }
