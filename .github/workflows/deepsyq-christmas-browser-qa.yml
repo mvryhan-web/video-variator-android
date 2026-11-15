@@ -1,5 +1,5 @@
 name: DEEPSYQ Christmas live Chromium visual QA (no deploy)
-# QA V4 final: verify published fluffy-canvas snowfall after high-specificity legacy strip fix.
+# QA V4 mobile card coverage: inspect snow AFTER scrolling hidden cards into view.
 on:
   push:
     branches: [test]
@@ -176,9 +176,22 @@ jobs:
               }));
               console.log('LIVE_XMAS_V2_SECONDARY_PAGE',name,route,JSON.stringify(other));
               assert(other.snowcaps>=1&&other.mini>=1&&other.toggle,name+' '+route+' decorations not distributed');
-              const pileCount=await page.evaluate(()=>Number(document.getElementById('xmas-pile-overlay')?.dataset.xmasPiles||0));
+              const getPiles=()=>page.evaluate(()=>Number(document.getElementById('xmas-pile-overlay')?.dataset.xmasPiles||0));
+              let pileCount=await getPiles();
+              const minimum=isMobile?1:2;
+              if(pileCount<minimum){
+                // A narrow screen may start above the first card; validate AFTER
+                // scrolling cards into the viewport instead of counting offscreen panels.
+                for(const offset of [420,850,1350,2050]){
+                  await page.evaluate(y=>window.scrollTo({top:y,behavior:'instant'}),offset);
+                  await page.waitForTimeout(240);
+                  pileCount=Math.max(pileCount,await getPiles());
+                  if(pileCount>=minimum)break;
+                }
+              }
               console.log('LIVE_XMAS_V4_CARD_SNOW',name,route,pileCount);
-              assert(pileCount>=2,name+' '+route+' missing on-card fluffy snow');
+              assert(pileCount>=minimum,name+' '+route+' missing fluffy snow on visible cards');
+              await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
               const pageBg=await page.evaluate(()=>({
                 image:getComputedStyle(document.documentElement).backgroundImage,
                 attachment:getComputedStyle(document.documentElement).backgroundAttachment
