@@ -68,7 +68,7 @@
   document.querySelectorAll('.xmas-mini-stage').forEach(setupScene);
   // Other pages: mini-scenes atop existing panels, never inside active editors.
   const isHome=!!document.querySelector('#homeQuickBar');
-  let extra=0;
+  let extra=document.querySelectorAll('.xmas-mini-secondary').length;
   const panels=document.querySelectorAll('.jarvix-compose,.j-neon-composer,.tool-card,.app-card,.panel,.card,.studio-card,.home-create-card,.feature-card,.tool-tile,.price-card');
   for(const panel of panels){
    if(extra>=2)break;
