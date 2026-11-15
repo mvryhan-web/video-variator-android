@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `c9bec99793cb41cedcbf962db683e358d50ac89c`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 126 | Named symbols: 460 | Checked relations: 80
+Source commit: `6cbe4cd83535f3d037f27aa90974b684f0087998`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 127 | Named symbols: 474 | Checked relations: 88
 
 ## Topic finder (matching filenames)
 
@@ -20,7 +20,7 @@ Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code 
 
 ## Frontend page inventory (filenames only, not Graphify AST)
 
-`app/src/main/assets/404.html` · `app/src/main/assets/account-settings.html` · `app/src/main/assets/ai-agents.html` · `app/src/main/assets/ai-apps.html` · `app/src/main/assets/ai-pricing.html` · `app/src/main/assets/ai-privacy.html` · `app/src/main/assets/audio-studio.html` · `app/src/main/assets/avatar-studio.html` · `app/src/main/assets/canvas.html` · `app/src/main/assets/compare-ai.html` · `app/src/main/assets/contact.html` · `app/src/main/assets/cookie.html` · `app/src/main/assets/deepsyq-admin.html` · `app/src/main/assets/deepsyq-vs-deepseek.html` · `app/src/main/assets/deepsyq.html` · `app/src/main/assets/design-gallery.html` · `app/src/main/assets/free-tools.html` · `app/src/main/assets/generate-studio.html` · `app/src/main/assets/index.html` · `app/src/main/assets/jarvix-chat.html` · `app/src/main/assets/jarvix-studio.html` · `app/src/main/assets/jarvix.html` · `app/src/main/assets/mobile-utility.html` · `app/src/main/assets/my-creations.html` · `app/src/main/assets/photo-collage.html` · `app/src/main/assets/pricing.html` · `app/src/main/assets/product-watcher-admin.html` · `app/src/main/assets/refund.html` · `app/src/main/assets/simple-background-remover.html` · `app/src/main/assets/smart-reminders.html` · `app/src/main/assets/telegram-free-mini.html` · `app/src/main/assets/teleprompter.html` · `app/src/main/assets/terms.html` · `app/src/main/assets/video-uniquifier.html` · `app/src/main/assets/virtual-pet.html` · `app/src/main/assets/voice-agent-preview.html`
+`app/src/main/assets/404.html` · `app/src/main/assets/account-settings.html` · `app/src/main/assets/ai-agents.html` · `app/src/main/assets/ai-apps.html` · `app/src/main/assets/ai-pricing.html` · `app/src/main/assets/ai-privacy.html` · `app/src/main/assets/audio-studio.html` · `app/src/main/assets/avatar-studio.html` · `app/src/main/assets/canvas.html` · `app/src/main/assets/compare-ai.html` · `app/src/main/assets/contact.html` · `app/src/main/assets/cookie.html` · `app/src/main/assets/deepsyq-admin.html` · `app/src/main/assets/deepsyq-vs-deepseek.html` · `app/src/main/assets/deepsyq.html` · `app/src/main/assets/design-gallery.html` · `app/src/main/assets/free-tools.html` · `app/src/main/assets/generate-studio.html` · `app/src/main/assets/index.html` · `app/src/main/assets/jarvix-chat.html` · `app/src/main/assets/jarvix-studio.html` · `app/src/main/assets/jarvix.html` · `app/src/main/assets/mobile-utility.html` · `app/src/main/assets/my-creations.html` · `app/src/main/assets/photo-collage.html` · `app/src/main/assets/pricing.html` · `app/src/main/assets/product-watcher-admin.html` · `app/src/main/assets/refund.html` · `app/src/main/assets/simple-background-remover.html` · `app/src/main/assets/smart-reminders.html` · `app/src/main/assets/telegram-free-mini.html` · `app/src/main/assets/teleprompter.html` · `app/src/main/assets/terms.html` · `app/src/main/assets/video-sur-mesure.html` · `app/src/main/assets/video-uniquifier.html` · `app/src/main/assets/virtual-pet.html` · `app/src/main/assets/voice-agent-preview.html`
 
 ## Frontend CSS inventory (filenames only)
 
@@ -34,7 +34,7 @@ Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code 
 
 ### `app/src/main/assets/_worker.js`
 
-_worker.js (L1) · INSPIRATION_ITEMS (L5) · CREATIVE_TEMPLATES (L6) · studioJobs (L10) · dailyUserUsage (L11) · jarvixSessions (L20) · edgeUsers (L21) · edgeWallets (L22) · edgeWalletLedger (L23) · edgeHistory (L24) · edgeOnboarding (L25) · edgeRevenueLedger (L26) · platformUnitEconomics (L27) · LIVE_SUBSCRIPTION_LINKS (L35) · LIVE_PLAN_BY_PAYMENT_LINK (L43) · LIVE_CREDIT_PACKS (L51) · WAN_VIDEO_SIZES (L257) · WAN_IMAGE_SIZES (L266)
+_worker.js (L1) · INSPIRATION_ITEMS (L23) · CREATIVE_TEMPLATES (L24) · studioJobs (L28) · dailyUserUsage (L29) · jarvixSessions (L38) · edgeUsers (L39) · edgeWallets (L40) · edgeWalletLedger (L41) · edgeHistory (L42) · edgeOnboarding (L43) · edgeRevenueLedger (L44) · platformUnitEconomics (L45) · LIVE_SUBSCRIPTION_LINKS (L53) · LIVE_PLAN_BY_PAYMENT_LINK (L61) · LIVE_CREDIT_PACKS (L69) · WAN_VIDEO_SIZES (L275) · WAN_IMAGE_SIZES (L284)
 
 ### `app/src/main/assets/ai-apps.js`
 
@@ -307,6 +307,10 @@ db.js (L1) · adminEmail (L6) · pool (L8)
 ### `server/deepsyq-preview.js`
 
 app (L20) · port (L21) · root (L22) · assets (L23) · ffmpegUmd (L24) · ffmpegCore (L25) · disabled (L28) · freeStudioModels (L89) · freeJarvix (L269) · jarvixRequests (L270) · ownerMedia (L312) · imageMedia (L313) · ownerInspiration (L318) · ownerNext (L322) · approvedItems (L324) · previewItems (L325) · creativeMedia (L335)
+
+### `server/deepsyq-sales-engine.js`
+
+SUPPORTED_LANGUAGES (L6) · SUPPORTED_CURRENCIES (L23) · VIDEO_PACKAGES (L31) · PRICE_HISTORY_LEDGER (L135) · CUSTOM_STUDIO_MATRIX (L175) · ADDITIONAL_SERVICES (L319) · OPEN_SOURCE_ARCHITECTURE_AUDIT (L330) · TEN_COMMERCIAL_SHOWCASE_SLOTS (L343) · ANTON_OUTREACH_TEMPLATES (L766) · OFFICIAL_LEAD_SOURCES (L1374) · DISPOSABLE_OR_PERSONAL_DOMAINS (L1414) · FORBIDDEN_SYSTEM_PREFIXES (L1420) · CURATED_INTERNATIONAL_LEAD_POOL (L1505) · SCHEDULER_MODES (L1534)
 
 ### `server/edge-email-auth.js`
 
