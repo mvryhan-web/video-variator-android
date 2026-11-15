@@ -87,6 +87,7 @@ HASH_REUSE_RELEASE_SETS = (
     frozenset({"jarvix-chat.js", "jarvix-new-voice.js", "generate-studio.js", "jarvix-guided-tour.js", "auth-email.js", "app-v4.js", "jarvix-action-plan.js"}),
     ACCOUNT_DESIGN_RELEASE,
     frozenset({"jarvix-composer-design.js", "jarvix-new-voice.js"}),
+    frozenset({"jarvis-core.js", "jarvix-composer-design.js", "jarvix-new-voice.js"}),
     QUICK_START_ART_V3 | {"home-inspiration.js"},
     QUICK_START_V3_RELEASE,
     frozenset({"account-settings.html"}),

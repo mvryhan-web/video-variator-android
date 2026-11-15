@@ -194,6 +194,7 @@ jobs:
          github.event.head_commit.message == 'release(JARVIX): activate scenario recordings on production' ||
          github.event.head_commit.message == 'release(JARVIX): connect voice to active media conversation' ||
          github.event.head_commit.message == 'release(JARVIX): connect voice generation tools and tour controls' ||
+         github.event.head_commit.message == 'release(JARVIX): retire legacy voice activation' ||
          github.event.head_commit.message == 'release(Studio): connect composer sphere to JARVIX NEW' ||
          github.event.head_commit.message == 'release(Studio): restore YouTube cover and fit Director sphere' ||
          github.event.head_commit.message == 'release(Studio): use 16 by 9 covers and new composer voice' ||
@@ -269,6 +270,9 @@ jobs:
           fi
           if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Account): publish Account and Settings design' }}" == "true" ]]; then
             SCOPE_FILES="account-settings.html,media/account-settings/account-hero.webp,media/account-settings/account-membership.webp,media/account-settings/account-android.webp,media/account-settings/account-pricing.webp"
+          fi
+          if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(JARVIX): retire legacy voice activation' }}" == "true" ]]; then
+            SCOPE_FILES="jarvis-core.js,jarvix-composer-design.js,jarvix-new-voice.js"
           fi
           if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Studio): connect composer sphere to JARVIX NEW' }}" == "true" ]]; then
             SCOPE_FILES="jarvix-composer-design.js,jarvix-new-voice.js"

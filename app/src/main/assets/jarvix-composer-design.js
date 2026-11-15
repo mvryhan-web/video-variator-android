@@ -58,22 +58,15 @@ export function decorateComposer(form,{settingsTarget=null}={}){
   const orbBtn=document.createElement('button');
   orbBtn.type='button';
   orbBtn.className='j-composer-orb-btn';
-  const useNewVoice=['deepsyq.app','www.deepsyq.app'].includes(location.hostname);
-  orbBtn.setAttribute('aria-label',useNewVoice?(ru?'Голосовой JARVIX NEW':'JARVIX NEW voice'):'Activate JARVIS Live Voice');
-  orbBtn.title=useNewVoice?'JARVIX NEW':'JARVIS Live Voice';
-  if(useNewVoice)orbBtn.setAttribute('aria-pressed','false');
+  orbBtn.setAttribute('aria-label',ru?'Голосовой JARVIX NEW':'JARVIX NEW voice');
+  orbBtn.title='JARVIX NEW';
+  orbBtn.setAttribute('aria-pressed','false');
   orbBtn.innerHTML='<div class="jarvis-mini-orb"><span class="jarvis-core"></span><span class="jarvis-ring"></span><span class="jarvis-ring ring-violet"></span></div>';
-  const newVoice=useNewVoice?import('./jarvix-new-voice.js'):null;
-  void newVoice?.catch(()=>{});
+  const newVoice=import('./jarvix-new-voice.js');
+  void newVoice.catch(()=>{});
   orbBtn.onclick=e=>{
    e.preventDefault();
-   if(useNewVoice){
-    // Import the same module instance used by the header sphere.
-    void newVoice.then(({toggleJarvixNewVoice})=>toggleJarvixNewVoice(orbBtn)).catch(()=>{});
-    return;
-   }
-   if(typeof window.toggleJarvisVoice==='function')window.toggleJarvisVoice();
-   else import('./jarvis-core.js').then(m=>m.toggleJarvisVoice());
+   void newVoice.then(({toggleJarvixNewVoice})=>toggleJarvixNewVoice()).catch(()=>{});
   };
   const sendBtn=form.querySelector('.j-send,#homeQuickSubmit,#generate');
   if(sendBtn)sendBtn.after(orbBtn);

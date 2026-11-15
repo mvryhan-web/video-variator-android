@@ -5,7 +5,7 @@ import {navigationReply} from './jarvix-navigation-reply.js';
 import {findCatalogReply} from './jarvix-clip-library.js';
 // JARVIX AI Core v6.0 — Autonomous Voice Butler & Resident Intelligence
 // Guaranteed Male Film Voice, Instant Navigation ("Сделано."), Multi-Turn Weather Brain & Smart ChatGPT Prompt Generation
-import {speakOwnerSpeech, stopOwnerSpeech, unlockOwnerSpeech, prepareOwnerGreetings, OWNER_GREETING_TEXT, TOUR_GREETING_TEXT} from './jarvix-owner-speech.js';
+import {speakOwnerSpeech, stopOwnerSpeech, prepareOwnerGreetings, OWNER_GREETING_TEXT, TOUR_GREETING_TEXT} from './jarvix-owner-speech.js';
 import {hasVerifiedJarvixSubscription} from './jarvix-access.js';
 import { detectIntent } from './home-experience.js';
 import { saveStudioHandoff } from './studio-handoff.js';
@@ -325,11 +325,6 @@ export function instantOpen(url, acknowledgement = null) {
     return;
   }
 
-  // Cross-page navigation: speak cleanly ONCE upon target page mount, never doubled
-  try {
-    sessionStorage.setItem('jarvix_say_on_load', navigationText);
-    sessionStorage.setItem('jarvix_active', '1');
-  } catch (_) {}
   location.assign(url);
 }
 
@@ -1295,29 +1290,7 @@ function announceJarvisVoiceState() {
     window.dispatchEvent(new CustomEvent('jarvix:voice-state', {detail:{active:isJarvisActive}}));
 }
 export function activateJarvisVoice() {
-  unlockOwnerSpeech();
-  isJarvisActive = true;
-  keepListening = true;
-  try {
-    sessionStorage.setItem('jarvix_active', '1');
-  } catch (_) {}
-
-  const topBtn = getTopBtn();
-  if (topBtn) topBtn.classList.add('is-active');
-  announceJarvisVoiceState();
-  // Start listening independently of greeting download/playback. A missing MP3
-  // must never leave an animated but deaf orb.
-  resumeJarvisRecognition();
-  resetSilenceTimer();
-
-  // Verified owner-recorded greeting upon click (never the tour introduction)
-  const lang = getJarvixLanguage();
-  const listening = OWNER_GREETING_TEXT[lang] || OWNER_GREETING_TEXT.ru;
-  speakJarvis(listening, () => {
-    if(isJarvisActive && keepListening && !isTourActive()){
-      resumeJarvisRecognition();resetSilenceTimer();updateJarvisState('listening');
-    }
-  });
+  toggleJarvixNewVoice();
 }
 
 export function deactivateJarvisVoice() {
@@ -1352,20 +1325,7 @@ export function deactivateJarvisVoice() {
 }
 
 export function toggleJarvisVoice() {
-  if (['deepsyq.app','www.deepsyq.app'].includes(location.hostname)) {
-    toggleJarvixNewVoice();
-    return;
-  }
-  if (isTourActive()) {
-    stopJarvixGuidedTour();
-    activateJarvisVoice();
-    return;
-  }
-  if (isJarvisActive || isJarvisSpeaking || isJarvisListening) {
-    deactivateJarvisVoice();
-  } else {
-    activateJarvisVoice();
-  }
+  toggleJarvixNewVoice();
 }
 
 // Global Escape listener to immediately cancel speech synthesis
@@ -1420,67 +1380,14 @@ export function initJarvis() {
   setTimeout(setupBtn, 200);
   setTimeout(setupBtn, 600);
 
-  if (['deepsyq.app','www.deepsyq.app'].includes(location.hostname)) {
-    window.__jarvixBeforeNewVoice = () => {
-      stopJarvixGuidedTour();
-      if (isJarvisActive) deactivateJarvisVoice();
-    };
-    installJarvixNewVoice();
-    return;
-  }
-
-  // Cross-page persistence: restore JARVIX if active prior to navigation
-  let wasActive = false;
+  // Expire state from versions that resumed the old assistant on navigation.
   try {
-    wasActive = sessionStorage.getItem('jarvix_active') === '1';
+    sessionStorage.removeItem('jarvix_active');
+    sessionStorage.removeItem('jarvix_say_on_load');
+    sessionStorage.removeItem(JARVIX_LAST_ACTIVITY_KEY);
   } catch (_) {}
-
-  let sayOnLoad = null;
-  try {
-    sayOnLoad = sessionStorage.getItem('jarvix_say_on_load');
-    if (sayOnLoad) sessionStorage.removeItem('jarvix_say_on_load');
-  } catch (_) {}
-
-  // A live voice session survives page navigation but not 30 seconds of inactivity.
-  let expiredOnNavigation = false;
-  try { const last = Number(sessionStorage.getItem(JARVIX_LAST_ACTIVITY_KEY)) || Date.now();
-    expiredOnNavigation = Date.now() - last >= SILENCE_TIMEOUT_MS; } catch (_) {}
-  if (expiredOnNavigation) {
-    wasActive = false; sayOnLoad = null;
-    try { sessionStorage.removeItem('jarvix_active'); } catch (_) {}
-  }
-  if (wasActive || sayOnLoad) {
-    isJarvisActive = true;
-    keepListening = true;
-    try {
-      sessionStorage.setItem('jarvix_active', '1');
-    } catch (_) {}
-
-    updateJarvisState('listening');
-    const topBtn = getTopBtn();
-    if (topBtn) topBtn.classList.add('is-active');
-    announceJarvisVoiceState();
-
-    if (sayOnLoad) {
-      setTimeout(() => {
-        speakJarvis(sayOnLoad, () => {
-          if (isJarvisActive && keepListening) {
-            resumeJarvisRecognition();
-            startSilenceTimer();
-            updateJarvisState('listening');
-          }
-        });
-      }, 350);
-    } else {
-      setTimeout(() => {
-        if (isJarvisActive && keepListening && !isTourActive()) {
-          resumeJarvisRecognition();
-          startSilenceTimer();
-          updateJarvisState('listening');
-        }
-      }, 350);
-    }
-  }
+  window.__jarvixBeforeNewVoice = () => stopJarvixGuidedTour();
+  installJarvixNewVoice();
 }
 
 // Auto-boot on load
@@ -1492,8 +1399,6 @@ if (typeof document !== 'undefined') {
   }
 }
 
-
-window.addEventListener('jarvix:command',event=>{if(typeof event.detail?.text==='string')handleJarvisVoiceCommand(event.detail.text);});
 
 if (typeof window !== 'undefined') { window.toggleJarvisVoice = toggleJarvisVoice; }
 

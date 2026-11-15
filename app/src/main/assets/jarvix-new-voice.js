@@ -5,7 +5,7 @@ import {helloRecording,promptRecording,smalltalkReply,smalltalkTextReply,isGreet
 /* JARVIX NEW — voice-only mode on the OWNER'S EXISTING sphere, TEST host only.
    No new page, code form, paid API or simulated model answer. */
 const HOST=location.hostname;
-const production=HOST==='deepsyq.app'||HOST==='www.deepsyq.app';
+const production=['deepsyq.app','www.deepsyq.app','deepsyq.pages.dev'].includes(HOST);
 const EXTRA_NAVIGATION = [
  ['ai-pricing.html', /(?:ai\s*credits?|(?:ai|ии)[-\s]*кредит|кредит[а-яё]*\s*(?:ai|ии))/iu],
  ['design-gallery.html', /(?:галере[яюи]|design gallery)/iu],
