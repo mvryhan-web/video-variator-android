@@ -1,5 +1,5 @@
 name: DEEPSYQ Christmas live Chromium visual QA (no deploy)
-# QA V4 natural photographed snowbank, rounded cushions, hover interaction — browser only.
+# QA final V4.2: narrow snow cushions above cards, no adjacent-card overlap with chat inputs.
 on:
   push:
     branches: [test]
