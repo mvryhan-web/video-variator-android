@@ -1,0 +1,113 @@
+name: DEEPSYQ owner appearance six-theme production browser QA — read only
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths: ['.github/workflows/deepsyq-owner-appearance-live-qa.yml']
+permissions:
+  contents: read
+jobs:
+  verify-live-appearance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Test six cards, legacy theme persistence and Christmas chat readability
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/owner-appearance-qa
+          node --input-type=module <<'NODE'
+          import {chromium} from 'playwright';
+          import assert from 'node:assert/strict';
+          import {writeFile} from 'node:fs/promises';
+          const browser=await chromium.launch({headless:true});
+          try{
+            for(const [name,viewport] of [
+              ['desktop',{width:1440,height:900}],
+              ['mobile',{width:390,height:844}]
+            ]){
+              const context=await browser.newContext({viewport,colorScheme:'dark'});
+              const page=await context.newPage();
+              const prefix='LIVE_THEME_'+name.toUpperCase();
+              try{
+                await page.goto('https://deepsyq.app/account-settings.html?appearance_live_qa='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
+                await page.locator('#accountThemesCarousel').waitFor({timeout:25000});
+                const actual=await page.locator('#accountThemesCarousel [data-account-theme]').evaluateAll(els=>els.map(e=>e.dataset.accountTheme));
+                console.log(prefix+'_CARDS',JSON.stringify(actual));
+                assert.deepEqual(actual,['light','dark','system','brown','soft-dark','christmas']);
+                const click=async value=>{
+                  const button=page.locator('#accountThemesCarousel [data-account-theme="'+value+'"]');
+                  await button.scrollIntoViewIfNeeded();
+                  await button.click({timeout:10000});
+                  await page.waitForTimeout(500);
+                  const state=await page.evaluate(()=>({
+                    dataTheme:document.documentElement.dataset.theme||null,
+                    siteTheme:document.documentElement.dataset.siteTheme||null,
+                    vu:localStorage.getItem('vu_theme'),
+                    custom:localStorage.getItem('deepsyq_site_theme'),
+                    pressed:[...document.querySelectorAll('#accountThemesCarousel button[aria-pressed="true"]')].map(e=>e.dataset.accountTheme)
+                  }));
+                  console.log(prefix+'_'+value.toUpperCase().replaceAll('-','_'),JSON.stringify(state));
+                  assert.deepEqual(state.pressed,[value]);
+                  return state;
+                };
+                let s=await click('system');
+                assert.equal(s.vu,'system');assert.equal(s.custom,null);assert.equal(s.dataTheme,'dark');
+                s=await click('light');
+                assert.equal(s.vu,'light');assert.equal(s.custom,null);assert.equal(s.dataTheme,'light');
+                s=await click('dark');
+                assert.equal(s.vu,'dark');assert.equal(s.custom,null);assert.equal(s.dataTheme,'dark');
+                s=await click('brown');
+                assert.equal(s.custom,'brown');assert.equal(s.siteTheme,'brown');
+                s=await click('soft-dark');
+                assert.equal(s.custom,'soft-dark');assert.equal(s.siteTheme,'soft-dark');
+                s=await click('christmas');
+                assert.equal(s.custom,'christmas');assert.equal(s.siteTheme,'christmas');
+                await page.goto('https://deepsyq.app/jarvix-chat.html?mode=image&appearance_live_qa='+Date.now(),{waitUntil:'domcontentloaded',timeout:40000});
+                await page.locator('form#jChatForm textarea#jInput').waitFor({timeout:25000});
+                await page.waitForFunction(()=>document.documentElement.dataset.siteTheme==='christmas'&&
+                  !!document.querySelector('link[href*="deepsyq-christmas-v4.css"]'),null,{timeout:20000});
+                const j=await page.evaluate(()=>{
+                  const root=getComputedStyle(document.documentElement);
+                  const form=document.querySelector('form#jChatForm.jarvix-compose');
+                  const input=document.querySelector('textarea#jInput');
+                  const style=getComputedStyle(form);
+                  return {
+                    theme:document.documentElement.dataset.siteTheme,
+                    photo:root.backgroundImage,
+                    formBackground:style.backgroundColor,
+                    inputColor:getComputedStyle(input).color,
+                    formVisible:form.getBoundingClientRect().width>80,
+                    christmasCSS:!!document.querySelector('link[href*="deepsyq-christmas-v4.css"]'),
+                    siteSaved:localStorage.getItem('deepsyq_site_theme')
+                  };
+                });
+                console.log(prefix+'_JARVIX',JSON.stringify(j));
+                assert.equal(j.theme,'christmas');
+                assert.equal(j.siteSaved,'christmas');
+                assert(j.photo.includes('christmas-portrait.webp'),'Chalet background missing');
+                assert(j.formBackground.includes('8, 17, 33'),'Composer not tinted dark');
+                assert.equal(j.inputColor,'rgb(246, 249, 255)');
+                assert(j.formVisible && j.christmasCSS);
+                await page.screenshot({path:'/tmp/owner-appearance-qa/'+name+'-christmas-chat.png',fullPage:false});
+                console.log(prefix+'_ALL_PASS');
+              }catch(error){
+                await page.screenshot({path:'/tmp/owner-appearance-qa/'+name+'-failure.png',fullPage:false}).catch(()=>{});
+                throw error;
+              }finally{await context.close()}
+            }
+            console.log('LIVE_OWNER_SIX_THEMES_AND_CHAT_PASS');
+          }finally{await browser.close()}
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owner-six-theme-live-qa
+          path: /tmp/owner-appearance-qa/*.png
+          if-no-files-found: ignore
+          retention-days: 3
