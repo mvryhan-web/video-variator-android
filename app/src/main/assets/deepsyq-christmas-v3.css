@@ -162,7 +162,7 @@ html[data-site-theme="christmas"] .xmas-snowcap.xmas-thin,
 html[data-site-theme="christmas"] .xmas-snowcap.xmas-header,
 html[data-site-theme="christmas"] #homeQuickBar > .xmas-snowcap,
 html[data-site-theme="christmas"] #jChatForm > .xmas-snowcap {
- top:calc(-1 * var(--xmas-pile-depth,20px))!important;
+ top:calc(0px - var(--xmas-pile-depth,20px) - 2px)!important;
  bottom:auto!important;
  height:var(--xmas-pile-depth,20px)!important;
  transform:none!important;
@@ -182,6 +182,6 @@ html[data-site-theme="christmas"] #jChatForm > .xmas-snowcap {
 html[data-site-theme="christmas"] #homeQuickBar > .xmas-snowcap,
 html[data-site-theme="christmas"] #jChatForm > .xmas-snowcap {
  --xmas-pile-depth:18px;
- top:-18px!important;
+ top:-20px!important;
  height:18px!important;
 }
