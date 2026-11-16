@@ -87,6 +87,13 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
    const child=doc.getElementById(id);
    if(child&&child.parentElement!==doc.body)doc.body.append(child);
   }
+  // Frame-local only: prevent Christmas background image from painting behind
+  // Studio settings even when theme styles are injected after iframe load.
+  // Inline important rules outrank theme stylesheets; parent page is untouched.
+  for(const node of [doc.documentElement,doc.body]){
+   node.style.setProperty('background-image','none','important');
+   node.style.setProperty('background-color','#0a1831','important');
+  }
   // Absolutely no second header, orb, main content or bottom dock may show
   // through the settings frame. Their real DOM remains for native handlers.
   doc.body.id='homeNativeStudioFrameBody';
