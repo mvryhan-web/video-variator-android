@@ -1,0 +1,83 @@
+name: Owner read-only Cloudflare production provenance audit 2026-11-16
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths: ['.github/workflows/owner-production-provenance-audit-20261116.yml']
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Report production metadata and Worker access without mutating Cloudflare
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os,json,urllib.request,urllib.error,re,subprocess,hashlib
+          token=os.getenv('CLOUDFLARE_API_TOKEN','')
+          account=os.getenv('CLOUDFLARE_ACCOUNT_ID','')
+          if not token or not re.fullmatch(r'[a-f0-9]{32}',account):
+              print('AUDIT_MISSING_EXISTING_CREDS');raise SystemExit(1)
+          base='https://api.cloudflare.com/client/v4/accounts/'+account
+          def request(route):
+              url=base+route
+              try:
+                  req=urllib.request.Request(url,headers={'Authorization':'Bearer '+token})
+                  with urllib.request.urlopen(req,timeout=25) as resp:
+                      payload=resp.read()
+                      try: data=json.loads(payload)
+                      except Exception:data={}
+                      return resp.status,data,payload,resp.headers.get('Content-Type','')
+              except urllib.error.HTTPError as e:
+                  return e.code,{},b'',e.headers.get('Content-Type','')
+              except Exception as e:
+                  return str(type(e).__name__),{},b'',''
+          code,doc,_,_=request('/pages/projects/deepsyq')
+          print('PROJECT_HTTP',code)
+          if code!=200 or not doc.get('success'):raise SystemExit(1)
+          project=doc['result']
+          canonical=project.get('canonical_deployment') or {}
+          deployment_id=canonical.get('id','')
+          print('PROJECT_NAME',project.get('name'))
+          print('PROJECT_PRODUCTION_BRANCH',project.get('production_branch'))
+          print('PRODUCTION_DEPLOYMENT_ID',deployment_id)
+          print('PRODUCTION_SCRIPT_NAME',project.get('production_script_name'))
+          code,doc,_,_=request('/pages/projects/deepsyq/deployments/'+deployment_id)
+          print('DEPLOYMENT_HTTP',code)
+          if code!=200 or not doc.get('success'):raise SystemExit(1)
+          dep=doc['result']
+          meta=((dep.get('deployment_trigger') or {}).get('metadata') or {})
+          print('DEPLOYMENT_ENVIRONMENT',dep.get('environment'))
+          print('DEPLOYMENT_USES_FUNCTIONS',dep.get('uses_functions'))
+          print('DEPLOYMENT_TRIGGER_TYPE', (dep.get('deployment_trigger') or {}).get('type'))
+          print('DEPLOYMENT_COMMIT_LENGTH',len(str(meta.get('commit_hash') or '')))
+          print('DEPLOYMENT_COMMIT_HASH',str(meta.get('commit_hash') or '')[:40])
+          print('DEPLOYMENT_COMMIT_DIRTY',meta.get('commit_dirty'))
+          print('DEPLOYMENT_MANIFEST_ENTRIES',len(dep.get('files') or {}))
+          print('DEPLOYMENT_URL',dep.get('url'))
+          print('PROJECT_BINDING_NAMES',sorted((project.get('deployment_configs') or {}).get('production',{}).get('env_vars',{}).keys()))
+          sha=meta.get('commit_hash') or ''
+          if re.fullmatch(r'[a-f0-9]{40}',str(sha)):
+              q=subprocess.run(['git','cat-file','-t',sha],capture_output=True,text=True)
+              print('GIT_COMMIT_EXISTS',q.returncode==0 and q.stdout.strip()=='commit')
+          else:print('GIT_COMMIT_EXISTS',False)
+          worker=project.get('production_script_name') or ''
+          if worker:
+              from urllib.parse import quote
+              route='/workers/scripts/'+quote(worker,safe='')
+              for suff in ['', '/content/v2', '/settings']:
+                  code,data,raw,mime=request(route+suff)
+                  print('WORKER_ENDPOINT',suff or '(default)','HTTP',code,'MIME',mime.split(';')[0],'BYTES',len(raw))
+                  if suff=='/settings' and code==200 and data.get('success'):
+                      st=data.get('result') or {}
+                      print('WORKER_SETTING_KEYS', sorted(st.keys()))
+                      print('WORKER_BINDING_NAMES_TYPES', sorted((b.get('name'),b.get('type')) for b in st.get('bindings',[]) if isinstance(b,dict)))
+          print('AUDIT_READ_ONLY_FINISHED')
+          PY
