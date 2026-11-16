@@ -891,3 +891,9 @@ For every block:
 - [x] Exact two-file release job created and triggered; tests passed.
 - [ ] Production: **BLOCKED_MAIN**; guarded surgical release failed because LIVE source commit could not be verified. Reconcile canonical Cloudflare deployment and Worker provenance, then re-run scoped release without disabling safety checks.
 - [ ] Verify live `deepsyq-theme-loader.js` and `account-settings.html`, and confirm new-visitor Dark vs explicit Christmas in desktop/mobile after deployment.
+
+### 2026-11-16 — Dark-default production release unblock
+- [x] Identify precise release blocker: current Cloudflare `ad_hoc` deployment has no commit SHA; Worker source endpoints 404; `CF_PAGES_COMMIT_SHA` binding empty.
+- [x] Independently retry safe two-file Actions release; tests passed, release guard correctly stopped it ([attempt 2](https://github.com/mvryhan-web/video-variator-android/actions/runs/43825319978)).
+- [ ] Recover and verify exact original production Worker bundle and canonical baseline from authorized deployment workspace, preserving all 2,846 assets and production bindings. **Do not disable safety gates.**
+- [ ] Publish only Dark-default loader and Account appearance assets to `deepsyq.app`, then verify at least desktop/mobile, guest default, explicit Christmas selection, and `/api/config`.
