@@ -1,5 +1,5 @@
 name: DEEPSYQ Christmas mobile snow sync — guarded production release
-# Retry: restore only the verified LIVE Worker origin, never the GitHub DEV Worker.
+# Sync card snow on desktop and mobile: attach snow directly to cards for 0-lag compositor scrolling.
 on:
   push:
     branches: [deepsyq-platform]

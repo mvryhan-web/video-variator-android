@@ -165,11 +165,11 @@
   ctx.restore();
  }
 
- // Mobile scrolls are composited asynchronously by WebView/Safari. The original
+ // Scrolls are composited asynchronously by the browser. The original
  // fixed viewport canvas waited for a JS scroll event and visibly chased cards.
  // Mount identical snow as native scroll-content children instead. These small,
  // inert canvases travel in the same compositor layer as their OWN cards.
- const mobileQuery=matchMedia('(max-width: 760px), (pointer: coarse)');
+ const mobileQuery={matches:true,addEventListener:()=>{}};
  const mobileCaps=new Map(),mobileHosts=new Set();
  let mobileFrame=0,mobileRippleFrame=0,mobileObserver=null;
  const MOBILE_H=27;

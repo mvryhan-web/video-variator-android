@@ -43,19 +43,17 @@ html[data-site-theme="christmas"] main.jarvix-chat #jChatForm textarea#jInput::p
 }
 
 
-/* Mobile/WebView snow is now anchored to its own scroll content, so it follows
-   the card with native touch momentum instead of lagging behind fixed canvas RAF. */
-@media (max-width:760px), (pointer:coarse){
- html[data-site-theme="christmas"] #xmas-pile-overlay{display:none!important}
- html[data-site-theme="christmas"] .xmas-mobile-snow-host{position:relative!important}
- html[data-site-theme="christmas"] .xmas-mobile-snow-cap{
-  position:absolute!important;display:block!important;z-index:191!important;
-  padding:0!important;margin:0!important;border:0!important;
-  pointer-events:none!important;touch-action:auto!important;
-  background:transparent!important;max-width:none!important;
- }
- html:not([data-site-theme="christmas"]) .xmas-mobile-snow-cap{display:none!important}
+/* Card snow is anchored to its own scroll content, so it follows
+   the card with native compositor momentum instead of lagging behind fixed canvas RAF. */
+html[data-site-theme="christmas"] #xmas-pile-overlay{display:none!important}
+html[data-site-theme="christmas"] .xmas-mobile-snow-host{position:relative!important}
+html[data-site-theme="christmas"] .xmas-mobile-snow-cap{
+ position:absolute!important;display:block!important;z-index:191!important;
+ padding:0!important;margin:0!important;border:0!important;
+ pointer-events:none!important;touch-action:auto!important;
+ background:transparent!important;max-width:none!important;
 }
+html:not([data-site-theme="christmas"]) .xmas-mobile-snow-cap{display:none!important}
 
 /* Christmas-only: generated images remain fully scrollable above the composer. */
 html[data-site-theme="christmas"] main.jarvix-chat > #jMessages{
