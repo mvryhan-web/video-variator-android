@@ -885,3 +885,9 @@ For every block:
 - [x] Harden iframe-only suppression of winter photograph behind Studio Settings (`d08f55c6`).
 - [ ] Publish only approved UI fixes to MAIN with intact original Worker/Functions and bindings; confirm live asset hashes.
 - [ ] Recheck mobile chat image scroll and Christmas carousel snow after actual deployment.
+
+### 2026-11-16 — Default appearance restoration
+- [x] Source: original Dark chosen for new visitors; explicit selections and Christmas opt-in preserved.
+- [x] Exact two-file release job created and triggered; tests passed.
+- [ ] Production: **BLOCKED_MAIN**; guarded surgical release failed because LIVE source commit could not be verified. Reconcile canonical Cloudflare deployment and Worker provenance, then re-run scoped release without disabling safety checks.
+- [ ] Verify live `deepsyq-theme-loader.js` and `account-settings.html`, and confirm new-visitor Dark vs explicit Christmas in desktop/mobile after deployment.
