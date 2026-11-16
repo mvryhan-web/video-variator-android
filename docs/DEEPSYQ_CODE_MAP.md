@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `66677ea3c26776673e2ed49855ab1019ccf4dcc5`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `655087c5adb5b2bf1657bcbfb2afa2989c41a4c8`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 127 | Named symbols: 475 | Checked relations: 88
 
 ## Topic finder (matching filenames)
@@ -98,7 +98,7 @@ MODELS (L37) · RAW_MODEL_CATALOG (L42) · MODEL_CATALOG (L75)
 
 ### `app/src/main/assets/generate-studio.js`
 
-curLang (L25) · studioI18n (L32) · hintEl (L42) · requested (L45) · config (L47) · catalog (L47) · refs (L48) · historyThumbUrls (L67) · drafts (L69) · studioDocumentToken (L220) · studioRequests (L222) · walletKinds (L276) · imageEditPrompts (L499) · cropDialog (L514) · cropRatio (L517) · cropZoom (L517) · cropX (L517) · cropY (L517) · studioDialogAnchors (L726) · UNCERTAIN_VIDEO_ERRORS (L820) · targetJobId (L1518) · aiCheckoutState (L1521)
+curLang (L25) · studioI18n (L32) · hintEl (L42) · requested (L45) · config (L47) · catalog (L47) · refs (L48) · historyThumbUrls (L67) · drafts (L69) · studioDocumentToken (L220) · studioRequests (L222) · walletKinds (L276) · imageEditPrompts (L499) · cropDialog (L514) · cropRatio (L517) · cropZoom (L517) · cropX (L517) · cropY (L517) · studioDialogAnchors (L726) · UNCERTAIN_VIDEO_ERRORS (L820) · targetJobId (L1509) · aiCheckoutState (L1512)
 
 ### `app/src/main/assets/home-creative-examples.js`
 
@@ -130,7 +130,7 @@ ACTION_ROUTES (L2) · SPECIFIC_TOOL_PAGES (L3) · UTILITY_ROUTES (L11)
 
 ### `app/src/main/assets/jarvix-chat.js`
 
-modeHeaderLabels (L40) · urls (L46) · siteAnswers (L242) · chatTrialCopy (L426) · imageIntakeQuery (L467) · intakeMode (L468) · composer (L868) · pendingMsg (L918) · pending (L946) · composerInput (L981) · incomingTool (L1090) · wpPane (L1115) · expandBtn (L1134)
+modeHeaderLabels (L40) · urls (L46) · siteAnswers (L242) · chatTrialCopy (L426) · imageIntakeQuery (L467) · intakeMode (L468) · composer (L863) · pendingMsg (L913) · pending (L941) · composerInput (L976) · incomingTool (L1085) · wpPane (L1110) · expandBtn (L1129)
 
 ### `app/src/main/assets/jarvix-clip-library.js`
 
