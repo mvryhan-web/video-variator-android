@@ -79,5 +79,23 @@ jobs:
                       st=data.get('result') or {}
                       print('WORKER_SETTING_KEYS', sorted(st.keys()))
                       print('WORKER_BINDING_NAMES_TYPES', sorted((b.get('name'),b.get('type')) for b in st.get('bindings',[]) if isinstance(b,dict)))
+          # Read only non-secret, Cloudflare-generated deployment attribution fields.
+          code,sd,_,_=request('/workers/scripts/'+quote(worker,safe='')+'/settings') if worker else (None,{},b'','')
+          if code==200 and sd.get('success'):
+              for b in sd['result'].get('bindings',[]):
+                  if b.get('type')=='plain_text' and b.get('name') in ('CF_PAGES_COMMIT_SHA','CF_PAGES_BRANCH','CF_PAGES_URL'):
+                      val=str(b.get('text') or '')
+                      print('WORKER_ATTRIBUTION',b.get('name'),val[:150])
+                      if b.get('name')=='CF_PAGES_COMMIT_SHA' and re.fullmatch(r'[a-f0-9]{40}',val):
+                          q=subprocess.run(['git','cat-file','-t',val],capture_output=True,text=True)
+                          print('WORKER_BINDING_COMMIT_IN_REPO',q.returncode==0 and q.stdout.strip()=='commit')
+          code,dd,_,_=request('/pages/projects/deepsyq/deployments?per_page=12')
+          print('RECENT_DEPLOYMENTS_HTTP',code)
+          if code==200 and dd.get('success'):
+              result=dd.get('result') or []
+              items=result.get('deployments',[]) if isinstance(result,dict) else result
+              for dep2 in items[:12]:
+                  m=(dep2.get('deployment_trigger') or {}).get('metadata') or {}
+                  print('DEPLOYMENT_HISTORY',dep2.get('id'),dep2.get('created_on'),dep2.get('uses_functions'),(m.get('commit_hash') or '')[:40],m.get('commit_dirty'))
           print('AUDIT_READ_ONLY_FINISHED')
           PY
