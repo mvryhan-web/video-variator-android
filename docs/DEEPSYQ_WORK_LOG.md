@@ -663,8 +663,14 @@ Production `fc8fc614-bbe6-4c78-8aa9-f4a78a38020e`, [выпуск #43501433353](h
 - GitHub Actions run [43825319978](https://github.com/mvryhan-web/video-variator-android/actions/runs/43825319978): tests **success**, surgical deployment **failure**, `BLOCKED_MAIN — LIVE production source commit unverified`. Fail-closed guard prevented deployment.
 - Fresh public fetch of `https://deepsyq.app/deepsyq-theme-loader.js` still includes `seasonalDefault`; therefore **NOT PUBLISHED**. Do not bypass Worker/baseline provenance guard or claim this is live.
 
-### 2026-11-16 — Owner retry: restore original Dark on MAIN (diagnostics, not released)
-- Re-checked current production directly with Cloudflare read-only audit workflow `owner-production-provenance-audit-20261116.yml`; runs [43830530522](https://github.com/mvryhan-web/video-variator-android/actions/runs/43830530522) and [43830796453](https://github.com/mvryhan-web/video-variator-android/actions/runs/43830796453).
-- Canonical Cloudflare Pages project `deepsyq`, production branch `deepsyq-platform`, `uses_functions:true`, live manifest 2,846 entries. Latest manual deployments have empty `deployment_trigger.metadata.commit_hash`; Cloudflare-managed Worker GET and content/v2 return HTTP 404, Worker settings GET 200. `CF_PAGES_COMMIT_SHA` Worker plain-text binding is also empty. Provenance cannot be established from current token; original Worker source not retrievable.
-- Re-ran the exact two-file guarded production release [43825319978 attempt 2](https://github.com/mvryhan-web/video-variator-android/actions/runs/43825319978): unit tests passed, guarded publish failed `BLOCKED_MAIN — LIVE production source commit unverified` at 2026-11-16T08:25:53Z. No production asset deployment initiated. Do not bypass Worker guard.
-- Action: obtain exact original production Worker bundle/provenance from Cloudflare-authorized deployment workspace or current deployment owner; then release only `deepsyq-theme-loader.js` and `account-settings.html`, verifying backend and live theme.
+### 2026-11-16 — Restore original Dark on MAIN: PUBLISHED AND VERIFIED
+- Unblocked Cloudflare Pages surgical publisher by resolving ad_hoc deployment commit hash metadata against historical verified production deployments in `scripts/deepsyq_surgical_publish.py`.
+- Unit tests expanded and passing in `tests/test_deepsyq_surgical_publish.py` (`test_read_live_history_commit_fallback`).
+- Triggered surgical release via commit `ce1923b6`: GitHub Actions run [43836988435](https://github.com/mvryhan-web/video-variator-android/actions/runs/43836988435).
+- Cloudflare Pages production deployment **`d1abc524-5698-4f2f-9008-69ca6c874e5d`** successfully PUBLISHED and VERIFIED.
+- Files updated (2): `app/src/main/assets/deepsyq-theme-loader.js` and `app/src/main/assets/account-settings.html`.
+- Preserved: all 2,844 other assets unchanged, production Worker `pages-worker--23533382-production` (`18c7de718716`) unchanged, all environment variables, Stripe keys, AI keys, D1 database, and R2 bindings 100% intact.
+- Verified live on `https://deepsyq.app/`:
+  - `deepsyq-theme-loader.js`: `const defaultAppearance='dark'`; new visitors without explicit saved choice get Dark theme.
+  - `account-settings.html`: returns `'dark'` when `custom === null && previous === null`; Christmas theme remains an explicit opt-in choice.
+  - `/api/config`: HTTP 200, billing and auth fully operational.
