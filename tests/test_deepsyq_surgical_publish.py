@@ -51,7 +51,10 @@ class SurgicalPublishTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             root = Path(root)
             (root / "real.js").write_bytes(b"ok")
-            (root / "link.js").symlink_to(root / "real.js")
+            try:
+                (root / "link.js").symlink_to(root / "real.js")
+            except OSError:
+                self.skipTest("Symlinks require unprivileged developer mode on Windows")
             with patch.object(s, "ROOT", root):
                 with self.assertRaises(s.Blocked):
                     s.allowed_paths("link.js")
@@ -61,6 +64,38 @@ class SurgicalPublishTests(unittest.TestCase):
         out, changes = s.surgical_manifest(live, {"a.js": "a" * 32})
         self.assertEqual(out, live)
         self.assertFalse(changes)
+
+    def test_read_live_history_commit_fallback(self):
+        cf = s.Cloudflare.__new__(s.Cloudflare)
+        cf.account = "test-account"
+        sample_commit = "2bfcaa3717cf280087db6925023f32ab11572b1a"
+        def fake_json(route):
+            if route == "/accounts/test-account/pages/projects/deepsyq":
+                return {
+                    "name": "deepsyq",
+                    "production_branch": "deepsyq-platform",
+                    "canonical_deployment": {"id": "dep-live", "url": "https://dep-live.deepsyq.pages.dev"},
+                    "production_script_name": "pages-worker--123-production",
+                }
+            if route == "/accounts/test-account/pages/projects/deepsyq/deployments/dep-live":
+                return {
+                    "id": "dep-live",
+                    "uses_functions": True,
+                    "files": {f"/{i}.js": "a" * 32 for i in range(100)},
+                    "deployment_trigger": {"metadata": {"commit_hash": ""}},
+                }
+            if route == "/accounts/test-account/pages/projects/deepsyq/deployments?per_page=15":
+                return [
+                    {"environment": "preview", "deployment_trigger": {"metadata": {"commit_hash": "1" * 40}}},
+                    {"environment": "production", "deployment_trigger": {"metadata": {"commit_hash": sample_commit}}},
+                ]
+            raise AssertionError("Unexpected route: " + route)
+        cf.json = fake_json
+        with patch.object(s, "checked_git", return_value=""):
+            ident, live, commit, worker_name, project = cf.read_live()
+            self.assertEqual(ident, "dep-live")
+            self.assertEqual(commit, sample_commit)
+            self.assertEqual(worker_name, "pages-worker--123-production")
 
 if __name__ == "__main__":
     unittest.main()

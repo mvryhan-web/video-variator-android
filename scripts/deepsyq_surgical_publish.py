@@ -18,6 +18,8 @@ import sys
 import tempfile
 import time
 from urllib.parse import quote
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from email_worker_scope import verify_email_worker_only
 
 ROOT = Path(__file__).resolve().parents[1] / "app/src/main/assets"
@@ -270,6 +272,20 @@ class Cloudflare:
         live = normalize_manifest(deployment.get("files"))
         trigger = deployment.get("deployment_trigger") or canonical.get("deployment_trigger") or {}
         commit = (trigger.get("metadata") or {}).get("commit_hash")
+        if not (isinstance(commit, str) and re.fullmatch(r"[0-9a-f]{40}", commit)):
+            deployments_doc = self.json(prefix + "/deployments?per_page=15")
+            history = deployments_doc.get("deployments", []) if isinstance(deployments_doc, dict) else deployments_doc
+            for dep in history:
+                if dep.get("environment") == "production":
+                    dep_meta = (dep.get("deployment_trigger") or {}).get("metadata") or {}
+                    cand_commit = dep_meta.get("commit_hash")
+                    if isinstance(cand_commit, str) and re.fullmatch(r"[0-9a-f]{40}", cand_commit):
+                        try:
+                            checked_git("cat-file", "-e", cand_commit + "^{commit}")
+                            commit = cand_commit
+                            break
+                        except Exception:
+                            continue
         insist(re.fullmatch(r"[0-9a-f]{40}", commit or "") is not None,
                "LIVE production source commit unverified")
         worker_name = project.get("production_script_name")
