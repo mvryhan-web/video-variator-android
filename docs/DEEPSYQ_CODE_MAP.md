@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `7eff581815b755bed2847b3173eb5d3f4b81c263`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 127 | Named symbols: 474 | Checked relations: 88
+Source commit: `ef1e763c989d1907bb8366e6f8c95a7a4f71f225`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 127 | Named symbols: 475 | Checked relations: 88
 
 ## Topic finder (matching filenames)
 
@@ -122,7 +122,7 @@ inspiration.js (L1)
 
 ### `app/src/main/assets/jarvis-core.js`
 
-JARVIX_ONBOARDING (L81) · jarvixContext (L84) · cachedVoices (L91) · WORLD_CITIES (L337)
+JARVIX_ONBOARDING (L81) · jarvixContext (L84) · cachedVoices (L91) · WORLD_CITIES (L332)
 
 ### `app/src/main/assets/jarvix-action-plan.js`
 
@@ -158,7 +158,7 @@ LANGUAGE (L6) · NAMES (L8) · TOPICS (L14) · EXISTING (L65) · WELLBEING_RECOR
 
 ### `app/src/main/assets/jarvix-new-voice.js`
 
-EXTRA_NAVIGATION (L9) · NAVIGATION_RECORDINGS_RU (L24) · WORDS (L35) · restoredMemory (L63) · MICROPHONE_STATES (L99)
+production (L8) · EXTRA_NAVIGATION (L9) · NAVIGATION_RECORDINGS_RU (L24) · WORDS (L35) · restoredMemory (L63) · MICROPHONE_STATES (L99)
 
 ### `app/src/main/assets/jarvix-owner-speech.js`
 
