@@ -879,3 +879,9 @@ For every block:
 - [x] Code: hide winter landscape in the isolated Studio Settings window.
 - [ ] Verify mobile reload / carousel snow positioning and generated-image bottom reachability in the deployed build.
 - [ ] Confirm Cloudflare production deployment for the above commits (not independently verified).
+
+### 2026-11-16 — Christmas Studio iframe follow-up
+- [x] Confirm prior Christmas UI changes missing from live production assets.
+- [x] Harden iframe-only suppression of winter photograph behind Studio Settings (`d08f55c6`).
+- [ ] Publish only approved UI fixes to MAIN with intact original Worker/Functions and bindings; confirm live asset hashes.
+- [ ] Recheck mobile chat image scroll and Christmas carousel snow after actual deployment.
