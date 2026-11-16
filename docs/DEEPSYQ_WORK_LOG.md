@@ -655,3 +655,10 @@ Production `fc8fc614-bbe6-4c78-8aa9-f4a78a38020e`, [выпуск #43501433353](h
 - Verified live `https://deepsyq.app/home-studio-settings.js`, `/deepsyq-christmas-v4.css`, `/deepsyq-christmas-v4.js` are older than repository fixes (fresh public fetch; not deployed).
 - Strengthened `home-studio-settings.js` with frame-local inline important `background-image:none` and opaque dark background on iframe `html` and `body`, preserving main Christmas theme; commit `d08f55c6`.
 - **Production release remains unverified/not performed:** no safe backend-preserving Cloudflare Pages deployment pathway in current connected tools. Existing production uses `uses_functions:true`; static-only deploy is forbidden by Cloudflare runbook.
+
+### 2026-11-16 — Restore original Dark appearance as default (owner request)
+- Updated `app/src/main/assets/deepsyq-theme-loader.js`: default for visitors without an explicit saved appearance is the original `dark`, not auto-Christmas through January 2027. Existing user choices are retained; Christmas remains opt-in.
+- Updated `app/src/main/assets/account-settings.html`: Appearance carousel reflects `dark` for new visitors; Christmas remains selectable.
+- GitHub changes: `e9199266`, `ef1e763c`. Added exact two-file surgical workflow scope `eeb4375e` and triggered release `57696618`.
+- GitHub Actions run [43825319978](https://github.com/mvryhan-web/video-variator-android/actions/runs/43825319978): tests **success**, surgical deployment **failure**, `BLOCKED_MAIN — LIVE production source commit unverified`. Fail-closed guard prevented deployment.
+- Fresh public fetch of `https://deepsyq.app/deepsyq-theme-loader.js` still includes `seasonalDefault`; therefore **NOT PUBLISHED**. Do not bypass Worker/baseline provenance guard or claim this is live.
