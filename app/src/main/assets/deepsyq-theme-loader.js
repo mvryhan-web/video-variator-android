@@ -70,10 +70,10 @@
   return true;
  };
  window.deepsyqSetAppearance=value=>apply(value,true);
- // Seasonal default ends AFTER 10 January 2027, at midnight Paris time.
- // No choice is persisted on behalf of a visitor; all six explicit selections win.
- const seasonalCutoff=Date.parse('2027-01-11T00:00:00+01:00');
- const seasonalDefault=()=>Date.now()<seasonalCutoff?'christmas':'dark';
+ // The original Dark appearance is the default for new visitors.
+ // Christmas remains opt-in from Account > App Preferences > Appearance.
+ // Never overwrite or persist a user's explicit theme choice.
+ const defaultAppearance='dark';
  const previousChoice=()=>{
   let value=null;
   try{value=localStorage.getItem('vu_theme')}catch{}
@@ -83,7 +83,7 @@
   const saved=selected(),previousClassic=previousChoice();
   if(variants.has(saved))apply(saved,false);
   else if(classic.has(previousClassic))apply(previousClassic,false);
-  else if(!saved&&previousClassic===null)apply(seasonalDefault(),false);
+  else if(!saved&&previousClassic===null)apply(defaultAppearance,false);
   else if(classic.has(legacyTheme()))apply(legacyTheme(),false);
  };
  reconcileAppearance();
@@ -93,18 +93,11 @@
  });
  new MutationObserver(()=>{if(root.dataset.siteTheme==='christmas')ensureHoliday();})
   .observe(root,{attributes:true,attributeFilter:['data-site-theme']});
- // An open tab also returns to the normal default after the holiday ends.
- const checkSeasonBoundary=()=>{
-  if(!selected()&&previousChoice()===null){
-   const expected=seasonalDefault();
-   if(expected==='christmas'&&root.dataset.siteTheme!=='christmas')apply(expected,false);
-   if(expected==='dark'&&root.dataset.siteTheme==='christmas')apply(expected,false);
-  }
- };
+ // Keep unsaved visitors on the original appearance after a tab resumes;
+ // explicit saved choices are always respected.
  window.addEventListener('visibilitychange',()=>{
-  if(!document.hidden)checkSeasonBoundary();
+  if(!document.hidden&&!selected()&&previousChoice()===null)apply(defaultAppearance,false);
  });
- setInterval(checkSeasonBoundary,60_000);
  window.addEventListener('storage',event=>{
   if(event.key!==key&&event.key!=='vu_theme')return;
   reconcileAppearance();
