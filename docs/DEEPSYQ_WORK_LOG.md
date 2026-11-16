@@ -650,3 +650,8 @@ Production `fc8fc614-bbe6-4c78-8aa9-f4a78a38020e`, [выпуск #43501433353](h
 - Scoped changes in `app/src/main/assets/home-studio-settings.js`: remove Christmas landscape image from the isolated Studio Settings iframe background; keep existing controls.
 - Scoped changes in `app/src/main/assets/deepsyq-christmas-v4.js`: stop placing snow overlays on the three Home create cards/section and inside `#homeHeroCarousel`; keep surrounding Christmas snow decorations.
 - Committed on `deepsyq-platform` as `a529778e`, `c370af02`, `7183b37d`. No independent mobile visual or Cloudflare production deployment confirmation yet; do not report as published until verified.
+
+### 2026-11-16 — Production verification and iframe Christmas fix
+- Verified live `https://deepsyq.app/home-studio-settings.js`, `/deepsyq-christmas-v4.css`, `/deepsyq-christmas-v4.js` are older than repository fixes (fresh public fetch; not deployed).
+- Strengthened `home-studio-settings.js` with frame-local inline important `background-image:none` and opaque dark background on iframe `html` and `body`, preserving main Christmas theme; commit `d08f55c6`.
+- **Production release remains unverified/not performed:** no safe backend-preserving Cloudflare Pages deployment pathway in current connected tools. Existing production uses `uses_functions:true`; static-only deploy is forbidden by Cloudflare runbook.
