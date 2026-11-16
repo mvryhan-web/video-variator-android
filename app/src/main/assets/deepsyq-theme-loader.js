@@ -71,7 +71,7 @@
  };
  window.deepsyqSetAppearance=value=>apply(value,true);
  // The original Dark appearance is the default for new visitors.
- // Christmas remains opt-in from Account > App Preferences > Appearance.
+ // Christmas is opt-in only via Account > App Preferences > Appearance.
  // Never overwrite or persist a user's explicit theme choice.
  const defaultAppearance='dark';
  const previousChoice=()=>{
