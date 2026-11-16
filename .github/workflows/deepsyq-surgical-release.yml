@@ -22,6 +22,8 @@ on:
       - 'app/src/main/assets/jarvix-guided-tour.js'
       - 'app/src/main/assets/jarvix-tour-choreography.js'
       - 'app/src/main/assets/jarvix-chat.js'
+      - 'app/src/main/assets/jarvix-chat.html'
+      - 'app/src/main/assets/generate-studio.js'
       - 'app/src/main/assets/home-inspiration.js'
       - 'app/src/main/assets/account-settings.html'
       - 'app/src/main/assets/deepsyq-theme-loader.js'
@@ -178,7 +180,9 @@ jobs:
         run: |
           python -m py_compile scripts/deepsyq_surgical_publish.py
           PYTHONPATH=scripts python -m unittest discover -s tests -p 'test_deepsyq_surgical_publish.py' -v
-          node --test tests/jarvix-remove-background-viewer.test.mjs tests/video-uniquifier-quality-lock.test.mjs tests/jarvix-activation.test.mjs
+          node --check app/src/main/assets/jarvix-chat.js
+          node --check app/src/main/assets/generate-studio.js
+          node --test tests/jarvix-remove-background-viewer.test.mjs tests/video-uniquifier-quality-lock.test.mjs tests/jarvix-activation.test.mjs tests/jarvix-chat-no-confirm.test.mjs
 
   surgical:
     # Push publishes ONLY the exact owner-approved Tour or Chat asset with its guarded release commit.
@@ -224,7 +228,8 @@ jobs:
          github.event.head_commit.message == 'release(Auth): publish neon sign-in styling' ||
          github.event.head_commit.message == 'release(Auth Gate): publish guest action login' ||
           github.event.head_commit.message == 'release(Everyday Tools): remove duplicate and realign artwork' ||
-          github.event.head_commit.message == 'release(Contact): publish help@deepsyq.app support form')))
+          github.event.head_commit.message == 'release(Contact): publish help@deepsyq.app support form' ||
+          github.event.head_commit.message == 'release(Generation): remove credit confirmation dialog')))
     needs: tests
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -250,6 +255,9 @@ jobs:
           if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Security): protect JARVIX workspace messages and framing' }}" == "true" ]]; then
             python scripts/deepsyq_surgical_publish.py --mode publish --files "jarvix-chat.js,jarvix-chat.html" --commit "$GITHUB_SHA" --workspace-security
             exit
+          fi
+          if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Generation): remove credit confirmation dialog' }}" == "true" ]]; then
+            SCOPE_FILES="jarvix-chat.js,jarvix-chat.html,generate-studio.js"
           fi
           if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Video Uniquifier): preserve output quality selection' }}" == "true" ]]; then
             SCOPE_FILES="admin-access.js,trial-quality.js,video-uniquifier.html"

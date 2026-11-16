@@ -802,11 +802,6 @@ async function processMessage(message){
    if(walletQuote){
     if(quote.walletQuote!==walletQuote||quote.kind!==kind||quote.model!==model.id||quote.quantity!==1||
        !Number.isSafeInteger(quote.credits)||quote.credits<1)throw Error('AI_CREDIT_QUOTE_INVALID');
-    if(realMedia&&quote.ownerAccess!==true&&!window.confirm(getJarvixLanguage()==='ru'
-      ? 'Запустить генерацию за '+quote.credits+' AI-кредитов?'
-      : 'Start generation for '+quote.credits+' AI credits?')){
-     pendingMediaFrame=null;message.status='sent';await save();return;
-    }
     if(quote.ownerAccess!==true){
      const balance=await api('/api/ai-wallet/balance');
      if(balance.available<quote.credits)throw Object.assign(Error('INSUFFICIENT_AI_CREDITS'),{code:'INSUFFICIENT_AI_CREDITS'});

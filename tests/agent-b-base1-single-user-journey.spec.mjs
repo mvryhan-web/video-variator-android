@@ -34,25 +34,23 @@ async function mockedConsumer(page,kind,{quoteReply}={}){
  return {model,jobs,estimates,mediaCalls};
 }
 for(const [mode,kind,tag] of [['image','image','img'],['video','video','video'],['audio','music','audio']]){
- test('B8 '+mode+' user explicitly accepts 7 credits and receives exactly one private mock result',async({page})=>{
+ test('B8 '+mode+' automatically dispatches 7 credits without confirm dialog and receives one mock result',async({page})=>{
   const fixture=await mockedConsumer(page,kind);
+  let dialogs=0;
+  page.on('dialog',dialog=>{dialogs++;return dialog.dismiss();});
   await page.goto('/generate-studio.html?studio='+mode);
   await expect(page.locator('#modelButton')).toContainText(fixture.model.label);
   await page.locator('#prompt').fill('One '+mode+' creation for owner review');
   await page.locator('#consent').check();
-  page.once('dialog',dialog=>{expect(dialog.message()).toContain('7 AI credits');return dialog.dismiss();});
-  await page.locator('#generate').click();
-  await expect(page.locator('#status')).toContainText('cancelled');
-  expect(fixture.jobs).toHaveLength(0);
-  page.once('dialog',dialog=>{expect(dialog.message()).toContain('7 AI credits');return dialog.accept();});
   await page.locator('#generate').click();
   await expect(page.locator('#media '+tag)).toHaveCount(1);
-  expect(fixture.estimates).toHaveLength(2);
+  expect(dialogs).toBe(0);
+  expect(fixture.estimates).toHaveLength(1);
   expect(fixture.jobs).toHaveLength(1);
   expect(fixture.jobs[0]).toMatchObject({kind,model:fixture.model.id,expectedCredits:7,consent:true});
   expect(fixture.jobs[0].requestId).toMatch(/^[a-f0-9-]{36}$/i);
-  expect(fixture.estimates[1].prompt).toBeUndefined();
-  expect(fixture.estimates[1].references).toBeUndefined();
+  expect(fixture.estimates[0].prompt).toBeUndefined();
+  expect(fixture.estimates[0].references).toBeUndefined();
   await page.locator('#showHistory').click();
   await expect(page.locator('.history-card')).toHaveCount(1);
   expect(fixture.jobs).toHaveLength(1); // History GET never resends a paid job.

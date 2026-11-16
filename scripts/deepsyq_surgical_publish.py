@@ -119,6 +119,7 @@ HASH_REUSE_RELEASE_SETS = (
     frozenset({"auth-email.js", "auth-email.css"}),
     frozenset({"auth-email.css"}),
     frozenset({"auth-email.js", "auth-email.css", "jarvix-chat.js"}),
+    frozenset({"jarvix-chat.js", "jarvix-chat.html", "generate-studio.js"}),
 )
 
 def allowed_hash_reuse(paths):

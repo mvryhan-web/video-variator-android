@@ -57,18 +57,17 @@ test('mobile studio has clear sections, no false generation and no overflow',asy
 });
 test('config exposes readiness without secrets and disabled endpoint fails closed',async({request})=>{const r=await request.get('/api/studio/config');expect(r.status()).toBe(200);const c=await r.json();expect(c.enabled).toBe(false);expect(c.ownerOnly).toBe(true);expect(c.translation.enabled).toBe(false);const post=await request.post('/api/studio/jobs',{data:{kind:'image',prompt:'test',consent:true}});expect(post.status()).toBe(503);});
 test('Russian device language and retained per-studio draft',async({browser})=>{const context=await browser.newContext({locale:'ru-RU'});const page=await context.newPage();await page.goto('/generate-studio.html');await expect(page.locator('h1#taskTitle')).toHaveText('Оживите свою идею с Deepsyq');await expect(page.locator('html')).toHaveAttribute('lang','ru');await expect(page.locator('.studio-nav [data-kind="image"] [data-t="image"]')).toHaveText('Изображение');await page.locator('#prompt').fill('Море');await chooseStudio(page,'image');await page.locator('#prompt').fill('Цветок');await chooseStudio(page,'video');await expect(page.locator('#prompt')).toHaveValue('Море');await context.close();});
-test('mocked contract result confirms selected service and current credits before posting, then previews, downloads and deletes',async({page})=>{
+test('mocked contract result dispatches quoted credits automatically without confirm popup, then previews, downloads and deletes',async({page})=>{
  const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:3,enabled:true}],catalog:[{kind:'image',label:'Fixture',id:'fixture',provider:'Google',adapter:true,ratios:['1:1'],references:3,enabled:true}]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
- let jobPosts=0,estimatePosts=0,jobBody;
+ let jobPosts=0,estimatePosts=0,jobBody,dialogs=0;
+ page.on('dialog',async d=>{dialogs++;await d.dismiss();});
  await page.route('**/api/studio/estimate',async r=>{estimatePosts++;return r.fulfill({json:{kind:'image',model:'fixture',credits:7,quantity:1,perImageCredits:7,unit:'AI credits'}});});
  await page.route('**/api/studio/jobs',async r=>{if(r.request().method()==='POST'){jobPosts++;jobBody=r.request().postDataJSON();return r.fulfill({status:202,json:{id:'fixture',status:'ready'}});}return r.fulfill({json:{items:[]}});});
  await page.route('**/api/studio/jobs/fixture',r=>r.fulfill({json:r.request().method()==='DELETE'?{ok:true}:{id:'fixture',kind:'image',model:'fixture',status:'ready',mime:'image/png'}}));
  await page.route('**/api/studio/jobs/fixture/media',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));
  await page.goto('/generate-studio.html');await chooseStudio(page,'image');await page.locator('#prompt').fill('Fixture');await page.locator('#consent').check();
- page.once('dialog',d=>d.dismiss());await page.locator('#generate').click();await expect(page.locator('#status')).toContainText('cancelled');expect(estimatePosts).toBe(1);expect(jobPosts).toBe(0);
- page.once('dialog',async d=>{expect(d.message()).toContain('selected AI service');expect(d.message()).toContain('Fixture');expect(d.message()).toContain('7 AI credits');await d.accept();});
- await page.locator('#generate').click();await expect(page.locator('#media img')).toBeVisible();expect(jobPosts).toBe(1);expect(jobBody.expectedCredits).toBe(7);
+ await page.locator('#generate').click();await expect(page.locator('#media img')).toBeVisible();expect(dialogs).toBe(0);expect(estimatePosts).toBe(1);expect(jobPosts).toBe(1);expect(jobBody.expectedCredits).toBe(7);
  expect(jobBody.consent).toBe(true);const download=page.waitForEvent('download');await page.locator('#download').click();expect((await download).suggestedFilename()).toBe('Deepsyq-fixture.png');await page.locator('#remove').click();await expect(page.locator('#media img')).toHaveCount(0);await expect(page.locator('#status')).toContainText('deleted');
 });
 

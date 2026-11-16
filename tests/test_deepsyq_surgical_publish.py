@@ -97,5 +97,8 @@ class SurgicalPublishTests(unittest.TestCase):
             self.assertEqual(commit, sample_commit)
             self.assertEqual(worker_name, "pages-worker--123-production")
 
+    def test_generation_no_confirm_release_scope_allowed(self):
+        self.assertTrue(s.allowed_hash_reuse(["jarvix-chat.js", "jarvix-chat.html", "generate-studio.js"]))
+
 if __name__ == "__main__":
     unittest.main()
