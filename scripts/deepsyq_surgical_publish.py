@@ -128,6 +128,7 @@ HASH_REUSE_RELEASE_SETS = (
     HEADER_BLOCK1_RELEASE,
     frozenset({"free-tools.html", "everyday-tools-visual.css", "everyday-tools-visual.js", "mobile-utility-links.js"}),
     frozenset({"ai-apps.html", "account-settings.html", "video-uniquifier.html", "video-uniquifier-reference.js", "jarvix-chat.js", "pricing-page.js", "deepsyq-i18n.js"}),
+    frozenset({"canvas-workspace.css", "pricing-page.css", "account-settings.html"}),
     frozenset({"auth-email.js", "auth-email.css"}),
     frozenset({"auth-email.css"}),
     frozenset({"auth-email.js", "auth-email.css", "jarvix-chat.js"}),

@@ -94,7 +94,7 @@ html[data-theme=light] #profileView{--account-text:#f9faff;--account-muted:#e1e9
  #profileView .account-overview dt{font-size:.65rem}
  #profileView .account-hero{min-height:150px}
  #profileView .account-control{min-height:44px}
- #profileView .account-tile:has(.account-art)::after{background:linear-gradient(90deg,#041025 0%,#041025c9 45%,#04102538 100%)}
+ #profileView .account-tile:has(.account-art)::after{background:linear-gradient(90deg,rgba(4,16,37,0.92) 0%,rgba(4,16,37,0.82) 60%,rgba(4,16,37,0.55) 100%)}
 }
 #profileView .account-control.account-primary,#profileView .account-themes button[aria-pressed=true]{background:linear-gradient(105deg,#a719e8,#3030e1 56%,#00bbd9)}
 html[data-theme=light] #profileView{--account-text:#11304f;--account-muted:#203f61;--account-card:#e9f3ff;--account-line:#6088b6}
@@ -122,7 +122,7 @@ html[data-theme=light] #profileView .account-overview dd{color:#562784}
 #profileView .account-privacy .account-actions .account-control{box-sizing:border-box;width:100%;border-radius:10px;padding:5px 6px;gap:4px;font-size:.68rem;line-height:1.25;white-space:normal}
 #profileView .account-privacy .account-actions .account-control span{min-width:0;overflow-wrap:anywhere}
 #profileView .account-privacy .account-actions .account-icon{width:13px;height:13px}
-#profileView .account-compare .account-primary{padding-inline:clamp(14px,3vw,38px)}
+#profileView .account-compare .account-primary{width:auto;max-width:100%;border-radius:12px!important;padding:10px 20px;white-space:nowrap}
 #profileView .account-hero .account-art{object-position:72% 47%}
 #profileView .account-membership .account-art{object-position:76% center}
 #profileView .account-updates .account-art{object-position:69% center}
@@ -136,8 +136,8 @@ html[data-theme=light] #profileView .account-overview dd{color:#562784}
  #profileView .account-updates{grid-column:span 21}
  #profileView .account-privacy{grid-column:span 18}
  #profileView .account-compare{grid-column:span 21;margin-inline-end:0!important}
- #profileView .account-membership .account-actions{display:grid;width:100%;grid-template-columns:repeat(3,minmax(0,1fr))}
- #profileView .account-membership .account-control{padding-inline:4px;font-size:clamp(.63rem,.84vw,.83rem)}
+ #profileView .account-membership .account-actions{display:flex;flex-wrap:wrap;gap:8px;width:100%}
+ #profileView .account-membership .account-control{flex:1 1 130px;min-height:38px;padding:6px 10px;font-size:.78rem;white-space:nowrap}
 }
 @media(max-width:767px){
  #profileView .account-tabs button{gap:3px;flex-direction:column;line-height:1.15}

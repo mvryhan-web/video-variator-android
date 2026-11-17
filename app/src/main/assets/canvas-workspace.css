@@ -35,7 +35,7 @@ body.canvas-detail-page .canvas-page-footer{padding-block:10px 26px}
 .cw-search{display:block}
 .cw-search input{width:100%;height:44px;border:1px solid #415171;border-radius:11px;background:#121d35;color:#f0f4ff;padding:10px 12px;outline:none}
 .cw-search input::placeholder{color:#aab5cc}
-.cw-categories{display:flex;gap:5px;overflow:auto;padding-top:10px;scrollbar-width:none}
+.cw-categories{display:flex;flex-wrap:wrap;gap:5px;overflow:visible;padding-top:10px}
 .cw-categories button{border:1px solid #34405e;background:#0d192f;padding:6px 8px;border-radius:999px;white-space:nowrap;font-size:11px;min-height:31px}
 .cw-categories .cw-category-active{border-color:#bc63ff;background:linear-gradient(130deg,#4c236c,#1b1540);box-shadow:0 0 10px #be53ff55}
 .cw-library-heading{display:flex;justify-content:space-between;align-items:center;gap:4px}
@@ -181,8 +181,8 @@ body.canvas-detail-page #canvasWorkspace .cw-workspace-grid>.cw-inspector{grid-c
 .cw-mobile-tool-dock{display:none}
 .cw-tool-pane input[type=text]{width:100%;background:#111b37;color:#fff;min-height:44px;font-size:14px}
 /* A narrow content area must not collapse the editor into a thin left column. */
-@media(max-width:1280px) and (min-width:761px){
- body.canvas-detail-page #canvasWorkspace .cw-workspace-grid{grid-template-columns:57px minmax(175px,215px) minmax(0,1fr) minmax(180px,218px)!important;gap:7px}
+@media(max-width:1320px) and (min-width:761px){
+ body.canvas-detail-page #canvasWorkspace .cw-workspace-grid{grid-template-columns:54px minmax(165px,195px) minmax(260px,1fr) minmax(175px,205px)!important;gap:7px;max-width:100%}
 }
 @media(max-width:1060px) and (min-width:761px){
  body.canvas-detail-page #canvasWorkspace .cw-workspace-grid{grid-template-columns:55px 205px minmax(0,1fr)!important;grid-template-rows:auto auto}
@@ -538,12 +538,12 @@ body.canvas-detail-page #canvasWorkspace #cwTouchMove{display:none!important}
   min-height:0;gap:6px;
  }
  body.canvas-detail-page #canvasWorkspace .cw-selection-tools{
-  max-width:100%;gap:1px;padding:2px;
-  flex-wrap:nowrap;justify-content:center;
+  max-width:100%;gap:4px;padding:4px;
+  flex-wrap:wrap;justify-content:center;
  }
  body.canvas-detail-page #canvasWorkspace .cw-selection-tools button{
-  flex:1 1 0;min-width:0!important;min-height:34px!important;
-  padding:2px 3px!important;font-size:16px!important;
+  flex:0 1 auto;min-width:max-content!important;min-height:34px!important;
+  padding:4px 8px!important;font-size:15px!important;
  }
  body.canvas-detail-page #canvasWorkspace .cw-selection-tools button small{
   font-size:9px;
