@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Current developers and coordinator: use this map as a navigation hint, then verify real code and deployments at the **latest** HEAD SHA. See `docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md`.
 
-Source commit: `0a6a0fed095aae2df58c3c62ae31b0c67d80ec10`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `96c7d29e79450cf01d6690cbd120f38789bb45ea`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` + `app/src/main/assets/` + `app/src/main/java/` | Indexed code files: 127 | Named symbols: 476 | Checked relations: 88
 
 ## Topic finder (matching filenames)
@@ -130,7 +130,7 @@ ACTION_ROUTES (L2) · SPECIFIC_TOOL_PAGES (L3) · UTILITY_ROUTES (L11)
 
 ### `app/src/main/assets/jarvix-chat.js`
 
-modeHeaderLabels (L40) · urls (L46) · siteAnswers (L242) · chatTrialCopy (L426) · imageIntakeQuery (L467) · intakeMode (L468) · composer (L863) · pendingMsg (L913) · pending (L941) · composerInput (L976) · incomingTool (L1085) · wpPane (L1110) · expandBtn (L1129)
+modeHeaderLabels (L40) · urls (L46) · siteAnswers (L242) · chatTrialCopy (L427) · imageIntakeQuery (L468) · intakeMode (L469) · composer (L864) · pendingMsg (L914) · pending (L942) · composerInput (L977) · incomingTool (L1086) · wpPane (L1111) · expandBtn (L1130)
 
 ### `app/src/main/assets/jarvix-clip-library.js`
 
@@ -210,7 +210,7 @@ lang (L2) · dict (L3)
 
 ### `app/src/main/assets/pricing-page.js`
 
-art (L10) · numeral (L37) · storagePlanNotes (L63) · verifiedQuality (L89) · sharedAccess (L95) · monthlyDetails (L103) · planned (L104) · annualPlanKeys (L123) · creditRequestIds (L148) · planTrack (L156) · planPrev (L157) · planNext (L157) · planPosition (L157) · LIVE_STRIPE_LINKS (L259) · creditOptions (L294) · authModal (L363) · fallbackPlanConfig (L418)
+art (L10) · numeral (L37) · storagePlanNotes (L63) · verifiedQuality (L89) · sharedAccess (L95) · monthlyDetails (L103) · planned (L104) · annualPlanKeys (L123) · creditRequestIds (L148) · planTrack (L156) · planPrev (L157) · planNext (L157) · planPosition (L157) · LIVE_STRIPE_LINKS (L260) · creditOptions (L295) · authModal (L364) · fallbackPlanConfig (L419)
 
 ### `app/src/main/assets/pricing-wallet.js`
 
