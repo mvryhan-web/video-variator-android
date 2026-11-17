@@ -1,5 +1,18 @@
 # DEEPSYQ ROADMAP — approved next product phase
 
+## 2026-11-17 — Google indexing remediation (Search Console / release)
+
+- [x] Inspect owner's authenticated `deepsyq.app` Search Console Overview, Performance and Page Indexing: 28 indexed, 39 excluded as of Google's 2026-11-13 index report (19 canonical alternatives, 15 noindex, 4 redirects, 1 crawled-not-indexed).
+- [x] Audit live/public vs DEV source: public Home already `index,follow`, but `index.html` in DEV had stale `noindex`; protect source against regression.
+- [x] Remove explicit SEO opt-out from source of the publicly marketed `video-sur-mesure.html`; add absolute canonical only.
+- [x] Expand sitemap 12 -> 17 with five verified public self-canonical HTML URLs; do not list private chat/admin, preview or duplicate canonical routes.
+- [x] GitHub Actions offline SEO preflight passed: 44083651774.
+- [ ] Publish **only** `video-sur-mesure.html` and `sitemap.xml` via guarded point-deploy preserving the exact currently deployed Worker, Pages functions, security bindings, billing and all other files; do not push old `index.html` to production.
+- [ ] Confirm fresh production HTTP 200, self-canonical, `index,follow`, valid sitemap, and live `/api/config` after release; roll back only this release if regressions.
+- [ ] Obtain exact one URL marked `Crawled - currently not indexed` from Google Search Console; inspect rendered content, canonical, X-Robots-Tag, last crawl and internal navigation; improve page-specific value if necessary.
+- [ ] Classify all 15 `noindex` URLs and 19 canonical alternatives by actual URL: keep account, admin, payment, chat/private workspace and duplicate routes excluded intentionally; only remove mistaken public opt-outs.
+- [ ] Submit up-to-date sitemap and request index recheck for corrected eligible public URLs in Search Console after verified production release. Google indexing cannot be guaranteed.
+
 ## 2026-11-16 — Автоматический запуск генерации без окна подтверждения
 
 - Убрано всплывающее подтверждение `OK / Cancel` перед запуском платной генерации в JARVIX Chat и Creative Studio (`jarvix-chat.js`, `generate-studio.js`). Стоимость, проверка баланса и серверное списание AI-кредитов выполняются автоматически в штатном режиме. Точечный релиз (`655087c5`, deployment `4877a979-2838-4584-8c7b-8caf2c6a2d3a`) опубликован и проверен на production.
