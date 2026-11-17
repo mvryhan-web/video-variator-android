@@ -202,7 +202,8 @@ jobs:
       github.ref == 'refs/heads/deepsyq-platform' &&
       (github.event_name == 'workflow_dispatch' ||
        (github.event_name == 'push' &&
-        (github.event.head_commit.message == 'release(Design): publish UI, copy, i18n, and responsive layout fixes' ||
+        (github.event.head_commit.message == 'release(Pricing): publish brand, pre-hydration, and responsive layout fixes' ||
+         github.event.head_commit.message == 'release(Design): publish UI, copy, i18n, and responsive layout fixes' ||
          github.event.head_commit.message == 'release(JARVIX Tour): publish tour-only fix' ||
          github.event.head_commit.message == 'release(Canvas): open Home photos and simplify controls' ||
          github.event.head_commit.message == 'release(Security): protect JARVIX workspace messages and framing' ||
@@ -266,6 +267,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Pricing): publish brand, pre-hydration, and responsive layout fixes' }}" == "true" ]]; then
+            python scripts/deepsyq_surgical_publish.py --mode publish --files "pricing-page.js,pricing-page.css" --commit "$GITHUB_SHA" --pricing-design
+            exit
+          fi
           if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Security): protect JARVIX workspace messages and framing' }}" == "true" ]]; then
             python scripts/deepsyq_surgical_publish.py --mode publish --files "jarvix-chat.js,jarvix-chat.html" --commit "$GITHUB_SHA" --workspace-security
             exit

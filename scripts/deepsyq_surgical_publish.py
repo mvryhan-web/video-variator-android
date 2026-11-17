@@ -131,6 +131,7 @@ HASH_REUSE_RELEASE_SETS = (
     frozenset({"ai-apps.html", "account-settings.html", "video-uniquifier.html", "video-uniquifier-reference.js", "jarvix-chat.js", "pricing-page.js", "deepsyq-i18n.js"}),
     frozenset({"canvas-workspace.css", "pricing-page.css", "account-settings.html"}),
     DESIGN_AUDIT_RELEASE,
+    frozenset({"pricing-page.js", "pricing-page.css"}),
     frozenset({"auth-email.js", "auth-email.css"}),
     frozenset({"auth-email.css"}),
     frozenset({"auth-email.js", "auth-email.css", "jarvix-chat.js"}),
@@ -151,7 +152,7 @@ def insist(condition, reason):
     if not condition:
         raise Blocked(reason)
 
-def allowed_paths(value):
+def allowed_paths(value, allow_pricing_design=False):
     result = []
     for token in value.split(","):
         name = token.strip()
@@ -164,7 +165,8 @@ def allowed_paths(value):
         insist(all(p and p not in (".", "..") for p in parts), "Path traversal blocked")
         insist(all(not p.startswith(".") for p in parts), "Dotfiles cannot be published")
         insist(len(name) < 220, "Path too long")
-        insist(parts[-1].lower() not in SPECIAL + FINANCIAL,
+        blocked_financial = () if (allow_pricing_design and name in ("pricing-page.js", "pricing-page.css")) else FINANCIAL
+        insist(parts[-1].lower() not in SPECIAL + blocked_financial,
                "Worker/config/Pricing requires separate explicit owner workflow: " + name)
         insist((ROOT / name).is_file() and not (ROOT / name).is_symlink(),
                "Missing or symlinked asset: " + name)
@@ -580,6 +582,7 @@ def main():
     parser.add_argument("--credit-worker", action="store_true")
     parser.add_argument("--fal-worker", action="store_true")
     parser.add_argument("--new-voice", action="store_true")
+    parser.add_argument("--pricing-design", action="store_true")
     args = parser.parse_args()
     insist(not args.new_voice or not args.chat_worker and not args.files, "Voice release scope is fixed")
     insist(not args.chat_worker or not args.files, "Chat Worker release cannot include assets")
@@ -587,7 +590,7 @@ def main():
            "Email auth Worker release cannot include other Worker or asset changes")
     insist(not args.credit_worker or not (args.chat_worker or args.email_worker or args.new_voice or args.files), "Credit Worker release cannot include assets or other Worker changes")
     insist(not args.fal_worker or not (args.credit_worker or args.chat_worker or args.email_worker or args.new_voice or args.files), "fal Worker release cannot include assets or other Worker changes")
-    paths = [] if args.credit_worker or args.fal_worker or args.chat_worker or args.email_worker or args.new_voice else allowed_paths(args.files)
+    paths = [] if args.credit_worker or args.fal_worker or args.chat_worker or args.email_worker or args.new_voice else allowed_paths(args.files, allow_pricing_design=args.pricing_design)
     if args.workspace_security:
         insist(not (args.credit_worker or args.fal_worker or args.chat_worker or args.email_worker or args.new_voice)
                and set(paths) == {"jarvix-chat.js", "jarvix-chat.html"}, "Invalid workspace security release scope")
