@@ -101,6 +101,7 @@ HASH_REUSE_RELEASE_SETS = (
     QUICK_START_ART_V2_RELEASE,
     frozenset({"jarvix-guided-tour.js", "jarvix-tour-choreography.js"}),
     frozenset({"ai-apps.html", "canvas.html", "free-tools.html", "sitemap.xml"}),
+    frozenset({"video-sur-mesure.html", "sitemap.xml"}),  # exact public marketing metadata + sitemap; no other Pages assets
     frozenset({"free-tools.html", "everyday-tools-visual.css"}),  # owner 2026-11-14 Everyday Tools two-file visual repair
     frozenset({"compare-ai.html", "simple-background-remover.html", "teleprompter.html"}),
     frozenset({"photo-collage.html"}),
