@@ -60,10 +60,13 @@ THEME_ASSET_RELEASE = frozenset(["deepsyq-theme-loader.js","deepsyq-theme-styles
 THEME_ACTIVATION_RELEASE = frozenset({"account-settings.html", "deepsyq-theme-loader.js", "deepsyq-christmas-v4.css"})  # existing UI only
 THEME_SEASON_RELEASE = frozenset({"account-settings.html", "deepsyq-theme-loader.js"})  # first-visit default and Jan 2027 expiry only
 THEME_MOBILE_SNOW_RELEASE = frozenset({"deepsyq-christmas-v4.js", "deepsyq-christmas-v4.css", "deepsyq-theme-loader.js"})  # only mobile scroll binding + V4 cache version
+PWA_SEO_RELEASE = frozenset({"account-settings.html", "ai-apps.html", "deepsyq-vs-deepseek.html", "deepsyq.html", "deepsyq.js", "deepsyq.webmanifest", "index.html", "llms.txt", "robots.txt", "sitemap.xml", "sw.js"})
 
 
 def approved_new_assets(paths):
     scope = frozenset(paths)
+    if scope == PWA_SEO_RELEASE:
+        return frozenset({"llms.txt"})
     if scope == THEME_ASSET_RELEASE:
         return THEME_ASSET_RELEASE
     if scope == ACCOUNT_DESIGN_RELEASE:
@@ -79,6 +82,7 @@ def approved_new_assets(paths):
     return frozenset()
 
 HASH_REUSE_RELEASE_SETS = (
+    PWA_SEO_RELEASE,
     THEME_ASSET_RELEASE,
     THEME_ACTIVATION_RELEASE,
     THEME_SEASON_RELEASE,

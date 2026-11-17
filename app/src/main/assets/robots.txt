@@ -3,11 +3,18 @@ Disallow: /api/
 Disallow: /deepsyq-admin.html
 Disallow: /product-watcher-admin.html
 
+User-agent: Googlebot
+User-agent: Google-Extended
+User-agent: Bingbot
+User-agent: Yandex
 User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
 User-agent: GPTBot
 User-agent: PerplexityBot
 User-agent: ClaudeBot
+User-agent: anthropic-ai
 User-agent: Applebot-Extended
+Allow: /
 Disallow: /api/
 Disallow: /deepsyq-admin.html
 Disallow: /product-watcher-admin.html

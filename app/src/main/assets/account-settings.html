@@ -360,7 +360,7 @@ html[data-theme=light] #profileView :is(#accountSummaryPlan,#accountSummaryStatu
 </div>
 </article><article class="account-tile account-updates profileCard" id="accountUpdates"><img class="account-art" src="/media/account-settings/account-android.webp" alt="" decoding="async"><div class="account-layer">
 <h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h16v9H4zM6 10V8a6 6 0 0 1 12 0v2M8 3 6 1m10 2 2-2M9 7h.1m5 0h.1M8 19v3m8-3v3"/></svg></i><span data-account-copy="updates">Updates &amp; Android App</span></h3>
-<div class="account-actions"><button class="account-control" type="button" id="checkUpdateBtn"><span data-account-copy="check">Check for updates</span></button><a id="downloadAndroidBtn" class="account-control account-primary" href="https://github.com/mvryhan-web/video-variator-android/releases/latest/download/VideoUniquifier.apk"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h16v9H4zM6 10V8a6 6 0 0 1 12 0v2M8 3 6 1m10 2 2-2M9 7h.1m5 0h.1M8 19v3m8-3v3"/></svg><span data-account-copy="download">Download Android app</span><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h17m-6-6 6 6-6 6"/></svg></a></div>
+<div class="account-actions"><button class="account-control" type="button" id="checkUpdateBtn"><span data-account-copy="check">Check for updates</span></button><button class="account-control account-primary" type="button" id="installPwaBtn"><span data-account-copy="installPwa">Install Web App (PWA)</span></button><a id="downloadAndroidBtn" class="account-control" href="https://github.com/mvryhan-web/video-variator-android/releases/latest/download/VideoUniquifier.apk"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h16v9H4zM6 10V8a6 6 0 0 1 12 0v2M8 3 6 1m10 2 2-2M9 7h.1m5 0h.1M8 19v3m8-3v3"/></svg><span data-account-copy="download">Download Android app</span><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h17m-6-6 6 6-6 6"/></svg></a></div>
 <p id="updateStatus" aria-live="polite"></p></div></article><article class="account-tile account-privacy" data-account-group="privacy"><h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12zM12 8l-3 5h6z"/></svg></i><span data-account-copy="security">Privacy &amp; Security</span></h3>
 <ul><li><span data-account-copy="https">HTTPS is enforced for production web traffic.</span></li><li><span data-account-copy="processing">Raw video processing stays on-device whenever supported.</span></li><li><span data-account-copy="stripe">Stripe handles card details. Video Uniquifier does not store card numbers.</span></li><li><span data-account-copy="tokens">Google and Apple identity tokens are verified on the server.</span></li></ul>
 <div class="account-actions"><a class="account-control" href="/ai-privacy.html"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13H5zM14 3v6h5M8 13h8m-8 4h8"/></svg><span data-account-copy="policy">Read privacy policy</span></a><a class="account-control" href="/terms.html"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13H5zM14 3v6h5M8 13h8m-8 4h8"/></svg><span data-account-copy="terms">Read terms of service</span></a></div></article><article class="account-tile account-compare" data-account-group="billing"><img class="account-art" src="/media/account-settings/account-pricing.webp" alt="" decoding="async"><div class="account-layer">
@@ -424,7 +424,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   language:['Язык','Langue','Idioma'],appearance:['Оформление','Apparence','Apariencia'],light:['Светлая','Clair','Claro'],dark:['Тёмная','Sombre','Oscuro'],system:['Системная','Système','Sistema'],
   brown:['Коричневый','Brun','Marrón'],black:['Чёрный','Noir','Negro'],christmas:['Рождество','Noël','Navidad'],
   updates:['Обновления и Android','Mises à jour et Android','Actualizaciones y Android'],
-  check:['Проверить обновления','Vérifier les mises à jour','Buscar actualizaciones'],download:['Скачать для Android','Télécharger pour Android','Descargar para Android'],
+  check:['Проверить обновления','Vérifier les mises à jour','Buscar actualizaciones'],installPwa:['Установить приложение (PWA)','Installer l’app web (PWA)','Instalar app web (PWA)'],download:['Скачать для Android (APK)','Télécharger pour Android (APK)','Descargar para Android (APK)'],
   security:['Конфиденциальность и безопасность','Confidentialité et sécurité','Privacidad y seguridad'],
   https:['Рабочий сайт использует HTTPS.','Le site de production utilise HTTPS.','El sitio de producción usa HTTPS.'],
   processing:['Видео обрабатываются на устройстве, если оно поддерживает эту функцию.','Le traitement vidéo se fait sur l’appareil lorsque celui-ci le permet.','Los vídeos se procesan en el dispositivo cuando es compatible.'],
@@ -541,6 +541,26 @@ document.addEventListener('DOMContentLoaded',()=>{
  window.addEventListener('storage',renderAccount);
  window.addEventListener('deepsyq:lang',renderAccount);
  renderAccount();
+
+ let deferredPwaPrompt=null;
+ window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredPwaPrompt=event;});
+ if('serviceWorker'in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
+  navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(()=>{});
+ }
+ const pwaBtn=get('installPwaBtn'),updateStatus=get('updateStatus');
+ if(pwaBtn)pwaBtn.onclick=async()=>{
+  if(deferredPwaPrompt){
+   deferredPwaPrompt.prompt();
+   const choice=await deferredPwaPrompt.userChoice.catch(()=>({outcome:'dismissed'}));
+   deferredPwaPrompt=null;
+   if(updateStatus)updateStatus.textContent=choice?.outcome==='accepted'?'Web App installed.':'Installation cancelled.';
+  }else if(updateStatus){
+   const isRu=lang()==='ru';
+   updateStatus.textContent=isRu
+    ?'Откройте меню браузера (⋮ или Поделиться) и выберите «Установить приложение» / «На экран Домой».'
+    :'Open your browser menu (⋮ or Share) and tap “Install app” / “Add to Home Screen”.';
+  }
+ };
 });
 </script>
 </body>

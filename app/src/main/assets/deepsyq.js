@@ -612,3 +612,26 @@ if(requestedIdentityToken)try{
  }
 }
 if(new URLSearchParams(location.search).get('checkout')==='success')$('paymentStatus').textContent='Your checkout has returned. Access is updated only after Stripe confirms payment. Open your account to see its current status.';
+
+// Register Service Worker and capture PWA install prompt for mobile/desktop WebAPK installation.
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',event=>{
+ event.preventDefault();
+ deferredInstallPrompt=event;
+ window.__deepsyqInstallPrompt=event;
+ window.dispatchEvent(new Event('deepsyq:install-ready'));
+});
+window.deepsyqInstallApp=async()=>{
+ const prompt=deferredInstallPrompt||window.__deepsyqInstallPrompt;
+ if(!prompt)return {installed:false,reason:'unavailable'};
+ prompt.prompt();
+ const choice=await prompt.userChoice.catch(()=>({outcome:'dismissed'}));
+ if(choice?.outcome==='accepted'){
+  deferredInstallPrompt=null;
+  window.__deepsyqInstallPrompt=null;
+ }
+ return {installed:choice?.outcome==='accepted',outcome:choice?.outcome||'dismissed'};
+};
+if('serviceWorker'in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
+ navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(e=>console.warn('[sw]',e));
+}

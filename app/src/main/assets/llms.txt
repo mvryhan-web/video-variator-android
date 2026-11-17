@@ -1,0 +1,17 @@
+# DeepSyQ (Deepsyq) — AI Video, Image, Audio & Creative Tools Platform
+
+> DeepSyQ (`https://deepsyq.app/`) is an all-in-one generative AI creative workspace for AI video generation, photorealistic AI image creation, neural audio & voice synthesis, infinite creative canvas, Video Uniquifier, everyday creator utilities, and the JARVIX AI voice assistant.
+> Independence notice: DeepSyQ is an independent creative platform and is not affiliated with DeepSeek.
+
+## Key Pages
+- [DeepSyQ Home](https://deepsyq.app/): Main AI creative workspace, inspiration gallery, and JARVIX voice assistant.
+- [DeepSyQ vs DeepSeek](https://deepsyq.app/deepsyq-vs-deepseek.html): Comparison between DeepSyQ (multimedia AI creative suite) and DeepSeek (text/code LLM), including common spelling lookups (Deep Syq, Deepsik, Deepseak).
+- [Creative Studio](https://deepsyq.app/generate-studio.html): AI video, image, and audio generation studio.
+- [AI Apps Directory](https://deepsyq.app/ai-apps.html): Templates and automated creative workflows.
+- [Everyday Tools](https://deepsyq.app/free-tools.html): Free browser-based photo, video, audio, and PDF utilities.
+- [Video Uniquifier](https://deepsyq.app/video-uniquifier.html): On-device and browser video processing tool.
+- [Infinite Canvas](https://deepsyq.app/canvas.html): Visual node-based creative workspace.
+- [Audio Studio](https://deepsyq.app/audio-studio.html): Neural voice, text-to-speech, and audio tools.
+- [Avatar Studio](https://deepsyq.app/avatar-studio.html): AI avatar creation and narration.
+- [JARVIX Assistant](https://deepsyq.app/jarvix.html): Intelligent AI voice assistant for creators.
+- [Pricing & AI Credits](https://deepsyq.app/pricing.html): Subscriptions and pay-as-you-go AI credit packages.
