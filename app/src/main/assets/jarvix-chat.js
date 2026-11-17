@@ -262,7 +262,8 @@ function render(){
  if(!conversation.messages.length){
   const empty=node('div');
   empty.className='j-empty';
-  empty.append(node('h2','What would you like to create?'));
+  const emptyTitle={ru:'Что вы хотите создать?',fr:'Que souhaitez-vous créer ?',es:'¿Qué te gustaría crear?',en:'What would you like to create?'}[getJarvixLanguage()]||'What would you like to create?';
+  empty.append(node('h2',emptyTitle));
   area.append(empty);
  }
  for(const m of conversation.messages){

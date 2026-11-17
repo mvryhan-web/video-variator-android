@@ -132,7 +132,7 @@ function build(){
   });
  }
  const types=node('section','vu-mode-group');types.innerHTML='<h4>Choose transformation mode</h4>';
- const cards=node('div','vu-mode-cards'),modes=[['gentle','Gentle','Subtle changes that preserve the original style and composition.','♧'],['balanced','Balance','A balanced blend of changes for a fresh, unique result.','⚖'],['dynamic','Dynamic','Stronger creative transformations for a distinctive look.','ϟ']];
+ const cards=node('div','vu-mode-cards'),modes=[['gentle','Gentle','Subtle changes that preserve the original style and composition.','✦'],['balanced','Balance','A balanced blend of changes for a fresh, unique result.','⚖'],['dynamic','Dynamic','Stronger creative transformations for a distinctive look.','ϟ']];
  const select=$('mode');
  modes.forEach(([v,label,description,icon])=>{
   const btn=node('button','vu-mode-card');btn.type='button';btn.dataset.mode=v;btn.setAttribute('aria-pressed','false');

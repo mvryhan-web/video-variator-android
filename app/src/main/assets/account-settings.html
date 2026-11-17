@@ -204,7 +204,7 @@ html[data-theme=light] #profileView :is(#accountSummaryPlan,#accountSummaryStatu
         <div>
           <span class="pill success" data-i18n="trialPill">100 free videos included</span>
           <h2 id="heroTitle">Видеоуникализатор</h2>
-          <p data-i18n="heroText">Upload a video, choose a processing style, and let Video Uniquifier handle the rest.</p>
+          <p data-i18n="heroText">Upload a video, choose a processing style, and let Deepsyq handle the rest.</p>
         </div>
         <div class="usageBox">
           <div class="usageTop"><span id="usageLabel">Free trial videos</span><b id="creditText">0 / 100</b></div>
@@ -362,7 +362,7 @@ html[data-theme=light] #profileView :is(#accountSummaryPlan,#accountSummaryStatu
 <h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></i><span data-account-copy="updates">App &amp; Updates</span></h3>
 <div class="account-actions"><button class="account-control" type="button" id="checkUpdateBtn"><span data-account-copy="check">Check for updates</span></button><button class="account-control account-primary" type="button" id="installPwaBtn"><span data-account-copy="installPwa">Install Web App (PWA)</span></button></div>
 <p id="updateStatus" aria-live="polite"></p></div></article><article class="account-tile account-privacy" data-account-group="privacy"><h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12zM12 8l-3 5h6z"/></svg></i><span data-account-copy="security">Privacy &amp; Security</span></h3>
-<ul><li><span data-account-copy="https">HTTPS is enforced for production web traffic.</span></li><li><span data-account-copy="processing">Raw video processing stays on-device whenever supported.</span></li><li><span data-account-copy="stripe">Stripe handles card details. Video Uniquifier does not store card numbers.</span></li><li><span data-account-copy="tokens">Google and Apple identity tokens are verified on the server.</span></li></ul>
+<ul><li><span data-account-copy="https">HTTPS is enforced for production web traffic.</span></li><li><span data-account-copy="processing">Raw video processing stays on-device whenever supported.</span></li><li><span data-account-copy="stripe">Stripe handles card details. Deepsyq does not store card numbers.</span></li><li><span data-account-copy="tokens">Google and Apple identity tokens are verified on the server.</span></li></ul>
 <div class="account-actions"><a class="account-control" href="/ai-privacy.html"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13H5zM14 3v6h5M8 13h8m-8 4h8"/></svg><span data-account-copy="policy">Read privacy policy</span></a><a class="account-control" href="/terms.html"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13H5zM14 3v6h5M8 13h8m-8 4h8"/></svg><span data-account-copy="terms">Read terms of service</span></a></div></article><article class="account-tile account-compare" data-account-group="billing"><img class="account-art" src="/media/account-settings/account-pricing.webp" alt="" decoding="async"><div class="account-layer">
 <h3><i aria-hidden="true"><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5zM3 12l9 5 9-5M3 16l9 5 9-5"/></svg></i><span data-account-copy="compareTitle">Find the plan that fits your pace.</span></h3>
 <div class="account-actions"><a class="account-control account-primary" href="/pricing.html"><span data-account-copy="compare">Compare plans</span><svg class="account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h17m-6-6 6 6-6 6"/></svg></a></div></div></article></div>
@@ -382,7 +382,7 @@ html[data-theme=light] #profileView :is(#accountSummaryPlan,#accountSummaryStatu
   </section>
 </div>
 
-<div id="updateBanner" class="updateBanner" hidden><div><b>An update is available</b><p>Reload to use the latest Video Uniquifier version.</p></div><button id="applyUpdateBtn" class="primaryBtn">Update now</button></div>
+<div id="updateBanner" class="updateBanner" hidden><div><b>An update is available</b><p>Reload to use the latest Deepsyq version.</p></div><button id="applyUpdateBtn" class="primaryBtn">Update now</button></div>
 <div id="toast" class="toast" hidden></div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -428,7 +428,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   security:['Конфиденциальность и безопасность','Confidentialité et sécurité','Privacidad y seguridad'],
   https:['Рабочий сайт использует HTTPS.','Le site de production utilise HTTPS.','El sitio de producción usa HTTPS.'],
   processing:['Видео обрабатываются на устройстве, если оно поддерживает эту функцию.','Le traitement vidéo se fait sur l’appareil lorsque celui-ci le permet.','Los vídeos se procesan en el dispositivo cuando es compatible.'],
-  stripe:['Платёжные данные обрабатывает Stripe. Видеоуникализатор не хранит номера карт.','Stripe traite les données de paiement. Video Uniquifier ne stocke pas les numéros de carte.','Stripe procesa los pagos. Video Uniquifier no guarda números de tarjeta.'],
+  stripe:['Платёжные данные обрабатывает Stripe. Deepsyq не хранит номера карт.','Stripe traite les données de paiement. Deepsyq ne stocke pas les numéros de carte.','Stripe procesa los pagos. Deepsyq no guarda números de tarjeta.'],
   tokens:['Токены Google и Apple проверяются на сервере.','Les jetons Google et Apple sont vérifiés sur le serveur.','Los tokens de Google y Apple se verifican en el servidor.'],
   policy:['Политика конфиденциальности','Politique de confidentialité','Política de privacidad'],terms:['Условия использования','Conditions d’utilisation','Condiciones de uso'],
   compareTitle:['Найдите подходящий тариф.','Trouvez le forfait qui vous convient.','Encuentra el plan que mejor te conviene.'],

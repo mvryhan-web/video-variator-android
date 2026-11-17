@@ -73,10 +73,10 @@ function storagePlanLabel(plan,language){
 function planFeatureLabel(type,value,language){
  if(type==='storage')return storagePlanLabel(value,language);
  const copy={
-  ru:{trial:n=>n+' кредитов на пробный период',monthly:n=>n+' кредитов в месяц',lifetime:()=> 'Кредиты по действующим условиям',unavailable:()=> 'Лимит кредитов недоступен',variants:n=>'До '+n+' вариантов видео за один запуск в Video Uniquifier',quality:q=>'Разрешение экспорта в Video Uniquifier: '+q},
-  en:{trial:n=>n+' credits for the trial',monthly:n=>n+' credits per month',lifetime:()=> 'Credits: see current terms',unavailable:()=> 'Credit allowance unavailable',variants:n=>'Up to '+n+' video variants per run in Video Uniquifier',quality:q=>'Video Uniquifier export resolution: '+q},
-  fr:{trial:n=>n+' crédits pour la période d’essai',monthly:n=>n+' crédits par mois',lifetime:()=> 'Crédits selon les conditions en vigueur',unavailable:()=> 'Crédits inclus indisponibles',variants:n=>'Jusqu’à '+n+' variantes vidéo par lancement dans Video Uniquifier',quality:q=>'Résolution d’export dans Video Uniquifier : '+q},
-  es:{trial:n=>n+' créditos para el período de prueba',monthly:n=>n+' créditos al mes',lifetime:()=> 'Créditos según las condiciones vigentes',unavailable:()=> 'Límite de créditos no disponible',variants:n=>'Hasta '+n+' variantes de vídeo por ejecución en Video Uniquifier',quality:q=>'Resolución de exportación en Video Uniquifier: '+q}
+  ru:{trial:n=>n+' кредитов на пробный период',monthly:n=>n+' кредитов в месяц',lifetime:()=> 'Кредиты по действующим условиям',unavailable:()=> 'Лимит кредитов недоступен',variants:n=>'До '+n+' вариантов видео за один запуск в Deepsyq',quality:q=>'Разрешение экспорта в Deepsyq: '+q},
+  en:{trial:n=>n+' credits for the trial',monthly:n=>n+' credits per month',lifetime:()=> 'Credits: see current terms',unavailable:()=> 'Credit allowance unavailable',variants:n=>'Up to '+n+' video variants per run in Deepsyq',quality:q=>'Deepsyq export resolution: '+q},
+  fr:{trial:n=>n+' crédits pour la période d’essai',monthly:n=>n+' crédits par mois',lifetime:()=> 'Crédits selon les conditions en vigueur',unavailable:()=> 'Crédits inclus indisponibles',variants:n=>'Jusqu’à '+n+' variantes vidéo par lancement dans Deepsyq',quality:q=>'Résolution d’export dans Deepsyq : '+q},
+  es:{trial:n=>n+' créditos para el período de prueba',monthly:n=>n+' créditos al mes',lifetime:()=> 'Créditos según las condiciones vigentes',unavailable:()=> 'Límite de créditos no disponible',variants:n=>'Hasta '+n+' variantes de vídeo por ejecución en Deepsyq',quality:q=>'Resolución de exportación en Deepsyq: '+q}
  };
  const locale=copy[language]||copy.en;
  return locale[type](value);
@@ -90,13 +90,13 @@ const verifiedQuality={
  basic:[['▣',''],['⊞','5','variants'],['⚙','Gentle mode'],['⛶','720p','quality'],['✓','Included Basic tools']],
  pro:[['▣',''],['⊞','10','variants'],['⚙','Gentle + Balance modes'],['⛶','1080p','quality'],['✓','Included Pro tools']],
  business:[['▣',''],['⊞','15','variants'],['⚙','Gentle, Balance + Dynamic'],['⛶','4K','quality'],['✓','Included Business tools']],
- lifetime:[['▣',''],['⊞','15','variants'],['⚙','Gentle, Balance + Dynamic'],['⛶','720p / 1080p / 4K','quality'],['∞','Video Uniquifier access for life']]
+ lifetime:[['▣',''],['⊞','15','variants'],['⚙','Gentle, Balance + Dynamic'],['⛶','720p / 1080p / 4K','quality'],['∞','Deepsyq access for life']]
 };
 const sharedAccess=[
- ['✓','Video Uniquifier and tools included in this plan'],
+ ['✓','Deepsyq and tools included in this plan'],
  ['✓','Canvas workspace; AI generation requires paid credits'],
  ['✓','Explore the AI model catalog (availability varies)'],
- ['✓','Watermark-free Video Uniquifier exports'],
+ ['✓','Watermark-free Deepsyq exports'],
  ['✓','One account for your plan, credits and history'],
  ['✓','AI wallet and prepaid packages are separate']
 ];
@@ -202,16 +202,17 @@ function renderPlans(config){
   const amount=validPlanPrice(currentPlan);
   const currency=p.key==='lifetime'?validLifetimeCurrency(currentPlan):'USD';
   const verified=!p.proposed&&amount!==null&&!!currency;
+  const preHydrated=config===fallbackPlanConfig&&!verified;
   const annualPreview=billingPeriod==='yearly'&&annualPlanKeys.has(p.key)&&verified;
   const yearly=annualPreview?annualQuote(amount):null;
-  price.append(node('strong','',p.proposed?'$0.99':verified?(annualPreview?annualMoney(yearly.monthly):money(amount,currency)):'Price unavailable'));
+  price.append(node('strong','',p.proposed?'$0.99':verified?(annualPreview?annualMoney(yearly.monthly):money(amount,currency)):preHydrated?'…':'Price unavailable'));
   price.append(node('small','',p.proposed?'proposed · one time':annualPreview?'/ month · billed yearly':p.suffix));
   const annualNote=annualPreview?node('p','price-annual-note',annualMoney(yearly.yearly)+' / year · estimate only; yearly checkout not available'):null;
   const button=node('button','price-plan-action',p.proposed?'Check Trial availability':p.label);
   // The user can choose a configured plan to sign in even on a no-billing preview.
   // Trial remains disabled until owner-approved terms are actually configured.
   button.type='button';button.disabled=!p.proposed&&!verified;
-  if(!p.proposed&&!verified)button.textContent='Price unavailable';
+  if(!p.proposed&&!verified&&!preHydrated)button.textContent='Price unavailable';
   button.addEventListener('click',()=>void checkoutPlan(p.key));
   const caption=node('p','price-feature-caption','Plan features');
   const list=node('ul','price-features');
