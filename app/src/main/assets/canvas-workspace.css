@@ -344,7 +344,7 @@ body.canvas-detail-page #canvasWorkspace .cw-stage-viewport{min-width:0;max-widt
 
 /* The 204px site navigation consumes room on desktop. Collapse at the
    REAL content width while keeping the gallery beside the photo. */
-@container canvas-editor-area (max-width:1200px){
+@container canvas-editor-area (max-width:920px){
  @media (min-width:761px){
   body.canvas-detail-page #canvasWorkspace .cw-workspace-grid{
    display:grid!important;

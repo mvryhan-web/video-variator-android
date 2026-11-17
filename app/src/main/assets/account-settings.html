@@ -144,8 +144,9 @@ html[data-theme=light] #profileView .account-overview dd{color:#562784}
  #profileView .account-tabs .account-icon,#profileView .account-overview .account-icon{width:15px;height:15px}
  #profileView .account-overview dt{gap:3px;flex-wrap:wrap}
  #profileView .account-hero .account-art{object-position:65% center}
- #profileView .account-membership .account-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}
- #profileView .account-membership .account-control{padding:6px 4px;font-size:.67rem;flex-wrap:wrap}
+ #profileView .account-membership .account-actions{display:flex;flex-wrap:wrap;gap:8px;width:100%}
+ #profileView .account-membership .account-control{flex:1 1 135px;min-height:42px;padding:8px 12px;font-size:.78rem;border-radius:12px;white-space:nowrap}
+ #profileView .account-tile:has(.account-art) .account-control:not(.account-primary){background-color:rgba(6,18,38,.92);color:#eef4ff;border-color:#5b7da8}
  #profileView .account-compare .account-layer{min-height:108px}
 }
 #profileView #accountSummaryEmail,#profileView #profileEmail{font-size:clamp(.63rem,1.05vw,.78rem);overflow-wrap:anywhere}

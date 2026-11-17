@@ -172,6 +172,7 @@ function setupMobileShell() {
     const el = document.createElement('a'); el.textContent = text; el.href = href; el.className = className; return el;
   };
   const tools = link(copy()[0], 'free-tools.html', 'ds-header-tools');
+  tools.dataset.noTranslate = '';
   const tour = document.createElement('button');tour.type='button';tour.id='dsTakeTour';tour.textContent=copy()[3];tour.className='ds-header-tour';
   tour.addEventListener('click', async () => {tour.disabled=true;try{const guide=await import('./jarvix-guided-tour.js?v=20261111-v4b');guide.startJarvixGuidedTour();}catch{tour.textContent='Tour unavailable';}finally{tour.disabled=false;}});
   const desktopActions=document.createElement('div');desktopActions.className='ds-desktop-actions';desktopActions.append(tour);
@@ -192,6 +193,7 @@ function setupMobileShell() {
     // belongs to the working AI Credit link; Tour moves to the other side.
     const creditLabels={en:'⚡ AI Credit',ru:'⚡ Кредиты',fr:'⚡ Crédits',es:'⚡ Créditos'};
     const balance=link(creditLabels[locale()]||creditLabels.en,'pricing.html#credits','ds-header-credit');
+    balance.dataset.noTranslate='';
     balance.setAttribute('aria-label','AI Credit');
     const updateCredit=async()=>{const token=localStorage.getItem('vv_token');balance.textContent=creditLabels[locale()]||creditLabels.en;balance.removeAttribute('title');if(!token)return;try{const r=await fetch('/api/ai-wallet/balance',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const data=await r.json();if(token===localStorage.getItem('vv_token')&&Number.isSafeInteger(data.available)&&data.available>=0)balance.title='Available AI credits: '+data.available.toLocaleString();}catch{}};
     void updateCredit();window.addEventListener('storage',e=>{if(e.key==='vv_token')void updateCredit();});
