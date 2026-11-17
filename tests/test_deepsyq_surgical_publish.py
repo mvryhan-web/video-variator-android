@@ -114,5 +114,8 @@ class SurgicalPublishTests(unittest.TestCase):
         self.assertIn(b"env.FAL_KEY", worker_text)
         self.assertIn(b"env.BYTEPLUS_API_KEY", worker_text)
 
+    def test_model_picker_cleanup_scope_allowed(self):
+        self.assertTrue(s.allowed_hash_reuse(["generate-models.js", "generate-studio.js", "deepsyq.js"]))
+
 if __name__ == "__main__":
     unittest.main()
