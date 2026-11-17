@@ -61,10 +61,13 @@ THEME_ACTIVATION_RELEASE = frozenset({"account-settings.html", "deepsyq-theme-lo
 THEME_SEASON_RELEASE = frozenset({"account-settings.html", "deepsyq-theme-loader.js"})  # first-visit default and Jan 2027 expiry only
 THEME_MOBILE_SNOW_RELEASE = frozenset({"deepsyq-christmas-v4.js", "deepsyq-christmas-v4.css", "deepsyq-theme-loader.js"})  # only mobile scroll binding + V4 cache version
 PWA_SEO_RELEASE = frozenset({"account-settings.html", "ai-apps.html", "deepsyq-vs-deepseek.html", "deepsyq.html", "deepsyq.js", "deepsyq.webmanifest", "index.html", "llms.txt", "robots.txt", "sitemap.xml", "sw.js"})
+HEADER_BLOCK1_RELEASE = frozenset({"deepsyq-mobile-shell.css", "deepsyq-mobile-shell.js", "deepsyq-unified-platform-header.css", "deepsyq-unified-platform-header.js", "deepsyq-action-auth-gate.js"})
 
 
 def approved_new_assets(paths):
     scope = frozenset(paths)
+    if scope == HEADER_BLOCK1_RELEASE:
+        return frozenset({"deepsyq-action-auth-gate.js"})
     if scope == PWA_SEO_RELEASE:
         return frozenset({"llms.txt"})
     if scope == THEME_ASSET_RELEASE:
@@ -122,6 +125,7 @@ HASH_REUSE_RELEASE_SETS = (
     frozenset({"jarvix-chat.js"}),
     frozenset({"jarvix-chat.js", "jarvix-new-voice.js"}),
     frozenset({"deepsyq-mobile-shell.js"}),  # guest-action login, one existing public asset only
+    HEADER_BLOCK1_RELEASE,
     frozenset({"auth-email.js", "auth-email.css"}),
     frozenset({"auth-email.css"}),
     frozenset({"auth-email.js", "auth-email.css", "jarvix-chat.js"}),

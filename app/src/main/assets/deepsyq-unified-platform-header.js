@@ -5,9 +5,9 @@
  */
 const labels = {
   en: { credits: 'AI Credits', login: 'Log in', pricing: 'Pricing', tour: 'Tour', tools: 'Everyday Tools' },
-  ru: { credits: 'AI Credits', login: 'Войти', pricing: 'Тарифы', tour: 'Экскурсия', tools: 'Everyday Tools' },
-  fr: { credits: 'Crédits IA', login: 'Connexion', pricing: 'Tarifs', tour: 'Visite guidée', tools: 'Everyday Tools' },
-  es: { credits: 'Créditos IA', login: 'Acceder', pricing: 'Precios', tour: 'Visita guiada', tools: 'Everyday Tools' }
+  ru: { credits: 'AI-кредиты', login: 'Войти', pricing: 'Тарифы', tour: 'Экскурсия', tools: 'Инструменты' },
+  fr: { credits: 'Crédits IA', login: 'Connexion', pricing: 'Tarifs', tour: 'Visite guidée', tools: 'Outils' },
+  es: { credits: 'Créditos IA', login: 'Acceder', pricing: 'Precios', tour: 'Visita guiada', tools: 'Herramientas' }
 };
 
 const locale = () => {
@@ -161,7 +161,7 @@ export function installUnifiedPlatformHeader() {
   left.append(tour);
 
   tools.classList.add('ds-pod-btn', 'ds-pod-tools');
-  tools.innerHTML = '<span class="ds-pod-icon" aria-hidden="true" style="margin-right:7px;display:inline-flex;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span><span class="ds-pod-text">Everyday Tools</span>';
+  tools.innerHTML = '<span class="ds-pod-icon" aria-hidden="true" style="margin-right:7px;display:inline-flex;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span><span class="ds-pod-text">' + dictionary().tools + '</span>';
   left.append(tools);
 
   // Center Orb
@@ -172,7 +172,7 @@ export function installUnifiedPlatformHeader() {
   right.className = 'ds-header-pod ds-header-pod-right ds-unified-actions-right';
 
   credit.classList.add('ds-pod-btn', 'ds-pod-credit');
-  credit.innerHTML = '<span class="ds-pod-icon" aria-hidden="true" style="margin-right:6px;display:inline-flex;align-items:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="#facc15" stroke="#facc15" stroke-width="1"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></span><span class="ds-pod-text">AI Credits</span>';
+  credit.innerHTML = '<span class="ds-pod-icon" aria-hidden="true" style="margin-right:6px;display:inline-flex;align-items:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="#facc15" stroke="#facc15" stroke-width="1"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></span><span class="ds-pod-text">' + dictionary().credits + '</span>';
   credit.setAttribute('aria-label', 'AI Credit');
   if (location.pathname.endsWith('/free-tools.html')) {
     const help=link('Help','contact.html','ds-header-help-link');
@@ -221,6 +221,10 @@ export function installUnifiedPlatformHeader() {
 
   // Update on language change
   window.addEventListener('deepsyq:lang', () => {
+    const tl = tools.querySelector('.ds-pod-text');
+    if (tl) tl.textContent = dictionary().tools;
+    const cr = credit.querySelector('.ds-pod-text');
+    if (cr) cr.textContent = dictionary().credits;
     const t = tour.querySelector('.ds-pod-text');
     if (t) t.textContent = dictionary().tour;
     const p = pricing.querySelector('.ds-pod-text');

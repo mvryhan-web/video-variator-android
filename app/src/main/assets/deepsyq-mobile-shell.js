@@ -78,9 +78,9 @@ function setupMobileShell() {
 
   const words = {
     en: ['All tools', 'Pricing', 'Log in', 'Take a Tour'],
-    ru: ['Все инструменты', 'Тарифы', 'Войти', 'Экскурсия'],
-    fr: ['Tous les outils', 'Tarifs', 'Connexion', 'Visite guidée'],
-    es: ['Herramientas', 'Precios', 'Acceder', 'Visita guiada']
+    ru: ['Инструменты', 'Тарифы', 'Войти', 'Экскурсия'],
+    fr: ['Outils', 'Tarifs', 'Connexion', 'Visite'],
+    es: ['Herram.', 'Precios', 'Acceder', 'Visita']
   };
   const locale = () => {
     try {
@@ -190,10 +190,12 @@ function setupMobileShell() {
     // The desktop credit stays exactly as it was: only legacy workspaces receive this extra.
     // Owner 07 Nov: no AI Apps header pill. Its position beside the orb
     // belongs to the working AI Credit link; Tour moves to the other side.
-    const balance=link('⚡ AI Credit','pricing.html#credits','ds-header-credit');
+    const creditLabels={en:'⚡ AI Credit',ru:'⚡ Кредиты',fr:'⚡ Crédits',es:'⚡ Créditos'};
+    const balance=link(creditLabels[locale()]||creditLabels.en,'pricing.html#credits','ds-header-credit');
     balance.setAttribute('aria-label','AI Credit');
-    const updateCredit=async()=>{const token=localStorage.getItem('vv_token');balance.textContent='⚡ AI Credit';balance.removeAttribute('title');if(!token)return;try{const r=await fetch('/api/ai-wallet/balance',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const data=await r.json();if(token===localStorage.getItem('vv_token')&&Number.isSafeInteger(data.available)&&data.available>=0)balance.title='Available AI credits: '+data.available.toLocaleString();}catch{}};
+    const updateCredit=async()=>{const token=localStorage.getItem('vv_token');balance.textContent=creditLabels[locale()]||creditLabels.en;balance.removeAttribute('title');if(!token)return;try{const r=await fetch('/api/ai-wallet/balance',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const data=await r.json();if(token===localStorage.getItem('vv_token')&&Number.isSafeInteger(data.available)&&data.available>=0)balance.title='Available AI credits: '+data.available.toLocaleString();}catch{}};
     void updateCredit();window.addEventListener('storage',e=>{if(e.key==='vv_token')void updateCredit();});
+    window.addEventListener('deepsyq:lang',()=>{if(!balance.title)balance.textContent=creditLabels[locale()]||creditLabels.en;});
     const placeExtras=()=>{
       if(document.body.classList.contains('ds-mobile-layout')){
         if(balance.parentElement!==left)left.append(balance);

@@ -232,10 +232,16 @@
     align-items: center !important;
     margin: 0 !important;
   }
+  .ds-pod-lang-wrap::after {
+    content: none !important;
+    display: none !important;
+  }
+  #dsUnifiedLanguage,
   .ds-pod-lang-wrap select {
     appearance: none !important;
     -webkit-appearance: none !important;
-    background: #060e20 !important;
+    -moz-appearance: none !important;
+    background-color: #060e20 !important;
     color: #fff !important;
     border: 1px solid rgba(255, 255, 255, 0.28) !important;
     border-radius: 9999px !important;
@@ -248,6 +254,10 @@
     background-repeat: no-repeat !important;
     background-position: right 9px center !important;
     box-sizing: border-box !important;
+  }
+  #dsUnifiedLanguage::-ms-expand,
+  .ds-pod-lang-wrap select::-ms-expand {
+    display: none !important;
   }
 
   /* Log in / Войти: vibrant magenta-pink to cyan gradient */
