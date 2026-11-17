@@ -1,5 +1,15 @@
 # DEEPSYQ — журнал работ и проверок
 
+## 2026-11-17 — Проверка Google Search Console и подготовка точечных SEO-исправлений
+
+- Источник: авторизованный Google Search Console `sc-domain:deepsyq.app` (отчёт индексации обновлён Google 2026-11-13): **28 проиндексировано, 39 исключено**. Причины: 19 альтернативных URL с корректным canonical, 15 `noindex`, 4 redirect, 1 crawled-currently-not-indexed. Это **не** 39 обязательных к индексации самостоятельных страниц. Точный список URL по каждой причине не выгружен; запрещено утверждать, что Google принял запросы на индексацию.
+- Read-only live audit: `https://deepsyq.app/index.html` сейчас отдаёт `index,follow` и canonical `https://deepsyq.app/`; исходный `app/src/main/assets/index.html` ошибочно содержал `noindex,follow`, что было риском будущего релиза. В исходнике исправлен **только** robots meta, commit `9b12b30dd`.
+- Read-only live audit: `https://deepsyq.app/video-sur-mesure.html` сейчас отдаёт `noindex,nofollow` и не содержит canonical, хотя это публичная рекламная посадочная страница. В исходнике исправлен robots meta на `index,follow`, добавлен self-canonical, остальные байты страницы сохранены, commit `77143f7c8`.
+- В `app/src/main/assets/sitemap.xml` точечно добавлены **5 уже проверенных live HTTP 200 публичных адресов**: `video-sur-mesure.html`, `contact.html`, `design-gallery.html`, `smart-reminders.html`, `telegram-free-mini.html` (12 -> 17 уникальных URL); исходные 12 URL и robots.txt сохранены, commit `be4b672df`.
+- GitHub Actions `Agent A international SEO release preflight (offline)` run `44083651774` завершён **success**. Другие unrelated CI workflows могут быть красными; они не доказывают, что SEO-публикация сделана.
+- **Production НЕ опубликован этими коммитами.** Прежде чем выпускать landing + sitemap, требуется guarded exact-two-asset production release с доказанным сохранением LIVE Worker/Functions, Stripe, auth, всех остальных assets. `index.html` не следует публиковать из DEV без сверки: рабочий сайт уже индексируем, а исходная HTML-страница может отличаться дизайном.
+- Следующее: получить из Google Search Console точный URL для статуса «Проскановано — сейчас не проиндексировано», разнести остальные URL по intended/noindex/redirect/duplicate, выпустить только необходимые публичные SEO-метаданные, проверить HTTP, X-Robots-Tag, sitemap и API, затем запросить переобход URL. Google не гарантирует индексацию.
+
 ## 2026-11-16 — Убрано окно подтверждения перед генерацией в JARVIX Chat и Studio
 
 - Убрано всплывающее окно `window.confirm` («Запустить генерацию за ... AI-кредитов?» в `jarvix-chat.js`) и `confirm` перед платной генерацией («Создать с выбранной AI-моделью ...» в `generate-studio.js`). Запуск генерации изображения, видео или аудио выполняется сразу по нажатию пользователя в штатном режиме: оценка стоимости (`/api/studio/estimate`), проверка баланса (`/api/ai-wallet/balance`), автоматическое подтверждение `consent: true` и `expectedCredits`, а также серверное списание AI-кредитов работают автоматически без изменений.
