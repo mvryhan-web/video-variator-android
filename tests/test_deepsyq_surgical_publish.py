@@ -108,5 +108,10 @@ class SurgicalPublishTests(unittest.TestCase):
     def test_generation_no_confirm_release_scope_allowed(self):
         self.assertTrue(s.allowed_hash_reuse(["jarvix-chat.js", "jarvix-chat.html", "generate-studio.js"]))
 
+    def test_fal_worker_scope_requires_fal_key_and_queue_markers(self):
+        worker_text = (s.ROOT / "_worker.js").read_bytes()
+        self.assertIn(b"queue.fal.run/", worker_text)
+        self.assertIn(b"env.FAL_KEY", worker_text)
+
 if __name__ == "__main__":
     unittest.main()
