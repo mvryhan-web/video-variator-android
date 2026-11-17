@@ -52,7 +52,7 @@ jobs:
           assert '<link rel="canonical" href="https://deepsyq.app/">' in home
           assert sales.count('<meta name="robots" content="index,follow">') == 1
           assert sales.count('<link rel="canonical" href="https://deepsyq.app/video-sur-mesure.html">') == 1
-          assert re.search(r"<h1\\b", sales, re.I)
+          assert re.search(r"<h1\b", sales, re.I)
           root = ET.fromstring(sitemap)
           entries = [item.text for item in root.findall("{http://www.sitemaps.org/schemas/sitemap/0.9}url/{http://www.sitemaps.org/schemas/sitemap/0.9}loc")]
           assert len(entries) == 17 and len(set(entries)) == 17
