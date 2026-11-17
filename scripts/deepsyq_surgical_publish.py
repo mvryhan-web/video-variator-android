@@ -803,6 +803,8 @@ def main():
                                 if (entry.get("type") == "plain_text" and
                                     entry.get("name") in ("CF_PAGES_COMMIT_SHA", "CF_PAGES_URL")):
                                     entry["text"] = "<deployment-generated>"
+                                if args.fal_worker and entry.get("name") == "FAL_KEY":
+                                    continue
                                 normalized.append(entry)
                             result["bindings"] = sorted(normalized, key=lambda v: json.dumps(v, sort_keys=True))
                         return result
