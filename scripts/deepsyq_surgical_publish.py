@@ -62,11 +62,12 @@ THEME_SEASON_RELEASE = frozenset({"account-settings.html", "deepsyq-theme-loader
 THEME_MOBILE_SNOW_RELEASE = frozenset({"deepsyq-christmas-v4.js", "deepsyq-christmas-v4.css", "deepsyq-theme-loader.js"})  # only mobile scroll binding + V4 cache version
 PWA_SEO_RELEASE = frozenset({"account-settings.html", "ai-apps.html", "deepsyq-vs-deepseek.html", "deepsyq.html", "deepsyq.js", "deepsyq.webmanifest", "index.html", "llms.txt", "robots.txt", "sitemap.xml", "sw.js"})
 HEADER_BLOCK1_RELEASE = frozenset({"deepsyq-mobile-shell.css", "deepsyq-mobile-shell.js", "deepsyq-unified-platform-header.css", "deepsyq-unified-platform-header.js", "deepsyq-action-auth-gate.js"})
+DESIGN_AUDIT_RELEASE = frozenset({"deepsyq-mobile-shell.css", "deepsyq-mobile-shell.js", "deepsyq-unified-platform-header.css", "deepsyq-unified-platform-header.js", "deepsyq-action-auth-gate.js", "free-tools.html", "everyday-tools-visual.css", "everyday-tools-visual.js", "mobile-utility-links.js", "ai-apps.html", "account-settings.html", "video-uniquifier.html", "video-uniquifier-reference.js", "jarvix-chat.js", "pricing-page.js", "deepsyq-i18n.js", "canvas-workspace.css", "pricing-page.css"})
 
 
 def approved_new_assets(paths):
     scope = frozenset(paths)
-    if scope == HEADER_BLOCK1_RELEASE:
+    if scope in (HEADER_BLOCK1_RELEASE, DESIGN_AUDIT_RELEASE):
         return frozenset({"deepsyq-action-auth-gate.js"})
     if scope == PWA_SEO_RELEASE:
         return frozenset({"llms.txt"})
@@ -129,6 +130,7 @@ HASH_REUSE_RELEASE_SETS = (
     frozenset({"free-tools.html", "everyday-tools-visual.css", "everyday-tools-visual.js", "mobile-utility-links.js"}),
     frozenset({"ai-apps.html", "account-settings.html", "video-uniquifier.html", "video-uniquifier-reference.js", "jarvix-chat.js", "pricing-page.js", "deepsyq-i18n.js"}),
     frozenset({"canvas-workspace.css", "pricing-page.css", "account-settings.html"}),
+    DESIGN_AUDIT_RELEASE,
     frozenset({"auth-email.js", "auth-email.css"}),
     frozenset({"auth-email.css"}),
     frozenset({"auth-email.js", "auth-email.css", "jarvix-chat.js"}),
