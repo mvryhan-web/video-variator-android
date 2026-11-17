@@ -7,6 +7,8 @@
 - [x] Remove explicit SEO opt-out from source of the publicly marketed `video-sur-mesure.html`; add absolute canonical only.
 - [x] Expand sitemap 12 -> 17 with five verified public self-canonical HTML URLs; do not list private chat/admin, preview or duplicate canonical routes.
 - [x] GitHub Actions offline SEO preflight passed: 44083651774.
+- [x] Attempt guarded release without weakening Worker/original asset guards: GitHub Actions [44084397657](https://github.com/mvryhan-web/video-variator-android/actions/runs/44084397657). SEO preflight PASS; publication correctly BLOCKED before deploy because unchanged LIVE `/404.html` bytes could not be reproduced (`BLOCKED_MAIN`). No production changes.
+- [ ] Resolve production baseline asset reproducibility and exact Worker source provenance via verified original Cloudflare publishing workspace; NEVER omit `_worker.js`, republish all assets, alter payment/API bindings or bypass the guard to release SEO.
 - [ ] Publish **only** `video-sur-mesure.html` and `sitemap.xml` via guarded point-deploy preserving the exact currently deployed Worker, Pages functions, security bindings, billing and all other files; do not push old `index.html` to production.
 - [ ] Confirm fresh production HTTP 200, self-canonical, `index,follow`, valid sitemap, and live `/api/config` after release; roll back only this release if regressions.
 - [ ] Obtain exact one URL marked `Crawled - currently not indexed` from Google Search Console; inspect rendered content, canonical, X-Robots-Tag, last crawl and internal navigation; improve page-specific value if necessary.
