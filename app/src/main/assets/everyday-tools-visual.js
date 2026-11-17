@@ -58,7 +58,7 @@
   {category:'image',href:'mobile-utility.html?tool=scan-pdf',rect:[452,537,136,146]},
   {category:'image',href:'photo-collage.html',rect:[838,537,148,146]},
   {category:'image',href:'simple-background-remover.html',rect:[1258,537,138,146]},
-  {category:'video',mode:'prompter',rect:[470,697,117,148]},
+  {category:'video',mode:'prompter',rect:[505,697,82,148]},
   {category:'everyday',href:'smart-reminders.html',rect:[832,697,154,148]},
   {category:'creative',href:'avatar-studio.html',rect:[1226,697,171,148]}
  ];

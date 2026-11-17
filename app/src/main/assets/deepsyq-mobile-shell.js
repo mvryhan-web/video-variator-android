@@ -218,7 +218,7 @@ function setupMobileShell() {
   function refresh() {
     if (document.body.classList.contains("ds-unified-platform")) { return; }
     const labels = copy();
-    tools.textContent=document.body.classList.contains('ds-embedded-uniquifier')?'Everyday Tools':labels[0];tour.textContent=labels[3];
+    tools.textContent=(document.body.classList.contains('ds-embedded-uniquifier')&&locale()==='en')?'Everyday Tools':labels[0];tour.textContent=labels[3];
     pricing.innerHTML = '<span class="ds-pod-icon" aria-hidden="true" style="margin-right:4px;color:#fbbf24;font-size:13px">👑</span>' + labels[1];
     let token='';try{token=localStorage.getItem('vv_token')||'';}catch{}
     const account=headerAccount(token,locale());login.textContent=account.label;if(login.tagName==='A')login.href=account.href;
