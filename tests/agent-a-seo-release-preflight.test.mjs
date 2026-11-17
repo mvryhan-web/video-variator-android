@@ -178,3 +178,21 @@ test('preflight GitHub Actions reruns when actual SEO input pages/robots/sitemap
  assert.match(workflow,/\bSEO_RELEASE_STRICT:/,'manual strict flag must reach Node test');
  assert.match(workflow,/\bSEO_PUBLIC_ORIGIN:/,'manual owner-approved origin must reach Node test');
 });
+
+test('indexable public home and advertising URL stay canonical while private routes remain excluded',async()=>{
+ const [home,sales,xml]=await Promise.all([
+  page('index.html'),page('video-sur-mesure.html'),page('sitemap.xml')
+ ]);
+ assert.equal(robots(home),'index,follow','Home source must never regress to noindex');
+ assert.equal(canonical(home),'https://deepsyq.app/');
+ assert.equal(robots(sales),'index,follow','Public commercial landing must be eligible for Google');
+ assert.equal(canonical(sales),'https://deepsyq.app/video-sur-mesure.html');
+ assert.ok(/<h1\b/i.test(sales),'Public marketing page needs a real HTML H1');
+ const sitemap=locations(xml);
+ assert.equal(new Set(sitemap).size,sitemap.length,'No sitemap duplicates');
+ for(const slug of ['video-sur-mesure.html','contact.html','design-gallery.html','smart-reminders.html','telegram-free-mini.html']){
+  assert.ok(sitemap.includes('https://deepsyq.app/'+slug),'Missing canonical public '+slug);
+ }
+ assert.ok(!sitemap.some(url=>/\/api\/|\/deepsyq-admin|\/product-watcher-admin|\/jarvix-chat|\/account-settings|\/my-creations|\/generate-studio/i.test(url)),
+  'No private, admin or authenticated workspace URLs should appear in sitemap');
+});
