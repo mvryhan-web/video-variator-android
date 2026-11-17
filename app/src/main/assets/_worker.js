@@ -1134,9 +1134,58 @@ export default {
       let wanTaskId = null;
       let status = 'ready';
       let progress = 100;
+      let falStatusUrl = null;
+      let falResponseUrl = null;
+      let resolvedProvider = 'Google';
 
-      // Direct Wan video generation when DASHSCOPE_API_KEY is configured
-      if (kind === 'video' && env.DASHSCOPE_API_KEY) {
+      const falEndpointFor = (k, m) => {
+        const ml = String(m || '').toLowerCase();
+        if (k === 'video') {
+          if (ml.includes('veo')) return 'fal-ai/veo3/fast';
+          if (ml.includes('seedance') && (ml.includes('mini') || ml.includes('fast'))) return 'fal-ai/bytedance/seedance/v1/lite/text-to-video';
+          if (ml.includes('seedance')) return 'fal-ai/bytedance/seedance/v1/pro/text-to-video';
+          if (!ml.includes('wan')) return 'fal-ai/bytedance/seedance/v1/lite/text-to-video';
+          return null;
+        }
+        if (k === 'image') {
+          if (ml.includes('seedream')) return 'fal-ai/bytedance/seedream/v3/text-to-image';
+          if (ml.includes('gpt-image') || ml.includes('gemini')) return 'fal-ai/flux/schnell';
+          return null;
+        }
+        if (k === 'music' || (k === 'audio' && (ml.includes('lyria') || ml.includes('suno') || ml.includes('seed-audio')))) {
+          return 'fal-ai/cassetteai/music-generator';
+        }
+        return null;
+      };
+
+      const falEndpoint = (env.FAL_KEY && (isPaid || spendCredits > 0)) ? falEndpointFor(kind, model) : null;
+      if (falEndpoint) {
+        try {
+          const falBody = kind === 'video'
+            ? { prompt: String(prompt || 'Cinematic video').slice(0, 1500), aspect_ratio: ratio === '9:16' || ratio === '16:9' || ratio === '1:1' ? ratio : '16:9' }
+            : kind === 'image'
+            ? { prompt: String(prompt || 'Studio image').slice(0, 1500), image_size: ratio === '9:16' ? 'portrait_16_9' : ratio === '16:9' ? 'landscape_16_9' : 'square_hd' }
+            : { prompt: String(prompt || 'Ambient music').slice(0, 1000), duration: Math.min(Math.max(Number(duration) || 15, 5), 30) };
+          const falRes = await fetch('https://queue.fal.run/' + falEndpoint, {
+            method: 'POST',
+            headers: { 'Authorization': 'Key ' + env.FAL_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify(falBody)
+          });
+          if (falRes.ok) {
+            const falData = await falRes.json();
+            if (falData?.status_url && falData?.response_url) {
+              falStatusUrl = falData.status_url;
+              falResponseUrl = falData.response_url;
+              status = 'processing';
+              progress = 15;
+              resolvedProvider = 'fal.ai';
+            }
+          }
+        } catch (_) {}
+      }
+
+      // Direct Wan video generation when DASHSCOPE_API_KEY is configured and fal.ai did not handle it
+      if (!falStatusUrl && kind === 'video' && env.DASHSCOPE_API_KEY) {
         try {
           const wanModel = (model && model.includes('wan')) ? model : 'wan2.1-t2v-turbo';
           const size = ratio === '9:16' ? '720*1280' : '1280*720';
@@ -1210,15 +1259,17 @@ export default {
         userId: jobOwner,
         kind,
         model: model || (kind === 'video' ? 'veo-3.1-lite-generate-preview' : isAudio ? 'lyria-3-clip-preview' : 'gemini-3.1-flash-image'),
-        provider: kind === 'video' ? 'Google' : isAudio ? 'Google' : 'Google',
+        provider: resolvedProvider,
         prompt,
         title: String(prompt || 'Studio Creation').slice(0, 60),
         status,
         progress,
         wanTaskId,
+        falStatusUrl,
+        falResponseUrl,
         videoUrl: null,
-        imageUrl,
-        audioUrl,
+        imageUrl: falStatusUrl ? null : imageUrl,
+        audioUrl: falStatusUrl ? null : audioUrl,
         isFavorite: false,
         archived: false,
         created_at: new Date().toISOString(),
@@ -1401,6 +1452,34 @@ export default {
       if(request.method==='DELETE'&&!isMedia){
         studioJobs.delete(id);
         return json({ok:true});
+      }
+
+      if (job.falStatusUrl && env.FAL_KEY && (job.status === 'processing' || job.status === 'queued')) {
+        try {
+          const stRes = await fetch(job.falStatusUrl, { headers: { 'Authorization': 'Key ' + env.FAL_KEY } });
+          if (stRes.ok) {
+            const stData = await stRes.json();
+            if (stData?.status === 'COMPLETED' && job.falResponseUrl) {
+              const outRes = await fetch(job.falResponseUrl, { headers: { 'Authorization': 'Key ' + env.FAL_KEY } });
+              if (outRes.ok) {
+                const out = await outRes.json();
+                const media = out?.video?.url || out?.images?.[0]?.url || out?.audio_file?.url || out?.audio?.url || null;
+                if (media) {
+                  if (job.kind === 'video') job.videoUrl = media;
+                  else if (job.kind === 'audio' || job.kind === 'music') job.audioUrl = media;
+                  else job.imageUrl = media;
+                }
+                job.status = 'ready';
+                job.progress = 100;
+              }
+            } else if (stData?.status === 'FAILED' || stData?.status === 'ERROR') {
+              job.status = 'failed';
+              job.progress = 0;
+            } else if (stData?.status === 'IN_PROGRESS') {
+              job.progress = 60;
+            }
+          }
+        } catch (_) {}
       }
 
       if (job.wanTaskId && env.DASHSCOPE_API_KEY && (job.status === 'processing' || job.status === 'queued')) {

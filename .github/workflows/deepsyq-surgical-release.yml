@@ -230,7 +230,8 @@ jobs:
           github.event.head_commit.message == 'release(Everyday Tools): remove duplicate and realign artwork' ||
           github.event.head_commit.message == 'release(Contact): publish help@deepsyq.app support form' ||
           github.event.head_commit.message == 'release(Generation): remove credit confirmation dialog' ||
-          github.event.head_commit.message == 'release(SEO and PWA): restore PWA install, remove index noindex, expand sitemap and AI search')))
+          github.event.head_commit.message == 'release(SEO and PWA): restore PWA install, remove index noindex, expand sitemap and AI search' ||
+          github.event.head_commit.message == 'release(Studio): connect fal.ai gateway for Seedance, Veo 3 and Seedream')))
     needs: tests
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -280,6 +281,10 @@ jobs:
           fi
           if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(AI Credits): enable Checkout on production aliases' }}" == "true" ]]; then
             python scripts/deepsyq_surgical_publish.py --mode publish --files "" --commit "$GITHUB_SHA" --credit-worker
+            exit
+          fi
+          if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Studio): connect fal.ai gateway for Seedance, Veo 3 and Seedream' }}" == "true" ]]; then
+            python scripts/deepsyq_surgical_publish.py --mode publish --files "" --commit "$GITHUB_SHA" --fal-worker
             exit
           fi
           if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Account): publish Account and Settings design' }}" == "true" ]]; then

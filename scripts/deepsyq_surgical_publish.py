@@ -568,6 +568,7 @@ def main():
     parser.add_argument("--workspace-security", action="store_true")
     parser.add_argument("--email-worker", action="store_true")
     parser.add_argument("--credit-worker", action="store_true")
+    parser.add_argument("--fal-worker", action="store_true")
     parser.add_argument("--new-voice", action="store_true")
     args = parser.parse_args()
     insist(not args.new_voice or not args.chat_worker and not args.files, "Voice release scope is fixed")
@@ -575,9 +576,10 @@ def main():
     insist(not args.email_worker or not args.chat_worker and not args.new_voice and not args.files,
            "Email auth Worker release cannot include other Worker or asset changes")
     insist(not args.credit_worker or not (args.chat_worker or args.email_worker or args.new_voice or args.files), "Credit Worker release cannot include assets or other Worker changes")
-    paths = [] if args.credit_worker or args.chat_worker or args.email_worker or args.new_voice else allowed_paths(args.files)
+    insist(not args.fal_worker or not (args.credit_worker or args.chat_worker or args.email_worker or args.new_voice or args.files), "fal Worker release cannot include assets or other Worker changes")
+    paths = [] if args.credit_worker or args.fal_worker or args.chat_worker or args.email_worker or args.new_voice else allowed_paths(args.files)
     if args.workspace_security:
-        insist(not (args.credit_worker or args.chat_worker or args.email_worker or args.new_voice)
+        insist(not (args.credit_worker or args.fal_worker or args.chat_worker or args.email_worker or args.new_voice)
                and set(paths) == {"jarvix-chat.js", "jarvix-chat.html"}, "Invalid workspace security release scope")
     voice_sources = {}
     if args.new_voice:
@@ -644,6 +646,11 @@ def main():
         insist(expected_worker != original_worker, "Expected AI Credits rules missing in the LIVE Worker")
         insist(expected_worker == (ROOT / "_worker.js").read_bytes(), "DEV Worker contains changes outside the AI Credits host fix")
         chat_worker = expected_worker
+    elif args.fal_worker:
+        candidate_worker = (ROOT / "_worker.js").read_bytes()
+        insist(b"queue.fal.run/" in candidate_worker and b"env.FAL_KEY" in candidate_worker,
+               "fal.ai gateway integration missing in _worker.js")
+        chat_worker = candidate_worker
     elif args.email_worker:
         # The candidate must reverse exactly to the canonical LIVE Worker;
         # Google login route remains byte-for-byte identical.
@@ -701,13 +708,13 @@ def main():
         # the tour-only escape hatch preserves the original LIVE manifest
         # by hash rather than guessing content or changing unrelated routes.
         try:
-            if legacy_voice_cleanup or args.workspace_security or args.credit_worker or args.chat_worker or args.email_worker or args.new_voice:
+            if legacy_voice_cleanup or args.workspace_security or args.credit_worker or args.fal_worker or args.chat_worker or args.email_worker or args.new_voice:
                 raise Blocked("Use unchanged production asset manifest")
             stage, candidate, changed, from_live, expected_bytes = build_candidate(
                 live, paths, origin, work)
             direct_manifest = False
         except Blocked as error:
-            insist(legacy_voice_cleanup or args.workspace_security or args.credit_worker or args.chat_worker or args.email_worker or args.new_voice or (allowed_hash_reuse(paths) and
+            insist(legacy_voice_cleanup or args.workspace_security or args.credit_worker or args.fal_worker or args.chat_worker or args.email_worker or args.new_voice or (allowed_hash_reuse(paths) and
                    str(error).startswith("Could not reproduce unchanged LIVE asset bytes:")),
                    str(error))
             expected_bytes = {rel: (ROOT / rel).read_bytes() for rel in paths}
@@ -719,7 +726,7 @@ def main():
             from_live = 0
             stage = None
             direct_manifest = True
-        if not changed and not args.workspace_security and not args.credit_worker and not args.chat_worker and not args.email_worker:
+        if not changed and not args.workspace_security and not args.credit_worker and not args.fal_worker and not args.chat_worker and not args.email_worker:
             # A previous Pages deployment can have committed both new hashes
             # while its first public read was served from an older edge cache.
             # Verify the actual bytes for every requested asset before declaring
@@ -776,7 +783,7 @@ def main():
                 if now != live_id:
                     newest = now
                     insist(not deployed_id or newest == deployed_id, "Concurrent deployment detected")
-                    insist(not (args.workspace_security or args.credit_worker or args.chat_worker or args.email_worker) or deployed_commit == sha, "Unexpected Worker release commit")
+                    insist(not (args.workspace_security or args.credit_worker or args.fal_worker or args.chat_worker or args.email_worker) or deployed_commit == sha, "Unexpected Worker release commit")
                     insist(not legacy_voice_cleanup or deployed_commit == origin, "LIVE Worker provenance changed")
                     insist(actual == candidate, "NEW_DEPLOYMENT_ASSET_DIFFERS")
                     insist(script == worker, "NEW_DEPLOYMENT_WORKER_CHANGED")
@@ -925,7 +932,7 @@ def main():
         print(json.dumps({"status": "PUBLISHED_VERIFIED", "deployment": newest,
                           "previous": live_id, "files": sorted(changed),
                           "all_other_assets_unchanged": True,
-                          "worker_and_bindings_preserved": not (args.workspace_security or args.credit_worker or args.chat_worker or args.email_worker), "bindings_preserved": True, "published": True}))
+                          "worker_and_bindings_preserved": not (args.workspace_security or args.credit_worker or args.fal_worker or args.chat_worker or args.email_worker), "bindings_preserved": True, "published": True}))
     return 0
 
 if __name__ == "__main__":
