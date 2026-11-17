@@ -1,5 +1,13 @@
 # DEEPSYQ — журнал работ и проверок
 
+### 2026-11-17 — SEO indexability: PUBLISHED AND LIVE-VERIFIED
+
+- Safe exact-two-file release: GitHub Actions [44085547710](https://github.com/mvryhan-web/video-variator-android/actions/runs/44085547710), Cloudflare production deployment **`06e7a5a7-524e-4951-9f41-955b15bfa831`**. Explicit scope **`/sitemap.xml`** and **`/video-sur-mesure.html`** only.
+- Release logs: `SURGICAL_PREFLIGHT_PASS`, then `PUBLISHED_VERIFIED`; **2,845 other asset hashes unchanged**, current Worker source SHA `18c7de718716`, Worker/Functions and all bindings preserved (Stripe, DB, auth, storage).
+- Production after release independently checked: `https://deepsyq.app/video-sur-mesure.html` HTTP 200, robots `index,follow`, exact self canonical; `/sitemap.xml` HTTP 200, exactly 17 distinct URLs including that page, no five noindex/canonical duplicates; `/index.html` HTTP 200, robots `index,follow`, canonical `/`; `/api/config` HTTP 200.
+- Concurrent SEO/PWA changes published separately by another job ([44085039540](https://github.com/mvryhan-web/video-variator-android/actions/runs/44085039540)); this release preserved them and corrected five sitemap entries contradicted by actual live robots/canonical responses.
+- **Google indexing itself remains pending:** Search Console index report dated 2026-11-13 showed 28 indexed / 39 excluded (19 canonical alternatives, 15 noindex, 4 redirects, 1 crawled-not-indexed). Request Google to re-evaluate `video-sur-mesure.html` and the refreshed sitemap; exact URL of crawled-not-indexed page still requires drill-down; do not promise that Google will index every URL.
+
 ## 2026-11-17 — Проверка Google Search Console и подготовка точечных SEO-исправлений
 
 - Источник: авторизованный Google Search Console `sc-domain:deepsyq.app` (отчёт индексации обновлён Google 2026-11-13): **28 проиндексировано, 39 исключено**. Причины: 19 альтернативных URL с корректным canonical, 15 `noindex`, 4 redirect, 1 crawled-currently-not-indexed. Это **не** 39 обязательных к индексации самостоятельных страниц. Точный список URL по каждой причине не выгружен; запрещено утверждать, что Google принял запросы на индексацию.
