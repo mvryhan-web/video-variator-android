@@ -1,5 +1,12 @@
 # DEEPSYQ ROADMAP — approved next product phase
 
+### 2026-11-17 — Protected production SEO release completed
+
+- [x] GitHub Actions [44085547710](https://github.com/mvryhan-web/video-variator-android/actions/runs/44085547710) -> Cloudflare **`06e7a5a7-524e-4951-9f41-955b15bfa831`**; changed only `/video-sur-mesure.html` and `/sitemap.xml`, verified 2,845 other assets and Worker/bindings unchanged.
+- [x] Live verified `index,follow`, marketing self-canonical, unique 17-URL sitemap, Home `index,follow`, `/api/config` HTTP 200.
+- [ ] Google Search Console: submit/refresh `https://deepsyq.app/sitemap.xml`, use URL inspection and request indexing of `https://deepsyq.app/video-sur-mesure.html` (not done by API; user's authenticated Search Console interaction required).
+- [ ] Recheck Indexing report after Google updates and inspect exact one crawled-not-indexed URL. Exclude deliberate canonical variants, redirects and private noindex pages.
+
 ## 2026-11-17 — Google indexing remediation (Search Console / release)
 
 - [x] Inspect owner's authenticated `deepsyq.app` Search Console Overview, Performance and Page Indexing: 28 indexed, 39 excluded as of Google's 2026-11-13 index report (19 canonical alternatives, 15 noindex, 4 redirects, 1 crawled-not-indexed).
@@ -9,8 +16,8 @@
 - [x] GitHub Actions offline SEO preflight passed: 44083651774.
 - [x] Attempt guarded release without weakening Worker/original asset guards: GitHub Actions [44084397657](https://github.com/mvryhan-web/video-variator-android/actions/runs/44084397657). SEO preflight PASS; publication correctly BLOCKED before deploy because unchanged LIVE `/404.html` bytes could not be reproduced (`BLOCKED_MAIN`). No production changes.
 - [ ] Resolve production baseline asset reproducibility and exact Worker source provenance via verified original Cloudflare publishing workspace; NEVER omit `_worker.js`, republish all assets, alter payment/API bindings or bypass the guard to release SEO.
-- [ ] Publish **only** `video-sur-mesure.html` and `sitemap.xml` via guarded point-deploy preserving the exact currently deployed Worker, Pages functions, security bindings, billing and all other files; do not push old `index.html` to production.
-- [ ] Confirm fresh production HTTP 200, self-canonical, `index,follow`, valid sitemap, and live `/api/config` after release; roll back only this release if regressions.
+- [x] Publish **only** `video-sur-mesure.html` and `sitemap.xml` via guarded point-deploy preserving the exact currently deployed Worker, Pages functions, security bindings, billing and all other files; do not push old `index.html` to production.
+- [x] Confirm fresh production HTTP 200, self-canonical, `index,follow`, valid sitemap, and live `/api/config` after release; roll back only this release if regressions.
 - [ ] Obtain exact one URL marked `Crawled - currently not indexed` from Google Search Console; inspect rendered content, canonical, X-Robots-Tag, last crawl and internal navigation; improve page-specific value if necessary.
 - [ ] Classify all 15 `noindex` URLs and 19 canonical alternatives by actual URL: keep account, admin, payment, chat/private workspace and duplicate routes excluded intentionally; only remove mistaken public opt-outs.
 - [ ] Submit up-to-date sitemap and request index recheck for corrected eligible public URLs in Search Console after verified production release. Google indexing cannot be guaranteed.
