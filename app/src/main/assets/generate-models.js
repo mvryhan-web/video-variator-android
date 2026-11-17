@@ -72,4 +72,25 @@ const RAW_MODEL_CATALOG=[
  {id:'byteplus-seedance-speed-2-catalog',label:'Seedance Speed 2.0',kind:'voice',provider:'BytePlus · unverified model',adapter:false,ratios:[],references:0,description:'Requested audio model name; provider API mapping needs verification.',descriptionRu:'Запрошенная аудиомодель. Нужно проверить сопоставление с API провайдера.'},
  {id:'suno-voice-catalog',label:'Suno Voice',kind:'voice',provider:'Suno · API unverified',adapter:false,ratios:[],references:0,description:'Catalog entry only. Official API access and commercial terms are not verified.',descriptionRu:'Только каталоговая запись. Официальный API и коммерческие условия не проверены.'}
 ];
+export const HIDDEN_MODEL_IDS=new Set([
+ 'byteplus-seedream-3-art-catalog',
+ 'byteplus-seedance-1-dreamer-catalog',
+ 'arcto-video-catalog',
+ 'byteplus-seedance-speed-2-catalog',
+ 'suno-voice-catalog',
+ 'byteplus-seedream-3',
+ 'byteplus-seedream-4',
+ 'byteplus-seedream-4-5',
+ 'byteplus-seedance-1-pro',
+ 'byteplus-seedance-1-fast',
+ 'byteplus-seedance-1.5-pro',
+ 'byteplus-seedance-2-mini',
+ 'byteplus-seedance-2-fast',
+ 'gpt-image-2',
+ 'gpt-image-2.5-flare',
+ 'gemini-nano-banana-2.1',
+ 'byteplus-seed-speech-2',
+ 'byteplus-seed-audio-1'
+]);
+export function isVisibleModel(model){return Boolean(model&&!HIDDEN_MODEL_IDS.has(model.id));}
 export const MODEL_CATALOG=Object.freeze(RAW_MODEL_CATALOG.map(withCapabilities));

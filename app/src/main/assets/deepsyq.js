@@ -1,6 +1,6 @@
 import {renderHomeInspiration,mergeOwnerVideoInspiration} from './home-inspiration.js';
 import {renderHomeCarousel} from './home-experience.js';
-import {MODEL_CATALOG} from './generate-models.js';
+import {MODEL_CATALOG,isVisibleModel} from './generate-models.js';
 import {authorizedOnboardingOptions,onboardingResponseTarget} from './onboarding-options.js';
 const $=id=>document.getElementById(id);
 let base='';try{base=window.AndroidBridge?.getApiBase?.()||'';}catch(_){}base=String(base||window.VV_API_BASE||location.origin).replace(/\/$/,'');
@@ -94,7 +94,7 @@ function closeModelFlyout(){
 function renderModelFlyout(kind){
  const list=$('modelFlyoutList');list.replaceChildren();
  const configured=Array.isArray(studioModelMenuConfig?.catalog)?studioModelMenuConfig.catalog:MODEL_CATALOG;
- const models=configured.filter(m=>m.kind===(kind==='audio'?'music':kind));
+ const models=configured.filter(m=>isVisibleModel(m)&&m.kind===(kind==='audio'?'music':kind));
  const allowedIds=new Set((studioModelMenuConfig?.models||[]).filter(m=>m.enabled===true).map(m=>m.id));
  const studioActive=studioModelMenuConfig?.enabled===true;
  const note=$('modelFlyoutNote');

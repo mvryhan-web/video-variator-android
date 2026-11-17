@@ -82,6 +82,7 @@ def approved_new_assets(paths):
     return frozenset()
 
 HASH_REUSE_RELEASE_SETS = (
+    frozenset({"generate-models.js", "generate-studio.js", "deepsyq.js"}),
     PWA_SEO_RELEASE,
     THEME_ASSET_RELEASE,
     THEME_ACTIVATION_RELEASE,

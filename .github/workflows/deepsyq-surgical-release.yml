@@ -231,7 +231,8 @@ jobs:
           github.event.head_commit.message == 'release(Contact): publish help@deepsyq.app support form' ||
           github.event.head_commit.message == 'release(Generation): remove credit confirmation dialog' ||
           github.event.head_commit.message == 'release(SEO and PWA): restore PWA install, remove index noindex, expand sitemap and AI search' ||
-          github.event.head_commit.message == 'release(Studio): connect fal.ai gateway for Seedance, Veo 3 and Seedream')))
+          github.event.head_commit.message == 'release(Studio): connect fal.ai gateway for Seedance, Veo 3 and Seedream' ||
+          github.event.head_commit.message == 'release(Studio): hide outdated and unverified models from picker')))
     needs: tests
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -260,6 +261,9 @@ jobs:
           fi
           if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Generation): remove credit confirmation dialog' }}" == "true" ]]; then
             SCOPE_FILES="jarvix-chat.js,jarvix-chat.html,generate-studio.js"
+          fi
+          if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(Studio): hide outdated and unverified models from picker' }}" == "true" ]]; then
+            SCOPE_FILES="generate-models.js,generate-studio.js,deepsyq.js"
           fi
           if [[ "${{ github.event_name == 'push' && github.event.head_commit.message == 'release(SEO and PWA): restore PWA install, remove index noindex, expand sitemap and AI search' }}" == "true" ]]; then
             SCOPE_FILES="account-settings.html,ai-apps.html,deepsyq-vs-deepseek.html,deepsyq.html,deepsyq.js,deepsyq.webmanifest,index.html,llms.txt,robots.txt,sitemap.xml,sw.js"
