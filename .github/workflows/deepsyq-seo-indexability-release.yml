@@ -55,6 +55,7 @@ jobs:
           assert re.search(r"<h1\b", sales, re.I)
           root = ET.fromstring(sitemap)
           entries = [item.text for item in root.findall("{http://www.sitemaps.org/schemas/sitemap/0.9}url/{http://www.sitemaps.org/schemas/sitemap/0.9}loc")]
+          # Exact Google-eligible sitemap; excludes five confirmed noindex/duplicate live routes.
           assert len(entries) == 17 and len(set(entries)) == 17
           assert "https://deepsyq.app/video-sur-mesure.html" in entries
           for url in entries:
