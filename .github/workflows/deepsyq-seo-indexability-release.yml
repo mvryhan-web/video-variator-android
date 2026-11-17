@@ -1,0 +1,77 @@
+name: DEEPSYQ SEO - guarded two-asset indexability release
+
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/workflows/deepsyq-seo-indexability-release.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deepsyq-surgical-pages-release
+  cancel-in-progress: false
+
+jobs:
+  public-indexability-only:
+    if: >-
+      github.ref == 'refs/heads/deepsyq-platform' &&
+      github.event.head_commit.message == 'release(DEEPSYQ SEO): publish public video and sitemap only'
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Assert exact public SEO scope and keep user/private routes out of sitemap
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          from urllib.parse import urlsplit
+          from xml.etree import ElementTree as ET
+
+          folder = Path("app/src/main/assets")
+          home = (folder / "index.html").read_text(encoding="utf-8")
+          sales = (folder / "video-sur-mesure.html").read_text(encoding="utf-8")
+          sitemap = (folder / "sitemap.xml").read_text(encoding="utf-8")
+          assert '<meta name="robots" content="index,follow">' in home
+          assert '<link rel="canonical" href="https://deepsyq.app/">' in home
+          assert sales.count('<meta name="robots" content="index,follow">') == 1
+          assert sales.count('<link rel="canonical" href="https://deepsyq.app/video-sur-mesure.html">') == 1
+          assert re.search(r"<h1\\b", sales, re.I)
+          root = ET.fromstring(sitemap)
+          entries = [item.text for item in root.findall("{http://www.sitemaps.org/schemas/sitemap/0.9}url/{http://www.sitemaps.org/schemas/sitemap/0.9}loc")]
+          assert len(entries) == 17 and len(set(entries)) == 17
+          assert "https://deepsyq.app/video-sur-mesure.html" in entries
+          for url in entries:
+              parsed = urlsplit(url)
+              assert parsed.scheme == "https" and parsed.netloc == "deepsyq.app"
+              assert not re.search(r"/(api|deepsyq-admin|product-watcher-admin|account-settings|jarvix-chat|my-creations)(?:/|\\.|$)", parsed.path)
+          print("PUBLIC_SEO_EXACT_TWO_ASSET_PRECHECK_PASS")
+          PY
+          node --test tests/agent-a-seo-release-preflight.test.mjs
+          python3 -m py_compile scripts/deepsyq_surgical_publish.py
+      - name: Install pinned Cloudflare uploader dependencies
+        run: python -m pip install --disable-pip-version-check requests==2.32.3 blake3==1.0.8
+      - name: Publish ONLY marketing HTML and sitemap with unchanged live Worker or fail closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/deepsyq_surgical_publish.py \
+            --mode publish \
+            --files video-sur-mesure.html,sitemap.xml \
+            --commit "$GITHUB_SHA"
