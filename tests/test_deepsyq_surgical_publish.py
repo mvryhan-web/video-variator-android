@@ -97,6 +97,14 @@ class SurgicalPublishTests(unittest.TestCase):
             self.assertEqual(commit, sample_commit)
             self.assertEqual(worker_name, "pages-worker--123-production")
 
+    def test_public_seo_release_only_exact_two_assets_may_reuse_live_hashes(self):
+        pair = ["video-sur-mesure.html", "sitemap.xml"]
+        self.assertTrue(s.allowed_hash_reuse(pair))
+        self.assertTrue(s.allowed_hash_reuse(list(reversed(pair))))
+        self.assertFalse(s.allowed_hash_reuse(["video-sur-mesure.html"]))
+        self.assertFalse(s.allowed_hash_reuse(["sitemap.xml"]))
+        self.assertFalse(s.allowed_hash_reuse(pair + ["index.html"]))
+
     def test_generation_no_confirm_release_scope_allowed(self):
         self.assertTrue(s.allowed_hash_reuse(["jarvix-chat.js", "jarvix-chat.html", "generate-studio.js"]))
 
