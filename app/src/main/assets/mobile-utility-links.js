@@ -24,9 +24,22 @@ const local={
   titles:['Сканування в PDF','Об’єднати PDF','Розділити PDF','Заповнити і підписати PDF','Стиснути PDF','Конвертер фото','Розмір і обрізка фото','Обрізати відео','Прибрати звук з відео','Обрізати аудіо','Створити QR-код','Приховати дані на фото','Фото → текст (OCR)','ZIP: створити / відкрити','Автосубтитри (SRT)'],
   notes:['Фото → документ','Кілька PDF в один','Потрібні сторінки','Текст і підпис','Оптимізувати структуру','JPG, PNG та WebP','Змінити розміри','Початок і кінець','Без звукової доріжки','Зберегти фрагмент','Посилання або Wi-Fi','Приховати безповоротно','Розпізнати текст','Архівувати або витягти','Мовлення → SRT'],
   heading:'Документи, фото та файли',sub:'Безкоштовні корисні інструменти, без кредитів.',tip:'Обробка на пристрої. Великі файли потребують часу.'
+ },
+ es:{
+  titles:['Escanear a PDF','Unir PDF','Dividir PDF','Rellenar y firmar PDF','Optimizar PDF','Convertir imagen','Cambiar tamaño / recortar','Recortar vídeo','Silenciar vídeo','Recortar audio','Crear código QR','Ocultar datos en foto','Foto → texto (OCR)','Crear / abrir ZIP','Subtítulos automáticos (SRT)'],
+  notes:['Cámara o fotos → PDF','Varios PDF en uno','Extraer páginas','Texto y firma','Reducir tamaño PDF','PNG, JPG, WebP','Dimensiones y recorte','Inicio y fin','Vídeo sin sonido','Cortar fragmento','Enlace o Wi-Fi','Cubrir datos sensibles','Copiar texto de imagen','Comprimir o extraer','Audio a SRT local'],
+  heading:'Documentos, fotos y archivos',sub:'Herramientas cotidianas gratuitas, sin gastar créditos.',tip:'Procesamiento en tu dispositivo.'
  }
 };
-const lang=(navigator.language||'en').slice(0,2),t=local[lang]||local.en;
+const getSiteLang=()=>{
+ try{
+  const saved=localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang');
+  if(saved&&local[saved])return saved;
+ }catch(_){}
+ const raw=(navigator.languages?.[0]||navigator.language||'en').slice(0,2).toLowerCase();
+ return local[raw]?raw:'en';
+};
+const lang=getSiteLang(),t=local[lang]||local.en;
 const tools=ids.map((id,i)=>({id,title:t.titles[i],note:t.notes[i]}));
 window.VUMobileToolsCatalog={tools,labels:t,lang};
 const compressText={
@@ -47,36 +60,22 @@ const videoText={
 tools.push({id:'video-compress',title:videoText[0],note:videoText[1]});
 const grid=document.getElementById('mobileUtilityGrid');
 if(grid){
- document.getElementById('extraToolsTitle').textContent=t.heading;
- document.getElementById('extraToolsNote').textContent=t.sub;
- for(const tool of tools){
-  const a=document.createElement('a');a.className='hub-tile mobile-utility-tile';
-  a.href='mobile-utility.html?tool='+encodeURIComponent(tool.id);
-  a.dataset.utility=tool.id;
-  const strong=document.createElement('strong');strong.textContent=tool.title;
-  a.append(strong);grid.append(a);
- }
- // BASE #28: local, owner-entered Teleprompter; no recording, uploads or provider calls.
- const prompterText={
-  en:['Teleprompter','Read and scroll your own script'],
-  ru:['Телесуфлёр','Читать текст с плавной прокруткой'],
-  fr:['Téléprompteur','Lire son texte avec défilement'],
-  uk:['Телесуфлер','Читати текст з прокруткою']
- }[lang]||['Teleprompter','Read and scroll your own script'];
- const prompter=document.createElement('a');prompter.className='hub-tile mobile-utility-tile';
- prompter.href='teleprompter.html';prompter.dataset.utility='teleprompter';
- const prompterTitle=document.createElement('strong');prompterTitle.textContent=prompterText[0];
- prompter.append(prompterTitle);grid.append(prompter);
- // BASE #28: a separate, implemented in-browser photo collage (not an unimplemented mobile-utility mode).
- const collageText={
-  en:['Photo Collage','Arrange 2–9 photos into one PNG'],
-  ru:['Фотоколлаж','Объединить 2–9 фото в PNG'],
-  fr:['Collage photo','Assembler 2 à 9 photos en PNG'],
-  uk:['Фотоколаж','Об’єднати 2–9 фото у PNG']
- }[lang]||['Photo Collage','Arrange 2–9 photos into one PNG'];
- const a=document.createElement('a');a.className='hub-tile mobile-utility-tile';
- a.href='photo-collage.html';a.dataset.utility='photo-collage';
- const title=document.createElement('strong');title.textContent=collageText[0];
- a.append(title);grid.append(a);
+ const duplicatedInShowcase=new Set(['scan-pdf','photo-compress','video-compress']);
+ const renderGrid=()=>{
+  const activeLang=getSiteLang(),loc=local[activeLang]||local.en;
+  document.getElementById('extraToolsTitle').textContent=loc.heading;
+  document.getElementById('extraToolsNote').textContent=loc.sub;
+  grid.innerHTML='';
+  ids.forEach((id,i)=>{
+   if(duplicatedInShowcase.has(id))return;
+   const a=document.createElement('a');a.className='hub-tile mobile-utility-tile';
+   a.href='mobile-utility.html?tool='+encodeURIComponent(id);
+   a.dataset.utility=id;
+   const strong=document.createElement('strong');strong.textContent=loc.titles[i];
+   a.append(strong);grid.append(a);
+  });
+ };
+ renderGrid();
+ window.addEventListener('deepsyq:lang',renderGrid);
 }
 })();

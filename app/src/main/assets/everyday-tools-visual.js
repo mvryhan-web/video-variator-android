@@ -5,7 +5,14 @@
  'use strict';
  const main=document.querySelector('main.free-tools-page.tools-hub');
  if(!main || main.querySelector('#etShowcase'))return;
- const lang=(navigator.language||'en').slice(0,2);
+ const getLang=()=>{
+  try{
+   const saved=localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang');
+   if(saved&&['en','ru','fr','es','uk'].includes(saved))return saved==='uk'?'ru':saved;
+  }catch(_){}
+  const raw=(navigator.languages?.[0]||navigator.language||'en').slice(0,2).toLowerCase();
+  return ['en','ru','fr','es'].includes(raw)?raw:'en';
+ };
  const asset='media/approved-design-20261023/09_Everyday_Tools.png';
  const make=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
  const svgNS='http://www.w3.org/2000/svg';
@@ -18,45 +25,69 @@
   img.setAttribute('href',asset);img.setAttribute('width','1448');img.setAttribute('height','1086');
   svg.append(img);return svg;
  }
+ const i18n={
+  en:{
+   heading:'Choose a tool',sub:'Everyday essentials for your creative workflow.',empty:'No matching tools. Try another search.',
+   open:'Open',cats:{all:'All Tools',image:'Image Tools',video:'Video Tools',audio:'Audio Tools',everyday:'Everyday',creative:'Creative'},
+   titles:['Compress Photos','Compress Video','Extract Audio','Photo to PDF','Photo Collage','Background Remover','Teleprompter','Smart Reminders','Avatar Studio'],
+   banner:['Video Uniquifier','Open Video Uniquifier →'],sidebar:'Everyday Tools'
+  },
+  ru:{
+   heading:'Выберите инструмент',sub:'Повседневные инструменты для фото, видео и аудио.',empty:'Подходящие инструменты не найдены.',
+   open:'Открыть',cats:{all:'Все инструменты',image:'Фото и PDF',video:'Видео',audio:'Аудио',everyday:'Органайзер',creative:'Аватары'},
+   titles:['Сжатие фото','Сжатие видео','Извлечь аудио','Фото в PDF','Фотоколлаж','Удаление фона','Телесуфлёр','Умные напоминания','Студия аватаров'],
+   banner:['Уникализатор видео','Открыть уникализатор видео →'],sidebar:'Инструменты'
+  },
+  fr:{
+   heading:'Choisir un outil',sub:'L’essentiel du quotidien pour vos créations.',empty:'Aucun outil correspondant.',
+   open:'Ouvrir',cats:{all:'Tous les outils',image:'Image et PDF',video:'Vidéo',audio:'Audio',everyday:'Quotidien',creative:'Créatif'},
+   titles:['Compresser des photos','Compresser une vidéo','Extraire l’audio','Photo en PDF','Collage photo','Supprimer le fond','Téléprompteur','Rappels intelligents','Studio Avatar'],
+   banner:['Video Uniquifier','Ouvrir Video Uniquifier →'],sidebar:'Outils du quotidien'
+  },
+  es:{
+   heading:'Elige una herramienta',sub:'Herramientas esenciales para tu flujo creativo.',empty:'No hay herramientas que coincidan.',
+   open:'Abrir',cats:{all:'Todas',image:'Imagen y PDF',video:'Vídeo',audio:'Audio',everyday:'Diario',creative:'Creativo'},
+   titles:['Comprimir fotos','Comprimir vídeo','Extraer audio','Foto a PDF','Collage de fotos','Quitar fondo','Teleprónter','Recordatorios inteligentes','Estudio de Avatares'],
+   banner:['Video Uniquifier','Abrir Video Uniquifier →'],sidebar:'Herramientas'
+  }
+ };
  const cards=[
-  {title:'Compress Photos',desc:'Reduce image file size while keeping great quality.',icon:'▧',category:'image',mode:'photo',rect:[427,377,158,146]},
-  {title:'Compress Video',desc:'Make your videos smaller and easier to share.',icon:'▣',category:'video',mode:'video',rect:[801,377,185,146]},
-  {title:'Extract Audio',desc:'Separate audio from any video file.',icon:'◖',category:'audio',mode:'audio',rect:[1198,377,200,146]},
-  {title:'Photo to PDF',desc:'Turn your photos into a clean PDF document.',icon:'▤',category:'image',href:'mobile-utility.html?tool=scan-pdf',rect:[419,537,169,146]},
-  {title:'Photo Collage',desc:'Combine multiple photos into a beautiful collage.',icon:'▦',category:'image',href:'photo-collage.html',rect:[805,537,181,146]},
-  {title:'Background Remover',desc:'Remove backgrounds from images with ease.',icon:'♧',category:'image',href:'simple-background-remover.html',rect:[1192,537,204,146]},
-  {title:'Teleprompter',desc:'Keep your script in view while recording.',icon:'▣',category:'video',mode:'prompter',rect:[407,697,180,148]},
-  {title:'Smart Reminders',desc:'Stay organized and never miss what matters.',icon:'♧',category:'everyday',href:'smart-reminders.html',rect:[794,697,192,148]},
-  {title:'Avatar Studio',desc:'Create unique avatars for your projects.',icon:'♙',category:'creative',href:'avatar-studio.html',rect:[1190,697,207,148]}
+  {category:'image',mode:'photo',rect:[458,377,128,146]},
+  {category:'video',mode:'video',rect:[835,377,151,146]},
+  {category:'audio',mode:'audio',rect:[1222,377,176,146]},
+  {category:'image',href:'mobile-utility.html?tool=scan-pdf',rect:[452,537,136,146]},
+  {category:'image',href:'photo-collage.html',rect:[838,537,148,146]},
+  {category:'image',href:'simple-background-remover.html',rect:[1234,537,162,146]},
+  {category:'video',mode:'prompter',rect:[444,697,143,148]},
+  {category:'everyday',href:'smart-reminders.html',rect:[832,697,154,148]},
+  {category:'creative',href:'avatar-studio.html',rect:[1226,697,171,148]}
  ];
  const showcase=make('section','et-showcase');showcase.id='etShowcase';
  showcase.setAttribute('aria-label','Everyday Tools');
- // Real navigation and local filter actions, with unavailable paid actions disabled.
- // Owner: no secondary toolbar below the shared header.
-// Owner 2026-11-06: remove oversized Everyday Tools showcase banner;
- // navigation, gallery and real tool links below remain intact.
  const leadRow=make('div','et-section-heading');
- const inner=make('div');inner.append(make('h2','','Choose a tool'),make('p','','Everyday essentials for your creative workflow.'));
+ const inner=make('div');
+ const h2=make('h2','','');const leadP=make('p','','');
+ inner.append(h2,leadP);
  const picker=make('select','et-picker');picker.setAttribute('aria-label','Filter tools');
- for(const [v,t] of [['all','All Tools'],['image','Image Tools'],['video','Video Tools'],['audio','Audio Tools'],['everyday','Everyday'],['creative','Creative']]){const o=make('option','',t);o.value=v;picker.append(o);}
+ const catKeys=['all','image','video','audio','everyday','creative'];
+ const catOptions=catKeys.map(v=>{const o=make('option','',v);o.value=v;picker.append(o);return o;});
  leadRow.append(inner,picker);showcase.append(leadRow);
  const gallery=make('div','et-gallery');gallery.id='etGallery';
- for(const card of cards){
+ const cardEls=cards.map((card,idx)=>{
   const a=make('a','et-card');a.href=card.href||('?tool='+card.mode);a.dataset.category=card.category;
   const copy=make('span','et-card-copy');
-  copy.append(make('strong','et-card-title',card.title));
-  const cta=make('span','et-card-button','Open '+card.title+'  →');
-  cta.setAttribute('aria-hidden','true');copy.append(cta);
+  const titleEl=make('strong','et-card-title','');
+  const cta=make('span','et-card-button','');
+  cta.setAttribute('aria-hidden','true');copy.append(titleEl,cta);
   a.append(crop(card.rect,'et-card-art'),copy);
   if(card.mode){a.addEventListener('click',e=>{
     const target=main.querySelector('.quick-tool-list .hub-tile[data-hub-tool="'+card.mode+'"]');
     if(target){e.preventDefault();target.click();}
    });}
   gallery.append(a);
- }
+  return {a,titleEl,cta,idx};
+ });
  showcase.append(gallery);
- // Preserve Agent C's required, real Avatar 'from=tools' route and owned
- // speech shortcuts, while moving their on-screen placement into the gallery.
  const legacyAvatar=main.querySelector('.tools-direct-launches');
  const avatarCard=gallery.querySelector('.et-card[href="avatar-studio.html"]');
  if(legacyAvatar && avatarCard){
@@ -73,28 +104,38 @@
   utilities.append(links);
  }
  const banner=make('a','et-uniquifier');banner.href='video-uniquifier.html';
- const videoArt=crop([807,867,590,161],'et-video-art');
+ const videoArt=crop([1015,867,382,161],'et-video-art');
  const bannerCopy=make('div','et-uniquifier-copy');
- const legacyText={
-  ru:['Уникализация видео','Открыть уникализацию видео →'],
-  fr:['Video Uniquifier','Ouvrir Video Uniquifier →'],
-  uk:['Унікалізація відео','Відкрити унікалізацію відео →'],
-  en:['Video Uniquifier','Open Video Uniquifier →']
- }[lang]||['Video Uniquifier','Open Video Uniquifier →'];
- bannerCopy.append(make('h2','',legacyText[0]),make('span','et-card-button',legacyText[1]));
+ const bannerH2=make('h2','','');const bannerBtn=make('span','et-card-button','');
+ bannerCopy.append(bannerH2,bannerBtn);
  banner.append(videoArt,bannerCopy);showcase.append(banner);
  main.prepend(showcase);
- // Modify only this page's local sidebar caption; Home and other pages remain untouched.
- const cap=[...document.querySelectorAll('#dsSiteSidebar .ds-site-caption')].find(e=>e.textContent.trim()==='Tools');
- if(cap)cap.textContent='Everyday Tools';
+ function applyCopy(){
+  const t=i18n[getLang()]||i18n.en;
+  h2.textContent=t.heading;
+  catOptions.forEach((o,i)=>{o.textContent=t.cats[catKeys[i]];});
+  cardEls.forEach(({titleEl,cta,idx})=>{
+   const label=t.titles[idx];
+   titleEl.textContent=label;
+   cta.textContent=t.open+' '+label+'  →';
+  });
+  bannerH2.textContent=t.banner[0];
+  bannerBtn.textContent=t.banner[1];
+  const cap=[...document.querySelectorAll('#dsSiteSidebar .ds-site-caption')].find(e=>['Tools','Everyday Tools','Инструменты','Outils du quotidien','Herramientas'].includes(e.textContent.trim()));
+  if(cap)cap.textContent=t.sidebar;
+  filter();
+ }
  function filter(){
+  const t=i18n[getLang()]||i18n.en;
   const kind=picker.value;
   let n=0;
   for(const a of gallery.children){
    const match=kind==='all'||a.dataset.category===kind;
    a.hidden=!match;if(match)n++;
   }
-  leadRow.querySelector('p').textContent=n?'Everyday essentials for your creative workflow.':'No matching tools. Try another search.';
+  leadP.textContent=n?t.sub:t.empty;
  }
  picker.addEventListener('change',filter);
+ window.addEventListener('deepsyq:lang',applyCopy);
+ applyCopy();
 })();
