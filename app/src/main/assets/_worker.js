@@ -1136,7 +1136,53 @@ export default {
       let progress = 100;
       let falStatusUrl = null;
       let falResponseUrl = null;
+      let byteplusTaskId = null;
+      let byteplusImageUrl = null;
       let resolvedProvider = 'Google';
+
+      const mlModel = String(model || '').toLowerCase();
+      if (env.BYTEPLUS_API_KEY && (isPaid || spendCredits > 0) && (mlModel.includes('seedance') || mlModel.includes('seedream'))) {
+        try {
+          if (kind === 'video' && mlModel.includes('seedance')) {
+            const bpModel = (mlModel.includes('mini') || mlModel.includes('fast')) ? 'seedance-1-0-lite-t2v-250428' : 'seedance-1-0-pro-250528';
+            const bpRes = await fetch('https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks', {
+              method: 'POST',
+              headers: { 'Authorization': 'Bearer ' + env.BYTEPLUS_API_KEY, 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                model: bpModel,
+                content: [{ type: 'text', text: String(prompt || 'Cinematic video').slice(0, 1500) + ' --ratio ' + (ratio === '9:16' || ratio === '16:9' || ratio === '1:1' ? ratio : '16:9') }]
+              })
+            });
+            if (bpRes.ok) {
+              const bpData = await bpRes.json();
+              if (bpData?.id) {
+                byteplusTaskId = bpData.id;
+                status = 'processing';
+                progress = 15;
+                resolvedProvider = 'BytePlus';
+              }
+            }
+          } else if (kind === 'image' && mlModel.includes('seedream')) {
+            const bpImgModel = mlModel.includes('4') ? 'seedream-4-0-250828' : 'seedream-3-0-t2i-250415';
+            const bpSize = ratio === '9:16' ? '720x1280' : ratio === '16:9' ? '1280x720' : '1024x1024';
+            const bpRes = await fetch('https://ark.ap-southeast.bytepluses.com/api/v3/images/generations', {
+              method: 'POST',
+              headers: { 'Authorization': 'Bearer ' + env.BYTEPLUS_API_KEY, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ model: bpImgModel, prompt: String(prompt || 'Studio image').slice(0, 1500), size: bpSize, response_format: 'url' })
+            });
+            if (bpRes.ok) {
+              const bpData = await bpRes.json();
+              const outUrl = bpData?.data?.[0]?.url;
+              if (outUrl) {
+                byteplusImageUrl = outUrl;
+                status = 'ready';
+                progress = 100;
+                resolvedProvider = 'BytePlus';
+              }
+            }
+          }
+        } catch (_) {}
+      }
 
       const falEndpointFor = (k, m) => {
         const ml = String(m || '').toLowerCase();
@@ -1158,7 +1204,7 @@ export default {
         return null;
       };
 
-      const falEndpoint = (env.FAL_KEY && (isPaid || spendCredits > 0)) ? falEndpointFor(kind, model) : null;
+      const falEndpoint = (!byteplusTaskId && !byteplusImageUrl && env.FAL_KEY && (isPaid || spendCredits > 0)) ? falEndpointFor(kind, model) : null;
       if (falEndpoint) {
         try {
           const falBody = kind === 'video'
@@ -1184,8 +1230,8 @@ export default {
         } catch (_) {}
       }
 
-      // Direct Wan video generation when DASHSCOPE_API_KEY is configured and fal.ai did not handle it
-      if (!falStatusUrl && kind === 'video' && env.DASHSCOPE_API_KEY) {
+      // Direct Wan video generation when DASHSCOPE_API_KEY is configured and BytePlus/fal.ai did not handle it
+      if (!byteplusTaskId && !falStatusUrl && kind === 'video' && env.DASHSCOPE_API_KEY) {
         try {
           const wanModel = (model && model.includes('wan')) ? model : 'wan2.1-t2v-turbo';
           const size = ratio === '9:16' ? '720*1280' : '1280*720';
@@ -1265,10 +1311,11 @@ export default {
         status,
         progress,
         wanTaskId,
+        byteplusTaskId,
         falStatusUrl,
         falResponseUrl,
         videoUrl: null,
-        imageUrl: falStatusUrl ? null : imageUrl,
+        imageUrl: byteplusImageUrl || (falStatusUrl ? null : imageUrl),
         audioUrl: falStatusUrl ? null : audioUrl,
         isFavorite: false,
         archived: false,
@@ -1452,6 +1499,27 @@ export default {
       if(request.method==='DELETE'&&!isMedia){
         studioJobs.delete(id);
         return json({ok:true});
+      }
+
+      if (job.byteplusTaskId && env.BYTEPLUS_API_KEY && (job.status === 'processing' || job.status === 'queued')) {
+        try {
+          const bpRes = await fetch('https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks/' + encodeURIComponent(job.byteplusTaskId), {
+            headers: { 'Authorization': 'Bearer ' + env.BYTEPLUS_API_KEY }
+          });
+          if (bpRes.ok) {
+            const bpData = await bpRes.json();
+            if (bpData?.status === 'succeeded' && bpData?.content?.video_url) {
+              job.videoUrl = bpData.content.video_url;
+              job.status = 'ready';
+              job.progress = 100;
+            } else if (bpData?.status === 'failed' || bpData?.status === 'cancelled') {
+              job.status = 'failed';
+              job.progress = 0;
+            } else if (bpData?.status === 'running') {
+              job.progress = 60;
+            }
+          }
+        } catch (_) {}
       }
 
       if (job.falStatusUrl && env.FAL_KEY && (job.status === 'processing' || job.status === 'queued')) {

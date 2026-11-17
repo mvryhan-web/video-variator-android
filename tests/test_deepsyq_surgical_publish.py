@@ -112,6 +112,7 @@ class SurgicalPublishTests(unittest.TestCase):
         worker_text = (s.ROOT / "_worker.js").read_bytes()
         self.assertIn(b"queue.fal.run/", worker_text)
         self.assertIn(b"env.FAL_KEY", worker_text)
+        self.assertIn(b"env.BYTEPLUS_API_KEY", worker_text)
 
 if __name__ == "__main__":
     unittest.main()
