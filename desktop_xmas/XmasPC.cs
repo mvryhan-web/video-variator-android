@@ -69,6 +69,11 @@ namespace DeepSyqXmasPC
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
             BackColor = Color.FromArgb(11, 18, 33);
 
+            try {
+                var asm = System.Reflection.Assembly.GetExecutingAssembly();
+                var st = asm.GetManifestResourceStream("DeepSyqXmasPC.bg.jpg");
+                if (st != null) customBg = Image.FromStream(st);
+            } catch { }
             Rectangle bounds = Screen.PrimaryScreen.Bounds;
             Width = bounds.Width;
             Height = bounds.Height;
@@ -419,8 +424,8 @@ namespace DeepSyqXmasPC
                 snowBank[i] = snowBank[i] * 0.992f + (snowBank[i - 1] + snowBank[i + 1]) * 0.004f;
 
             // Chimney smoke from chalet roof
-            float chimneyX = Width * 0.545f;
-            float chimneyY = Height - 335f;
+            float chimneyX = Width * 0.605f;
+            float chimneyY = Height * 0.305f;
             if (rng.NextDouble() < 0.35)
             {
                 smoke.Add(new SmokePuff

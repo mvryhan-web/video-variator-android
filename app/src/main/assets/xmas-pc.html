@@ -75,24 +75,25 @@ header.top {
 }
 .nav-links a:hover { color: var(--gold); }
 .nav-actions { display: flex; align-items: center; gap: 10px; }
-.lang-select {
+.lang-select, .scene-select {
   appearance: none; -webkit-appearance: none;
   background: #111b2e; color: var(--text);
   border: 1px solid var(--border); border-radius: 999px;
-  padding: 7px 26px 7px 11px; font-size: 12px; font-weight: 600; cursor: pointer;
+  padding: 7px 26px 7px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
   white-space: nowrap; min-width: 72px;
   background-image: linear-gradient(45deg, transparent 50%, var(--gold) 50%), linear-gradient(135deg, var(--gold) 50%, transparent 50%);
   background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
   background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
 }
-.lang-select::picker-icon { display: none; }
+.lang-select::picker-icon, .scene-select::picker-icon { display: none; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   padding: 12px 22px; border-radius: 999px; font-weight: 700; font-size: 14px;
-  border: 1px solid transparent; cursor: pointer; transition: transform 0.18s, box-shadow 0.18s;
+  border: 1px solid transparent; cursor: pointer; transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s;
   white-space: nowrap;
 }
 .btn:hover { transform: translateY(-2px); }
+.btn:disabled { opacity: 0.6; pointer-events: none; }
 .btn-gold {
   background: linear-gradient(135deg, #fae09e, #d99f3e);
   color: #181106; box-shadow: 0 8px 24px rgba(217, 159, 62, 0.32);
@@ -110,6 +111,21 @@ header.top {
 .btn-outline {
   background: rgba(19, 30, 51, 0.75);
   color: var(--text); border-color: var(--border);
+}
+
+/* Unlocked Post-Purchase Download Box */
+.unlocked-banner {
+  max-width: 820px; margin: 22px auto 0; padding: 24px 26px;
+  background: linear-gradient(145deg, #0d2e24, #091b18);
+  border: 2px solid #34d399; border-radius: 20px;
+  box-shadow: 0 20px 55px rgba(16, 185, 129, 0.28);
+  text-align: center;
+}
+.unlocked-banner[hidden] { display: none !important; }
+.license-pill {
+  display: inline-block; margin: 10px 0 16px; padding: 10px 20px;
+  background: #071310; border: 1px dashed var(--gold); border-radius: 12px;
+  font-size: 20px; font-weight: 800; color: var(--gold); letter-spacing: 0.08em;
 }
 
 /* Hero Section */
@@ -130,7 +146,6 @@ header.top {
 }
 .hero h1 .red { color: #ff5b69; }
 .hero h1 .green { color: #34d399; }
-.hero h1 .gold { color: var(--gold); }
 .hero p.lead {
   font-size: clamp(16px, 1.8vw, 20px);
   color: var(--muted); max-width: 760px; margin: 0 auto 24px; line-height: 1.55;
@@ -224,19 +239,6 @@ section.features { padding: 64px 0 36px; }
 .feat-card h3 { margin: 4px 0 0; font-size: 19px; color: #fff; }
 .feat-card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
 
-/* AI Prompt Generator Box for Custom Winter House */
-.prompt-card {
-  margin: 28px auto 0; background: linear-gradient(145deg, #16243d, #0d1626);
-  border: 1px solid rgba(243, 201, 120, 0.4); border-radius: 20px;
-  padding: 22px 24px; display: flex; align-items: center; justify-content: space-between;
-  gap: 18px; flex-wrap: wrap;
-}
-.prompt-card code {
-  display: block; background: #080d18; border: 1px solid rgba(255,255,255,0.1);
-  padding: 10px 14px; border-radius: 10px; color: #f3c978; font-size: 12.5px;
-  margin-top: 8px; max-width: 780px; line-height: 1.45;
-}
-
 /* Pricing Section (with Mobile Carousel & Side Arrows) */
 section.pricing { padding: 56px 0; position: relative; }
 .xmas-pricing-wrap { position: relative; max-width: 860px; margin: 0 auto; }
@@ -271,6 +273,18 @@ section.pricing { padding: 56px 0; position: relative; }
 .pkg-features li::before { content: "✓ "; color: var(--gold); font-weight: 900; margin-right: 6px; }
 .pkg-btn { margin-top: auto; width: 100%; min-height: 50px; font-size: 15px; }
 .xmas-arrow, .xmas-dots { display: none; }
+
+/* Email input bar above pricing for instant Gmail receipt */
+.checkout-email-bar {
+  max-width: 520px; margin: 0 auto 24px;
+  display: flex; align-items: center; gap: 10px;
+  background: #0f1829; border: 1px solid var(--border);
+  border-radius: 999px; padding: 6px 14px;
+}
+.checkout-email-bar input {
+  flex: 1; background: transparent; border: 0; color: #fff;
+  font-size: 14px; padding: 8px 6px; outline: none;
+}
 
 /* FAQ */
 section.faq { padding: 36px 0 64px; max-width: 880px; margin: 0 auto; }
@@ -336,11 +350,10 @@ footer {
       <span>DEEPSYQ <small>XMAS PC · WINTER STUDIO</small></span>
     </a>
     <nav class="nav-links">
-      <a href="#live-demo" data-i18n="navDemo">Живое демо</a>
-      <a href="#features" data-i18n="navFeatures">Возможности</a>
-      <a href="#custom-art" data-i18n="navArt">Свой зимний дом</a>
-      <a href="#pricing" data-i18n="navPricing">Цены (9 € / 14 €)</a>
-      <a href="#faq" data-i18n="navFaq">Вопросы</a>
+      <a href="#live-demo">Живое демо</a>
+      <a href="#features">Возможности</a>
+      <a href="#pricing">Цены (9 € / 14 €)</a>
+      <a href="#faq">Вопросы</a>
     </nav>
     <div class="nav-actions">
       <select id="langSelect" class="lang-select" aria-label="Language">
@@ -349,53 +362,69 @@ footer {
         <option value="fr">🇫🇷 FR</option>
         <option value="es">🇪🇸 ES</option>
       </select>
-      <a href="downloads/DEEPSYQ-Xmas-PC.exe" download class="btn btn-gold" data-i18n="navDownload">Скачать .EXE ❄️</a>
+      <button type="button" class="btn btn-gold" data-buy-plan="family" data-buy-os="win">Скачать ❄️</button>
     </div>
   </div>
 </header>
 
 <main class="shell">
+  <!-- UNLOCKED DOWNLOAD PANEL (SHOWN ONLY AFTER VERIFIED STRIPE PAYMENT) -->
+  <div id="download-unlocked" class="unlocked-banner" hidden>
+    <h2 style="margin:0 0 8px;color:#34d399">🎉 Оплата подтверждена! Ваша программа готова к скачиванию</h2>
+    <p style="margin:0;color:#cbd5e1;font-size:14.5px" id="unlockedEmailNotice">Копия ссылок и ваш лицензионный ключ также отправлены на ваш Email.</p>
+    <div class="license-pill" id="unlockedLicenseKey">XMAS-XXXX-XXXX-XXXX</div>
+    <div class="hero-dl-row" style="margin-top:8px">
+      <a id="unlockedWinLink" href="#" class="btn btn-win">⊞ Скачать для Windows (.EXE)</a>
+      <a id="unlockedStoreLink" href="https://apps.microsoft.com/detail/9PDN61GVCSMJ" target="_blank" rel="noopener" class="btn btn-gold">🛍️ Установить из Microsoft Store</a>
+      <a id="unlockedMacLink" href="#" class="btn btn-mac"> Скачать для Mac (.ZIP)</a>
+    </div>
+  </div>
+
   <section class="hero">
-    <div class="eyebrow" data-i18n="eyebrow">❄️ Новогодняя атмосфера для Windows 10/11 и macOS</div>
-    <h1 data-i18n-html="heroTitle">Живой <span class="red">Новый год</span> прямо на твоём <span class="green">ПК и Mac</span></h1>
-    <p class="lead" data-i18n="heroLead">Падающий снег собирается на панели задач и разлетается от курсора мыши. Лепи снеговика, зажигай гирлянды на доме и ёлках, смотри на дым из каминной трубы, запускай Санту на санях и снегоуборочный трактор!</p>
+    <div class="eyebrow">❄️ Новогодняя атмосфера для Windows 10/11 и macOS</div>
+    <h1>Живой <span class="red">Новый год</span> прямо на твоём <span class="green">ПК и Mac</span></h1>
+    <p class="lead">Падающий снег собирается на панели задач и разлетается от курсора мыши. Лепи снеговика, зажигай гирлянды на доме и ёлках, смотри на дым из каминной трубы, запускай Санту на санях и снегоуборочный трактор!</p>
 
     <div class="hero-dl-row">
-      <a href="https://apps.microsoft.com/detail/9PDN61GVCSMJ" target="_blank" rel="noopener" class="btn btn-win" data-i18n="btnStore">🛍️ Microsoft Store (Без предупреждений)</a>
-      <a href="downloads/DEEPSYQ-Xmas-PC.exe" download class="btn btn-gold" data-i18n="btnWin">⊞ Прямое скачивание Windows (.EXE)</a>
-      <a href="#pricing" class="btn btn-mac" data-i18n="btnMac"> Скачать для Mac</a>
-      <button type="button" id="fullscreenBtn" class="btn btn-outline" data-i18n="btnFull">⛶ Развернуть на весь экран</button>
+      <button type="button" class="btn btn-win" data-buy-plan="personal" data-buy-os="win">⊞ Скачать для Windows</button>
+      <button type="button" class="btn btn-mac" data-buy-plan="personal" data-buy-os="mac"> Скачать для Mac</button>
     </div>
     <div class="hero-micro">
-      <span data-i18n="heroMicro">Microsoft Store ID: 9PDN61GVCSMJ (Deepsyq.XmasPC) · Без подписки · </span>
-      <a href="#pricing" data-i18n="heroMicroLink">от 9 € навсегда</a>
+      <span>Купи один раз — пользуйся всегда · Без подписки · </span>
+      <a href="#pricing">от 9 € навсегда</a>
     </div>
 
-    <!-- LIVE INTERACTIVE DESKTOP SIMULATOR -->
+    <!-- LIVE INTERACTIVE DESKTOP SIMULATOR WITH PHOTOREALISTIC WINTER HOUSE -->
     <div class="stage-wrap" id="live-demo">
       <div class="stage-toolbar">
         <div class="stage-controls">
+          <select id="sceneSelect" class="scene-select" aria-label="Выбор зимней сцены">
+            <option value="media/xmas/xmas-chalet-16x9.jpg">🏔️ Альпийское шале (16:9)</option>
+            <option value="media/xmas/xmass-1.png">🎄 Зимняя улица 1</option>
+            <option value="media/xmas/xmass-2.png">🏠 Зимняя улица 2</option>
+            <option value="media/xmas/xmass-4.png">✨ Зимняя улица 3</option>
+          </select>
           <button type="button" class="ctrl-btn" id="btnAddSnowman">⛄ + Снеговик</button>
           <button type="button" class="ctrl-btn" id="btnTractor">🚜 Трактор-снегоуборщик</button>
           <button type="button" class="ctrl-btn" id="btnSanta">🎅 Запустить Санту</button>
           <button type="button" class="ctrl-btn active" id="btnLights">✨ Гирлянды и дым</button>
           <button type="button" class="ctrl-btn" id="btnSnowRate">❄️ Снег: Сильный</button>
           <label class="ctrl-btn" style="cursor:pointer">
-            🖼️ Своя картинка дома
+            🖼️ Своя картинка
             <input type="file" id="bgUploadInput" accept="image/*" hidden>
           </label>
           <button type="button" class="ctrl-btn" id="btnResetSnow">🧹 Сбросить сугробы</button>
         </div>
-        <a href="downloads/DEEPSYQ-Xmas-PC.exe" download class="ctrl-btn" style="border-color:var(--gold);color:var(--gold)">⬇ Установить на рабочий стол Windows</a>
+        <button type="button" id="fullscreenBtn" class="ctrl-btn" style="border-color:var(--gold);color:var(--gold)">⛶ На весь экран</button>
       </div>
 
       <div class="canvas-box" id="canvasBox">
-        <div class="stage-hint" id="stageHint">💡 Проведи мышкой по снегу внизу на панели, перетащи снеговика или повесь игрушки на ёлки!</div>
+        <div class="stage-hint">💡 Проведи мышкой по снегу внизу на панели, перетащи снеговика или повесь игрушки на ёлки!</div>
         <canvas id="xmasCanvas" width="1280" height="720"></canvas>
       </div>
 
       <div class="garland-palette">
-        <span>🎄 Перетащи или нажми, чтобы приклеить на ёлки и дом:</span>
+        <span>🎄 Нажми, чтобы приклеить на ёлки и дом (и перетаскивай мышкой):</span>
         <button type="button" class="sticker-btn" data-add-ornament="0">🔴 Красный шар</button>
         <button type="button" class="sticker-btn" data-add-ornament="1">🟡 Золотой фонарик</button>
         <button type="button" class="sticker-btn" data-add-ornament="2">🟢 Изумрудная гирлянда</button>
@@ -410,7 +439,7 @@ footer {
     <div class="sec-head">
       <div class="eyebrow">ВСЁ САМОЕ НУЖНОЕ — БЕЗ ЛИШНЕГО ШУМА</div>
       <h2>6 живых новогодних чудес на твоём экране</h2>
-      <p>Лёгкое приложение (всего 60 КБ для Windows), которое не нагружает видеокарту и пропускает клики мыши сквозь снег прямо в твои рабочие программы.</p>
+      <p>Лёгкое приложение для Windows и Mac, которое не нагружает видеокарту и пропускает клики мыши сквозь снег прямо в твои рабочие программы.</p>
     </div>
 
     <div class="feat-grid">
@@ -445,57 +474,53 @@ footer {
         <p>Выбирай светящиеся шары, фонарики, звёзды и леденцы и приклеивай их мышкой на пушистые ели вокруг дома — твоя композиция сохраняется.</p>
       </article>
     </div>
-
-    <div class="prompt-card" id="custom-art">
-      <div>
-        <strong style="color:var(--gold);font-size:16px">🎨 Хочешь сгенерировать свой уникальный зимний дом в DEEPSYQ Studio?</strong>
-        <div style="color:var(--muted);font-size:13.5px;margin-top:4px">Скопируй готовый промпт, создай картинку в 16:9 и нажми «🖼️ Своя картинка дома» в плеере выше или в приложении Windows:</div>
-        <code id="promptText">Cozy luxury alpine wooden chalet at twilight in winter, warm golden fairy lights glowing along the roof eaves and porch, stone chimney on the roof ready for rising smoke, snow-covered pine trees on left and right sides ready for garlands, flat snowy foreground clearing for a snowman and snowplow tractor, deep starry night sky for Santa's sleigh, cinematic 3D winter illustration, 16:9, 8k</code>
-      </div>
-      <button type="button" class="btn btn-gold" id="copyPromptBtn">📋 Скопировать промпт</button>
-    </div>
   </section>
 
-  <!-- PRICING (WITH MOBILE CAROUSEL + ARROWS + PEEK) -->
+  <!-- PRICING (STRIPE CHECKOUT + GMAIL DELIVERY + MOBILE CAROUSEL) -->
   <section class="pricing" id="pricing">
     <div class="sec-head">
       <div class="eyebrow">БЕЗ ПОДПИСКИ · ОДИН РАЗ И НАВСЕГДА</div>
-      <h2>Выбери свой пакет DEEPSYQ Xmas PC</h2>
-      <p>Лицензия работает одинаково на Windows 10/11 и macOS. Все функции, зимние сцены и будущие обновления включены.</p>
+      <h2>Заплати один раз — навсегда твоё</h2>
+      <p>Сразу после оплаты через Stripe открывается скачивание для Windows и Mac, а копия файла и твой ключ приходят на твой Gmail.</p>
+    </div>
+
+    <div class="checkout-email-bar">
+      <span>✉️</span>
+      <input type="email" id="buyerEmail" placeholder="Твой Gmail / Email для отправки файла и ключа (необязательно — можно ввести в Stripe)">
     </div>
 
     <div class="xmas-pricing-wrap">
       <button type="button" class="xmas-arrow prev" id="xmasPrev" aria-label="Предыдущий тариф">‹</button>
       <div class="pricing-grid" id="xmasPricingGrid">
-        <!-- Card 1 -->
+        <!-- Card 1: 9 EUR -->
         <article class="pkg-card">
-          <div class="pkg-name">1 КОМПЬЮТЕР · PERSONAL</div>
-          <div class="pkg-price">9 € <small>/ навсегда</small></div>
-          <div class="pkg-sub">Идеально для твоего личного ПК с Windows или Mac.</div>
+          <div class="pkg-name">1 КОМПЬЮТЕР</div>
+          <div class="pkg-price">9 € <small>/ один раз, навсегда</small></div>
+          <div class="pkg-sub">Для твоего личного ПК с Windows или Mac.</div>
           <ul class="pkg-features">
-            <li>1 Windows ПК или Mac (можно переносить)</li>
+            <li>1 Mac или ПК (Windows 10/11 и macOS)</li>
             <li>Живой снег на панели с реакцией на мышь</li>
             <li>Лепка снеговика, дым из трубы и гирлянды</li>
             <li>Санта на санях + снегоуборочный трактор</li>
-            <li>Украшение ёлок игрушками и загрузка своего фона</li>
+            <li>Мгновенное скачивание после оплаты + отправка на Gmail</li>
           </ul>
-          <a href="downloads/DEEPSYQ-Xmas-PC.exe" download class="btn btn-outline pkg-btn">Купить и скачать — 9 €</a>
+          <button type="button" class="btn btn-outline pkg-btn" data-buy-plan="personal" data-buy-os="win">Купить за 9 €</button>
         </article>
 
-        <!-- Card 2 -->
+        <!-- Card 2: 14 EUR -->
         <article class="pkg-card popular">
           <span class="pkg-ribbon">★ Выгоднее всего</span>
-          <div class="pkg-name">5 КОМПЬЮТЕРОВ · FAMILY &amp; STUDIO</div>
-          <div class="pkg-price">14 € <small>/ навсегда</small></div>
-          <div class="pkg-sub">Для дома, офиса и подарка близким — до 5 любых устройств.</div>
+          <div class="pkg-name">5 КОМПЬЮТЕРОВ</div>
+          <div class="pkg-price">14 € <small>/ один раз, навсегда</small></div>
+          <div class="pkg-sub">До 5 любых компьютеров — для дома, офиса и близких.</div>
           <ul class="pkg-features">
-            <li>До 5 компьютеров (Windows и Mac в любом сочетании)</li>
-            <li>Все интерактивные функции и режим сквозных кликов (F8)</li>
-            <li>Поддержка собственных AI-фонов 4K из студии DEEPSYQ</li>
-            <li>Мгновенная загрузка подписанного установщика</li>
-            <li>Все будущие зимние и праздничные обновления бесплатно</li>
+            <li>До 5 Mac или ПК (можно смешивать Windows и Mac)</li>
+            <li>Все функции включены + сквозные клики (F8)</li>
+            <li>Все зимние сцены и загрузка собственного фона</li>
+            <li>Мгновенное скачивание после оплаты + отправка на Gmail</li>
+            <li>Все будущие обновления бесплатно</li>
           </ul>
-          <a href="downloads/DEEPSYQ-Xmas-PC.exe" download class="btn btn-gold pkg-btn">Купить на 5 ПК / Mac — 14 €</a>
+          <button type="button" class="btn btn-gold pkg-btn" data-buy-plan="family" data-buy-os="win">Купить за 14 €</button>
         </article>
       </div>
       <button type="button" class="xmas-arrow next" id="xmasNext" aria-label="Следующий тариф">›</button>
@@ -504,6 +529,7 @@ footer {
         <button type="button" aria-label="Тариф 2" aria-current="false"></button>
       </div>
     </div>
+    <p id="checkoutStatusMsg" style="text-align:center;color:var(--gold);font-size:14px;margin-top:14px;min-height:20px"></p>
   </section>
 
   <!-- FAQ -->
@@ -513,16 +539,16 @@ footer {
     </div>
     <div class="faq-list">
       <details open>
+        <summary>Как происходит покупка и получение программы?</summary>
+        <p>Нажми «Скачать для Windows», «Скачать для Mac» или выбери тариф (9 € или 14 €). Откроется защищённая страница оплаты Stripe. Сразу после оплаты тебе на странице откроется скачивание установщика для Windows и Mac, а также придёт письмо на твой Gmail с файлом и лицензионным ключом.</p>
+      </details>
+      <details>
         <summary>Клики мыши проходят сквозь снег и декорации?</summary>
-        <p>Да! В приложении нажми клавишу <b>F8</b> (или кнопку «Сквозные клики»), и весь снег, трактор, Санта и гирлянды останутся поверх всех окон, а ты сможешь спокойно работать в браузере, играх и программах.</p>
+        <p>Да! Нажми клавишу <b>F8</b> (или кнопку «Сквозные клики»), и весь снег, трактор, Санта и гирлянды останутся поверх всех окон, а ты сможешь спокойно работать в любых программах.</p>
       </details>
       <details>
         <summary>На каких системах работает DEEPSYQ Xmas PC?</summary>
-        <p>На Windows 10 и Windows 11 (готовый лёгкий файл <code>DEEPSYQ-Xmas-PC.exe</code> без установки лишних библиотек), а также в веб/десктоп-режиме для macOS 14+.</p>
-      </details>
-      <details>
-        <summary>Можно ли поставить свою новогоднюю картинку дома?</summary>
-        <p>Да! Ты можешь сгенерировать любой зимний дом по нашему промпту и загрузить его одной кнопкой «🖼️ Свой фон» — дым из трубы, гирлянды, снеговик и трактор будут работать прямо поверх твоей иллюстрации.</p>
+        <p>На Windows 10 и Windows 11, а также на macOS 14 и новее. Лицензия на 5 компьютеров (14 €) позволяет активировать программу на любом сочетании Windows и Mac.</p>
       </details>
     </div>
   </section>
@@ -546,7 +572,8 @@ footer {
 
   let snowFast = true;
   let lightsOn = true;
-  let customBgImg = null;
+  let bgImg = new Image();
+  bgImg.src = "media/xmas/xmas-chalet-16x9.jpg";
   let tSec = 0;
 
   // Snowflakes
@@ -563,34 +590,28 @@ footer {
   }
   for (let i = 0; i < 240; i++) flakes.push(makeFlake(true));
 
-  // Chimney smoke puffs
   const smoke = [];
-  // Snow spray & sparkles
   const spray = [];
 
-  // Snowmen
   const snowmen = [
-    { x: W * 0.25, y: H - 36, scale: 1.0, hat: 0, scarf: 0 },
-    { x: W * 0.76, y: H - 36, scale: 0.9, hat: 1, scarf: 1 }
+    { x: W * 0.28, y: H - 36, scale: 1.0, hat: 0, scarf: 0 },
+    { x: W * 0.75, y: H - 36, scale: 0.92, hat: 1, scarf: 1 }
   ];
 
-  // Tree & House Ornaments
+  // Ornaments placed on the photorealistic pine trees left & right
   const ornaments = [
-    { x: W * 0.11, y: H - 150, kind: 0, phase: 0.4 },
-    { x: W * 0.13, y: H - 195, kind: 1, phase: 1.7 },
-    { x: W * 0.15, y: H - 125, kind: 2, phase: 2.8 },
-    { x: W * 0.12, y: H - 245, kind: 3, phase: 0.9 },
-    { x: W * 0.85, y: H - 155, kind: 1, phase: 1.2 },
-    { x: W * 0.88, y: H - 205, kind: 0, phase: 3.1 },
-    { x: W * 0.86, y: H - 120, kind: 4, phase: 2.1 },
-    { x: W * 0.87, y: H - 255, kind: 3, phase: 0.2 }
+    { x: W * 0.12, y: H - 220, kind: 0, phase: 0.4 },
+    { x: W * 0.19, y: H - 290, kind: 1, phase: 1.7 },
+    { x: W * 0.22, y: H - 190, kind: 2, phase: 2.8 },
+    { x: W * 0.15, y: H - 350, kind: 3, phase: 0.9 },
+    { x: W * 0.82, y: H - 230, kind: 1, phase: 1.2 },
+    { x: W * 0.89, y: H - 310, kind: 0, phase: 3.1 },
+    { x: W * 0.85, y: H - 180, kind: 4, phase: 2.1 },
+    { x: W * 0.91, y: H - 380, kind: 3, phase: 0.2 }
   ];
 
-  // Santa Sleigh
-  let santa = { x: -240, y: 92, dir: 1 };
-  // Snowplow Tractor
+  let santa = { x: -240, y: 88, dir: 1 };
   let tractor = { x: 140, dir: 1 };
-
   let dragTarget = null;
   let lastMouse = { x: 0, y: 0 };
 
@@ -631,7 +652,7 @@ footer {
       if (dragTarget.type === "ornament") {
         dragTarget.item.y = Math.max(24, Math.min(H - 42, p.y));
       } else {
-        dragTarget.item.y = Math.max(H - 120, Math.min(H - 28, p.y));
+        dragTarget.item.y = Math.max(H - 140, Math.min(H - 28, p.y));
       }
     }
 
@@ -640,7 +661,6 @@ footer {
     const speed = Math.hypot(dx, dy);
     lastMouse = p;
 
-    // Scatter snow on bottom taskbar panel when cursor sweeps over it!
     const col = Math.floor((p.x / W) * COLS);
     if (col >= 0 && col < COLS && p.y >= H - 72 - snowBank[col]) {
       for (let c = Math.max(0, col - 5); c <= Math.min(COLS - 1, col + 5); c++) {
@@ -669,7 +689,11 @@ footer {
   canvas.addEventListener("touchmove", onPointerMove, { passive: true });
   window.addEventListener("touchend", () => { dragTarget = null; });
 
-  // Toolbar Actions
+  document.getElementById("sceneSelect").addEventListener("change", function() {
+    const img = new Image();
+    img.onload = () => { bgImg = img; };
+    img.src = this.value;
+  });
   document.getElementById("btnAddSnowman").addEventListener("click", () => {
     snowmen.push({
       x: W * (0.2 + Math.random() * 0.6),
@@ -702,7 +726,7 @@ footer {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     const img = new Image();
-    img.onload = () => { customBgImg = img; };
+    img.onload = () => { bgImg = img; };
     img.src = URL.createObjectURL(file);
   });
   document.getElementById("fullscreenBtn").addEventListener("click", () => {
@@ -714,23 +738,17 @@ footer {
       const kind = Number(btn.getAttribute("data-add-ornament")) || 0;
       const onLeft = Math.random() < 0.5;
       ornaments.push({
-        x: onLeft ? W * (0.09 + Math.random() * 0.11) : W * (0.81 + Math.random() * 0.11),
-        y: H - 115 - Math.random() * 150,
+        x: onLeft ? W * (0.09 + Math.random() * 0.16) : W * (0.78 + Math.random() * 0.15),
+        y: H - 150 - Math.random() * 220,
         kind,
         phase: Math.random() * 6.28
       });
     });
   });
-  document.getElementById("copyPromptBtn").addEventListener("click", function() {
-    navigator.clipboard?.writeText(document.getElementById("promptText").textContent || "");
-    this.textContent = "✓ Промпт скопирован!";
-    setTimeout(() => { this.textContent = "📋 Скопировать промпт"; }, 2200);
-  });
 
   function step(dt) {
     tSec += dt;
 
-    // Snowflakes
     for (let i = 0; i < flakes.length; i++) {
       const f = flakes[i];
       f.y += f.vy * (snowFast ? 1.1 : 0.65) * dt;
@@ -748,22 +766,22 @@ footer {
       snowBank[i] = snowBank[i] * 0.992 + (snowBank[i - 1] + snowBank[i + 1]) * 0.004;
     }
 
-    // Chimney smoke
-    if (lightsOn && Math.random() < 0.38) {
+    // Chimney smoke aligned to the stone chimney of the photorealistic chalet (60.5% X, 30.5% Y)
+    if (lightsOn && Math.random() < 0.42) {
       smoke.push({
-        x: W * 0.548 + (Math.random() - 0.5) * 6,
-        y: H - 318,
-        vx: 12 + Math.random() * 14,
-        vy: -26 - Math.random() * 14,
-        r: 7,
-        alpha: 0.55
+        x: W * 0.605 + (Math.random() - 0.5) * 8,
+        y: H * 0.305,
+        vx: 14 + Math.random() * 14,
+        vy: -28 - Math.random() * 14,
+        r: 8,
+        alpha: 0.52
       });
     }
     for (let i = smoke.length - 1; i >= 0; i--) {
       const p = smoke[i];
       p.x += (p.vx + Math.sin(tSec * 2 + i) * 6) * dt;
       p.y += p.vy * dt;
-      p.r += 11 * dt;
+      p.r += 12 * dt;
       p.alpha -= 0.14 * dt;
       if (p.alpha <= 0.02) smoke.splice(i, 1);
     }
@@ -784,7 +802,7 @@ footer {
     }
     if (santa.x > W + 280) {
       santa.x = -240;
-      santa.y = 78 + Math.random() * 60;
+      santa.y = 68 + Math.random() * 55;
     }
 
     // Snowplow tractor
@@ -812,7 +830,6 @@ footer {
     if (tractor.x > W - 85) tractor.dir = -1;
     if (tractor.x < 85) tractor.dir = 1;
 
-    // Spray particles
     for (let i = spray.length - 1; i >= 0; i--) {
       const sp = spray[i];
       sp.x += sp.vx * dt;
@@ -824,146 +841,53 @@ footer {
   }
 
   function draw() {
-    if (customBgImg) {
-      ctx.drawImage(customBgImg, 0, 0, W, H);
+    if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
+      // Cover-fit background image
+      const ir = bgImg.naturalWidth / bgImg.naturalHeight;
+      const cr = W / H;
+      let dw = W, dh = H, dx = 0, dy = 0;
+      if (ir > cr) {
+        dh = H; dw = H * ir; dx = (W - dw) * 0.5;
+      } else {
+        dw = W; dh = W / ir; dy = (H - dh) * 0.5;
+      }
+      ctx.drawImage(bgImg, dx, dy, dw, dh);
     } else {
-      // Twilight winter sky
-      const sky = ctx.createLinearGradient(0, 0, 0, H);
-      sky.addColorStop(0, "#070d1d");
-      sky.addColorStop(0.6, "#132547");
-      sky.addColorStop(1, "#1d355e");
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, W, H);
-
-      // Crescent Moon
-      ctx.fillStyle = "#fef08a";
-      ctx.beginPath(); ctx.arc(W * 0.84, 82, 28, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = "#0b152c";
-      ctx.beginPath(); ctx.arc(W * 0.84 + 10, 76, 25, 0, Math.PI * 2); ctx.fill();
+      ctx.fillRect(0, 0, W, H);
+    }
 
-      // Mountains
-      ctx.fillStyle = "#162a4a";
-      ctx.beginPath();
-      ctx.moveTo(0, H - 120);
-      ctx.lineTo(W * 0.18, H - 310);
-      ctx.lineTo(W * 0.36, H - 190);
-      ctx.lineTo(W * 0.56, H - 350);
-      ctx.lineTo(W * 0.77, H - 200);
-      ctx.lineTo(W * 0.92, H - 310);
-      ctx.lineTo(W, H - 160);
-      ctx.lineTo(W, H); ctx.lineTo(0, H);
-      ctx.fill();
-
-      // Pine Trees on Left & Right
-      const trees = [
-        [W * 0.08, 210], [W * 0.13, 265], [W * 0.19, 195],
-        [W * 0.81, 200], [W * 0.87, 270], [W * 0.93, 215]
+    // Animated twinkling fairy lights along the photorealistic chalet roof eaves
+    if (lightsOn) {
+      const cols = ["#fde047", "#ff5b69", "#34d399", "#60a5fa"];
+      const eaves = [
+        [0.335, 0.512, 0.456, 0.352, 11],
+        [0.456, 0.352, 0.605, 0.505, 11],
+        [0.605, 0.505, 0.732, 0.562, 8]
       ];
-      for (const [tx, th] of trees) {
-        const baseY = H - 34;
-        for (let l = 0; l < 4; l++) {
-          const ly = baseY - l * (th * 0.22);
-          const lw = (4 - l) * 24 + 18;
-          ctx.fillStyle = `rgb(${16 + l * 4}, ${56 + l * 10}, ${45 + l * 6})`;
-          ctx.beginPath();
-          ctx.moveTo(tx, ly - th * 0.34);
-          ctx.lineTo(tx - lw, ly);
-          ctx.lineTo(tx + lw, ly);
-          ctx.closePath();
-          ctx.fill();
-          ctx.strokeStyle = "rgba(235, 246, 255, 0.85)";
-          ctx.lineWidth = 4;
-          ctx.beginPath();
-          ctx.moveTo(tx - lw * 0.82, ly - 2);
-          ctx.lineTo(tx + lw * 0.82, ly - 2);
-          ctx.stroke();
-        }
-      }
-
-      // Cozy Wooden Chalet House
-      const hx = W * 0.38, hy = H - 235, hw = W * 0.24, hh = 195;
-      // Chimney
-      const chX = hx + hw * 0.66, chY = hy - 74;
-      ctx.fillStyle = "#4b4442";
-      ctx.fillRect(chX, chY, 32, 65);
-      ctx.fillStyle = "#f1f7ff";
-      ctx.beginPath(); ctx.ellipse(chX + 16, chY, 20, 6, 0, 0, Math.PI * 2); ctx.fill();
-
-      // Cabin Wall
-      ctx.fillStyle = "#4e2e1c";
-      ctx.fillRect(hx, hy, hw, hh);
-
-      // Roof + Snow Overhang
-      ctx.fillStyle = "#331f14";
-      ctx.beginPath();
-      ctx.moveTo(hx - 26, hy + 10);
-      ctx.lineTo(hx + hw * 0.5, hy - 90);
-      ctx.lineTo(hx + hw + 26, hy + 10);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.strokeStyle = "#f0f7ff";
-      ctx.lineWidth = 11;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.beginPath();
-      ctx.moveTo(hx - 26, hy + 10);
-      ctx.lineTo(hx + hw * 0.5, hy - 90);
-      ctx.lineTo(hx + hw + 26, hy + 10);
-      ctx.stroke();
-
-      // Glowing Windows
-      const wins = [
-        [hx + 26, hy + 38, 54, 48],
-        [hx + hw - 80, hy + 38, 54, 48],
-        [hx + hw * 0.5 - 22, hy - 34, 44, 36]
-      ];
-      for (const [wx, wy, ww, wh] of wins) {
-        if (lightsOn) {
-          const wg = ctx.createRadialGradient(wx + ww/2, wy + wh/2, 4, wx + ww/2, wy + wh/2, 46);
-          wg.addColorStop(0, "rgba(255, 205, 95, 0.55)");
-          wg.addColorStop(1, "rgba(255, 205, 95, 0)");
-          ctx.fillStyle = wg;
-          ctx.beginPath(); ctx.arc(wx + ww/2, wy + wh/2, 46, 0, Math.PI * 2); ctx.fill();
-        }
-        ctx.fillStyle = lightsOn ? "#ffd875" : "#2c3545";
-        ctx.fillRect(wx, wy, ww, wh);
-        ctx.strokeStyle = "#5a341b";
-        ctx.lineWidth = 3;
-        ctx.strokeRect(wx, wy, ww, wh);
-      }
-
-      // Door + Holiday Wreath
-      const dx = hx + hw * 0.5 - 20, dy = hy + hh - 80;
-      ctx.fillStyle = "#381c10";
-      ctx.fillRect(dx, dy, 40, 80);
-      ctx.strokeStyle = "#22c55e";
-      ctx.lineWidth = 5;
-      ctx.beginPath(); ctx.arc(dx + 20, dy + 26, 11, 0, Math.PI * 2); ctx.stroke();
-
-      // Twinkling Roof Garlands
-      if (lightsOn) {
-        const cols = ["#fde047", "#ff5b69", "#34d399", "#60a5fa"];
-        const n = 22;
-        for (let i = 0; i <= n; i++) {
-          const u = i / n;
-          const bx = (hx - 20) + u * (hw + 40);
-          const by = u <= 0.5 ? (hy + 10) - (u * 2) * 98 : (hy - 88) + ((u - 0.5) * 2) * 98;
-          const pulse = 0.55 + 0.45 * Math.sin(tSec * 5.4 + i * 0.9);
+      let idx = 0;
+      for (const [x1, y1, x2, y2, count] of eaves) {
+        for (let i = 0; i <= count; i++) {
+          const u = i / count;
+          const bx = (x1 + (x2 - x1) * u) * W;
+          const by = (y1 + (y2 - y1) * u) * H;
+          const pulse = 0.45 + 0.55 * Math.sin(tSec * 5.6 + idx * 0.85);
+          const col = cols[idx % cols.length];
           ctx.save();
           ctx.globalAlpha = pulse;
-          ctx.fillStyle = cols[i % cols.length];
-          ctx.shadowColor = cols[i % cols.length];
-          ctx.shadowBlur = 12;
-          ctx.beginPath(); ctx.arc(bx, by, 4.5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = col;
+          ctx.shadowColor = col;
+          ctx.shadowBlur = 14;
+          ctx.beginPath(); ctx.arc(bx, by, 4.2, 0, Math.PI * 2); ctx.fill();
           ctx.restore();
+          idx++;
         }
       }
     }
 
     // Chimney Smoke
     for (const p of smoke) {
-      ctx.fillStyle = `rgba(218, 228, 242, ${Math.max(0, p.alpha)})`;
+      ctx.fillStyle = `rgba(222, 232, 245, ${Math.max(0, p.alpha)})`;
       ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
     }
 
@@ -979,12 +903,10 @@ footer {
     ctx.moveTo(-12, 32); ctx.lineTo(72, 32);
     ctx.moveTo(60, 18); ctx.lineTo(150, 14);
     ctx.stroke();
-    // Santa head & hat
     ctx.fillStyle = "#fed7aa"; ctx.beginPath(); ctx.arc(28, 2, 7, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(31, 8, 6, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "#ef4444";
     ctx.beginPath(); ctx.moveTo(20, -2); ctx.lineTo(36, -2); ctx.lineTo(25, -15); ctx.closePath(); ctx.fill();
-    // Reindeer
     for (let r = 0; r < 2; r++) {
       const rx = 92 + r * 46, ry = 8 + Math.sin(tSec * 8 + r) * 3.5;
       ctx.fillStyle = "#9a6338";
@@ -1005,8 +927,8 @@ footer {
       ctx.save();
       ctx.fillStyle = c;
       ctx.shadowColor = c;
-      ctx.shadowBlur = 14 * pulse;
-      ctx.beginPath(); ctx.arc(o.x, o.y, o.kind === 3 ? 9 : 7.5, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 15 * pulse;
+      ctx.beginPath(); ctx.arc(o.x, o.y, o.kind === 3 ? 9.5 : 7.5, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
 
@@ -1020,17 +942,14 @@ footer {
         ctx.beginPath(); ctx.arc(x + ox * s, y + oy * s, rad * s, 0, Math.PI * 2);
         ctx.fill(); ctx.stroke();
       });
-      // Carrot nose
       ctx.fillStyle = "#f97316";
       ctx.beginPath();
       ctx.moveTo(x, y - 78 * s); ctx.lineTo(x + 14 * s, y - 75 * s); ctx.lineTo(x, y - 73 * s);
       ctx.closePath(); ctx.fill();
-      // Scarf
       const scCols = ["#ef4444", "#10b981", "#eab308"];
       ctx.fillStyle = scCols[sm.scarf % scCols.length];
       ctx.fillRect(x - 14 * s, y - 66 * s, 28 * s, 6 * s);
       ctx.fillRect(x + 4 * s, y - 64 * s, 6 * s, 16 * s);
-      // Hat
       if (sm.hat === 0) {
         ctx.fillStyle = "#1e293b";
         ctx.fillRect(x - 16 * s, y - 92 * s, 32 * s, 4 * s);
@@ -1059,32 +978,27 @@ footer {
     ctx.save();
     ctx.translate(tractor.x, H - 34);
     if (tractor.dir < 0) ctx.scale(-1, 1);
-    // Headlight beam
-    ctx.fillStyle = "rgba(254, 240, 138, 0.24)";
+    ctx.fillStyle = "rgba(254, 240, 138, 0.28)";
     ctx.beginPath(); ctx.moveTo(28, -14); ctx.lineTo(115, -34); ctx.lineTo(115, 6); ctx.closePath(); ctx.fill();
-    // Body & Cabin
     ctx.fillStyle = "#eab308";
     ctx.fillRect(-24, -24, 42, 18);
     ctx.fillRect(-16, -40, 22, 18);
     ctx.fillStyle = "#bae6fd";
     ctx.fillRect(-12, -37, 14, 11);
-    // Red Plow Blade
     ctx.fillStyle = "#dc2626";
     ctx.beginPath(); ctx.moveTo(20, -22); ctx.lineTo(32, -26); ctx.lineTo(36, 2); ctx.lineTo(20, 0); ctx.closePath(); ctx.fill();
-    // Wheels
     ctx.fillStyle = "#1e293b";
     ctx.beginPath(); ctx.arc(-16, -4, 9, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(10, -2, 7, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
 
-    //Simulated Windows/Mac Taskbar strip at bottom
+    // Taskbar strip at bottom
     ctx.fillStyle = "rgba(10, 16, 28, 0.88)";
     ctx.fillRect(0, H - 30, W, 30);
     ctx.fillStyle = "#94a3b8";
     ctx.font = "600 11px system-ui, sans-serif";
-    ctx.fillText("⊞ Пуск · DEEPSYQ Xmas PC активен (наведи мышь на сугробы выше!)", 14, H - 11);
+    ctx.fillText("⊞ Пуск · DEEPSYQ Xmas PC активен (проведи мышкой по сугробам выше!)", 14, H - 11);
 
-    // Spray & Sparkles
     for (const sp of spray) {
       ctx.save();
       ctx.globalAlpha = Math.max(0, sp.alpha);
@@ -1093,7 +1007,6 @@ footer {
       ctx.restore();
     }
 
-    // Falling Snowflakes
     ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
     for (const f of flakes) {
       ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
@@ -1109,6 +1022,71 @@ footer {
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
+
+  // =========================================================================
+  // STRIPE CHECKOUT FLOW (PAY FIRST -> THEN UNLOCK DOWNLOAD & GMAIL RECEIPT)
+  // =========================================================================
+  const statusEl = document.getElementById("checkoutStatusMsg");
+  async function startXmasCheckout(plan, osTarget, btn) {
+    const email = (document.getElementById("buyerEmail")?.value || "").trim();
+    if (btn) btn.disabled = true;
+    if (statusEl) statusEl.textContent = "Перенаправляем на безопасную оплату Stripe…";
+    try {
+      const res = await fetch("/api/xmas-pc/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan, os: osTarget, email })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.checkoutUrl) {
+        window.location.assign(data.checkoutUrl);
+        return;
+      }
+      if (statusEl) statusEl.textContent = "Ошибка запуска Stripe Checkout: " + (data.error || res.status);
+    } catch (err) {
+      if (statusEl) statusEl.textContent = "Ошибка соединения при запуске оплаты.";
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  document.querySelectorAll("[data-buy-plan]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const plan = btn.getAttribute("data-buy-plan") || "personal";
+      const osTarget = btn.getAttribute("data-buy-os") || "win";
+      startXmasCheckout(plan, osTarget, btn);
+    });
+  });
+
+  // Verify returned Stripe session & unlock downloads + auto-download
+  const params = new URLSearchParams(window.location.search);
+  const returnedSession = params.get("session_id");
+  const preferredOs = params.get("os") || "win";
+  if (returnedSession) {
+    const qEmail = params.get("email") || "";
+    const qPlan = params.get("plan") || "";
+    fetch("/api/xmas-pc/verify?session_id=" + encodeURIComponent(returnedSession) + "&email=" + encodeURIComponent(qEmail) + "&plan=" + encodeURIComponent(qPlan))
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.ok && data.paid) {
+          const box = document.getElementById("download-unlocked");
+          box.hidden = false;
+          document.getElementById("unlockedLicenseKey").textContent = data.licenseKey;
+          if (data.email) {
+            document.getElementById("unlockedEmailNotice").textContent =
+              "Письмо с файлами для скачивания и ключом отправлено на " + data.email + ".";
+          }
+          document.getElementById("unlockedWinLink").href = data.winDownloadUrl;
+          document.getElementById("unlockedMacLink").href = data.macDownloadUrl;
+          box.scrollIntoView({ behavior: "smooth", block: "center" });
+          // Automatically trigger the file download for the buyer's chosen OS
+          setTimeout(() => {
+            window.location.assign(preferredOs === "mac" ? data.macDownloadUrl : data.winDownloadUrl);
+          }, 600);
+        }
+      })
+      .catch(() => {});
+  }
 
   // Mobile Pricing Carousel
   const grid = document.getElementById("xmasPricingGrid");
