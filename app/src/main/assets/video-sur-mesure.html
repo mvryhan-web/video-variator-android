@@ -3288,4 +3288,114 @@ localize();
  document.getElementById("langSwitcher")?.addEventListener("change",()=>queueMicrotask(alignLabels));
  alignLabels();
 })();
-</script></body></html>
+</script>
+<style id="deepsyq-design-polish-v2">
+/* Design-only polish layer. No pricing logic, Stripe or form behavior is changed. */
+html body .pkg-ribbon{z-index:2}
+html body select{-webkit-appearance:none!important;-moz-appearance:none!important;appearance:none!important;background-image:linear-gradient(45deg,transparent 50%,#e8c27a 50%),linear-gradient(135deg,#e8c27a 50%,transparent 50%)!important;background-position:calc(100% - 16px) 50%,calc(100% - 10px) 50%!important;background-size:6px 6px,6px 6px!important;background-repeat:no-repeat!important;padding-inline-end:34px!important;line-height:1.35!important;min-height:44px;height:auto!important;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+html body select::picker-icon{display:none!important}
+html body select::-ms-expand{display:none!important}
+html body .locale-select{min-height:36px!important;padding-block:6px!important;padding-inline:12px 28px!important;font-size:12px!important;white-space:nowrap;max-width:none!important}
+html body #picked.selected-style{color:#d6c8b2!important;font-size:13px}
+html body .checkbox-row{display:flex!important;align-items:flex-start;gap:12px}
+html body .checkbox-row input[type=checkbox]{flex:0 0 20px;width:20px!important;height:20px!important;min-height:20px!important;margin-top:2px;accent-color:#e8b964;cursor:pointer}
+html body #csSpecSummary{color:#e8c27a!important}
+html body #questions .premium-faq-accordion{align-items:stretch!important}
+html body #questions .premium-faq-accordion>*{height:100%}
+html body #suivi{align-items:stretch!important}
+html body #suivi .panel-box{height:100%}
+html body .pkg-card[data-pkg-card="custom_studio"] .pkg-btn{border-color:#5fd3b0!important;color:#e9fff7!important;background:linear-gradient(100deg,#0f3a32,#0b2a25)!important}
+html body .pkg-card[data-pkg-card="custom_studio"] .pkg-btn:hover{background:linear-gradient(100deg,#145246,#0e3a32)!important}
+html body .pkg-features li{line-height:1.45}
+@media(min-width:801px){
+ html body .cs-layout .cs-quote-bar{position:sticky;top:92px;align-self:start}
+}
+/* Mobile: header single-row, hero pills below preview without horizontal overflow */
+@media(max-width:700px){
+ html body .nav{flex-wrap:nowrap!important;gap:6px!important}
+ html body .brand{gap:6px!important;min-width:0}
+ html body .brand span{font-size:14px!important;line-height:1.05}
+ html body .brand small{font-size:8px!important;letter-spacing:.12em!important}
+ html body .locale-bar{gap:5px!important;flex-shrink:1;min-width:0}
+ html body .locale-select{max-width:82px!important;padding-inline:8px 22px!important;font-size:11px!important;min-height:34px!important}
+ html body #currencySwitcher.locale-select{max-width:66px!important}
+ html body .premium-menu-toggle{flex:0 0 auto}
+ html body .hero>*,html body .hero-art{min-width:0!important;max-width:100%!important}
+ html body .hero-art{display:flex;flex-direction:column;gap:12px}
+ html body .hero-industries{position:static!important;inset:auto!important;transform:none!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap;gap:8px!important;overflow-x:auto;scrollbar-width:none;padding:2px 2px 4px;justify-content:flex-start;max-width:100%!important;min-width:0!important;box-sizing:border-box}
+ html body .hero-industries::-webkit-scrollbar{display:none}
+ html body .hero-industries a{flex:0 0 auto;padding:8px 13px!important;font-size:13px;white-space:nowrap}
+}
+/* Mobile pricing carousel with side arrows and peeking next package */
+@media(max-width:700px){
+ html body #tarifs{position:relative}
+ html body .vsm-pricing-wrap{position:relative}
+ html body #tarifs .pricing-grid{display:flex!important;grid-template-columns:none!important;gap:12px!important;overflow-x:auto;overflow-y:visible;scroll-snap-type:x mandatory;scroll-padding-inline:20px;padding:24px 20px 18px!important;margin-inline:-16px!important;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+ html body #tarifs .pricing-grid::-webkit-scrollbar{display:none}
+ html body #tarifs .pkg-card{display:flex!important;flex-direction:column!important;flex:0 0 78%!important;max-width:320px;scroll-snap-align:center;scroll-snap-stop:always;min-height:0!important;padding:22px 18px 18px!important;transform:none!important}
+ html body #tarifs .pkg-card :is(.pkg-sub,.pkg-price,.pkg-meta,ul,.pkg-btn){grid-column:auto!important;grid-row:auto!important}
+ html body #tarifs .pkg-card .pkg-ribbon{order:0}
+ html body #tarifs .pkg-card .pkg-name{order:1;margin-bottom:6px}
+ html body #tarifs .pkg-card .pkg-price{order:2;align-self:flex-start!important;margin:2px 0 8px!important;font-size:36px!important;line-height:1.05}
+ html body #tarifs .pkg-card .pkg-sub{order:3;min-height:0!important;margin-bottom:10px;font-size:13.5px;line-height:1.45}
+ html body #tarifs .pkg-card .pkg-meta{order:4}
+ html body #tarifs .pkg-card ul{order:5;margin:12px 0 16px!important}
+ html body #tarifs .pkg-card .pkg-btn{order:6;margin-top:auto;min-height:48px!important;width:100%}
+ html body .vsm-arrow{position:absolute;top:46%;transform:translateY(-50%);z-index:6;width:38px;height:38px;border-radius:50%;border:1px solid #d6ad63;background:rgba(16,13,10,.9);backdrop-filter:blur(8px);color:#f4d391;font-size:22px;line-height:1;display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.6);cursor:pointer;transition:opacity .2s}
+ html body .vsm-arrow[disabled]{opacity:.28;pointer-events:none}
+ html body .vsm-arrow.prev{left:-6px}
+ html body .vsm-arrow.next{right:-6px}
+ html body .vsm-carousel-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin:2px 0 8px}
+ html body .vsm-dots{display:flex;gap:8px}
+ html body .vsm-dots button{width:8px;height:8px;padding:0;border-radius:99px;border:0;background:#5a4a33;cursor:pointer;transition:width .2s,background .2s}
+ html body .vsm-dots button[aria-current="true"]{width:24px;background:#e8b964}
+}
+@media(min-width:701px){html body .vsm-arrow,html body .vsm-carousel-nav{display:none!important}}
+@media(prefers-reduced-motion:reduce){html body #tarifs .pricing-grid{scroll-behavior:auto}}
+</style>
+<script id="deepsyq-design-polish-v2-js">
+(function(){
+ "use strict";
+ var grid=document.querySelector('#tarifs .pricing-grid');
+ if(!grid)return;
+ var cards=[].slice.call(grid.querySelectorAll('.pkg-card'));
+ if(cards.length<2)return;
+ var wrap=document.createElement('div');wrap.className='vsm-pricing-wrap';
+ grid.parentNode.insertBefore(wrap,grid);wrap.appendChild(grid);
+ function mk(cls,label,txt){var b=document.createElement('button');b.type='button';b.className='vsm-arrow '+cls;b.setAttribute('aria-label',label);b.textContent=txt;wrap.appendChild(b);return b;}
+ var prev=mk('prev','Previous package','\u2039'),next=mk('next','Next package','\u203A');
+ var nav=document.createElement('div');nav.className='vsm-carousel-nav';
+ var dots=document.createElement('div');dots.className='vsm-dots';dots.setAttribute('role','tablist');
+ cards.forEach(function(c,i){var d=document.createElement('button');d.type='button';d.setAttribute('aria-label',(c.querySelector('.pkg-name')||{}).textContent||('Package '+(i+1)));d.addEventListener('click',function(){go(i)});dots.appendChild(d);});
+ nav.appendChild(dots);wrap.parentNode.insertBefore(nav,wrap.nextSibling);
+ function mobile(){return window.matchMedia('(max-width:700px)').matches;}
+ function current(){
+  if(grid.scrollLeft<=8)return 0;
+  if(grid.scrollLeft+grid.clientWidth>=grid.scrollWidth-8)return cards.length-1;
+  var mid=grid.scrollLeft+grid.clientWidth/2,best=0,dist=1e9;
+  cards.forEach(function(c,i){var d=Math.abs(c.offsetLeft+c.offsetWidth/2-mid);if(d<dist){dist=d;best=i;}});
+  return best;
+ }
+ function setActive(i){
+  prev.disabled=i===0;
+  next.disabled=i===cards.length-1;
+  [].forEach.call(dots.children,function(d,k){d.setAttribute('aria-current',String(k===i));});
+ }
+ function go(i,instant){
+  i=Math.max(0,Math.min(cards.length-1,i));
+  var c=cards[i];
+  var target=i===0?0:c.offsetLeft-(grid.clientWidth-c.offsetWidth)/2;
+  setActive(i);
+  grid.scrollTo({left:Math.max(0,target),behavior:instant?'auto':'smooth'});
+ }
+ function update(){setActive(current());}
+ prev.addEventListener('click',function(){go(current()-1)});
+ next.addEventListener('click',function(){go(current()+1)});
+ var t;grid.addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(update,80);},{passive:true});
+ function init(){if(!mobile())return;go(0,true);update();}
+ window.addEventListener('resize',function(){clearTimeout(t);t=setTimeout(update,120);});
+ if(document.readyState==='complete')init();else window.addEventListener('load',init);
+ update();
+})();
+</script>
+</body></html>
