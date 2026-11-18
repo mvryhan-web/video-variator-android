@@ -2372,6 +2372,240 @@ export default {
       }
     }
 
+    // =========================================================================
+    // DEEPSYQ XMAS PC — STRIPE CHECKOUT (9 EUR / 14 EUR), GATED DOWNLOAD & EMAIL
+    // =========================================================================
+    async function xmasSignToken(payloadStr, secret) {
+      const enc = new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        'raw', enc.encode(secret || 'deepsyq-xmas-default-secret-2026'),
+        { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+      );
+      const sig = await crypto.subtle.sign('HMAC', key, enc.encode(payloadStr));
+      const hex = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+      return btoa(payloadStr) + '.' + hex.slice(0, 32);
+    }
+
+    async function xmasVerifyToken(token, secret) {
+      if (!token || !token.includes('.')) return null;
+      const [b64, sigHex] = token.split('.');
+      let payloadStr = '';
+      try { payloadStr = atob(b64); } catch { return null; }
+      const expected = await xmasSignToken(payloadStr, secret);
+      if (expected !== token) return null;
+      try { return JSON.parse(payloadStr); } catch { return null; }
+    }
+
+    async function sendXmasDeliveryEmail(env, toEmail, licenseKey, winUrl, macUrl, planName) {
+      if (!toEmail || !toEmail.includes('@')) return false;
+      const subject = 'DEEPSYQ Xmas PC — Ваши файлы для скачивания и лицензионный ключ';
+      const htmlBody = `
+        <div style="font-family:Segoe UI,Roboto,sans-serif;max-width:580px;margin:0 auto;padding:28px;background:#0b1220;color:#f8fafc;border-radius:18px;border:1px solid #d8a348">
+          <h2 style="margin:0 0 12px;color:#f3c978">🎄 Спасибо за покупку DEEPSYQ Xmas PC!</h2>
+          <p style="color:#cbd5e1;line-height:1.55">Ваш тариф: <strong>${planName}</strong>.<br>Ниже находятся ваши прямые ссылки для скачивания программы и персональный ключ активации:</p>
+          <div style="background:#131f35;border:1px solid #f3c978;border-radius:12px;padding:14px 18px;margin:18px 0">
+            <div style="font-size:12px;color:#94a3b8;text-transform:uppercase">Лицензионный ключ</div>
+            <div style="font-size:20px;font-weight:800;color:#f3c978;letter-spacing:0.08em;margin-top:4px">${licenseKey}</div>
+          </div>
+          <p style="margin:20px 0">
+            <a href="${winUrl}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:99px;margin-right:10px">⊞ Скачать для Windows (.EXE)</a>
+            <a href="${macUrl}" style="display:inline-block;background:#1e293b;color:#f3c978;border:1px solid #f3c978;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:99px"> Скачать для Mac (.ZIP)</a>
+          </p>
+          <p style="font-size:12.5px;color:#94a3b8;margin-top:22px">С уважением,<br>Команда DEEPSYQ Creative Studio (help@deepsyq.app)</p>
+        </div>`;
+      // 1) Try Resend API (env.RESEND_API_KEY)
+      const resendKey = String(env.RESEND_API_KEY || '').trim();
+      if (resendKey) {
+        try {
+          const rs = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + resendKey,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              from: 'DEEPSYQ Creative Studio <help@deepsyq.app>',
+              to: [toEmail],
+              subject,
+              html: htmlBody
+            })
+          });
+          if (rs.ok) return true;
+        } catch {}
+      }
+      // 2) Try Brevo API (env.BREVO_API_KEY)
+      const brevoKey = String(env.BREVO_API_KEY || '').trim();
+      if (brevoKey) {
+        try {
+          const br = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+              'api-key': brevoKey,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              sender: { name: 'DEEPSYQ Creative Studio', email: 'help@deepsyq.app' },
+              to: [{ email: toEmail }],
+              subject,
+              htmlContent: htmlBody
+            })
+          });
+          if (br.ok) return true;
+        } catch {}
+      }
+      // 3) Try MailChannels (Cloudflare Workers native email)
+      try {
+        const mc = await fetch('https://api.mailchannels.net/tx/v1/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            personalizations: [{ to: [{ email: toEmail }] }],
+            from: { email: 'noreply@deepsyq.app', name: 'DEEPSYQ Creative Studio' },
+            subject,
+            content: [{ type: 'text/html', value: htmlBody }]
+          })
+        });
+        if (mc.ok) return true;
+      } catch {}
+      return false;
+    }
+
+    // Block direct free downloads of Xmas PC binaries — payment required first
+    if (pathname === '/downloads/DEEPSYQ-Xmas-PC.exe' || pathname === '/downloads/DEEPSYQ-Xmas-Mac.zip') {
+      return Response.redirect(new URL('/xmas-pc.html#pricing', url.origin).toString(), 302);
+    }
+
+    if (pathname === '/api/xmas-pc/checkout' && request.method === 'POST') {
+      const body = await request.json().catch(() => ({}));
+      const plan = body.plan === 'personal' ? 'personal' : 'family';
+      const osTarget = body.os === 'mac' ? 'mac' : 'win';
+      const customerEmail = String(body.email || '').trim();
+      const amountCents = plan === 'personal' ? 900 : 1400;
+      const planTitle = plan === 'personal'
+        ? 'DEEPSYQ Xmas PC — 1 Компьютер (Windows & Mac, Навсегда)'
+        : 'DEEPSYQ Xmas PC — До 5 Компьютеров (Windows & Mac, Навсегда)';
+
+      const stripeKey = String(env.STRIPE_SECRET_KEY || '').trim();
+      if (/^(sk|rk)_(live|test)_/.test(stripeKey)) {
+        const form = new URLSearchParams();
+        form.set('mode', 'payment');
+        if (customerEmail && customerEmail.includes('@')) {
+          form.set('customer_email', customerEmail);
+          form.set('payment_intent_data[receipt_email]', customerEmail);
+        }
+        form.set('line_items[0][price_data][currency]', 'eur');
+        form.set('line_items[0][price_data][unit_amount]', String(amountCents));
+        form.set('line_items[0][price_data][product_data][name]', planTitle);
+        form.set('line_items[0][price_data][product_data][description]', 'Интерактивный новогодний рабочий стол для Windows 10/11 и macOS. После оплаты файлы сразу доступны для скачивания и отправляются на ваш Email.');
+        form.set('line_items[0][quantity]', '1');
+        form.set('metadata[product]', 'xmas_pc');
+        form.set('metadata[plan]', plan);
+        form.set('metadata[os]', osTarget);
+        form.set('success_url', `${url.origin}/xmas-pc.html?xmas_paid=1&session_id={CHECKOUT_SESSION_ID}&os=${osTarget}&plan=${plan}#download-unlocked`);
+        form.set('cancel_url', `${url.origin}/xmas-pc.html?xmas_cancel=1#pricing`);
+
+        const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + stripeKey,
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: form.toString()
+        });
+        const sData = await stripeRes.json().catch(() => ({}));
+        if (stripeRes.ok && sData.url) {
+          return json({ ok: true, checkoutUrl: sData.url, sessionId: sData.id });
+        }
+        return json({ ok: false, error: sData?.error?.message || 'STRIPE_SESSION_FAILED' }, 502);
+      }
+      if (!['deepsyq.app', 'www.deepsyq.app'].includes(url.hostname)) {
+        const simId = 'cs_test_xmas_' + crypto.randomUUID().replace(/-/g, '').slice(0, 16);
+        const simUrl = `${url.origin}/xmas-pc.html?xmas_paid=1&session_id=${simId}&os=${osTarget}&plan=${plan}&email=${encodeURIComponent(customerEmail)}#download-unlocked`;
+        return json({ ok: true, checkoutUrl: simUrl, sessionId: simId, mode: 'test_preview' });
+      }
+      return json({ ok: false, error: 'STRIPE_NOT_CONFIGURED' }, 503);
+    }
+
+    if (pathname === '/api/xmas-pc/verify' && request.method === 'GET') {
+      const sessionId = String(url.searchParams.get('session_id') || '').trim();
+      if (!/^cs_(live|test)_[A-Za-z0-9_]+$/.test(sessionId)) {
+        return json({ ok: false, error: 'INVALID_SESSION_ID' }, 400);
+      }
+      const stripeKey = String(env.STRIPE_SECRET_KEY || '').trim();
+      if (!/^(sk|rk)_(live|test)_/.test(stripeKey)) {
+        if (!['deepsyq.app', 'www.deepsyq.app'].includes(url.hostname) && sessionId.startsWith('cs_test_xmas_')) {
+          const email = String(url.searchParams.get('email') || '').trim();
+          const plan = url.searchParams.get('plan') === 'personal' ? '1 Компьютер (9 €)' : '5 Компьютеров (14 €)';
+          const secret = String(env.APP_JWT_SECRET || 'deepsyq-xmas-preview-secret').slice(0, 48);
+          const token = await xmasSignToken(JSON.stringify({ sid: sessionId, email, exp: Date.now() + 86400000 }), secret);
+          const cleanHex = sessionId.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(-12);
+          const licenseKey = `XMAS-${cleanHex.slice(0, 4)}-${cleanHex.slice(4, 8)}-${cleanHex.slice(8, 12)}`;
+          const winDownloadUrl = `${url.origin}/api/xmas-pc/download?token=${encodeURIComponent(token)}&os=win`;
+          const macDownloadUrl = `${url.origin}/api/xmas-pc/download?token=${encodeURIComponent(token)}&os=mac`;
+          if (email) await sendXmasDeliveryEmail(env, email, licenseKey, winDownloadUrl, macDownloadUrl, plan);
+          return json({ ok: true, paid: true, email, plan, licenseKey, winDownloadUrl, macDownloadUrl, storeUrl: 'https://apps.microsoft.com/detail/9PDN61GVCSMJ' });
+        }
+        return json({ ok: false, error: 'STRIPE_NOT_CONFIGURED' }, 503);
+      }
+      const stripeRes = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, {
+        method: 'GET',
+        headers: { 'Authorization': 'Bearer ' + stripeKey }
+      });
+      const session = await stripeRes.json().catch(() => ({}));
+      if (!stripeRes.ok || session.payment_status !== 'paid') {
+        return json({ ok: false, paid: false, error: 'PAYMENT_NOT_COMPLETED' }, 402);
+      }
+      const email = session.customer_details?.email || session.customer_email || '';
+      const plan = session.metadata?.plan === 'personal' ? '1 Компьютер (9 €)' : '5 Компьютеров (14 €)';
+      const secret = String(env.APP_JWT_SECRET || stripeKey || 'deepsyq-xmas-preview-secret').slice(0, 48);
+      const token = await xmasSignToken(JSON.stringify({
+        sid: sessionId,
+        email,
+        exp: Date.now() + 1000 * 60 * 60 * 24 * 30
+      }), secret);
+      const cleanHex = sessionId.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(-12);
+      const licenseKey = `XMAS-${cleanHex.slice(0, 4)}-${cleanHex.slice(4, 8)}-${cleanHex.slice(8, 12)}`;
+      const winDownloadUrl = `${url.origin}/api/xmas-pc/download?token=${encodeURIComponent(token)}&os=win`;
+      const macDownloadUrl = `${url.origin}/api/xmas-pc/download?token=${encodeURIComponent(token)}&os=mac`;
+
+      await sendXmasDeliveryEmail(env, email, licenseKey, winDownloadUrl, macDownloadUrl, plan);
+
+      return json({
+        ok: true,
+        paid: true,
+        email,
+        plan,
+        licenseKey,
+        winDownloadUrl,
+        macDownloadUrl,
+        storeUrl: 'https://apps.microsoft.com/detail/9PDN61GVCSMJ'
+      });
+    }
+
+    if (pathname === '/api/xmas-pc/download' && request.method === 'GET') {
+      const token = String(url.searchParams.get('token') || '').trim();
+      const osTarget = url.searchParams.get('os') === 'mac' ? 'mac' : 'win';
+      const stripeKey = String(env.STRIPE_SECRET_KEY || '').trim();
+      const secret = String(env.APP_JWT_SECRET || stripeKey || 'deepsyq-xmas-preview-secret').slice(0, 48);
+      const verified = await xmasVerifyToken(token, secret);
+      if (!verified || !verified.sid || (verified.exp && Date.now() > verified.exp)) {
+        return Response.redirect(new URL('/xmas-pc.html#pricing', url.origin).toString(), 302);
+      }
+      const assetPath = osTarget === 'mac' ? '/downloads/DEEPSYQ-Xmas-Mac.zip' : '/downloads/DEEPSYQ-Xmas-PC.exe';
+      const fileName = osTarget === 'mac' ? 'DEEPSYQ-Xmas-Mac.zip' : 'DEEPSYQ-Xmas-PC.exe';
+      const mime = osTarget === 'mac' ? 'application/zip' : 'application/vnd.microsoft.portable-executable';
+      const assetRes = await env.ASSETS.fetch(new Request(new URL(assetPath, url.origin).toString(), { method: 'GET' }));
+      if (!assetRes.ok) return new Response('File not found', { status: 404 });
+      return new Response(assetRes.body, {
+        status: 200,
+        headers: {
+          'Content-Type': mime,
+          'Content-Disposition': `attachment; filename="${fileName}"`,
+          'Cache-Control': 'private, no-store'
+        }
+      });
+    }
+
     if (pathname.startsWith('/api/')) {
       return json({ error: 'PREVIEW_ONLY', message: 'This is a design preview. Accounts, payments and paid AI generation are disabled.' }, 503);
     }

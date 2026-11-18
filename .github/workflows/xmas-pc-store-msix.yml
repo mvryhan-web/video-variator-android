@@ -26,7 +26,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path app/src/main/assets/downloads | Out-Null
-          C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /target:winexe /optimize+ /out:app\src\main\assets\downloads\DEEPSYQ-Xmas-PC.exe /r:System.dll,System.Drawing.dll,System.Windows.Forms.dll desktop_xmas\XmasPC.cs
+          C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /target:winexe /optimize+ /out:app\src\main\assets\downloads\DEEPSYQ-Xmas-PC.exe /resource:app\src\main\assets\media\xmas\xmas-night.jpg,DeepSyqXmasPC.night.jpg /resource:app\src\main\assets\media\xmas\xmas-day.jpg,DeepSyqXmasPC.day.jpg /r:System.dll,System.Drawing.dll,System.Windows.Forms.dll desktop_xmas\XmasPC.cs
       - name: Package Deepsyq.XmasPC_1.0.0.0_x64.msix for Partner Center (9PDN61GVCSMJ)
         run: python desktop_xmas/build_xmas_msix.py
       - name: Upload Partner Center MSIX artifact

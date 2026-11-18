@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DEEPSYQ Xmas PC — Живой Новогодний Рабочий Стол для Windows и Mac</title>
-<meta name="description" content="Интерактивный новогодний рабочий стол для Windows и Mac: падающий снег на панели задач, лепка снеговика, дым из трубы, мерцающие гирлянды, Санта на санях и снегоуборочный трактор.">
+<title>DEEPSYQ · Xmas PC · Winter Desktop для Windows и Mac</title>
+<meta name="description" content="Xmas PC · Winter Desktop от DEEPSYQ — живой новогодний рабочий стол для Windows и Mac: настоящий снег с реакцией на мышь, 3D-снеговик, переставляемые гирлянды и светильники, Санта на санях и снегоуборочный трактор.">
 <link rel="canonical" href="https://deepsyq.app/xmas-pc.html">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  "name": "DEEPSYQ Xmas PC",
+  "name": "DEEPSYQ Xmas PC · Winter Desktop",
   "operatingSystem": "Windows 10, Windows 11, macOS 14+",
   "applicationCategory": "DesktopEnhancementApplication",
   "offers": [
@@ -21,63 +21,64 @@
 </script>
 <style>
 :root {
-  --bg: #070b14;
-  --bg-card: #0e1626;
-  --bg-card-2: #131e33;
+  --bg: #060a12;
+  --bg-card: #0d1526;
   --gold: #f3c978;
   --gold-2: #d8a348;
   --red: #e13b4b;
-  --green: #18b779;
-  --text: #f7f9fc;
-  --muted: #aab6cc;
-  --border: rgba(243, 201, 120, 0.24);
+  --green: #34d399;
+  --text: #f8fafc;
+  --muted: #9fb0c9;
+  --border: rgba(243, 201, 120, 0.22);
 }
 * { box-sizing: border-box; }
 html, body {
   margin: 0; padding: 0;
-  background: radial-gradient(circle at 50% 0%, #142442 0%, #070b14 55%);
+  background: radial-gradient(circle at 50% 0%, #132342 0%, #060a12 58%);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
   overflow-x: clip;
   scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
 }
 a { color: inherit; text-decoration: none; }
-.shell { max-width: 1240px; margin: 0 auto; padding: 0 20px; }
+.shell { max-width: 1220px; margin: 0 auto; padding: 0 20px; }
 
 /* Sticky Top Header */
 header.top {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(7, 11, 20, 0.86);
-  backdrop-filter: blur(14px);
+  background: rgba(6, 10, 18, 0.84);
+  backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
 }
 .nav {
   display: flex; align-items: center; justify-content: space-between;
-  min-height: 68px; gap: 14px;
+  min-height: 66px; gap: 12px;
 }
 .brand {
-  display: flex; align-items: center; gap: 10px;
-  font-weight: 800; letter-spacing: 0.06em; font-size: 17px;
+  display: flex; align-items: center; gap: 11px;
+  font-weight: 800; letter-spacing: 0.05em; font-size: 17px; min-width: 0;
 }
 .brand-badge {
-  width: 34px; height: 34px; border-radius: 10px;
+  width: 34px; height: 34px; flex: 0 0 34px; border-radius: 10px;
   background: linear-gradient(135deg, #e13b4b, #b91c2c);
   border: 1px solid var(--gold);
-  display: grid; place-items: center; font-size: 18px;
-  box-shadow: 0 4px 16px rgba(225, 59, 75, 0.4);
+  display: grid; place-items: center; font-size: 17px;
+  box-shadow: 0 4px 16px rgba(225, 59, 75, 0.38);
 }
 .brand small {
-  display: block; font-size: 9px; color: var(--gold);
-  letter-spacing: 0.18em; font-weight: 700;
+  display: block; font-size: 10px; color: var(--gold);
+  letter-spacing: 0.14em; font-weight: 700; text-transform: uppercase;
+  white-space: nowrap;
 }
 .nav-links {
-  display: flex; align-items: center; gap: 22px; font-size: 14px; color: var(--muted);
+  display: flex; align-items: center; gap: 26px; font-size: 14px; font-weight: 500; color: var(--muted);
 }
 .nav-links a:hover { color: var(--gold); }
-.nav-actions { display: flex; align-items: center; gap: 10px; }
-.lang-select, .scene-select {
+.nav-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.lang-select {
   appearance: none; -webkit-appearance: none;
-  background: #111b2e; color: var(--text);
+  background: #101a2e; color: var(--text);
   border: 1px solid var(--border); border-radius: 999px;
   padding: 7px 26px 7px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
   white-space: nowrap; min-width: 72px;
@@ -85,7 +86,7 @@ header.top {
   background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
   background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
 }
-.lang-select::picker-icon, .scene-select::picker-icon { display: none; }
+.lang-select::picker-icon { display: none; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   padding: 12px 22px; border-radius: 999px; font-weight: 700; font-size: 14px;
@@ -109,7 +110,7 @@ header.top {
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
 }
 .btn-outline {
-  background: rgba(19, 30, 51, 0.75);
+  background: rgba(19, 30, 51, 0.78);
   color: var(--text); border-color: var(--border);
 }
 
@@ -130,131 +131,142 @@ header.top {
 
 /* Hero Section */
 .hero {
-  padding: 42px 0 28px; text-align: center; position: relative;
+  padding: 38px 0 24px; text-align: center; position: relative;
 }
 .eyebrow {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 6px 16px; border-radius: 999px;
-  background: rgba(225, 59, 75, 0.14); border: 1px solid rgba(243, 201, 120, 0.4);
-  color: var(--gold); font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
-  text-transform: uppercase; margin-bottom: 16px;
+  background: rgba(243, 201, 120, 0.1); border: 1px solid rgba(243, 201, 120, 0.35);
+  color: var(--gold); font-size: 11.5px; font-weight: 700; letter-spacing: 0.09em;
+  text-transform: uppercase; margin-bottom: 14px;
 }
 .hero h1 {
-  font-size: clamp(32px, 5.2vw, 62px);
-  line-height: 1.06; margin: 0 auto 16px; max-width: 900px;
+  font-size: clamp(30px, 5vw, 60px);
+  line-height: 1.06; margin: 0 auto 14px; max-width: 880px;
   letter-spacing: -0.025em;
 }
 .hero h1 .red { color: #ff5b69; }
 .hero h1 .green { color: #34d399; }
 .hero p.lead {
-  font-size: clamp(16px, 1.8vw, 20px);
-  color: var(--muted); max-width: 760px; margin: 0 auto 24px; line-height: 1.55;
+  font-size: clamp(15.5px, 1.7vw, 19px);
+  color: var(--muted); max-width: 720px; margin: 0 auto 22px; line-height: 1.55;
 }
 .hero-dl-row {
   display: flex; align-items: center; justify-content: center;
-  gap: 14px; flex-wrap: wrap; margin-bottom: 10px;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 10px;
 }
-.hero-dl-row .btn { min-height: 52px; padding: 14px 28px; font-size: 15px; }
+.hero-dl-row .btn { min-height: 50px; padding: 13px 28px; font-size: 15px; }
 .hero-micro {
-  font-size: 13px; color: var(--muted); margin-bottom: 24px;
+  font-size: 13px; color: var(--muted); margin-bottom: 22px;
 }
 .hero-micro a { color: var(--gold); text-decoration: underline; }
 
-/* Interactive Live Desktop Simulator Stage */
+/* Interactive Live Desktop Simulator Stage — Ultra Clean Frame */
 .stage-wrap {
-  background: linear-gradient(180deg, #132038, #0a101d);
-  border: 1.5px solid rgba(243, 201, 120, 0.45);
-  border-radius: 24px; padding: 12px;
-  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  background: linear-gradient(180deg, #121f36, #090e1a);
+  border: 1.5px solid rgba(243, 201, 120, 0.42);
+  border-radius: 22px; padding: 10px;
+  box-shadow: 0 30px 85px rgba(0, 0, 0, 0.78), 0 0 0 1px rgba(255, 255, 255, 0.05);
   position: relative;
-}
-.stage-toolbar {
-  display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 8px; padding: 8px 12px; margin-bottom: 10px;
-  background: rgba(9, 14, 26, 0.9); border: 1px solid rgba(243, 201, 120, 0.25);
-  border-radius: 14px;
-}
-.stage-controls {
-  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
-}
-.ctrl-btn {
-  background: #17233a; color: #f1f5f9;
-  border: 1px solid rgba(243, 201, 120, 0.32);
-  border-radius: 999px; padding: 7px 13px; font-size: 12.5px; font-weight: 600;
-  cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
-  transition: background 0.15s, border-color 0.15s, transform 0.15s;
-}
-.ctrl-btn:hover, .ctrl-btn.active {
-  background: #243759; border-color: var(--gold); color: var(--gold);
 }
 .canvas-box {
   position: relative; width: 100%; aspect-ratio: 16 / 9;
-  min-height: 360px; max-height: 680px;
-  border-radius: 16px; overflow: hidden;
-  background: #091224; cursor: crosshair;
+  min-height: 340px; max-height: 680px;
+  border-radius: 15px; overflow: hidden;
+  background: #081122; cursor: grab;
   user-select: none; -webkit-user-select: none;
 }
+.canvas-box:active { cursor: grabbing; }
 #xmasCanvas {
   width: 100%; height: 100%; display: block;
 }
-.stage-hint {
-  position: absolute; top: 14px; left: 16px; z-index: 4;
-  background: rgba(8, 13, 24, 0.78); backdrop-filter: blur(8px);
-  border: 1px solid rgba(243, 201, 120, 0.35);
-  padding: 7px 13px; border-radius: 999px; font-size: 12px; color: #e2e8f0;
-  pointer-events: none;
+
+/* Sleek Floating HUD Inside Canvas (Click-to-Open Menu + Night/Day Switch) */
+.hud-bar {
+  position: absolute; top: 14px; left: 14px; right: 14px; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  pointer-events: none; gap: 10px;
 }
-.garland-palette {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  flex-wrap: wrap; margin-top: 12px; padding: 8px 12px;
-  background: rgba(12, 19, 34, 0.8); border-radius: 14px;
-  border: 1px dashed rgba(243, 201, 120, 0.28); font-size: 13px; color: var(--muted);
+.hud-group {
+  display: flex; align-items: center; gap: 8px; pointer-events: auto; position: relative;
 }
-.sticker-btn {
-  background: #162238; border: 1px solid rgba(243, 201, 120, 0.3);
-  color: #fff; border-radius: 10px; padding: 6px 12px; font-size: 13px;
-  cursor: pointer; transition: transform 0.15s, border-color 0.15s;
+.hud-pill {
+  background: rgba(8, 13, 24, 0.82);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(243, 201, 120, 0.42);
+  color: #f8fafc; border-radius: 999px;
+  padding: 8px 15px; font-size: 13px; font-weight: 600;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
 }
-.sticker-btn:hover { transform: scale(1.06); border-color: var(--gold); }
+.hud-pill:hover, .hud-pill[aria-expanded="true"] {
+  background: rgba(18, 29, 52, 0.92); border-color: var(--gold); color: var(--gold);
+}
+.hud-popover {
+  position: absolute; top: calc(100% + 8px); left: 0; z-index: 20;
+  width: 280px; padding: 10px;
+  background: rgba(10, 16, 30, 0.94);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(243, 201, 120, 0.45);
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75);
+  display: grid; gap: 6px; text-align: left;
+}
+.hud-popover[hidden] { display: none !important; }
+.pop-item {
+  background: rgba(23, 35, 58, 0.7);
+  border: 1px solid rgba(243, 201, 120, 0.18);
+  color: #f1f5f9; border-radius: 11px;
+  padding: 9px 12px; font-size: 13px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.15s, border-color 0.15s;
+}
+.pop-item:hover {
+  background: rgba(36, 55, 89, 0.95); border-color: var(--gold); color: var(--gold);
+}
+.pop-hint {
+  font-size: 11.5px; color: var(--muted); padding: 4px 6px 2px; line-height: 1.4;
+}
 
 /* Feature Grid (Focused 6 Core Features) */
-section.features { padding: 64px 0 36px; }
-.sec-head { text-align: center; max-width: 720px; margin: 0 auto 38px; }
-.sec-head h2 { font-size: clamp(26px, 3.6vw, 42px); margin: 8px 0 12px; }
-.sec-head p { color: var(--muted); font-size: 16px; line-height: 1.5; margin: 0; }
+section.features { padding: 56px 0 32px; }
+.sec-head { text-align: center; max-width: 700px; margin: 0 auto 34px; }
+.sec-head h2 { font-size: clamp(25px, 3.5vw, 40px); margin: 8px 0 10px; letter-spacing: -0.02em; }
+.sec-head p { color: var(--muted); font-size: 15.5px; line-height: 1.55; margin: 0; }
 .feat-grid {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px;
 }
 .feat-card {
-  background: linear-gradient(155deg, #121d31, #0b1220);
+  background: linear-gradient(155deg, #111c30, #0a101d);
   border: 1px solid var(--border); border-radius: 20px; padding: 24px;
   display: flex; flex-direction: column; gap: 10px;
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
 }
 .feat-icon {
-  width: 46px; height: 46px; border-radius: 12px;
+  width: 44px; height: 44px; border-radius: 12px;
   background: rgba(243, 201, 120, 0.12); border: 1px solid rgba(243, 201, 120, 0.35);
-  display: grid; place-items: center; font-size: 23px;
+  display: grid; place-items: center; font-size: 22px;
 }
-.feat-card h3 { margin: 4px 0 0; font-size: 19px; color: #fff; }
+.feat-card h3 { margin: 2px 0 0; font-size: 18px; color: #fff; }
 .feat-card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
 
-/* Pricing Section (with Mobile Carousel & Side Arrows) */
-section.pricing { padding: 56px 0; position: relative; }
+/* Pricing Section (with Mobile Carousel & Clean Outer Side Arrows) */
+section.pricing { padding: 48px 0; position: relative; }
 .xmas-pricing-wrap { position: relative; max-width: 860px; margin: 0 auto; }
 .pricing-grid {
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 22px; align-items: stretch;
 }
 .pkg-card {
-  background: linear-gradient(160deg, #131f35, #0b1220);
+  background: linear-gradient(160deg, #121e34, #0a101d);
   border: 1.5px solid rgba(243, 201, 120, 0.28);
   border-radius: 22px; padding: 28px 26px;
   display: flex; flex-direction: column; position: relative;
   box-shadow: 0 18px 46px rgba(0, 0, 0, 0.5);
 }
 .pkg-card.popular {
-  background: linear-gradient(160deg, #1d2238, #0f172a);
+  background: linear-gradient(160deg, #1b2238, #0e1628);
   border: 2px solid var(--gold);
   box-shadow: 0 0 0 1px rgba(243, 201, 120, 0.3), 0 22px 54px rgba(0, 0, 0, 0.65);
 }
@@ -265,39 +277,39 @@ section.pricing { padding: 56px 0; position: relative; }
   font-size: 11px; font-weight: 800; letter-spacing: 0.08em;
   padding: 5px 13px; border-radius: 999px; text-transform: uppercase;
 }
-.pkg-name { font-size: 14px; font-weight: 800; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; }
-.pkg-price { font-size: 46px; font-weight: 900; margin: 8px 0 4px; color: #fff; line-height: 1; }
+.pkg-name { font-size: 13px; font-weight: 800; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; }
+.pkg-price { font-size: 44px; font-weight: 900; margin: 8px 0 4px; color: #fff; line-height: 1; }
 .pkg-price small { font-size: 14px; font-weight: 500; color: var(--muted); }
 .pkg-sub { font-size: 14px; color: var(--muted); margin-bottom: 18px; }
-.pkg-features { list-style: none; padding: 0; margin: 0 0 24px; display: grid; gap: 11px; font-size: 14.5px; }
+.pkg-features { list-style: none; padding: 0; margin: 0 0 24px; display: grid; gap: 11px; font-size: 14px; line-height: 1.45; }
 .pkg-features li::before { content: "✓ "; color: var(--gold); font-weight: 900; margin-right: 6px; }
 .pkg-btn { margin-top: auto; width: 100%; min-height: 50px; font-size: 15px; }
 .xmas-arrow, .xmas-dots { display: none; }
 
 /* Email input bar above pricing for instant Gmail receipt */
 .checkout-email-bar {
-  max-width: 520px; margin: 0 auto 24px;
+  max-width: 500px; margin: 0 auto 24px;
   display: flex; align-items: center; gap: 10px;
-  background: #0f1829; border: 1px solid var(--border);
-  border-radius: 999px; padding: 6px 14px;
+  background: #0e1728; border: 1px solid var(--border);
+  border-radius: 999px; padding: 6px 16px;
 }
 .checkout-email-bar input {
   flex: 1; background: transparent; border: 0; color: #fff;
-  font-size: 14px; padding: 8px 6px; outline: none;
+  font-size: 14px; padding: 8px 4px; outline: none; min-width: 0;
 }
 
 /* FAQ */
-section.faq { padding: 36px 0 64px; max-width: 880px; margin: 0 auto; }
+section.faq { padding: 32px 0 60px; max-width: 860px; margin: 0 auto; }
 .faq-list { display: grid; gap: 12px; }
 .faq-list details {
-  background: #0f1829; border: 1px solid var(--border);
+  background: #0e1728; border: 1px solid var(--border);
   border-radius: 14px; padding: 16px 20px;
 }
-.faq-list summary { font-weight: 700; font-size: 16px; cursor: pointer; color: #fff; }
-.faq-list p { margin: 10px 0 0; color: var(--muted); font-size: 14.5px; line-height: 1.55; }
+.faq-list summary { font-weight: 700; font-size: 15.5px; cursor: pointer; color: #fff; }
+.faq-list p { margin: 10px 0 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
 
 footer {
-  border-top: 1px solid var(--border); padding: 28px 0 42px;
+  border-top: 1px solid var(--border); padding: 26px 0 40px;
   color: var(--muted); font-size: 13px; text-align: center;
 }
 
@@ -306,30 +318,39 @@ footer {
   .nav-links { display: none; }
 }
 @media (max-width: 700px) {
+  .shell { padding: 0 14px; }
+  .brand { font-size: 15px; gap: 8px; }
+  .brand small { font-size: 8.5px; letter-spacing: 0.1em; }
+  .nav-actions .btn { padding: 9px 14px; font-size: 12.5px; }
+  .hero { padding: 26px 0 18px; }
+  .hero-dl-row .btn { width: 100%; max-width: 340px; }
   .feat-grid { grid-template-columns: 1fr; }
-  .canvas-box { aspect-ratio: 4 / 3; min-height: 320px; }
+  .canvas-box { aspect-ratio: 16 / 10; min-height: 270px; }
+  .hud-pill { padding: 6px 11px; font-size: 11.5px; }
+  .hud-popover { width: 250px; }
   /* Mobile Pricing Carousel with Side Arrows & Right Peek */
   .pricing-grid {
     display: flex !important; grid-template-columns: none !important;
-    gap: 14px !important; overflow-x: auto; scroll-snap-type: x mandatory;
-    padding: 20px 20px 16px !important; margin-inline: -20px !important;
+    gap: 12px !important; overflow-x: auto; scroll-snap-type: x mandatory;
+    padding: 20px 18px 16px !important; margin-inline: -14px !important;
     scrollbar-width: none; -webkit-overflow-scrolling: touch;
   }
   .pricing-grid::-webkit-scrollbar { display: none; }
   .pkg-card {
-    flex: 0 0 80% !important; max-width: 320px;
+    flex: 0 0 82% !important; max-width: 315px;
     scroll-snap-align: center; scroll-snap-stop: always;
+    padding: 24px 20px 20px;
   }
   .xmas-arrow {
-    position: absolute; top: 46%; transform: translateY(-50%); z-index: 6;
-    width: 38px; height: 38px; border-radius: 50%;
-    border: 1px solid var(--gold); background: rgba(12, 18, 32, 0.92);
-    color: var(--gold); font-size: 22px; display: grid; place-items: center;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.65); cursor: pointer;
+    position: absolute; top: 47%; transform: translateY(-50%); z-index: 6;
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1px solid var(--gold); background: rgba(10, 15, 28, 0.94);
+    color: var(--gold); font-size: 20px; display: grid; place-items: center;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.7); cursor: pointer;
   }
-  .xmas-arrow[disabled] { opacity: 0.28; pointer-events: none; }
-  .xmas-arrow.prev { left: -6px; }
-  .xmas-arrow.next { right: -6px; }
+  .xmas-arrow[disabled] { opacity: 0.25; pointer-events: none; }
+  .xmas-arrow.prev { left: -4px; }
+  .xmas-arrow.next { right: -4px; }
   .xmas-dots {
     display: flex; justify-content: center; gap: 8px; margin-top: 6px;
   }
@@ -347,10 +368,10 @@ footer {
   <div class="shell nav">
     <a href="deepsyq.html" class="brand">
       <span class="brand-badge">🎄</span>
-      <span>DEEPSYQ <small>XMAS PC · WINTER STUDIO</small></span>
+      <span>DEEPSYQ <small>Xmas PC · Winter Desktop</small></span>
     </a>
     <nav class="nav-links">
-      <a href="#live-demo">Живое демо</a>
+      <a href="#live-demo">Интерактивное демо</a>
       <a href="#features">Возможности</a>
       <a href="#pricing">Цены (9 € / 14 €)</a>
       <a href="#faq">Вопросы</a>
@@ -362,7 +383,7 @@ footer {
         <option value="fr">🇫🇷 FR</option>
         <option value="es">🇪🇸 ES</option>
       </select>
-      <button type="button" class="btn btn-gold" data-buy-plan="family" data-buy-os="win">Скачать ❄️</button>
+      <button type="button" class="btn btn-gold" data-buy-plan="family" data-buy-os="win">Купить ❄️</button>
     </div>
   </div>
 </header>
@@ -371,19 +392,18 @@ footer {
   <!-- UNLOCKED DOWNLOAD PANEL (SHOWN ONLY AFTER VERIFIED STRIPE PAYMENT) -->
   <div id="download-unlocked" class="unlocked-banner" hidden>
     <h2 style="margin:0 0 8px;color:#34d399">🎉 Оплата подтверждена! Ваша программа готова к скачиванию</h2>
-    <p style="margin:0;color:#cbd5e1;font-size:14.5px" id="unlockedEmailNotice">Копия ссылок и ваш лицензионный ключ также отправлены на ваш Email.</p>
+    <p style="margin:0;color:#cbd5e1;font-size:14.5px" id="unlockedEmailNotice">Копия ссылок и ваш лицензионный ключ также отправлены на ваш Gmail.</p>
     <div class="license-pill" id="unlockedLicenseKey">XMAS-XXXX-XXXX-XXXX</div>
     <div class="hero-dl-row" style="margin-top:8px">
-      <a id="unlockedWinLink" href="#" class="btn btn-win">⊞ Скачать для Windows (.EXE)</a>
-      <a id="unlockedStoreLink" href="https://apps.microsoft.com/detail/9PDN61GVCSMJ" target="_blank" rel="noopener" class="btn btn-gold">🛍️ Установить из Microsoft Store</a>
-      <a id="unlockedMacLink" href="#" class="btn btn-mac"> Скачать для Mac (.ZIP)</a>
+      <a id="unlockedWinLink" href="#" class="btn btn-win">⊞ Скачать для Windows</a>
+      <a id="unlockedMacLink" href="#" class="btn btn-mac"> Скачать для Mac</a>
     </div>
   </div>
 
   <section class="hero">
-    <div class="eyebrow">❄️ Новогодняя атмосфера для Windows 10/11 и macOS</div>
+    <div class="eyebrow">❄️ Xmas PC · Winter Desktop для Windows 10/11 и macOS</div>
     <h1>Живой <span class="red">Новый год</span> прямо на твоём <span class="green">ПК и Mac</span></h1>
-    <p class="lead">Падающий снег собирается на панели задач и разлетается от курсора мыши. Лепи снеговика, зажигай гирлянды на доме и ёлках, смотри на дым из каминной трубы, запускай Санту на санях и снегоуборочный трактор!</p>
+    <p class="lead">Настоящий пушистый снег на панели задач разлетается от движения мыши. Лепи 3D-снеговика, переставляй светящиеся гирлянды и ночные фонари на ёлки и столбы, включай ночь или день, запускай Санту и снегоуборочный трактор.</p>
 
     <div class="hero-dl-row">
       <button type="button" class="btn btn-win" data-buy-plan="personal" data-buy-os="win">⊞ Скачать для Windows</button>
@@ -394,84 +414,79 @@ footer {
       <a href="#pricing">от 9 € навсегда</a>
     </div>
 
-    <!-- LIVE INTERACTIVE DESKTOP SIMULATOR WITH PHOTOREALISTIC WINTER HOUSE -->
+    <!-- CLEAN LIVE INTERACTIVE DESKTOP SIMULATOR -->
     <div class="stage-wrap" id="live-demo">
-      <div class="stage-toolbar">
-        <div class="stage-controls">
-          <select id="sceneSelect" class="scene-select" aria-label="Выбор зимней сцены">
-            <option value="media/xmas/xmas-chalet-16x9.jpg">🏔️ Альпийское шале (16:9)</option>
-            <option value="media/xmas/xmass-1.png">🎄 Зимняя улица 1</option>
-            <option value="media/xmas/xmass-2.png">🏠 Зимняя улица 2</option>
-            <option value="media/xmas/xmass-4.png">✨ Зимняя улица 3</option>
-          </select>
-          <button type="button" class="ctrl-btn" id="btnAddSnowman">⛄ + Снеговик</button>
-          <button type="button" class="ctrl-btn" id="btnTractor">🚜 Трактор-снегоуборщик</button>
-          <button type="button" class="ctrl-btn" id="btnSanta">🎅 Запустить Санту</button>
-          <button type="button" class="ctrl-btn active" id="btnLights">✨ Гирлянды и дым</button>
-          <button type="button" class="ctrl-btn" id="btnSnowRate">❄️ Снег: Сильный</button>
-          <label class="ctrl-btn" style="cursor:pointer">
-            🖼️ Своя картинка
-            <input type="file" id="bgUploadInput" accept="image/*" hidden>
-          </label>
-          <button type="button" class="ctrl-btn" id="btnResetSnow">🧹 Сбросить сугробы</button>
-        </div>
-        <button type="button" id="fullscreenBtn" class="ctrl-btn" style="border-color:var(--gold);color:var(--gold)">⛶ На весь экран</button>
-      </div>
-
       <div class="canvas-box" id="canvasBox">
-        <div class="stage-hint">💡 Проведи мышкой по снегу внизу на панели, перетащи снеговика или повесь игрушки на ёлки!</div>
-        <canvas id="xmasCanvas" width="1280" height="720"></canvas>
-      </div>
+        <!-- Minimalist Floating HUD inside Canvas -->
+        <div class="hud-bar">
+          <div class="hud-group">
+            <button type="button" class="hud-pill" id="menuToggleBtn" aria-expanded="false">
+              ✨ Украсить сцену ▾
+            </button>
+            <div class="hud-popover" id="decorPopover" hidden>
+              <button type="button" class="pop-item" id="btnAddSnowman"><span>⛄ Слепить 3D-снеговика</span><span>+</span></button>
+              <button type="button" class="pop-item" id="btnAddLantern"><span>🏮 Ночной светильник (фонарь)</span><span>+</span></button>
+              <button type="button" class="pop-item" id="btnAddGarland"><span>🎄 Гирлянда на ёлку / дом</span><span>+</span></button>
+              <button type="button" class="pop-item" id="btnTractor"><span>🚜 Пустить трактор по снегу</span><span>▶</span></button>
+              <button type="button" class="pop-item" id="btnSanta"><span>🎅 Запустить Санту на санях</span><span>▶</span></button>
+              <button type="button" class="pop-item" id="btnResetSnow"><span>🧹 Обновить сугробы</span><span>↻</span></button>
+              <div class="pop-hint">💡 Любую гирлянду, фонарь или снеговика на картинке можно захватить мышкой и переставить на ёлку, дом или столбы забора.</div>
+            </div>
+          </div>
 
-      <div class="garland-palette">
-        <span>🎄 Нажми, чтобы приклеить на ёлки и дом (и перетаскивай мышкой):</span>
-        <button type="button" class="sticker-btn" data-add-ornament="0">🔴 Красный шар</button>
-        <button type="button" class="sticker-btn" data-add-ornament="1">🟡 Золотой фонарик</button>
-        <button type="button" class="sticker-btn" data-add-ornament="2">🟢 Изумрудная гирлянда</button>
-        <button type="button" class="sticker-btn" data-add-ornament="3">⭐ Рождественская звезда</button>
-        <button type="button" class="sticker-btn" data-add-ornament="4">🍬 Леденец-трость</button>
+          <div class="hud-group">
+            <button type="button" class="hud-pill" id="timeToggleBtn" title="Переключить Ночь / День">
+              🌙 Ночь
+            </button>
+            <button type="button" class="hud-pill" id="fullscreenBtn" title="Развернуть на весь экран">
+              ⛶
+            </button>
+          </div>
+        </div>
+
+        <canvas id="xmasCanvas" width="1280" height="720"></canvas>
       </div>
     </div>
   </section>
 
-  <!-- 6 CORE REQUESTED FEATURES -->
+  <!-- 6 CORE FEATURES -->
   <section class="features" id="features">
     <div class="sec-head">
-      <div class="eyebrow">ВСЁ САМОЕ НУЖНОЕ — БЕЗ ЛИШНЕГО ШУМА</div>
-      <h2>6 живых новогодних чудес на твоём экране</h2>
-      <p>Лёгкое приложение для Windows и Mac, которое не нагружает видеокарту и пропускает клики мыши сквозь снег прямо в твои рабочие программы.</p>
+      <div class="eyebrow">3D-АТМОСФЕРА НА РАБОЧЕМ СТОЛЕ</div>
+      <h2>Живая зимняя сказка в деталях</h2>
+      <p>Работает поверх всех окон Windows и Mac в режиме сквозных кликов или как живые интерактивные обои (Ночь и День).</p>
     </div>
 
     <div class="feat-grid">
       <article class="feat-card">
         <div class="feat-icon">❄️</div>
-        <h3>Живой снег на панели задач</h3>
-        <p>Снежинки плавно падают по всему экрану и ложатся пушистым сугробом на панель задач. Проведи курсором мыши — и снег разлетится в стороны!</p>
+        <h3>Настоящий 3D-снег на панели</h3>
+        <p>Многослойные снежинки с эффектом глубины резкости ложатся пушистым сугробом на панель задач и разлетаются веером искр от движения мыши.</p>
+      </article>
+      <article class="feat-card">
+        <div class="feat-icon">🎄</div>
+        <h3>Переставляемые 3D-гирлянды и фонари</h3>
+        <p>Снимай светящиеся гирлянды и тёплые ночные светильники прямо со сцены и вешай их на заснеженную ель справа, крышу дома или столбы забора.</p>
       </article>
       <article class="feat-card">
         <div class="feat-icon">⛄</div>
-        <h3>Лепка и настройка снеговика</h3>
-        <p>Создавай снеговиков прямо на заснеженной панели, передвигай их мышкой и меняй им шляпу (цилиндр или колпак Санты) и цвет тёплого шарфа.</p>
-      </article>
-      <article class="feat-card">
-        <div class="feat-icon">🏠</div>
-        <h3>Уютный дом: дым и гирлянды</h3>
-        <p>Тёплый свет в окнах альпийского шале, переливающиеся огоньки гирлянд вдоль крыши и мягкий дым, поднимающийся из каминной трубы в звёздное небо.</p>
+        <h3>Объёмный снеговик и дым из трубы</h3>
+        <p>Лепи реалистичных 3D-снеговиков с вязаным шарфом и цилиндром, передвигай их по двору и наблюдай за мягким дымом из каменной трубы шале.</p>
       </article>
       <article class="feat-card">
         <div class="feat-icon">🚜</div>
-        <h3>Снегоуборочный трактор</h3>
-        <p>Маленький жёлтый трактор с горящими фарами ездит влево и вправо по нижней панели и по-настоящему сгребает накопившийся снег в сугробы.</p>
+        <h3>Реалистичный трактор-снегоуборщик</h3>
+        <p>Детализированный зимний трактор с протектором, тёплой кабиной, маячком и стальным отвалом сгребает накопившийся снег вдоль нижней панели.</p>
       </article>
       <article class="feat-card">
         <div class="feat-icon">🎅</div>
         <h3>Санта-Клаус на санях с оленями</h3>
-        <p>Дед Мороз в упряжке с оленями и красноносым Рудольфом пролетает над заснеженным лесом, оставляя за собой золотой звёздный шлейф.</p>
+        <p>Вызывай упряжку Санты с бегущими оленями и золотым звёздным шлейфом в один клик из меню или любуйся его пролётом над горами.</p>
       </article>
       <article class="feat-card">
-        <div class="feat-icon">🎄</div>
-        <h3>Гирлянды и игрушки на ёлки</h3>
-        <p>Выбирай светящиеся шары, фонарики, звёзды и леденцы и приклеивай их мышкой на пушистые ели вокруг дома — твоя композиция сохраняется.</p>
+        <div class="feat-icon">🌙</div>
+        <h3>Два режима: Ночь и Солнечный День</h3>
+        <p>Переключайся между уютной лунной ночью с тёплыми огнями шале и искрящимся солнечным зимним днём одним нажатием.</p>
       </article>
     </div>
   </section>
@@ -481,12 +496,12 @@ footer {
     <div class="sec-head">
       <div class="eyebrow">БЕЗ ПОДПИСКИ · ОДИН РАЗ И НАВСЕГДА</div>
       <h2>Заплати один раз — навсегда твоё</h2>
-      <p>Сразу после оплаты через Stripe открывается скачивание для Windows и Mac, а копия файла и твой ключ приходят на твой Gmail.</p>
+      <p>Сразу после оплаты в Stripe открывается скачивание для Windows и Mac, а ссылка на загрузку и ключ приходят на твой Gmail.</p>
     </div>
 
     <div class="checkout-email-bar">
       <span>✉️</span>
-      <input type="email" id="buyerEmail" placeholder="Твой Gmail / Email для отправки файла и ключа (необязательно — можно ввести в Stripe)">
+      <input type="email" id="buyerEmail" placeholder="Твой Gmail для получения файла и ключа (или введи на странице Stripe)">
     </div>
 
     <div class="xmas-pricing-wrap">
@@ -499,8 +514,8 @@ footer {
           <div class="pkg-sub">Для твоего личного ПК с Windows или Mac.</div>
           <ul class="pkg-features">
             <li>1 Mac или ПК (Windows 10/11 и macOS)</li>
-            <li>Живой снег на панели с реакцией на мышь</li>
-            <li>Лепка снеговика, дым из трубы и гирлянды</li>
+            <li>Ночная и дневная 3D-сцены + режим поверх окон (F8)</li>
+            <li>Живой снег на панели, 3D-снеговик, гирлянды и фонари</li>
             <li>Санта на санях + снегоуборочный трактор</li>
             <li>Мгновенное скачивание после оплаты + отправка на Gmail</li>
           </ul>
@@ -515,8 +530,8 @@ footer {
           <div class="pkg-sub">До 5 любых компьютеров — для дома, офиса и близких.</div>
           <ul class="pkg-features">
             <li>До 5 Mac или ПК (можно смешивать Windows и Mac)</li>
-            <li>Все функции включены + сквозные клики (F8)</li>
-            <li>Все зимние сцены и загрузка собственного фона</li>
+            <li>Все функции, ночная и дневная сцены + сквозные клики</li>
+            <li>Свободная перестановка гирлянд, фонарей и снеговиков</li>
             <li>Мгновенное скачивание после оплаты + отправка на Gmail</li>
             <li>Все будущие обновления бесплатно</li>
           </ul>
@@ -539,16 +554,16 @@ footer {
     </div>
     <div class="faq-list">
       <details open>
-        <summary>Как происходит покупка и получение программы?</summary>
-        <p>Нажми «Скачать для Windows», «Скачать для Mac» или выбери тариф (9 € или 14 €). Откроется защищённая страница оплаты Stripe. Сразу после оплаты тебе на странице откроется скачивание установщика для Windows и Mac, а также придёт письмо на твой Gmail с файлом и лицензионным ключом.</p>
+        <summary>Как происходит покупка и скачивание?</summary>
+        <p>Нажми «Скачать для Windows», «Скачать для Mac» или выбери пакет за 9 € или 14 €. После оплаты через Stripe файл сразу скачивается в браузере, а дубликат ссылки и лицензионный ключ отправляются на твой Gmail.</p>
       </details>
       <details>
-        <summary>Клики мыши проходят сквозь снег и декорации?</summary>
-        <p>Да! Нажми клавишу <b>F8</b> (или кнопку «Сквозные клики»), и весь снег, трактор, Санта и гирлянды останутся поверх всех окон, а ты сможешь спокойно работать в любых программах.</p>
+        <summary>Можно ли снимать гирлянды и переставлять ночные светильники?</summary>
+        <p>Да! Захвати мышкой любую светящуюся гирлянду на доме или ночной фонарь в снегу и перетащи их на большую ель справа, на крышу или прямо на деревянные столбы забора. Через кнопку «✨ Украсить сцену» можно добавлять новые элементы.</p>
       </details>
       <details>
-        <summary>На каких системах работает DEEPSYQ Xmas PC?</summary>
-        <p>На Windows 10 и Windows 11, а также на macOS 14 и новее. Лицензия на 5 компьютеров (14 €) позволяет активировать программу на любом сочетании Windows и Mac.</p>
+        <summary>Мешает ли программа работе в других окнах?</summary>
+        <p>Нет. По нажатию клавиши <b>F8</b> включается режим сквозных кликов: снег, гирлянды и снеговики остаются поверх экрана, а все нажатия мыши проходят прямо в твои рабочие программы.</p>
       </details>
     </div>
   </section>
@@ -556,7 +571,7 @@ footer {
 
 <footer>
   <div class="shell">
-    © 2026 DEEPSYQ Creative Studio · Xmas PC Interactive Desktop · <a href="deepsyq.html" style="color:var(--gold)">Вернуться на DEEPSYQ</a>
+    © 2026 DEEPSYQ · Xmas PC · Winter Desktop · <a href="deepsyq.html" style="color:var(--gold)">Вернуться на DEEPSYQ</a>
   </div>
 </footer>
 
@@ -566,52 +581,97 @@ footer {
   const canvas = document.getElementById("xmasCanvas");
   const ctx = canvas.getContext("2d");
   const W = canvas.width, H = canvas.height;
-  const COLS = 200;
+  const COLS = 220;
   const snowBank = new Float32Array(COLS);
-  for (let i = 0; i < COLS; i++) snowBank[i] = 18 + Math.sin(i * 0.16) * 4;
+  for (let i = 0; i < COLS; i++) snowBank[i] = 16 + Math.sin(i * 0.14) * 3.5;
 
-  let snowFast = true;
-  let lightsOn = true;
-  let bgImg = new Image();
-  bgImg.src = "media/xmas/xmas-chalet-16x9.jpg";
+  // Pinned Night (default) & Day images uploaded by owner
+  const nightImg = new Image();
+  nightImg.src = "media/xmas/xmas-night.jpg";
+  const dayImg = new Image();
+  dayImg.src = "media/xmas/xmas-day.jpg";
+  let isNight = true;
   let tSec = 0;
 
-  // Snowflakes
+  // Popover Menu Toggle
+  const menuBtn = document.getElementById("menuToggleBtn");
+  const popover = document.getElementById("decorPopover");
+  menuBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const open = popover.hasAttribute("hidden");
+    if (open) popover.removeAttribute("hidden");
+    else popover.setAttribute("hidden", "");
+    menuBtn.setAttribute("aria-expanded", String(open));
+  });
+  document.addEventListener("click", (e) => {
+    if (!popover.contains(e.target) && e.target !== menuBtn) {
+      popover.setAttribute("hidden", "");
+      menuBtn.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  // Night / Day Toggle
+  const timeBtn = document.getElementById("timeToggleBtn");
+  timeBtn.addEventListener("click", () => {
+    isNight = !isNight;
+    timeBtn.textContent = isNight ? "🌙 Ночь" : "☀️ День";
+  });
+
+  // 3-Layer Realistic Snowflakes (Depth of Field + Crystalline 6-branch stars)
   const flakes = [];
   function makeFlake(randomY) {
+    const layer = Math.random() < 0.18 ? 2 : (Math.random() < 0.55 ? 1 : 0); // 0=far, 1=mid crystal, 2=near bokeh
     return {
       x: Math.random() * W,
-      y: randomY ? Math.random() * H : -10,
-      vx: (Math.random() - 0.5) * 28,
-      vy: (38 + Math.random() * 62) * (snowFast ? 1.15 : 0.65),
-      r: 1.5 + Math.random() * 2.6,
+      y: randomY ? Math.random() * H : -18,
+      vx: (Math.random() - 0.5) * (18 + layer * 12),
+      vy: 28 + layer * 26 + Math.random() * 28,
+      r: layer === 2 ? (5.5 + Math.random() * 3.5) : (layer === 1 ? (3.2 + Math.random() * 2.2) : (1.4 + Math.random() * 1.2)),
+      layer,
+      angle: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 1.8,
       phase: Math.random() * Math.PI * 2
     };
   }
-  for (let i = 0; i < 240; i++) flakes.push(makeFlake(true));
+  for (let i = 0; i < 210; i++) flakes.push(makeFlake(true));
 
   const smoke = [];
   const spray = [];
 
+  // Realistic 3D Snowmen
   const snowmen = [
-    { x: W * 0.28, y: H - 36, scale: 1.0, hat: 0, scarf: 0 },
-    { x: W * 0.75, y: H - 36, scale: 0.92, hat: 1, scarf: 1 }
+    { x: W * 0.48, y: H - 34, scale: 1.0, hat: 0, scarf: 0 }
   ];
 
-  // Ornaments placed on the photorealistic pine trees left & right
-  const ornaments = [
-    { x: W * 0.12, y: H - 220, kind: 0, phase: 0.4 },
-    { x: W * 0.19, y: H - 290, kind: 1, phase: 1.7 },
-    { x: W * 0.22, y: H - 190, kind: 2, phase: 2.8 },
-    { x: W * 0.15, y: H - 350, kind: 3, phase: 0.9 },
-    { x: W * 0.82, y: H - 230, kind: 1, phase: 1.2 },
-    { x: W * 0.89, y: H - 310, kind: 0, phase: 3.1 },
-    { x: W * 0.85, y: H - 180, kind: 4, phase: 2.1 },
-    { x: W * 0.91, y: H - 380, kind: 3, phase: 0.2 }
+  // Movable 3D Wrought-Iron Night Lanterns (can be placed on snow or fence posts!)
+  // Fence posts in owner's image: x = 0.567, 0.638, 0.731, 0.865 at y = 0.668
+  const lanterns = [
+    { x: W * 0.567, y: H * 0.668, scale: 0.88 },
+    { x: W * 0.731, y: H * 0.668, scale: 0.88 },
+    { x: W * 0.29,  y: H - 42,    scale: 1.05 }
   ];
 
-  let santa = { x: -240, y: 88, dir: 1 };
-  let tractor = { x: 140, dir: 1 };
+  // Detachable & Draggable 3D Garland Strands & Ornaments (on house eaves & right pine tree)
+  const garlands = [
+    // On cabin roof eaves (can be grabbed & moved anywhere)
+    { x: W * 0.25, y: H * 0.30, kind: 0, phase: 0.2 },
+    { x: W * 0.34, y: H * 0.21, kind: 1, phase: 1.1 },
+    { x: W * 0.39, y: H * 0.33, kind: 2, phase: 2.0 },
+    { x: W * 0.31, y: H * 0.49, kind: 0, phase: 3.1 },
+    { x: W * 0.42, y: H * 0.50, kind: 1, phase: 0.8 },
+    // On the big snow-laden pine tree on the right (x ~ 0.90..0.96)
+    { x: W * 0.94, y: H * 0.36, kind: 3, phase: 0.5 },
+    { x: W * 0.91, y: H * 0.48, kind: 0, phase: 1.7 },
+    { x: W * 0.95, y: H * 0.56, kind: 1, phase: 2.4 },
+    { x: W * 0.90, y: H * 0.66, kind: 2, phase: 3.6 },
+    { x: W * 0.95, y: H * 0.74, kind: 0, phase: 4.2 }
+  ];
+
+  // Santa Sleigh (flies on demand or periodically, not non-stop)
+  let santa = { active: true, x: -280, y: 86, cooldown: 0 };
+  // Realistic 3D Snowplow Tractor
+  let tractor = { x: 220, dir: 1, wheelAngle: 0 };
+
   let dragTarget = null;
   let lastMouse = { x: 0, y: 0 };
 
@@ -627,16 +687,26 @@ footer {
 
   function onPointerDown(e) {
     const p = toCanvasCoords(e);
-    for (let i = ornaments.length - 1; i >= 0; i--) {
-      const o = ornaments[i];
-      if (Math.hypot(p.x - o.x, p.y - o.y) < 22) {
-        dragTarget = { type: "ornament", item: o };
+    // 1. Check draggable 3D garlands/ornaments
+    for (let i = garlands.length - 1; i >= 0; i--) {
+      const g = garlands[i];
+      if (Math.hypot(p.x - g.x, p.y - g.y) < 24) {
+        dragTarget = { type: "garland", item: g };
         return;
       }
     }
+    // 2. Check movable night lanterns
+    for (let i = lanterns.length - 1; i >= 0; i--) {
+      const l = lanterns[i];
+      if (Math.abs(p.x - l.x) < 24 && Math.abs(p.y - (l.y - 18)) < 34) {
+        dragTarget = { type: "lantern", item: l };
+        return;
+      }
+    }
+    // 3. Check 3D snowmen
     for (let i = snowmen.length - 1; i >= 0; i--) {
       const sm = snowmen[i];
-      if (Math.abs(p.x - sm.x) < 36 * sm.scale && p.y >= sm.y - 110 * sm.scale && p.y <= sm.y + 15) {
+      if (Math.abs(p.x - sm.x) < 38 * sm.scale && p.y >= sm.y - 115 * sm.scale && p.y <= sm.y + 15) {
         sm.hat = (sm.hat + 1) % 2;
         sm.scarf = (sm.scarf + 1) % 3;
         dragTarget = { type: "snowman", item: sm };
@@ -648,12 +718,33 @@ footer {
   function onPointerMove(e) {
     const p = toCanvasCoords(e);
     if (dragTarget) {
-      dragTarget.item.x = Math.max(24, Math.min(W - 24, p.x));
-      if (dragTarget.type === "ornament") {
-        dragTarget.item.y = Math.max(24, Math.min(H - 42, p.y));
+      dragTarget.item.x = Math.max(20, Math.min(W - 20, p.x));
+      if (dragTarget.type === "garland") {
+        dragTarget.item.y = Math.max(20, Math.min(H - 36, p.y));
+      } else if (dragTarget.type === "lantern") {
+        // Snap gently to fence posts if near them!
+        const posts = [
+          [W * 0.567, H * 0.668],
+          [W * 0.638, H * 0.668],
+          [W * 0.731, H * 0.668],
+          [W * 0.865, H * 0.668]
+        ];
+        let snapped = false;
+        for (const [px, py] of posts) {
+          if (Math.hypot(p.x - px, p.y - py) < 28) {
+            dragTarget.item.x = px;
+            dragTarget.item.y = py;
+            snapped = true;
+            break;
+          }
+        }
+        if (!snapped) {
+          dragTarget.item.y = Math.max(H * 0.45, Math.min(H - 28, p.y));
+        }
       } else {
-        dragTarget.item.y = Math.max(H - 140, Math.min(H - 28, p.y));
+        dragTarget.item.y = Math.max(H * 0.68, Math.min(H - 28, p.y));
       }
+      return;
     }
 
     const dx = p.x - lastMouse.x;
@@ -661,20 +752,21 @@ footer {
     const speed = Math.hypot(dx, dy);
     lastMouse = p;
 
+    // Scatter snow on bottom taskbar snowbank when cursor sweeps across
     const col = Math.floor((p.x / W) * COLS);
-    if (col >= 0 && col < COLS && p.y >= H - 72 - snowBank[col]) {
+    if (col >= 0 && col < COLS && p.y >= H - 70 - snowBank[col]) {
       for (let c = Math.max(0, col - 5); c <= Math.min(COLS - 1, col + 5); c++) {
         const cut = Math.max(0, 6 - Math.abs(c - col) * 1.1);
-        snowBank[c] = Math.max(4, snowBank[c] - cut * 0.42);
+        snowBank[c] = Math.max(4, snowBank[c] - cut * 0.45);
       }
       const bursts = Math.min(14, 3 + Math.floor(speed * 0.25));
       for (let k = 0; k < bursts; k++) {
         spray.push({
           x: p.x + (Math.random() - 0.5) * 18,
-          y: Math.min(H - 32, p.y),
-          vx: dx * 2.2 + (Math.random() - 0.5) * 110,
+          y: Math.min(H - 28, p.y),
+          vx: dx * 2.1 + (Math.random() - 0.5) * 115,
           vy: -45 - Math.random() * 95,
-          r: 2 + Math.random() * 2.5,
+          r: 2 + Math.random() * 3,
           alpha: 1,
           color: "#ffffff"
         });
@@ -689,61 +781,55 @@ footer {
   canvas.addEventListener("touchmove", onPointerMove, { passive: true });
   window.addEventListener("touchend", () => { dragTarget = null; });
 
-  document.getElementById("sceneSelect").addEventListener("change", function() {
-    const img = new Image();
-    img.onload = () => { bgImg = img; };
-    img.src = this.value;
-  });
+  // Popover Menu Actions
   document.getElementById("btnAddSnowman").addEventListener("click", () => {
     snowmen.push({
-      x: W * (0.2 + Math.random() * 0.6),
-      y: H - 36,
-      scale: 0.85 + Math.random() * 0.28,
+      x: W * (0.36 + Math.random() * 0.42),
+      y: H - 34,
+      scale: 0.88 + Math.random() * 0.25,
       hat: Math.floor(Math.random() * 2),
       scarf: Math.floor(Math.random() * 3)
     });
+    popover.setAttribute("hidden", "");
+  });
+  document.getElementById("btnAddLantern").addEventListener("click", () => {
+    lanterns.push({
+      x: W * (0.42 + Math.random() * 0.35),
+      y: H - 40,
+      scale: 0.95
+    });
+    popover.setAttribute("hidden", "");
+  });
+  document.getElementById("btnAddGarland").addEventListener("click", () => {
+    // Place new 3D garland strand on the right pine tree ready to drag
+    for (let k = 0; k < 3; k++) {
+      garlands.push({
+        x: W * (0.89 + Math.random() * 0.07),
+        y: H * (0.38 + Math.random() * 0.36),
+        kind: (garlands.length + k) % 4,
+        phase: Math.random() * 6.28
+      });
+    }
+    popover.setAttribute("hidden", "");
   });
   document.getElementById("btnTractor").addEventListener("click", () => {
     tractor.dir = tractor.x > W * 0.5 ? -1 : 1;
-    for (let i = 0; i < COLS; i++) snowBank[i] = Math.min(54, snowBank[i] + 10);
+    for (let i = 0; i < COLS; i++) snowBank[i] = Math.min(52, snowBank[i] + 9);
+    popover.setAttribute("hidden", "");
   });
   document.getElementById("btnSanta").addEventListener("click", () => {
-    santa.x = -200;
-    santa.y = 75 + Math.random() * 55;
-  });
-  document.getElementById("btnLights").addEventListener("click", function() {
-    lightsOn = !lightsOn;
-    this.classList.toggle("active", lightsOn);
-  });
-  document.getElementById("btnSnowRate").addEventListener("click", function() {
-    snowFast = !snowFast;
-    this.textContent = snowFast ? "❄️ Снег: Сильный" : "❄️ Снег: Мягкий";
+    santa.active = true;
+    santa.x = -260;
+    santa.y = 68 + Math.random() * 45;
+    popover.setAttribute("hidden", "");
   });
   document.getElementById("btnResetSnow").addEventListener("click", () => {
-    for (let i = 0; i < COLS; i++) snowBank[i] = 24 + Math.sin(i * 0.2) * 5;
-  });
-  document.getElementById("bgUploadInput").addEventListener("change", (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    const img = new Image();
-    img.onload = () => { bgImg = img; };
-    img.src = URL.createObjectURL(file);
+    for (let i = 0; i < COLS; i++) snowBank[i] = 22 + Math.sin(i * 0.18) * 5;
+    popover.setAttribute("hidden", "");
   });
   document.getElementById("fullscreenBtn").addEventListener("click", () => {
     const box = document.getElementById("canvasBox");
     if (box.requestFullscreen) box.requestFullscreen();
-  });
-  document.querySelectorAll("[data-add-ornament]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const kind = Number(btn.getAttribute("data-add-ornament")) || 0;
-      const onLeft = Math.random() < 0.5;
-      ornaments.push({
-        x: onLeft ? W * (0.09 + Math.random() * 0.16) : W * (0.78 + Math.random() * 0.15),
-        y: H - 150 - Math.random() * 220,
-        kind,
-        phase: Math.random() * 6.28
-      });
-    });
   });
 
   function step(dt) {
@@ -751,14 +837,15 @@ footer {
 
     for (let i = 0; i < flakes.length; i++) {
       const f = flakes[i];
-      f.y += f.vy * (snowFast ? 1.1 : 0.65) * dt;
-      f.x += (f.vx + Math.sin(tSec * 1.7 + f.phase) * 18) * dt;
-      if (f.x < 0) f.x += W;
-      if (f.x >= W) f.x -= W;
+      f.y += f.vy * dt;
+      f.x += (f.vx + Math.sin(tSec * 1.5 + f.phase) * 16) * dt;
+      f.angle += f.spin * dt;
+      if (f.x < -20) f.x += W + 40;
+      if (f.x > W + 20) f.x -= W + 40;
       const col = Math.floor((f.x / W) * COLS);
-      const topY = H - 32 - (col >= 0 && col < COLS ? snowBank[col] : 16);
+      const topY = H - 26 - (col >= 0 && col < COLS ? snowBank[col] : 16);
       if (f.y >= topY) {
-        if (col >= 0 && col < COLS && snowBank[col] < 54) snowBank[col] += 0.24;
+        if (col >= 0 && col < COLS && snowBank[col] < 50) snowBank[col] += 0.2;
         Object.assign(f, makeFlake(false));
       }
     }
@@ -766,239 +853,532 @@ footer {
       snowBank[i] = snowBank[i] * 0.992 + (snowBank[i - 1] + snowBank[i + 1]) * 0.004;
     }
 
-    // Chimney smoke aligned to the stone chimney of the photorealistic chalet (60.5% X, 30.5% Y)
-    if (lightsOn && Math.random() < 0.42) {
+    // Chimney smoke rising from the stone chimney on the left cabin (x = 18.8%, y = 18.5%)
+    if (Math.random() < 0.42) {
       smoke.push({
-        x: W * 0.605 + (Math.random() - 0.5) * 8,
-        y: H * 0.305,
-        vx: 14 + Math.random() * 14,
-        vy: -28 - Math.random() * 14,
-        r: 8,
-        alpha: 0.52
+        x: W * 0.188 + (Math.random() - 0.5) * 10,
+        y: H * 0.185,
+        vx: 14 + Math.random() * 12,
+        vy: -24 - Math.random() * 14,
+        r: 9,
+        alpha: isNight ? 0.46 : 0.62
       });
     }
     for (let i = smoke.length - 1; i >= 0; i--) {
       const p = smoke[i];
-      p.x += (p.vx + Math.sin(tSec * 2 + i) * 6) * dt;
+      p.x += (p.vx + Math.sin(tSec * 1.8 + i) * 5) * dt;
       p.y += p.vy * dt;
-      p.r += 12 * dt;
-      p.alpha -= 0.14 * dt;
+      p.r += 13 * dt;
+      p.alpha -= 0.13 * dt;
       if (p.alpha <= 0.02) smoke.splice(i, 1);
     }
 
-    // Santa sleigh
-    santa.x += 112 * dt;
-    santa.y += Math.sin(tSec * 2.4) * 14 * dt;
-    if (Math.random() < 0.65) {
-      spray.push({
-        x: santa.x + 12,
-        y: santa.y + 18,
-        vx: -28 + (Math.random() - 0.5) * 20,
-        vy: (Math.random() - 0.5) * 18,
-        r: 2.4,
-        alpha: 0.95,
-        color: "#fde047"
-      });
-    }
-    if (santa.x > W + 280) {
-      santa.x = -240;
-      santa.y = 68 + Math.random() * 55;
+    // Santa sleigh (flies across and rests 22 seconds before next automatic flight)
+    if (santa.active) {
+      santa.x += 128 * dt;
+      santa.y += Math.sin(tSec * 2.5) * 12 * dt;
+      if (Math.random() < 0.75) {
+        spray.push({
+          x: santa.x + 18,
+          y: santa.y + 20,
+          vx: -35 + (Math.random() - 0.5) * 22,
+          vy: (Math.random() - 0.5) * 18,
+          r: 2.5 + Math.random() * 1.5,
+          alpha: 0.95,
+          color: "#fde047"
+        });
+      }
+      if (santa.x > W + 320) {
+        santa.active = false;
+        santa.cooldown = 22;
+      }
+    } else {
+      santa.cooldown -= dt;
+      if (santa.cooldown <= 0) {
+        santa.active = true;
+        santa.x = -280;
+        santa.y = 65 + Math.random() * 45;
+      }
     }
 
-    // Snowplow tractor
-    tractor.x += 78 * tractor.dir * dt;
+    // Realistic 3D Snowplow Tractor
+    tractor.x += 76 * tractor.dir * dt;
+    tractor.wheelAngle += tractor.dir * 5.2 * dt;
     const tc = Math.floor((tractor.x / W) * COLS);
     for (let c = Math.max(0, tc - 3); c <= Math.min(COLS - 1, tc + 3); c++) {
-      if (snowBank[c] > 8) {
-        const diff = snowBank[c] - 8;
-        snowBank[c] = 8;
+      if (snowBank[c] > 7) {
+        const diff = snowBank[c] - 7;
+        snowBank[c] = 7;
         const ahead = Math.max(0, Math.min(COLS - 1, c + (tractor.dir > 0 ? 5 : -5)));
-        snowBank[ahead] = Math.min(56, snowBank[ahead] + diff * 0.36);
-        if (Math.random() < 0.45) {
+        snowBank[ahead] = Math.min(54, snowBank[ahead] + diff * 0.38);
+        if (Math.random() < 0.5) {
           spray.push({
-            x: tractor.x + tractor.dir * 32,
-            y: H - 40,
-            vx: tractor.dir * (55 + Math.random() * 50),
-            vy: -45 - Math.random() * 55,
-            r: 2.5,
-            alpha: 0.9,
-            color: "#e2f1ff"
+            x: tractor.x + tractor.dir * 38,
+            y: H - 36,
+            vx: tractor.dir * (60 + Math.random() * 55),
+            vy: -48 - Math.random() * 55,
+            r: 2.6,
+            alpha: 0.92,
+            color: "#f1f8ff"
           });
         }
       }
     }
-    if (tractor.x > W - 85) tractor.dir = -1;
-    if (tractor.x < 85) tractor.dir = 1;
+    if (tractor.x > W - 95) tractor.dir = -1;
+    if (tractor.x < 95) tractor.dir = 1;
 
     for (let i = spray.length - 1; i >= 0; i--) {
       const sp = spray[i];
       sp.x += sp.vx * dt;
-      sp.y += sp.vy * dt;
+      sp.y += sp.Vy ? sp.Vy * dt : sp.vy * dt;
       sp.vy += 185 * dt;
-      sp.alpha -= 0.92 * dt;
+      sp.alpha -= 0.9 * dt;
       if (sp.alpha <= 0.03) spray.splice(i, 1);
     }
   }
 
-  function draw() {
-    if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
-      // Cover-fit background image
-      const ir = bgImg.naturalWidth / bgImg.naturalHeight;
-      const cr = W / H;
-      let dw = W, dh = H, dx = 0, dy = 0;
-      if (ir > cr) {
-        dh = H; dw = H * ir; dx = (W - dw) * 0.5;
-      } else {
-        dw = W; dh = W / ir; dy = (H - dh) * 0.5;
+  function drawCrystalFlake(x, y, r, angle, layer) {
+    ctx.save();
+    ctx.translate(x, y);
+    if (layer === 2) {
+      // Soft foreground 3D bokeh snowflake
+      const g = ctx.createRadialGradient(0, 0, 0.5, 0, 0, r);
+      g.addColorStop(0, "rgba(255, 255, 255, 0.92)");
+      g.addColorStop(0.55, "rgba(235, 245, 255, 0.55)");
+      g.addColorStop(1, "rgba(235, 245, 255, 0)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+    } else if (layer === 1) {
+      // Crisp 6-pointed crystalline star snowflake
+      ctx.rotate(angle);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.88)";
+      ctx.lineWidth = 1.25;
+      ctx.lineCap = "round";
+      for (let k = 0; k < 3; k++) {
+        ctx.beginPath();
+        ctx.moveTo(-r, 0); ctx.lineTo(r, 0);
+        ctx.moveTo(r * 0.55, 0); ctx.lineTo(r * 0.35, -r * 0.28);
+        ctx.moveTo(r * 0.55, 0); ctx.lineTo(r * 0.35, r * 0.28);
+        ctx.moveTo(-r * 0.55, 0); ctx.lineTo(-r * 0.35, -r * 0.28);
+        ctx.moveTo(-r * 0.55, 0); ctx.lineTo(-r * 0.35, r * 0.28);
+        ctx.stroke();
+        ctx.rotate(Math.PI / 3);
       }
-      ctx.drawImage(bgImg, dx, dy, dw, dh);
     } else {
-      ctx.fillStyle = "#0b152c";
+      ctx.fillStyle = "rgba(245, 250, 255, 0.78)";
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function draw3DGarland(o) {
+    // Connect nearby garlands on the same tree/house with a warm 3D cord
+    const palette = [
+      { core: "#fff7d6", mid: "#fbbf24", rim: "#b45309", glow: "rgba(251, 191, 36, 0.65)" },
+      { core: "#ffe4e6", mid: "#f43f5e", rim: "#9f1239", glow: "rgba(244, 63, 94, 0.65)" },
+      { core: "#d1fae5", mid: "#10b981", rim: "#065f46", glow: "rgba(16, 185, 129, 0.65)" },
+      { core: "#fef9c3", mid: "#fde047", rim: "#ca8a04", glow: "rgba(253, 224, 71, 0.75)" }
+    ];
+    const p = palette[o.kind % palette.length];
+    const pulse = 0.72 + 0.28 * Math.sin(tSec * 4.5 + o.phase);
+
+    ctx.save();
+    // Outer warm volumetric halo
+    const halo = ctx.createRadialGradient(o.x, o.y, 2, o.x, o.y, 24 * pulse);
+    halo.addColorStop(0, p.glow);
+    halo.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = halo;
+    ctx.beginPath(); ctx.arc(o.x, o.y, 24 * pulse, 0, Math.PI * 2); ctx.fill();
+
+    // Metallic gold cap on top of 3D bauble
+    ctx.fillStyle = "#d97706";
+    ctx.fillRect(o.x - 3.5, o.y - 12, 7, 4);
+    ctx.strokeStyle = "#fde047";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.arc(o.x, o.y - 13, 3, 0, Math.PI * 2); ctx.stroke();
+
+    // 3D sphere shading
+    const rad = o.kind === 3 ? 10.5 : 9;
+    const sphere = ctx.createRadialGradient(o.x - rad * 0.35, o.y - rad * 0.35, 1.5, o.x, o.y, rad);
+    sphere.addColorStop(0, p.core);
+    sphere.addColorStop(0.55, p.mid);
+    sphere.addColorStop(1, p.rim);
+    ctx.fillStyle = sphere;
+    ctx.beginPath(); ctx.arc(o.x, o.y, rad, 0, Math.PI * 2); ctx.fill();
+
+    // Specular highlight
+    ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+    ctx.beginPath(); ctx.ellipse(o.x - rad * 0.32, o.y - rad * 0.34, 2.8, 1.8, -0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function draw3DLantern(l) {
+    const x = l.x, y = l.y, s = l.scale;
+    const flicker = 0.88 + 0.12 * Math.sin(tSec * 9.5 + x);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(s, s);
+
+    // Warm golden light pool on the snow & air
+    const pool = ctx.createRadialGradient(0, -18, 3, 0, -12, 54 * flicker);
+    pool.addColorStop(0, "rgba(255, 210, 105, 0.72)");
+    pool.addColorStop(0.45, "rgba(251, 146, 60, 0.26)");
+    pool.addColorStop(1, "rgba(251, 146, 60, 0)");
+    ctx.fillStyle = pool;
+    ctx.beginPath(); ctx.arc(0, -14, 54 * flicker, 0, Math.PI * 2); ctx.fill();
+
+    // Base pedestal
+    ctx.fillStyle = "#1c1917";
+    ctx.beginPath();
+    ctx.moveTo(-14, 0); ctx.lineTo(14, 0); ctx.lineTo(11, -5); ctx.lineTo(-11, -5);
+    ctx.closePath(); ctx.fill();
+
+    // Glowing glass chamber
+    const glass = ctx.createLinearGradient(0, -32, 0, -5);
+    glass.addColorStop(0, "#fef08a");
+    glass.addColorStop(0.5, "#fbbf24");
+    glass.addColorStop(1, "#ea580c");
+    ctx.fillStyle = glass;
+    ctx.beginPath();
+    ctx.moveTo(-11, -30); ctx.lineTo(11, -30); ctx.lineTo(9, -5); ctx.lineTo(-9, -5);
+    ctx.closePath(); ctx.fill();
+
+    // Bright candle flame inside
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath(); ctx.ellipse(0, -15, 3.2, 6 * flicker, 0, 0, Math.PI * 2); ctx.fill();
+
+    // Iron frame bars
+    ctx.strokeStyle = "#1c1917";
+    ctx.lineWidth = 2.2;
+    ctx.strokeRect(-10, -30, 20, 25);
+    ctx.beginPath();
+    ctx.moveTo(0, -30); ctx.lineTo(0, -5);
+    ctx.stroke();
+
+    // Pitched iron roof + snow cap
+    ctx.fillStyle = "#1c1917";
+    ctx.beginPath();
+    ctx.moveTo(-15, -30); ctx.lineTo(0, -42); ctx.lineTo(15, -30);
+    ctx.closePath(); ctx.fill();
+
+    // Fluffy snow cap on lantern roof
+    ctx.fillStyle = "#f1f5f9";
+    ctx.beginPath();
+    ctx.moveTo(-13, -31);
+    ctx.quadraticCurveTo(0, -44, 13, -31);
+    ctx.quadraticCurveTo(0, -34, -13, -31);
+    ctx.fill();
+
+    // Top ring handle
+    ctx.strokeStyle = "#292524";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(0, -45, 4.5, 0, Math.PI * 2); ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function draw3DSnowman(sm) {
+    const s = sm.scale, x = sm.x, y = sm.y;
+    ctx.save();
+    // Ground ambient shadow
+    ctx.fillStyle = "rgba(10, 20, 42, 0.38)";
+    ctx.beginPath(); ctx.ellipse(x, y + 3, 30 * s, 8 * s, 0, 0, Math.PI * 2); ctx.fill();
+
+    // Natural branched wooden arms
+    ctx.strokeStyle = "#5c3a21";
+    ctx.lineWidth = 3 * s;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(x - 16 * s, y - 54 * s); ctx.lineTo(x - 38 * s, y - 68 * s);
+    ctx.moveTo(x - 30 * s, y - 63 * s); ctx.lineTo(x - 35 * s, y - 73 * s);
+    ctx.moveTo(x + 16 * s, y - 54 * s); ctx.lineTo(x + 38 * s, y - 66 * s);
+    ctx.moveTo(x + 30 * s, y - 61 * s); ctx.lineTo(x + 36 * s, y - 71 * s);
+    ctx.stroke();
+
+    // 3D shaded snow spheres (warm light from left cabin, cool blue shadow on right)
+    const balls = [[0, -20, 25], [0, -52, 19], [0, -78, 14.5]];
+    for (const [ox, oy, rad] of balls) {
+      const bx = x + ox * s, by = y + oy * s, r = rad * s;
+      const g = ctx.createRadialGradient(bx - r * 0.35, by - r * 0.3, r * 0.1, bx, by, r);
+      g.addColorStop(0, "#ffffff");
+      g.addColorStop(0.62, "#e6f0fa");
+      g.addColorStop(1, "#9bb8d9");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(bx, by, r, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Coal buttons & eyes with glossy catchlights
+    const coals = [
+      [x - 5 * s, y - 82 * s, 2.3 * s],
+      [x + 4 * s, y - 82 * s, 2.3 * s],
+      [x, y - 56 * s, 2.6 * s],
+      [x, y - 46 * s, 2.6 * s],
+      [x, y - 36 * s, 2.6 * s]
+    ];
+    for (const [cx, cy, cr] of coals) {
+      ctx.fillStyle = "#1e293b";
+      ctx.beginPath(); ctx.arc(cx, cy, cr, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath(); ctx.arc(cx - cr * 0.3, cy - cr * 0.3, cr * 0.35, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // 3D shaded carrot nose
+    const cg = ctx.createLinearGradient(x, y - 80 * s, x + 16 * s, y - 74 * s);
+    cg.addColorStop(0, "#fb923c");
+    cg.addColorStop(1, "#c2410c");
+    ctx.fillStyle = cg;
+    ctx.beginPath();
+    ctx.moveTo(x - 1 * s, y - 79 * s);
+    ctx.lineTo(x + 16 * s, y - 76 * s);
+    ctx.lineTo(x - 1 * s, y - 74 * s);
+    ctx.closePath(); ctx.fill();
+
+    // Knitted 3D Scarf
+    const scCols = [
+      ["#ef4444", "#991b1b"],
+      ["#10b981", "#065f46"],
+      ["#f59e0b", "#92400e"]
+    ];
+    const [c1, c2] = scCols[sm.scarf % scCols.length];
+    const sg = ctx.createLinearGradient(x - 14 * s, y - 67 * s, x + 14 * s, y - 60 * s);
+    sg.addColorStop(0, c1); sg.addColorStop(1, c2);
+    ctx.fillStyle = sg;
+    ctx.beginPath();
+    ctx.roundRect(x - 14.5 * s, y - 67 * s, 29 * s, 7.5 * s, 4 * s);
+    ctx.roundRect(x + 4 * s, y - 64 * s, 7 * s, 19 * s, 3 * s);
+    ctx.fill();
+
+    // 3D Top Hat or Plush Santa Hat
+    if (sm.hat === 0) {
+      ctx.fillStyle = "#0f172a";
+      ctx.beginPath(); ctx.ellipse(x, y - 91 * s, 18 * s, 4.5 * s, 0, 0, Math.PI * 2); ctx.fill();
+      const hg = ctx.createLinearGradient(x - 11 * s, 0, x + 11 * s, 0);
+      hg.addColorStop(0, "#334155"); hg.addColorStop(0.4, "#0f172a"); hg.addColorStop(1, "#020617");
+      ctx.fillStyle = hg;
+      ctx.fillRect(x - 11.5 * s, y - 111 * s, 23 * s, 20 * s);
+      // Red silk ribbon on hat
+      ctx.fillStyle = "#dc2626";
+      ctx.fillRect(x - 11.5 * s, y - 96 * s, 23 * s, 4 * s);
+    } else {
+      ctx.fillStyle = "#dc2626";
+      ctx.beginPath();
+      ctx.moveTo(x - 14 * s, y - 89 * s);
+      ctx.quadraticCurveTo(x, y - 118 * s, x - 18 * s, y - 106 * s);
+      ctx.lineTo(x + 14 * s, y - 89 * s);
+      ctx.closePath(); ctx.fill();
+      // White plush fur trim & pom-pom
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath(); ctx.roundRect(x - 15 * s, y - 92 * s, 30 * s, 6 * s, 3 * s); ctx.fill();
+      ctx.beginPath(); ctx.arc(x - 17 * s, y - 106 * s, 5 * s, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function draw3DTractor() {
+    ctx.save();
+    ctx.translate(tractor.x, H - 30);
+    if (tractor.dir < 0) ctx.scale(-1, 1);
+
+    // Volumetric warm headlight beam
+    const beam = ctx.createLinearGradient(30, -18, 155, -18);
+    beam.addColorStop(0, "rgba(254, 240, 138, 0.52)");
+    beam.addColorStop(1, "rgba(254, 240, 138, 0)");
+    ctx.fillStyle = beam;
+    ctx.beginPath();
+    ctx.moveTo(28, -18); ctx.lineTo(155, -44); ctx.lineTo(155, 4);
+    ctx.closePath(); ctx.fill();
+
+    // Hydraulic arm & curved steel snowplow blade
+    ctx.strokeStyle = "#475569";
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(16, -12); ctx.lineTo(34, -10); ctx.stroke();
+
+    const bladeG = ctx.createLinearGradient(28, -30, 42, 0);
+    bladeG.addColorStop(0, "#f87171");
+    bladeG.addColorStop(0.5, "#dc2626");
+    bladeG.addColorStop(1, "#7f1d1d");
+    ctx.fillStyle = bladeG;
+    ctx.beginPath();
+    ctx.moveTo(28, -28);
+    ctx.quadraticCurveTo(42, -14, 38, 2);
+    ctx.lineTo(28, 2);
+    ctx.closePath(); ctx.fill();
+
+    // Rolling snow wave in front of blade
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath(); ctx.arc(41, -3, 8, 0, Math.PI * 2); ctx.fill();
+
+    // 3D Metallic cabin & hood
+    const cabG = ctx.createLinearGradient(0, -46, 0, -20);
+    cabG.addColorStop(0, "#fde047");
+    cabG.addColorStop(1, "#ca8a04");
+    ctx.fillStyle = cabG;
+    ctx.beginPath();
+    ctx.roundRect(-24, -46, 28, 24, 4);
+    ctx.roundRect(-28, -26, 52, 18, 4);
+    ctx.fill();
+
+    // Engine grille & exhaust stack
+    ctx.fillStyle = "#1e293b";
+    ctx.fillRect(14, -23, 6, 12);
+    ctx.fillRect(-20, -23, 14, 10);
+
+    // Warm lit cabin window
+    const winG = ctx.createLinearGradient(0, -43, 0, -27);
+    winG.addColorStop(0, "#fef08a");
+    winG.addColorStop(1, "#f59e0b");
+    ctx.fillStyle = winG;
+    ctx.beginPath(); ctx.roundRect(-20, -42, 20, 14, 2); ctx.fill();
+
+    // Flashing amber beacon on roof
+    const flash = 0.5 + 0.5 * Math.sin(tSec * 14);
+    ctx.fillStyle = `rgba(251, 191, 36, ${0.4 + flash * 0.6})`;
+    ctx.beginPath(); ctx.arc(-10, -50, 5 + flash * 4, 0, Math.PI * 2); ctx.fill();
+
+    // Treaded rubber wheels with spinning spokes
+    const wheels = [[-16, -6, 11], [14, -4, 9]];
+    for (const [wx, wy, wr] of wheels) {
+      ctx.save();
+      ctx.translate(wx, wy);
+      ctx.rotate(tractor.wheelAngle);
+      ctx.fillStyle = "#0f172a";
+      ctx.beginPath(); ctx.arc(0, 0, wr, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#334155";
+      ctx.lineWidth = 2.2;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.arc(0, 0, wr - 1, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#eab308";
+      ctx.beginPath(); ctx.arc(0, 0, wr * 0.45, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  function draw3DSanta() {
+    if (!santa.active) return;
+    ctx.save();
+    ctx.translate(santa.x, santa.y);
+
+    // Gift sack in back of sleigh
+    ctx.fillStyle = "#b45309";
+    ctx.beginPath(); ctx.arc(10, 6, 12, 0, Math.PI * 2); ctx.fill();
+
+    // Ornate curved 3D red & gold sleigh
+    const sg = ctx.createLinearGradient(0, 4, 0, 28);
+    sg.addColorStop(0, "#ef4444"); sg.addColorStop(1, "#7f1d1d");
+    ctx.fillStyle = sg;
+    ctx.beginPath();
+    ctx.moveTo(-6, 6);
+    ctx.quadraticCurveTo(25, 12, 58, 6);
+    ctx.quadraticCurveTo(72, 18, 62, 28);
+    ctx.lineTo(-10, 28);
+    ctx.closePath(); ctx.fill();
+
+    // Gold runners & harness reins
+    ctx.strokeStyle = "#fde047";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(-16, 32); ctx.lineTo(72, 32);
+    ctx.quadraticCurveTo(80, 26, 74, 20);
+    ctx.moveTo(58, 16); ctx.quadraticCurveTo(105, 22, 165, 14);
+    ctx.stroke();
+
+    // Santa waving
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath(); ctx.roundRect(22, -2, 18, 16, 5); ctx.fill();
+    ctx.fillStyle = "#fed7aa"; ctx.beginPath(); ctx.arc(31, -6, 6.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(33, -1, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath(); ctx.moveTo(24, -10); ctx.lineTo(38, -10); ctx.lineTo(28, -22); ctx.closePath(); ctx.fill();
+
+    // Two galloping reindeer with antlers & animated legs
+    for (let r = 0; r < 2; r++) {
+      const rx = 96 + r * 52;
+      const leap = Math.sin(tSec * 9 + r * 1.4);
+      const ry = 6 + leap * 4;
+      ctx.save();
+      ctx.translate(rx, ry);
+      ctx.fillStyle = "#78350f";
+      ctx.beginPath(); ctx.ellipse(12, 8, 14, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(26, 1, 6.5, 4.5, -0.3, 0, Math.PI * 2); ctx.fill();
+      // Animated legs
+      ctx.strokeStyle = "#78350f"; ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(4, 12); ctx.lineTo(4 - leap * 6, 22);
+      ctx.moveTo(20, 12); ctx.lineTo(20 + leap * 6, 22);
+      // Antlers
+      ctx.strokeStyle = "#d6d3d1"; ctx.lineWidth = 1.6;
+      ctx.moveTo(25, -2); ctx.lineTo(22, -11);
+      ctx.moveTo(23, -7); ctx.lineTo(28, -10);
+      ctx.stroke();
+      if (r === 1) {
+        ctx.fillStyle = "#ff2e2e";
+        ctx.shadowColor = "#ff2e2e"; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.arc(33, 1, 3, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  function draw() {
+    const img = isNight ? nightImg : dayImg;
+    if (img && img.complete && img.naturalWidth > 0) {
+      ctx.drawImage(img, 0, 0, W, H);
+    } else {
+      ctx.fillStyle = "#081122";
       ctx.fillRect(0, 0, W, H);
     }
 
-    // Animated twinkling fairy lights along the photorealistic chalet roof eaves
-    if (lightsOn) {
-      const cols = ["#fde047", "#ff5b69", "#34d399", "#60a5fa"];
-      const eaves = [
-        [0.335, 0.512, 0.456, 0.352, 11],
-        [0.456, 0.352, 0.605, 0.505, 11],
-        [0.605, 0.505, 0.732, 0.562, 8]
-      ];
-      let idx = 0;
-      for (const [x1, y1, x2, y2, count] of eaves) {
-        for (let i = 0; i <= count; i++) {
-          const u = i / count;
-          const bx = (x1 + (x2 - x1) * u) * W;
-          const by = (y1 + (y2 - y1) * u) * H;
-          const pulse = 0.45 + 0.55 * Math.sin(tSec * 5.6 + idx * 0.85);
-          const col = cols[idx % cols.length];
-          ctx.save();
-          ctx.globalAlpha = pulse;
-          ctx.fillStyle = col;
-          ctx.shadowColor = col;
-          ctx.shadowBlur = 14;
-          ctx.beginPath(); ctx.arc(bx, by, 4.2, 0, Math.PI * 2); ctx.fill();
-          ctx.restore();
-          idx++;
-        }
-      }
-    }
-
-    // Chimney Smoke
+    // Soft rising smoke from the cabin's stone chimney
     for (const p of smoke) {
-      ctx.fillStyle = `rgba(222, 232, 245, ${Math.max(0, p.alpha)})`;
+      const g = ctx.createRadialGradient(p.x, p.y, 1, p.x, p.y, p.r);
+      g.addColorStop(0, `rgba(235, 242, 252, ${Math.max(0, p.alpha)})`);
+      g.addColorStop(1, "rgba(235, 242, 252, 0)");
+      ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
     }
 
-    // Santa Claus & Reindeer Sleigh
-    ctx.save();
-    ctx.translate(santa.x, santa.y);
-    ctx.fillStyle = "#dc2626";
-    ctx.beginPath();
-    ctx.moveTo(0, 10); ctx.lineTo(54, 10); ctx.lineTo(66, 28); ctx.lineTo(-8, 28);
-    ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = "#facc15"; ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.moveTo(-12, 32); ctx.lineTo(72, 32);
-    ctx.moveTo(60, 18); ctx.lineTo(150, 14);
-    ctx.stroke();
-    ctx.fillStyle = "#fed7aa"; ctx.beginPath(); ctx.arc(28, 2, 7, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(31, 8, 6, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#ef4444";
-    ctx.beginPath(); ctx.moveTo(20, -2); ctx.lineTo(36, -2); ctx.lineTo(25, -15); ctx.closePath(); ctx.fill();
-    for (let r = 0; r < 2; r++) {
-      const rx = 92 + r * 46, ry = 8 + Math.sin(tSec * 8 + r) * 3.5;
-      ctx.fillStyle = "#9a6338";
-      ctx.beginPath(); ctx.ellipse(rx + 12, ry + 8, 13, 6, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(rx + 26, ry + 2, 5, 0, Math.PI * 2); ctx.fill();
-      if (r === 1) {
-        ctx.fillStyle = "#ff3b3b";
-        ctx.beginPath(); ctx.arc(rx + 32, ry + 2, 3, 0, Math.PI * 2); ctx.fill();
-      }
-    }
-    ctx.restore();
+    // 3D Santa Sleigh
+    draw3DSanta();
 
-    // Tree & House Ornaments
-    const ornColors = ["#ef4444", "#facc15", "#10b981", "#fef08a", "#fb7185"];
-    for (const o of ornaments) {
-      const c = ornColors[o.kind % ornColors.length];
-      const pulse = 0.65 + 0.35 * Math.sin(tSec * 4.2 + o.phase);
-      ctx.save();
-      ctx.fillStyle = c;
-      ctx.shadowColor = c;
-      ctx.shadowBlur = 15 * pulse;
-      ctx.beginPath(); ctx.arc(o.x, o.y, o.kind === 3 ? 9.5 : 7.5, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
-    }
+    // Movable 3D Garlands & Ornaments
+    for (const o of garlands) draw3DGarland(o);
 
-    // Snowmen
-    for (const sm of snowmen) {
-      const s = sm.scale, x = sm.x, y = sm.y;
-      ctx.fillStyle = "#f8fbff";
-      ctx.strokeStyle = "#b8d0eb";
-      ctx.lineWidth = 1.5;
-      [[0, -20, 25], [0, -52, 19], [0, -78, 14]].forEach(([ox, oy, rad]) => {
-        ctx.beginPath(); ctx.arc(x + ox * s, y + oy * s, rad * s, 0, Math.PI * 2);
-        ctx.fill(); ctx.stroke();
-      });
-      ctx.fillStyle = "#f97316";
-      ctx.beginPath();
-      ctx.moveTo(x, y - 78 * s); ctx.lineTo(x + 14 * s, y - 75 * s); ctx.lineTo(x, y - 73 * s);
-      ctx.closePath(); ctx.fill();
-      const scCols = ["#ef4444", "#10b981", "#eab308"];
-      ctx.fillStyle = scCols[sm.scarf % scCols.length];
-      ctx.fillRect(x - 14 * s, y - 66 * s, 28 * s, 6 * s);
-      ctx.fillRect(x + 4 * s, y - 64 * s, 6 * s, 16 * s);
-      if (sm.hat === 0) {
-        ctx.fillStyle = "#1e293b";
-        ctx.fillRect(x - 16 * s, y - 92 * s, 32 * s, 4 * s);
-        ctx.fillRect(x - 11 * s, y - 110 * s, 22 * s, 18 * s);
-      } else {
-        ctx.fillStyle = "#dc2626";
-        ctx.beginPath();
-        ctx.moveTo(x - 14 * s, y - 89 * s); ctx.lineTo(x + 14 * s, y - 89 * s); ctx.lineTo(x - 3 * s, y - 112 * s);
-        ctx.closePath(); ctx.fill();
-      }
-    }
+    // Movable 3D Wrought-Iron Night Lanterns
+    for (const l of lanterns) draw3DLantern(l);
 
-    // Snowbank on Taskbar
-    ctx.fillStyle = "#eff6ff";
+    // 3D Snowmen
+    for (const sm of snowmen) draw3DSnowman(sm);
+
+    // 3D Sculpted Snowbank on Taskbar
+    const sbGrad = ctx.createLinearGradient(0, H - 75, 0, H);
+    sbGrad.addColorStop(0, "#ffffff");
+    sbGrad.addColorStop(0.45, "#e2eeff");
+    sbGrad.addColorStop(1, "#b8d0f0");
+    ctx.fillStyle = sbGrad;
     ctx.beginPath();
     ctx.moveTo(0, H);
     for (let i = 0; i < COLS; i++) {
       const x = (i / (COLS - 1)) * W;
-      ctx.lineTo(x, H - 30 - snowBank[i]);
+      ctx.lineTo(x, H - 24 - snowBank[i]);
     }
     ctx.lineTo(W, H);
     ctx.closePath();
     ctx.fill();
 
-    // Snowplow Tractor
-    ctx.save();
-    ctx.translate(tractor.x, H - 34);
-    if (tractor.dir < 0) ctx.scale(-1, 1);
-    ctx.fillStyle = "rgba(254, 240, 138, 0.28)";
-    ctx.beginPath(); ctx.moveTo(28, -14); ctx.lineTo(115, -34); ctx.lineTo(115, 6); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#eab308";
-    ctx.fillRect(-24, -24, 42, 18);
-    ctx.fillRect(-16, -40, 22, 18);
-    ctx.fillStyle = "#bae6fd";
-    ctx.fillRect(-12, -37, 14, 11);
-    ctx.fillStyle = "#dc2626";
-    ctx.beginPath(); ctx.moveTo(20, -22); ctx.lineTo(32, -26); ctx.lineTo(36, 2); ctx.lineTo(20, 0); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#1e293b";
-    ctx.beginPath(); ctx.arc(-16, -4, 9, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(10, -2, 7, 0, Math.PI * 2); ctx.fill();
-    ctx.restore();
+    // 3D Snowplow Tractor
+    draw3DTractor();
 
-    // Taskbar strip at bottom
-    ctx.fillStyle = "rgba(10, 16, 28, 0.88)";
-    ctx.fillRect(0, H - 30, W, 30);
-    ctx.fillStyle = "#94a3b8";
+    // Sleek Bottom Desktop Taskbar Strip
+    ctx.fillStyle = "rgba(8, 13, 24, 0.86)";
+    ctx.fillRect(0, H - 24, W, 24);
+    ctx.fillStyle = "#cbd5e1";
     ctx.font = "600 11px system-ui, sans-serif";
-    ctx.fillText("⊞ Пуск · DEEPSYQ Xmas PC активен (проведи мышкой по сугробам выше!)", 14, H - 11);
+    ctx.fillText("⊞ Xmas PC · Winter Desktop — проведи мышкой по сугробу или перетащи гирлянды и фонари", 14, H - 8);
 
+    // Snow Spray & Golden Stardust
     for (const sp of spray) {
       ctx.save();
       ctx.globalAlpha = Math.max(0, sp.alpha);
@@ -1007,9 +1387,9 @@ footer {
       ctx.restore();
     }
 
-    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    // 3-Layer Crystalline & Bokeh Falling Snow
     for (const f of flakes) {
-      ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
+      drawCrystalFlake(f.x, f.y, f.r, f.angle, f.layer);
     }
   }
 
@@ -1030,7 +1410,7 @@ footer {
   async function startXmasCheckout(plan, osTarget, btn) {
     const email = (document.getElementById("buyerEmail")?.value || "").trim();
     if (btn) btn.disabled = true;
-    if (statusEl) statusEl.textContent = "Перенаправляем на безопасную оплату Stripe…";
+    if (statusEl) statusEl.textContent = "Перенаправляем на защищённую оплату Stripe…";
     try {
       const res = await fetch("/api/xmas-pc/checkout", {
         method: "POST",
@@ -1079,7 +1459,6 @@ footer {
           document.getElementById("unlockedWinLink").href = data.winDownloadUrl;
           document.getElementById("unlockedMacLink").href = data.macDownloadUrl;
           box.scrollIntoView({ behavior: "smooth", block: "center" });
-          // Automatically trigger the file download for the buyer's chosen OS
           setTimeout(() => {
             window.location.assign(preferredOs === "mac" ? data.macDownloadUrl : data.winDownloadUrl);
           }, 600);

@@ -5,19 +5,20 @@ using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-[assembly: System.Reflection.AssemblyTitle("DEEPSYQ Xmas PC")]
-[assembly: System.Reflection.AssemblyDescription("Interactive Winter Desktop & Holiday Atmosphere by DEEPSYQ")]
-[assembly: System.Reflection.AssemblyCompany("DEEPSYQ Creative Studio")]
-[assembly: System.Reflection.AssemblyProduct("DEEPSYQ Xmas PC")]
+[assembly: System.Reflection.AssemblyTitle("DEEPSYQ Xmas PC · Winter Desktop")]
+[assembly: System.Reflection.AssemblyDescription("Xmas PC · Winter Desktop by DEEPSYQ")]
+[assembly: System.Reflection.AssemblyCompany("Deepsyq")]
+[assembly: System.Reflection.AssemblyProduct("DEEPSYQ Xmas PC · Winter Desktop")]
 [assembly: System.Reflection.AssemblyVersion("1.0.0.0")]
 
 namespace DeepSyqXmasPC
 {
-    public class Snowflake { public float X, Y, Vx, Vy, Size, Phase; }
+    public class Snowflake { public float X, Y, Vx, Vy, Size, Phase, Angle, Spin; public int Layer; }
     public class SmokePuff { public float X, Y, Vx, Vy, Radius, Alpha; }
     public class SparkParticle { public float X, Y, Vx, Vy, Size, Alpha; public Color Col; }
-    public class SnowmanItem { public float X, Y, Scale; public int HatStyle; public int ScarfColor; public bool Dragging; }
-    public class OrnamentItem { public float X, Y; public int Kind; public float Phase; public bool Dragging; }
+    public class SnowmanItem { public float X, Y, Scale; public int HatStyle; public int ScarfColor; }
+    public class OrnamentItem { public float X, Y; public int Kind; public float Phase; }
+    public class LanternItem { public float X, Y, Scale; }
 
     public class XmasOverlayForm : Form
     {
@@ -36,76 +37,85 @@ namespace DeepSyqXmasPC
         private List<SparkParticle> spray = new List<SparkParticle>();
         private List<SnowmanItem> snowmen = new List<SnowmanItem>();
         private List<OrnamentItem> ornaments = new List<OrnamentItem>();
+        private List<LanternItem> lanterns = new List<LanternItem>();
         private float[] snowBank;
-        private int bankCols = 240;
+        private int bankCols = 220;
 
+        private Image nightBg = null;
+        private Image dayBg = null;
+        private bool isNight = true;
         private bool showScenicHouse = true;
         private bool clickThrough = false;
-        private Image customBg = null;
         private float timeSec = 0f;
 
-        // Santa sleigh state
         private bool santaActive = true;
-        private float santaX = -260f, santaY = 110f, santaDir = 1f;
-
-        // Tractor snowplow state
-        private bool tractorActive = true;
-        private float tractorX = 80f, tractorDir = 1f;
+        private float santaX = -260f, santaY = 85f, santaCooldown = 0f;
+        private float tractorX = 200f, tractorDir = 1f;
 
         private Point lastMouse = Point.Empty;
         private SnowmanItem draggedSnowman = null;
         private OrnamentItem draggedOrnament = null;
-        private Panel controlBar;
+        private LanternItem draggedLantern = null;
+        private Panel hudBar;
+        private ContextMenu decorMenu;
+        private Button timeBtn;
         private NotifyIcon trayIcon;
-        private Label statusLbl;
 
         public XmasOverlayForm()
         {
-            Text = "DEEPSYQ Xmas PC — Interactive Winter Desktop";
+            Text = "DEEPSYQ · Xmas PC · Winter Desktop";
             FormBorderStyle = FormBorderStyle.None;
             WindowState = FormWindowState.Maximized;
             TopMost = true;
             DoubleBuffered = true;
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
-            BackColor = Color.FromArgb(11, 18, 33);
+            BackColor = Color.FromArgb(8, 14, 28);
 
-            try {
+            try
+            {
                 var asm = System.Reflection.Assembly.GetExecutingAssembly();
-                var st = asm.GetManifestResourceStream("DeepSyqXmasPC.bg.jpg");
-                if (st != null) customBg = Image.FromStream(st);
-            } catch { }
+                var sNight = asm.GetManifestResourceStream("DeepSyqXmasPC.night.jpg");
+                if (sNight != null) nightBg = Image.FromStream(sNight);
+                var sDay = asm.GetManifestResourceStream("DeepSyqXmasPC.day.jpg");
+                if (sDay != null) dayBg = Image.FromStream(sDay);
+            }
+            catch { }
+
             Rectangle bounds = Screen.PrimaryScreen.Bounds;
             Width = bounds.Width;
             Height = bounds.Height;
 
             snowBank = new float[bankCols];
             for (int i = 0; i < bankCols; i++)
-                snowBank[i] = 18f + (float)Math.Sin(i * 0.18) * 5f;
+                snowBank[i] = 16f + (float)Math.Sin(i * 0.15) * 4f;
 
-            for (int i = 0; i < 240; i++)
+            for (int i = 0; i < 210; i++)
                 flakes.Add(MakeFlake(true));
 
-            // Initial snowmen & tree garlands
-            snowmen.Add(new SnowmanItem { X = Width * 0.27f, Y = Height - 54f, Scale = 1.0f, HatStyle = 0, ScarfColor = 0 });
-            snowmen.Add(new SnowmanItem { X = Width * 0.74f, Y = Height - 54f, Scale = 0.88f, HatStyle = 1, ScarfColor = 1 });
+            snowmen.Add(new SnowmanItem { X = Width * 0.48f, Y = Height - 36f, Scale = 1.0f, HatStyle = 0, ScarfColor = 0 });
 
-            // Default garlands & ornaments on left and right pine trees
-            float[] treeXs = new float[] { Width * 0.11f, Width * 0.15f, Width * 0.84f, Width * 0.89f };
-            for (int t = 0; t < treeXs.Length; t++)
+            // Movable 3D Night Lanterns on fence posts & foreground snow
+            lanterns.Add(new LanternItem { X = Width * 0.567f, Y = Height * 0.668f, Scale = 0.9f });
+            lanterns.Add(new LanternItem { X = Width * 0.731f, Y = Height * 0.668f, Scale = 0.9f });
+            lanterns.Add(new LanternItem { X = Width * 0.29f, Y = Height - 44f, Scale = 1.05f });
+
+            // Movable 3D Garlands on house roof & right pine tree
+            float[,] initGarlands = new float[,] {
+                { 0.25f, 0.30f }, { 0.34f, 0.21f }, { 0.39f, 0.33f }, { 0.31f, 0.49f },
+                { 0.94f, 0.36f }, { 0.91f, 0.48f }, { 0.95f, 0.56f }, { 0.90f, 0.66f }, { 0.95f, 0.74f }
+            };
+            for (int i = 0; i < initGarlands.GetLength(0); i++)
             {
-                for (int k = 0; k < 4; k++)
+                ornaments.Add(new OrnamentItem
                 {
-                    ornaments.Add(new OrnamentItem
-                    {
-                        X = treeXs[t] + rng.Next(-32, 33),
-                        Y = Height - 130f - k * 36f + rng.Next(-8, 9),
-                        Kind = (t + k) % 4,
-                        Phase = (float)(rng.NextDouble() * 6.28)
-                    });
-                }
+                    X = Width * initGarlands[i, 0],
+                    Y = Height * initGarlands[i, 1],
+                    Kind = i % 4,
+                    Phase = i * 0.8f
+                });
             }
 
-            BuildControlBar();
+            BuildCleanHud();
             BuildTrayIcon();
 
             MouseMove += OnCanvasMouseMove;
@@ -138,81 +148,75 @@ namespace DeepSyqXmasPC
             base.WndProc(ref m);
         }
 
-        private void BuildControlBar()
+        private void BuildCleanHud()
         {
-            controlBar = new Panel
+            decorMenu = new ContextMenu();
+            decorMenu.MenuItems.Add("⛄ Слепить 3D-снеговика", (s, e) => AddSnowman());
+            decorMenu.MenuItems.Add("🏮 Добавить ночной светильник (фонарь)", (s, e) => AddLantern());
+            decorMenu.MenuItems.Add("🎄 Добавить 3D-гирлянду на ёлку", (s, e) => AddOrnament());
+            decorMenu.MenuItems.Add("🚜 Пустить снегоуборочный трактор", (s, e) => TriggerTractor());
+            decorMenu.MenuItems.Add("🎅 Запустить Санту на санях", (s, e) => TriggerSanta());
+            decorMenu.MenuItems.Add("-");
+            decorMenu.MenuItems.Add("🪟 Режим: Зимняя сцена / Поверх окон", (s, e) => ToggleSceneMode());
+            decorMenu.MenuItems.Add("🖱️ Сквозные клики (F8)", (s, e) => ToggleClickThrough());
+            decorMenu.MenuItems.Add("✕ Выход", (s, e) => Close());
+
+            hudBar = new Panel
             {
-                Height = 44,
-                Width = 980,
-                Top = 14,
-                Left = Math.Max(12, (Width - 980) / 2),
-                BackColor = Color.FromArgb(220, 14, 20, 32)
+                Height = 40,
+                Width = 370,
+                Top = 16,
+                Left = 18,
+                BackColor = Color.FromArgb(215, 10, 16, 30)
             };
-            controlBar.Anchor = AnchorStyles.Top;
 
-            int x = 12;
-            statusLbl = new Label
+            Button menuBtn = MakeHudBtn("✨ Украсить сцену ▾", 8);
+            menuBtn.Click += (s, e) => decorMenu.Show(menuBtn, new Point(0, menuBtn.Height + 4));
+            hudBar.Controls.Add(menuBtn);
+
+            timeBtn = MakeHudBtn("🌙 Ночь", menuBtn.Right + 8);
+            timeBtn.Click += (s, e) =>
             {
-                Text = "❄️ DEEPSYQ XMAS PC",
-                ForeColor = Color.FromArgb(245, 208, 138),
-                Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
-                AutoSize = true,
-                Location = new Point(x, 13)
+                isNight = !isNight;
+                timeBtn.Text = isNight ? "🌙 Ночь" : "☀️ День";
             };
-            controlBar.Controls.Add(statusLbl);
-            x += 150;
+            hudBar.Controls.Add(timeBtn);
 
-            x = AddBtn("🏔️ Сцена / Оверлей", x, (s, e) => ToggleSceneMode());
-            x = AddBtn("⛄ + Снеговик", x, (s, e) => AddSnowman());
-            x = AddBtn("🎄 + Гирлянда", x, (s, e) => AddOrnament());
-            x = AddBtn("🚜 Трактор", x, (s, e) => TriggerTractor());
-            x = AddBtn("🎅 Санта", x, (s, e) => TriggerSanta());
-            x = AddBtn("🖼️ Свой фон", x, (s, e) => LoadCustomBackground());
-            x = AddBtn("🖱️ Сквозные клики (F8)", x, (s, e) => ToggleClickThrough());
-            x = AddBtn("✕ Выход", x, (s, e) => Close());
+            Button exitBtn = MakeHudBtn("✕", timeBtn.Right + 8);
+            exitBtn.Width = 34;
+            exitBtn.Click += (s, e) => Close();
+            hudBar.Controls.Add(exitBtn);
 
-            controlBar.Width = x + 10;
-            controlBar.Left = Math.Max(12, (Width - controlBar.Width) / 2);
-            Controls.Add(controlBar);
+            hudBar.Width = exitBtn.Right + 8;
+            Controls.Add(hudBar);
         }
 
-        private int AddBtn(string text, int x, EventHandler onClick)
+        private Button MakeHudBtn(string text, int x)
         {
             Button b = new Button
             {
                 Text = text,
                 FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.White,
-                BackColor = Color.FromArgb(30, 41, 59),
-                Font = new Font("Segoe UI", 8.5f, FontStyle.Regular),
+                ForeColor = Color.FromArgb(245, 208, 138),
+                BackColor = Color.FromArgb(20, 30, 50),
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
                 AutoSize = true,
-                Height = 30,
-                Location = new Point(x, 7),
+                Height = 28,
+                Location = new Point(x, 6),
                 Cursor = Cursors.Hand
             };
             b.FlatAppearance.BorderColor = Color.FromArgb(214, 173, 99);
             b.FlatAppearance.BorderSize = 1;
-            b.Click += onClick;
-            controlBar.Controls.Add(b);
-            return b.Right + 6;
+            return b;
         }
 
         private void BuildTrayIcon()
         {
-            ContextMenu menu = new ContextMenu();
-            menu.MenuItems.Add("Переключить: Зимний дом / Поверх окон", (s, e) => ToggleSceneMode());
-            menu.MenuItems.Add("Сквозные клики вкл/выкл (F8)", (s, e) => ToggleClickThrough());
-            menu.MenuItems.Add("Слепить снеговика", (s, e) => AddSnowman());
-            menu.MenuItems.Add("Вызвать снегоуборочный трактор", (s, e) => TriggerTractor());
-            menu.MenuItems.Add("Запустить Санту с оленями", (s, e) => TriggerSanta());
-            menu.MenuItems.Add("-");
-            menu.MenuItems.Add("Выход", (s, e) => Close());
-
             trayIcon = new NotifyIcon
             {
-                Text = "DEEPSYQ Xmas PC (F8 — сквозные клики)",
+                Text = "DEEPSYQ · Xmas PC · Winter Desktop (F8)",
                 Icon = SystemIcons.Application,
-                ContextMenu = menu,
+                ContextMenu = decorMenu,
                 Visible = true
             };
             trayIcon.DoubleClick += (s, e) => { if (clickThrough) ToggleClickThrough(); };
@@ -229,7 +233,7 @@ namespace DeepSyqXmasPC
             else
             {
                 TransparencyKey = Color.Empty;
-                BackColor = Color.FromArgb(11, 18, 33);
+                BackColor = Color.FromArgb(8, 14, 28);
             }
         }
 
@@ -241,13 +245,12 @@ namespace DeepSyqXmasPC
             {
                 if (showScenicHouse) ToggleSceneMode();
                 SetWindowLong(Handle, GWL_EXSTYLE, ex | WS_EX_LAYERED | WS_EX_TRANSPARENT);
-                controlBar.Visible = false;
-                trayIcon.ShowBalloonTip(2000, "DEEPSYQ Xmas PC", "Режим сквозных кликов включён. Нажмите F8, чтобы вернуть панель управления.", ToolTipIcon.Info);
+                hudBar.Visible = false;
             }
             else
             {
                 SetWindowLong(Handle, GWL_EXSTYLE, ex & ~WS_EX_TRANSPARENT);
-                controlBar.Visible = true;
+                hudBar.Visible = true;
             }
         }
 
@@ -255,61 +258,63 @@ namespace DeepSyqXmasPC
         {
             snowmen.Add(new SnowmanItem
             {
-                X = rng.Next((int)(Width * 0.18), (int)(Width * 0.82)),
-                Y = Height - 54f,
-                Scale = 0.85f + (float)rng.NextDouble() * 0.3f,
+                X = rng.Next((int)(Width * 0.35), (int)(Width * 0.78)),
+                Y = Height - 36f,
+                Scale = 0.88f + (float)rng.NextDouble() * 0.25f,
                 HatStyle = rng.Next(0, 2),
                 ScarfColor = rng.Next(0, 3)
             });
         }
 
+        private void AddLantern()
+        {
+            lanterns.Add(new LanternItem
+            {
+                X = rng.Next((int)(Width * 0.38), (int)(Width * 0.78)),
+                Y = Height - 42f,
+                Scale = 0.95f
+            });
+        }
+
         private void AddOrnament()
         {
-            ornaments.Add(new OrnamentItem
+            for (int k = 0; k < 3; k++)
             {
-                X = Width * 0.5f + rng.Next(-160, 161),
-                Y = Height * 0.55f + rng.Next(-60, 61),
-                Kind = rng.Next(0, 4),
-                Phase = (float)(rng.NextDouble() * 6.28)
-            });
+                ornaments.Add(new OrnamentItem
+                {
+                    X = Width * 0.90f + rng.Next(-35, 36),
+                    Y = Height * 0.45f + rng.Next(-90, 91),
+                    Kind = rng.Next(0, 4),
+                    Phase = (float)(rng.NextDouble() * 6.28)
+                });
+            }
         }
 
         private void TriggerTractor()
         {
-            tractorActive = true;
             tractorDir = tractorX > Width * 0.5f ? -1f : 1f;
         }
 
         private void TriggerSanta()
         {
             santaActive = true;
-            santaDir = 1f;
-            santaX = -240f;
-            santaY = 95f + rng.Next(0, 60);
-        }
-
-        private void LoadCustomBackground()
-        {
-            using (OpenFileDialog dlg = new OpenFileDialog())
-            {
-                dlg.Title = "Выберите зимнюю картинку (16:9)";
-                dlg.Filter = "Изображения|*.png;*.jpg;*.jpeg;*.bmp";
-                if (dlg.ShowDialog() == DialogResult.OK)
-                {
-                    try { customBg = Image.FromFile(dlg.FileName); showScenicHouse = true; TransparencyKey = Color.Empty; } catch { }
-                }
-            }
+            santaX = -260f;
+            santaY = 75f + rng.Next(0, 50);
         }
 
         private Snowflake MakeFlake(bool randomY)
         {
+            int layer = rng.NextDouble() < 0.18 ? 2 : (rng.NextDouble() < 0.55 ? 1 : 0);
             return new Snowflake
             {
                 X = (float)(rng.NextDouble() * Width),
-                Y = randomY ? (float)(rng.NextDouble() * Height) : -10f,
-                Vx = (float)(rng.NextDouble() - 0.5) * 28f,
-                Vy = 38f + (float)rng.NextDouble() * 65f,
-                Size = 2.2f + (float)rng.NextDouble() * 4.5f,
+                Y = randomY ? (float)(rng.NextDouble() * Height) : -14f,
+                Vx = (float)(rng.NextDouble() - 0.5) * (18f + layer * 10f),
+                Vy = 30f + layer * 26f + (float)rng.NextDouble() * 28f,
+                Size = layer == 2 ? 9f : (layer == 1 ? 6f : 3f),
+                Layer = layer,
+                Angle = (float)(rng.NextDouble() * 6.28),
+                Spin = (float)(rng.NextDouble() - 0.5) * 1.8f,
                 Phase = (float)(rng.NextDouble() * 6.28)
             };
         }
@@ -319,25 +324,29 @@ namespace DeepSyqXmasPC
             for (int i = ornaments.Count - 1; i >= 0; i--)
             {
                 var o = ornaments[i];
-                if (Math.Abs(e.X - o.X) < 18 && Math.Abs(e.Y - o.Y) < 18)
+                if (Math.Abs(e.X - o.X) < 22 && Math.Abs(e.Y - o.Y) < 22)
                 {
                     draggedOrnament = o;
-                    o.Dragging = true;
+                    return;
+                }
+            }
+            for (int i = lanterns.Count - 1; i >= 0; i--)
+            {
+                var l = lanterns[i];
+                if (Math.Abs(e.X - l.X) < 24 && Math.Abs(e.Y - (l.Y - 18)) < 34)
+                {
+                    draggedLantern = l;
                     return;
                 }
             }
             for (int i = snowmen.Count - 1; i >= 0; i--)
             {
                 var sm = snowmen[i];
-                if (Math.Abs(e.X - sm.X) < 38 * sm.Scale && e.Y >= sm.Y - 95 * sm.Scale && e.Y <= sm.Y + 12)
+                if (Math.Abs(e.X - sm.X) < 38 * sm.Scale && e.Y >= sm.Y - 105 * sm.Scale && e.Y <= sm.Y + 12)
                 {
-                    if (e.Button == MouseButtons.Right)
-                    {
-                        sm.HatStyle = (sm.HatStyle + 1) % 2;
-                        sm.ScarfColor = (sm.ScarfColor + 1) % 3;
-                    }
+                    sm.HatStyle = (sm.HatStyle + 1) % 2;
+                    sm.ScarfColor = (sm.ScarfColor + 1) % 3;
                     draggedSnowman = sm;
-                    sm.Dragging = true;
                     return;
                 }
             }
@@ -345,8 +354,9 @@ namespace DeepSyqXmasPC
 
         private void OnCanvasMouseUp(object sender, MouseEventArgs e)
         {
-            if (draggedSnowman != null) { draggedSnowman.Dragging = false; draggedSnowman = null; }
-            if (draggedOrnament != null) { draggedOrnament.Dragging = false; draggedOrnament = null; }
+            draggedSnowman = null;
+            draggedOrnament = null;
+            draggedLantern = null;
         }
 
         private void OnCanvasMouseMove(object sender, MouseEventArgs e)
@@ -355,27 +365,34 @@ namespace DeepSyqXmasPC
             {
                 draggedOrnament.X = e.X;
                 draggedOrnament.Y = e.Y;
+                return;
             }
-            else if (draggedSnowman != null)
+            if (draggedLantern != null)
+            {
+                draggedLantern.X = e.X;
+                draggedLantern.Y = e.Y;
+                return;
+            }
+            if (draggedSnowman != null)
             {
                 draggedSnowman.X = e.X;
-                draggedSnowman.Y = Math.Min(Height - 42f, Math.Max(120f, e.Y));
+                draggedSnowman.Y = Math.Min(Height - 32f, Math.Max(Height * 0.65f, e.Y));
+                return;
             }
 
-            // Scatter snow on taskbar / bottom panel when cursor moves over snowbank!
             float dx = e.X - lastMouse.X;
             float dy = e.Y - lastMouse.Y;
             float speed = (float)Math.Sqrt(dx * dx + dy * dy);
             lastMouse = e.Location;
 
             int col = (int)((e.X / (float)Math.Max(1, Width)) * bankCols);
-            if (col >= 0 && col < bankCols && e.Y >= Height - 95 - snowBank[col])
+            if (col >= 0 && col < bankCols && e.Y >= Height - 80 - snowBank[col])
             {
                 for (int c = Math.Max(0, col - 4); c <= Math.Min(bankCols - 1, col + 4); c++)
                 {
-                    floatcut = Math.Max(0f, 5.5f - Math.Abs(c - col) * 1.1f);
+                    float cut = Math.Max(0f, 5.5f - Math.Abs(c - col) * 1.1f);
                     if (snowBank[c] > 4f)
-                        snowBank[c] = Math.Max(4f, snowBank[c] - floatcut * 0.45f);
+                        snowBank[c] = Math.Max(4f, snowBank[c] - cut * 0.45f);
                 }
                 int count = Math.Min(12, 3 + (int)(speed * 0.25f));
                 for (int k = 0; k < count; k++)
@@ -383,7 +400,7 @@ namespace DeepSyqXmasPC
                     spray.Add(new SparkParticle
                     {
                         X = e.X + rng.Next(-12, 13),
-                        Y = Math.Min(Height - 44f, e.Y + rng.Next(-6, 6)),
+                        Y = Math.Min(Height - 30f, e.Y + rng.Next(-6, 6)),
                         Vx = dx * 0.25f + (float)(rng.NextDouble() - 0.5) * 95f,
                         Vy = -40f - (float)rng.NextDouble() * 90f,
                         Size = 3f + (float)rng.NextDouble() * 4f,
@@ -394,72 +411,68 @@ namespace DeepSyqXmasPC
             }
         }
 
-        private float floatcut;
-
         private void StepSimulation(float dt)
         {
             timeSec += dt;
 
-            // Falling snow
             for (int i = 0; i < flakes.Count; i++)
             {
                 var f = flakes[i];
                 f.Y += f.Vy * dt;
-                f.X += (f.Vx + (float)Math.Sin(timeSec * 1.6f + f.Phase) * 18f) * dt;
+                f.X += (f.Vx + (float)Math.Sin(timeSec * 1.6f + f.Phase) * 16f) * dt;
+                f.Angle += f.Spin * dt;
                 if (f.X < 0) f.X += Width;
                 if (f.X >= Width) f.X -= Width;
 
                 int col = (int)((f.X / Math.Max(1f, Width)) * bankCols);
-                float groundY = Height - 44f - (col >= 0 && col < bankCols ? snowBank[col] : 16f);
+                float groundY = Height - 28f - (col >= 0 && col < bankCols ? snowBank[col] : 16f);
                 if (f.Y >= groundY)
                 {
-                    if (col >= 0 && col < bankCols && snowBank[col] < 52f)
-                        snowBank[col] += 0.22f;
+                    if (col >= 0 && col < bankCols && snowBank[col] < 50f)
+                        snowBank[col] += 0.20f;
                     flakes[i] = MakeFlake(false);
                 }
             }
 
-            // Smooth snowbank slightly
             for (int i = 1; i < bankCols - 1; i++)
                 snowBank[i] = snowBank[i] * 0.992f + (snowBank[i - 1] + snowBank[i + 1]) * 0.004f;
 
-            // Chimney smoke from chalet roof
-            float chimneyX = Width * 0.605f;
-            float chimneyY = Height * 0.305f;
-            if (rng.NextDouble() < 0.35)
+            // Chimney smoke aligned to the stone chimney on the left cabin (18.8% X, 18.5% Y)
+            float chimneyX = Width * 0.188f;
+            float chimneyY = Height * 0.185f;
+            if (rng.NextDouble() < 0.4)
             {
                 smoke.Add(new SmokePuff
                 {
-                    X = chimneyX + rng.Next(-4, 5),
+                    X = chimneyX + rng.Next(-5, 6),
                     Y = chimneyY,
-                    Vx = 12f + (float)rng.NextDouble() * 14f,
-                    Vy = -26f - (float)rng.NextDouble() * 16f,
-                    Radius = 8f,
-                    Alpha = 0.55f
+                    Vx = 14f + (float)rng.NextDouble() * 12f,
+                    Vy = -24f - (float)rng.NextDouble() * 14f,
+                    Radius = 9f,
+                    Alpha = 0.52f
                 });
             }
             for (int i = smoke.Count - 1; i >= 0; i--)
             {
                 var p = smoke[i];
-                p.X += (p.Vx + (float)Math.Sin(timeSec * 2f + i) * 8f) * dt;
+                p.X += (p.Vx + (float)Math.Sin(timeSec * 2f + i) * 6f) * dt;
                 p.Y += p.Vy * dt;
-                p.Radius += 11f * dt;
-                p.Alpha -= 0.14f * dt;
+                p.Radius += 12f * dt;
+                p.Alpha -= 0.13f * dt;
                 if (p.Alpha <= 0.02f) smoke.RemoveAt(i);
             }
 
-            // Santa sleigh across the sky
             if (santaActive)
             {
-                santaX += 115f * santaDir * dt;
-                santaY += (float)Math.Sin(timeSec * 2.3f) * 14f * dt;
-                if (rng.NextDouble() < 0.65)
+                santaX += 125f * dt;
+                santaY += (float)Math.Sin(timeSec * 2.4f) * 12f * dt;
+                if (rng.NextDouble() < 0.7)
                 {
                     spray.Add(new SparkParticle
                     {
                         X = santaX + 20f,
                         Y = santaY + 18f,
-                        Vx = -30f * santaDir + rng.Next(-15, 16),
+                        Vx = -30f + rng.Next(-15, 16),
                         Vy = rng.Next(-10, 20),
                         Size = 3.5f,
                         Alpha = 0.95f,
@@ -468,44 +481,36 @@ namespace DeepSyqXmasPC
                 }
                 if (santaX > Width + 320f)
                 {
-                    santaX = -280f;
-                    santaY = 85f + rng.Next(0, 75);
+                    santaActive = false;
+                    santaCooldown = 22f;
                 }
             }
-
-            // Tractor snowplow along the taskbar
-            if (tractorActive)
+            else
             {
-                tractorX += 78f * tractorDir * dt;
-                int tCol = (int)((tractorX / Math.Max(1f, Width)) * bankCols);
-                for (int c = Math.Max(0, tCol - 3); c <= Math.Min(bankCols - 1, tCol + 3); c++)
+                santaCooldown -= dt;
+                if (santaCooldown <= 0f)
                 {
-                    if (snowBank[c] > 8f)
-                    {
-                        floatremoved = snowBank[c] - 8f;
-                        snowBank[c] = 8f;
-                        int ahead = Math.Min(bankCols - 1, Math.Max(0, c + (tractorDir > 0 ? 5 : -5)));
-                        snowBank[ahead] = Math.Min(56f, snowBank[ahead] + floatremoved * 0.35f);
-                        if (rng.NextDouble() < 0.45)
-                        {
-                            spray.Add(new SparkParticle
-                            {
-                                X = tractorX + tractorDir * 34f,
-                                Y = Height - 54f,
-                                Vx = tractorDir * (55f + rng.Next(0, 50)),
-                                Vy = -45f - rng.Next(0, 55),
-                                Size = 3.5f,
-                                Alpha = 0.9f,
-                                Col = Color.FromArgb(235, 245, 255)
-                            });
-                        }
-                    }
+                    santaActive = true;
+                    santaX = -280f;
+                    santaY = 70f + rng.Next(0, 50);
                 }
-                if (tractorX > Width - 90f) tractorDir = -1f;
-                if (tractorX < 90f) tractorDir = 1f;
             }
 
-            // Update snow spray & sparkles
+            tractorX += 76f * tractorDir * dt;
+            int tCol = (int)((tractorX / Math.Max(1f, Width)) * bankCols);
+            for (int c = Math.Max(0, tCol - 3); c <= Math.Min(bankCols - 1, tCol + 3); c++)
+            {
+                if (snowBank[c] > 7f)
+                {
+                    float rem = snowBank[c] - 7f;
+                    snowBank[c] = 7f;
+                    int ahead = Math.Min(bankCols - 1, Math.Max(0, c + (tractorDir > 0 ? 5 : -5)));
+                    snowBank[ahead] = Math.Min(54f, snowBank[ahead] + rem * 0.36f);
+                }
+            }
+            if (tractorX > Width - 90f) tractorDir = -1f;
+            if (tractorX < 90f) tractorDir = 1f;
+
             for (int i = spray.Count - 1; i >= 0; i--)
             {
                 var sp = spray[i];
@@ -517,8 +522,6 @@ namespace DeepSyqXmasPC
             }
         }
 
-        private float floatremoved;
-
         protected override void OnPaint(PaintEventArgs e)
         {
             Graphics g = e.Graphics;
@@ -526,46 +529,33 @@ namespace DeepSyqXmasPC
 
             if (showScenicHouse)
             {
-                if (customBg != null)
-                {
-                    g.DrawImage(customBg, 0, 0, Width, Height);
-                }
-                else
-                {
-                    DrawWinterSkyAndMountains(g);
-                    DrawPineTrees(g);
-                    DrawCozyChaletHouse(g);
-                }
+                Image bg = isNight ? nightBg : dayBg;
+                if (bg != null)
+                    g.DrawImage(bg, 0, 0, Width, Height);
             }
 
-            // Chimney smoke
             foreach (var p in smoke)
             {
                 int a = Math.Max(0, Math.Min(255, (int)(p.Alpha * 180)));
-                using (SolidBrush sb = new SolidBrush(Color.FromArgb(a, 215, 225, 240)))
+                using (SolidBrush sb = new SolidBrush(Color.FromArgb(a, 225, 235, 248)))
                     g.FillEllipse(sb, p.X - p.Radius, p.Y - p.Radius, p.Radius * 2, p.Radius * 2);
             }
 
-            // Santa sleigh
             if (santaActive)
                 DrawSantaSleigh(g, santaX, santaY);
 
-            // Draggable ornaments / garlands
             foreach (var o in ornaments)
                 DrawOrnament(g, o);
 
-            // Snowmen
+            foreach (var l in lanterns)
+                DrawLantern(g, l);
+
             foreach (var sm in snowmen)
                 DrawSnowman(g, sm);
 
-            // Snowbank on bottom taskbar
             DrawSnowbank(g);
+            DrawTractor(g, tractorX, Height - 32f, tractorDir);
 
-            // Snowplow tractor
-            if (tractorActive)
-                DrawTractor(g, tractorX, Height - 48f, tractorDir);
-
-            // Spray & sparkles
             foreach (var sp in spray)
             {
                 int a = Math.Max(0, Math.Min(255, (int)(sp.Alpha * 255)));
@@ -573,272 +563,110 @@ namespace DeepSyqXmasPC
                     g.FillEllipse(b, sp.X - sp.Size * 0.5f, sp.Y - sp.Size * 0.5f, sp.Size, sp.Size);
             }
 
-            // Falling snowflakes
-            using (SolidBrush fb = new SolidBrush(Color.FromArgb(225, 255, 255, 255)))
-            {
-                foreach (var f in flakes)
-                    g.FillEllipse(fb, f.X, f.Y, f.Size, f.Size);
-            }
+            foreach (var f in flakes)
+                DrawCrystalFlake(g, f);
         }
 
-        private void DrawWinterSkyAndMountains(Graphics g)
+        private void DrawCrystalFlake(Graphics g, Snowflake f)
         {
-            using (LinearGradientBrush sky = new LinearGradientBrush(new Rectangle(0, 0, Width, Height),
-                Color.FromArgb(8, 14, 30), Color.FromArgb(22, 38, 68), LinearGradientMode.Vertical))
+            if (f.Layer == 1)
             {
-                g.FillRectangle(sky, 0, 0, Width, Height);
-            }
-            // Crescent moonglow
-            using (SolidBrush moon = new SolidBrush(Color.FromArgb(245, 252, 232, 185)))
-                g.FillEllipse(moon, Width * 0.82f, 76f, 54f, 54f);
-            using (SolidBrush cut = new SolidBrush(Color.FromArgb(12, 20, 40)))
-                g.FillEllipse(cut, Width * 0.82f + 14f, 70f, 50f, 50f);
-
-            // Distant snowy mountains
-            PointF[] mtn = new PointF[]
-            {
-                new PointF(0, Height - 150),
-                new PointF(Width * 0.18f, Height - 340),
-                new PointF(Width * 0.35f, Height - 210),
-                new PointF(Width * 0.55f, Height - 380),
-                new PointF(Width * 0.76f, Height - 220),
-                new PointF(Width * 0.92f, Height - 330),
-                new PointF(Width, Height - 180),
-                new PointF(Width, Height),
-                new PointF(0, Height)
-            };
-            using (SolidBrush mb = new SolidBrush(Color.FromArgb(28, 45, 76)))
-                g.FillPolygon(mb, mtn);
-        }
-
-        private void DrawPineTrees(Graphics g)
-        {
-            float[] xs = new float[] { Width * 0.08f, Width * 0.14f, Width * 0.21f, Width * 0.79f, Width * 0.86f, Width * 0.92f };
-            float[] hs = new float[] { 220f, 265f, 195f, 210f, 270f, 225f };
-            for (int i = 0; i < xs.Length; i++)
-            {
-                float cx = xs[i], baseY = Height - 48f, h = hs[i];
-                for (int layer = 0; layer < 4; layer++)
+                GraphicsState st = g.Save();
+                g.TranslateTransform(f.X, f.Y);
+                g.RotateTransform(f.Angle * 57.3f);
+                using (Pen p = new Pen(Color.FromArgb(225, 255, 255, 255), 1.4f))
                 {
-                    float ly = baseY - layer * (h * 0.22f);
-                    float lw = (4 - layer) * 26f + 22f;
-                    PointF[] tri = new PointF[]
-                    {
-                        new PointF(cx, ly - h * 0.34f),
-                        new PointF(cx - lw, ly),
-                        new PointF(cx + lw, ly)
-                    };
-                    using (SolidBrush tb = new SolidBrush(Color.FromArgb(18 + layer * 4, 58 + layer * 10, 48 + layer * 6)))
-                        g.FillPolygon(tb, tri);
-                    // Snow cap on branches
-                    using (Pen sp = new Pen(Color.FromArgb(210, 235, 245, 255), 4f))
-                        g.DrawLine(sp, cx - lw * 0.85f, ly - 3f, cx + lw * 0.85f, ly - 3f);
+                    float r = f.Size;
+                    g.DrawLine(p, -r, 0, r, 0);
+                    g.DrawLine(p, 0, -r, 0, r);
+                    g.DrawLine(p, -r * 0.7f, -r * 0.7f, r * 0.7f, r * 0.7f);
+                    g.DrawLine(p, -r * 0.7f, r * 0.7f, r * 0.7f, -r * 0.7f);
                 }
+                g.Restore(st);
+            }
+            else
+            {
+                int alpha = f.Layer == 2 ? 175 : 210;
+                using (SolidBrush fb = new SolidBrush(Color.FromArgb(alpha, 255, 255, 255)))
+                    g.FillEllipse(fb, f.X - f.Size * 0.5f, f.Y - f.Size * 0.5f, f.Size, f.Size);
             }
         }
 
-        private void DrawCozyChaletHouse(Graphics g)
+        private void DrawLantern(Graphics g, LanternItem l)
         {
-            float hx = Width * 0.38f, hy = Height - 255f, hw = Width * 0.24f, hh = 205f;
-
-            // Stone chimney
-            float chX = hx + hw * 0.66f, chY = hy - 78f;
-            using (SolidBrush chB = new SolidBrush(Color.FromArgb(72, 66, 64)))
-                g.FillRectangle(chB, chX, chY, 34f, 68f);
-            using (SolidBrush snowCap = new SolidBrush(Color.FromArgb(240, 248, 255)))
-                g.FillEllipse(snowCap, chX - 4f, chY - 6f, 42f, 14f);
-
-            // Wooden cabin walls
-            using (SolidBrush wall = new SolidBrush(Color.FromArgb(78, 46, 28)))
-                g.FillRectangle(wall, hx, hy, hw, hh);
-
-            // Roof with deep snow overhang
-            PointF[] roof = new PointF[]
+            float x = l.X, y = l.Y, s = l.Scale;
+            using (SolidBrush halo = new SolidBrush(Color.FromArgb(85, 255, 200, 90)))
+                g.FillEllipse(halo, x - 36 * s, y - 48 * s, 72 * s, 72 * s);
+            using (SolidBrush frame = new SolidBrush(Color.FromArgb(28, 25, 23)))
             {
-                new PointF(hx - 28f, hy + 10f),
-                new PointF(hx + hw * 0.5f, hy - 95f),
-                new PointF(hx + hw + 28f, hy + 10f)
-            };
-            using (SolidBrush rb = new SolidBrush(Color.FromArgb(52, 32, 22)))
-                g.FillPolygon(rb, roof);
-            using (Pen snowRoof = new Pen(Color.FromArgb(242, 248, 255), 12f) { StartCap = LineCap.Round, EndCap = LineCap.Round, LineJoin = LineJoin.Round })
-                g.DrawLines(snowRoof, roof);
-
-            // Warm glowing windows
-            RectangleF[] wins = new RectangleF[]
-            {
-                new RectangleF(hx + 28f, hy + 42f, 56f, 52f),
-                new RectangleF(hx + hw - 84f, hy + 42f, 56f, 52f),
-                new RectangleF(hx + hw * 0.5f - 24f, hy - 36f, 48f, 40f)
-            };
-            foreach (var w in wins)
-            {
-                using (SolidBrush glow = new SolidBrush(Color.FromArgb(70, 255, 200, 95)))
-                    g.FillEllipse(glow, w.X - 14f, w.Y - 14f, w.Width + 28f, w.Height + 28f);
-                using (SolidBrush wb = new SolidBrush(Color.FromArgb(255, 214, 120)))
-                    g.FillRectangle(wb, w.X, w.Y, w.Width, w.Height);
-                using (Pen pane = new Pen(Color.FromArgb(90, 52, 28), 3f))
-                {
-                    g.DrawRectangle(pane, w.X, w.Y, w.Width, w.Height);
-                    g.DrawLine(pane, w.X + w.Width / 2f, w.Y, w.X + w.Width / 2f, w.Y + w.Height);
-                    g.DrawLine(pane, w.X, w.Y + w.Height / 2f, w.X + w.Width, w.Y + w.Height / 2f);
-                }
+                g.FillRectangle(frame, x - 12 * s, y - 5 * s, 24 * s, 5 * s);
+                g.FillPolygon(frame, new PointF[] { new PointF(x - 14 * s, y - 28 * s), new PointF(x, y - 40 * s), new PointF(x + 14 * s, y - 28 * s) });
             }
-
-            // Cozy wooden door with wreath
-            float dx = hx + hw * 0.5f - 22f, dy = hy + hh - 86f;
-            using (SolidBrush db = new SolidBrush(Color.FromArgb(58, 30, 18)))
-                g.FillRectangle(db, dx, dy, 44f, 86f);
-            using (Pen wreath = new Pen(Color.FromArgb(34, 139, 68), 6f))
-                g.DrawEllipse(wreath, dx + 10f, dy + 16f, 24f, 24f);
-
-            // Twinkling Christmas garlands along roof eaves!
-            Color[] bulbCols = new Color[]
-            {
-                Color.FromArgb(255, 215, 90),
-                Color.FromArgb(255, 85, 85),
-                Color.FromArgb(90, 235, 145),
-                Color.FromArgb(110, 195, 255)
-            };
-            int bulbs = 22;
-            for (int i = 0; i <= bulbs; i++)
-            {
-                float t = i / (float)bulbs;
-                float bx = (hx - 22f) + t * (hw + 44f);
-                float by = (t <= 0.5f)
-                    ? (hy + 10f) - (t * 2f) * 102f
-                    : (hy - 92f) + ((t - 0.5f) * 2f) * 102f;
-                float pulse = 0.55f + 0.45f * (float)Math.Sin(timeSec * 5.2f + i * 0.9f);
-                Color c = bulbCols[i % bulbCols.Length];
-                using (SolidBrush halo = new SolidBrush(Color.FromArgb((int)(pulse * 110), c)))
-                    g.FillEllipse(halo, bx - 9f, by - 9f, 18f, 18f);
-                using (SolidBrush core = new SolidBrush(Color.FromArgb((int)(160 + pulse * 95), c)))
-                    g.FillEllipse(core, bx - 4f, by - 4f, 8f, 8f);
-            }
+            using (SolidBrush glass = new SolidBrush(Color.FromArgb(255, 215, 100)))
+                g.FillRectangle(glass, x - 9 * s, y - 28 * s, 18 * s, 23 * s);
+            using (SolidBrush snow = new SolidBrush(Color.FromArgb(245, 250, 255)))
+                g.FillEllipse(snow, x - 11 * s, y - 38 * s, 22 * s, 7 * s);
         }
 
         private void DrawSantaSleigh(Graphics g, float x, float y)
         {
-            // Sleigh body
             using (SolidBrush red = new SolidBrush(Color.FromArgb(210, 38, 48)))
                 g.FillPolygon(red, new PointF[] {
                     new PointF(x, y + 10), new PointF(x + 56, y + 10),
                     new PointF(x + 68, y + 28), new PointF(x - 8, y + 28)
                 });
-            using (Pen runner = new Pen(Color.FromArgb(245, 208, 125), 3f))
+            using (Pen runner = new Pen(Color.FromArgb(245, 208, 125), 2.5f))
             {
                 g.DrawLine(runner, x - 12, y + 32, x + 74, y + 32);
-                // Harness line to reindeer
                 g.DrawLine(runner, x + 64, y + 18, x + 155, y + 14);
             }
-            // Santa hat & head
-            using (SolidBrush face = new SolidBrush(Color.FromArgb(255, 224, 196)))
-                g.FillEllipse(face, x + 22, y - 6, 16, 16);
-            using (SolidBrush beard = new SolidBrush(Color.White))
-                g.FillEllipse(beard, x + 24, y + 3, 16, 12);
-            using (SolidBrush hat = new SolidBrush(Color.FromArgb(220, 38, 38)))
-                g.FillPolygon(hat, new PointF[] { new PointF(x + 20, y - 3), new PointF(x + 38, y - 3), new PointF(x + 26, y - 16) });
-
-            // Two leaping reindeer ahead of sleigh
             for (int r = 0; r < 2; r++)
             {
                 float rx = x + 95 + r * 48;
                 float ry = y + 6 + (float)Math.Sin(timeSec * 8f + r) * 4f;
-                using (SolidBrush deer = new SolidBrush(Color.FromArgb(148, 96, 56)))
+                using (SolidBrush deer = new SolidBrush(Color.FromArgb(135, 80, 42)))
                 {
                     g.FillEllipse(deer, rx, ry + 4, 28, 13);
                     g.FillEllipse(deer, rx + 22, ry - 3, 12, 10);
-                }
-                if (r == 1)
-                {
-                    using (SolidBrush rudolph = new SolidBrush(Color.FromArgb(255, 60, 60)))
-                        g.FillEllipse(rudolph, rx + 33, ry - 1, 6, 6);
                 }
             }
         }
 
         private void DrawSnowman(Graphics g, SnowmanItem sm)
         {
-            float s = sm.Scale;
-            float x = sm.X, y = sm.Y;
+            float s = sm.Scale, x = sm.X, y = sm.Y;
             using (SolidBrush snow = new SolidBrush(Color.FromArgb(246, 250, 255)))
-            using (Pen rim = new Pen(Color.FromArgb(180, 205, 230), 1.5f))
             {
-                // Bottom, middle, head snowballs
-                RectangleF b1 = new RectangleF(x - 28 * s, y - 42 * s, 56 * s, 48 * s);
-                RectangleF b2 = new RectangleF(x - 21 * s, y - 74 * s, 42 * s, 38 * s);
-                RectangleF b3 = new RectangleF(x - 15 * s, y - 98 * s, 30 * s, 28 * s);
-                g.FillEllipse(snow, b1); g.DrawEllipse(rim, b1.X, b1.Y, b1.Width, b1.Height);
-                g.FillEllipse(snow, b2); g.DrawEllipse(rim, b2.X, b2.Y, b2.Width, b2.Height);
-                g.FillEllipse(snow, b3); g.DrawEllipse(rim, b3.X, b3.Y, b3.Width, b3.Height);
+                g.FillEllipse(snow, x - 26 * s, y - 42 * s, 52 * s, 46 * s);
+                g.FillEllipse(snow, x - 19 * s, y - 72 * s, 38 * s, 36 * s);
+                g.FillEllipse(snow, x - 14 * s, y - 95 * s, 28 * s, 26 * s);
             }
-            // Twig arms
-            using (Pen arm = new Pen(Color.FromArgb(105, 68, 42), 2.5f))
-            {
-                g.DrawLine(arm, x - 19 * s, y - 58 * s, x - 42 * s, y - 72 * s);
-                g.DrawLine(arm, x + 19 * s, y - 58 * s, x + 42 * s, y - 70 * s);
-            }
-            // Eyes & buttons
-            using (SolidBrush coal = new SolidBrush(Color.FromArgb(30, 35, 45)))
-            {
-                g.FillEllipse(coal, x - 6 * s, y - 89 * s, 4 * s, 4 * s);
-                g.FillEllipse(coal, x + 3 * s, y - 89 * s, 4 * s, 4 * s);
-                g.FillEllipse(coal, x - 2 * s, y - 62 * s, 4.5f * s, 4.5f * s);
-                g.FillEllipse(coal, x - 2 * s, y - 51 * s, 4.5f * s, 4.5f * s);
-            }
-            // Carrot nose
             using (SolidBrush carrot = new SolidBrush(Color.FromArgb(249, 115, 22)))
-                g.FillPolygon(carrot, new PointF[] {
-                    new PointF(x, y - 84 * s),
-                    new PointF(x + 15 * s, y - 81 * s),
-                    new PointF(x, y - 79 * s)
-                });
-            // Scarf
+                g.FillPolygon(carrot, new PointF[] { new PointF(x, y - 82 * s), new PointF(x + 15 * s, y - 79 * s), new PointF(x, y - 76 * s) });
             Color[] scarfCols = new Color[] { Color.FromArgb(220, 38, 38), Color.FromArgb(16, 185, 129), Color.FromArgb(234, 179, 8) };
             using (SolidBrush sc = new SolidBrush(scarfCols[sm.ScarfColor % scarfCols.Length]))
             {
-                g.FillRectangle(sc, x - 15 * s, y - 74 * s, 30 * s, 7 * s);
-                g.FillRectangle(sc, x + 5 * s, y - 72 * s, 6 * s, 18 * s);
+                g.FillRectangle(sc, x - 14 * s, y - 72 * s, 28 * s, 7 * s);
+                g.FillRectangle(sc, x + 4 * s, y - 70 * s, 6 * s, 18 * s);
             }
-            // Hat (Top hat or Santa hat)
-            if (sm.HatStyle == 0)
+            using (SolidBrush hat = new SolidBrush(Color.FromArgb(20, 26, 38)))
             {
-                using (SolidBrush hat = new SolidBrush(Color.FromArgb(24, 28, 38)))
-                {
-                    g.FillRectangle(hat, x - 18 * s, y - 100 * s, 36 * s, 5 * s);
-                    g.FillRectangle(hat, x - 12 * s, y - 120 * s, 24 * s, 21 * s);
-                }
-            }
-            else
-            {
-                using (SolidBrush red = new SolidBrush(Color.FromArgb(220, 38, 38)))
-                    g.FillPolygon(red, new PointF[] {
-                        new PointF(x - 15 * s, y - 96 * s),
-                        new PointF(x + 15 * s, y - 96 * s),
-                        new PointF(x - 4 * s, y - 120 * s)
-                    });
-                using (SolidBrush pom = new SolidBrush(Color.White))
-                    g.FillEllipse(pom, x - 8 * s, y - 124 * s, 9 * s, 9 * s);
+                g.FillRectangle(hat, x - 17 * s, y - 97 * s, 34 * s, 5 * s);
+                g.FillRectangle(hat, x - 11 * s, y - 116 * s, 22 * s, 19 * s);
             }
         }
 
         private void DrawOrnament(Graphics g, OrnamentItem o)
         {
-            Color[] cols = new Color[]
-            {
-                Color.FromArgb(239, 68, 68),
-                Color.FromArgb(245, 196, 81),
-                Color.FromArgb(52, 211, 153),
-                Color.FromArgb(96, 165, 250)
-            };
+            Color[] cols = new Color[] { Color.FromArgb(251, 191, 36), Color.FromArgb(244, 63, 94), Color.FromArgb(16, 185, 129), Color.FromArgb(253, 224, 71) };
             Color c = cols[o.Kind % cols.Length];
-            float pulse = 0.6f + 0.4f * (float)Math.Sin(timeSec * 4.2f + o.Phase);
-            using (SolidBrush glow = new SolidBrush(Color.FromArgb((int)(pulse * 120), c)))
-                g.FillEllipse(glow, o.X - 15f, o.Y - 15f, 30f, 30f);
+            float pulse = 0.65f + 0.35f * (float)Math.Sin(timeSec * 4.5f + o.Phase);
+            using (SolidBrush glow = new SolidBrush(Color.FromArgb((int)(pulse * 125), c)))
+                g.FillEllipse(glow, o.X - 18f, o.Y - 18f, 36f, 36f);
             using (SolidBrush ball = new SolidBrush(c))
-                g.FillEllipse(ball, o.X - 8f, o.Y - 8f, 16f, 16f);
-            using (SolidBrush shine = new SolidBrush(Color.FromArgb(190, 255, 255, 255)))
-                g.FillEllipse(shine, o.X - 5f, o.Y - 5f, 5f, 5f);
+                g.FillEllipse(ball, o.X - 9f, o.Y - 9f, 18f, 18f);
+            using (SolidBrush hi = new SolidBrush(Color.FromArgb(210, 255, 255, 255)))
+                g.FillEllipse(hi, o.X - 5f, o.Y - 5f, 5f, 5f);
         }
 
         private void DrawSnowbank(Graphics g)
@@ -847,19 +675,12 @@ namespace DeepSyqXmasPC
             for (int i = 0; i < bankCols; i++)
             {
                 float x = (i / (float)(bankCols - 1)) * Width;
-                poly[i] = new PointF(x, Height - 40f - snowBank[i]);
+                poly[i] = new PointF(x, Height - 26f - snowBank[i]);
             }
             poly[bankCols] = new PointF(Width, Height);
             poly[bankCols + 1] = new PointF(0, Height);
-
-            using (LinearGradientBrush sb = new LinearGradientBrush(
-                new Rectangle(0, Height - 110, Width, 110),
-                Color.FromArgb(248, 252, 255),
-                Color.FromArgb(200, 220, 245),
-                LinearGradientMode.Vertical))
-            {
+            using (SolidBrush sb = new SolidBrush(Color.FromArgb(242, 248, 255)))
                 g.FillPolygon(sb, poly);
-            }
         }
 
         private void DrawTractor(Graphics g, float x, float y, float dir)
@@ -867,32 +688,21 @@ namespace DeepSyqXmasPC
             GraphicsState st = g.Save();
             g.TranslateTransform(x, y);
             if (dir < 0) g.ScaleTransform(-1f, 1f);
-
-            // Headlight beam
-            PointF[] beam = new PointF[] { new PointF(30, -14), new PointF(125, -36), new PointF(125, 6) };
-            using (SolidBrush hb = new SolidBrush(Color.FromArgb(55, 255, 235, 150)))
+            PointF[] beam = new PointF[] { new PointF(30, -14), new PointF(135, -38), new PointF(135, 6) };
+            using (SolidBrush hb = new SolidBrush(Color.FromArgb(65, 255, 235, 145)))
                 g.FillPolygon(hb, beam);
-
-            // Tractor cabin & body
             using (SolidBrush body = new SolidBrush(Color.FromArgb(234, 179, 8)))
             {
-                g.FillRectangle(body, -26, -26, 44, 20);
-                g.FillRectangle(body, -18, -44, 24, 20);
+                g.FillRectangle(body, -28, -26, 50, 18);
+                g.FillRectangle(body, -22, -44, 26, 20);
             }
-            using (SolidBrush win = new SolidBrush(Color.FromArgb(186, 230, 253)))
-                g.FillRectangle(win, -14, -41, 16, 13);
-
-            // Snowplow blade in front
             using (SolidBrush blade = new SolidBrush(Color.FromArgb(220, 38, 38)))
-                g.FillPolygon(blade, new PointF[] { new PointF(22, -24), new PointF(34, -28), new PointF(38, 2), new PointF(22, 0) });
-
-            // Wheels
-            using (SolidBrush tire = new SolidBrush(Color.FromArgb(30, 34, 42)))
+                g.FillPolygon(blade, new PointF[] { new PointF(24, -26), new PointF(36, -28), new PointF(40, 2), new PointF(24, 0) });
+            using (SolidBrush tire = new SolidBrush(Color.FromArgb(20, 25, 35)))
             {
-                g.FillEllipse(tire, -28, -14, 20, 20);
-                g.FillEllipse(tire, 4, -10, 16, 16);
+                g.FillEllipse(tire, -26, -14, 22, 22);
+                g.FillEllipse(tire, 6, -10, 18, 18);
             }
-
             g.Restore(st);
         }
 
