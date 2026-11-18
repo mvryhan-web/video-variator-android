@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEEPSYQ Xmas PC — Живой Новогодний Рабочий Стол для Windows и Mac</title>
+<meta name="description" content="Интерактивный новогодний рабочий стол для Windows и Mac: падающий снег на панели задач, лепка снеговика, дым из трубы, мерцающие гирлянды, Санта на санях и снегоуборочный трактор.">
+<link rel="canonical" href="https://deepsyq.app/xmas-pc.html">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "DEEPSYQ Xmas PC",
+  "operatingSystem": "Windows 10, Windows 11, macOS 14+",
+  "applicationCategory": "DesktopEnhancementApplication",
+  "offers": [
+    { "@type": "Offer", "name": "1 PC or Mac", "price": "9.00", "priceCurrency": "EUR" },
+    { "@type": "Offer", "name": "Up to 5 PCs or Macs", "price": "14.00", "priceCurrency": "EUR" }
+  ]
+}
+</script>
+<style>
+:root {
+  --bg: #070b14;
+  --bg-card: #0e1626;
+  --bg-card-2: #131e33;
+  --gold: #f3c978;
+  --gold-2: #d8a348;
+  --red: #e13b4b;
+  --green: #18b779;
+  --text: #f7f9fc;
+  --muted: #aab6cc;
+  --border: rgba(243, 201, 120, 0.24);
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: radial-gradient(circle at 50% 0%, #142442 0%, #070b14 55%);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+  overflow-x: clip;
+  scroll-behavior: smooth;
+}
+a { color: inherit; text-decoration: none; }
+.shell { max-width: 1240px; margin: 0 auto; padding: 0 20px; }
+
+/* Sticky Top Header */
+header.top {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(7, 11, 20, 0.86);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.nav {
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: 68px; gap: 14px;
+}
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 800; letter-spacing: 0.06em; font-size: 17px;
+}
+.brand-badge {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg, #e13b4b, #b91c2c);
+  border: 1px solid var(--gold);
+  display: grid; place-items: center; font-size: 18px;
+  box-shadow: 0 4px 16px rgba(225, 59, 75, 0.4);
+}
+.brand small {
+  display: block; font-size: 9px; color: var(--gold);
+  letter-spacing: 0.18em; font-weight: 700;
+}
+.nav-links {
+  display: flex; align-items: center; gap: 22px; font-size: 14px; color: var(--muted);
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+.lang-select {
+  appearance: none; -webkit-appearance: none;
+  background: #111b2e; color: var(--text);
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 7px 26px 7px 11px; font-size: 12px; font-weight: 600; cursor: pointer;
+  white-space: nowrap; min-width: 72px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--gold) 50%), linear-gradient(135deg, var(--gold) 50%, transparent 50%);
+  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+  background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+}
+.lang-select::picker-icon { display: none; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 22px; border-radius: 999px; font-weight: 700; font-size: 14px;
+  border: 1px solid transparent; cursor: pointer; transition: transform 0.18s, box-shadow 0.18s;
+  white-space: nowrap;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-gold {
+  background: linear-gradient(135deg, #fae09e, #d99f3e);
+  color: #181106; box-shadow: 0 8px 24px rgba(217, 159, 62, 0.32);
+}
+.btn-win {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff; border-color: rgba(147, 197, 253, 0.4);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.38);
+}
+.btn-mac {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  color: #fff; border-color: rgba(243, 201, 120, 0.45);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+.btn-outline {
+  background: rgba(19, 30, 51, 0.75);
+  color: var(--text); border-color: var(--border);
+}
+
+/* Hero Section */
+.hero {
+  padding: 42px 0 28px; text-align: center; position: relative;
+}
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 16px; border-radius: 999px;
+  background: rgba(225, 59, 75, 0.14); border: 1px solid rgba(243, 201, 120, 0.4);
+  color: var(--gold); font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 16px;
+}
+.hero h1 {
+  font-size: clamp(32px, 5.2vw, 62px);
+  line-height: 1.06; margin: 0 auto 16px; max-width: 900px;
+  letter-spacing: -0.025em;
+}
+.hero h1 .red { color: #ff5b69; }
+.hero h1 .green { color: #34d399; }
+.hero h1 .gold { color: var(--gold); }
+.hero p.lead {
+  font-size: clamp(16px, 1.8vw, 20px);
+  color: var(--muted); max-width: 760px; margin: 0 auto 24px; line-height: 1.55;
+}
+.hero-dl-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 14px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.hero-dl-row .btn { min-height: 52px; padding: 14px 28px; font-size: 15px; }
+.hero-micro {
+  font-size: 13px; color: var(--muted); margin-bottom: 24px;
+}
+.hero-micro a { color: var(--gold); text-decoration: underline; }
+
+/* Interactive Live Desktop Simulator Stage */
+.stage-wrap {
+  background: linear-gradient(180deg, #132038, #0a101d);
+  border: 1.5px solid rgba(243, 201, 120, 0.45);
+  border-radius: 24px; padding: 12px;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  position: relative;
+}
+.stage-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px; padding: 8px 12px; margin-bottom: 10px;
+  background: rgba(9, 14, 26, 0.9); border: 1px solid rgba(243, 201, 120, 0.25);
+  border-radius: 14px;
+}
+.stage-controls {
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+}
+.ctrl-btn {
+  background: #17233a; color: #f1f5f9;
+  border: 1px solid rgba(243, 201, 120, 0.32);
+  border-radius: 999px; padding: 7px 13px; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+.ctrl-btn:hover, .ctrl-btn.active {
+  background: #243759; border-color: var(--gold); color: var(--gold);
+}
+.canvas-box {
+  position: relative; width: 100%; aspect-ratio: 16 / 9;
+  min-height: 360px; max-height: 680px;
+  border-radius: 16px; overflow: hidden;
+  background: #091224; cursor: crosshair;
+  user-select: none; -webkit-user-select: none;
+}
+#xmasCanvas {
+  width: 100%; height: 100%; display: block;
+}
+.stage-hint {
+  position: absolute; top: 14px; left: 16px; z-index: 4;
+  background: rgba(8, 13, 24, 0.78); backdrop-filter: blur(8px);
+  border: 1px solid rgba(243, 201, 120, 0.35);
+  padding: 7px 13px; border-radius: 999px; font-size: 12px; color: #e2e8f0;
+  pointer-events: none;
+}
+.garland-palette {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  flex-wrap: wrap; margin-top: 12px; padding: 8px 12px;
+  background: rgba(12, 19, 34, 0.8); border-radius: 14px;
+  border: 1px dashed rgba(243, 201, 120, 0.28); font-size: 13px; color: var(--muted);
+}
+.sticker-btn {
+  background: #162238; border: 1px solid rgba(243, 201, 120, 0.3);
+  color: #fff; border-radius: 10px; padding: 6px 12px; font-size: 13px;
+  cursor: pointer; transition: transform 0.15s, border-color 0.15s;
+}
+.sticker-btn:hover { transform: scale(1.06); border-color: var(--gold); }
+
+/* Feature Grid (Focused 6 Core Features) */
+section.features { padding: 64px 0 36px; }
+.sec-head { text-align: center; max-width: 720px; margin: 0 auto 38px; }
+.sec-head h2 { font-size: clamp(26px, 3.6vw, 42px); margin: 8px 0 12px; }
+.sec-head p { color: var(--muted); font-size: 16px; line-height: 1.5; margin: 0; }
+.feat-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px;
+}
+.feat-card {
+  background: linear-gradient(155deg, #121d31, #0b1220);
+  border: 1px solid var(--border); border-radius: 20px; padding: 24px;
+  display: flex; flex-direction: column; gap: 10px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
+}
+.feat-icon {
+  width: 46px; height: 46px; border-radius: 12px;
+  background: rgba(243, 201, 120, 0.12); border: 1px solid rgba(243, 201, 120, 0.35);
+  display: grid; place-items: center; font-size: 23px;
+}
+.feat-card h3 { margin: 4px 0 0; font-size: 19px; color: #fff; }
+.feat-card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+
+/* AI Prompt Generator Box for Custom Winter House */
+.prompt-card {
+  margin: 28px auto 0; background: linear-gradient(145deg, #16243d, #0d1626);
+  border: 1px solid rgba(243, 201, 120, 0.4); border-radius: 20px;
+  padding: 22px 24px; display: flex; align-items: center; justify-content: space-between;
+  gap: 18px; flex-wrap: wrap;
+}
+.prompt-card code {
+  display: block; background: #080d18; border: 1px solid rgba(255,255,255,0.1);
+  padding: 10px 14px; border-radius: 10px; color: #f3c978; font-size: 12.5px;
+  margin-top: 8px; max-width: 780px; line-height: 1.45;
+}
+
+/* Pricing Section (with Mobile Carousel & Side Arrows) */
+section.pricing { padding: 56px 0; position: relative; }
+.xmas-pricing-wrap { position: relative; max-width: 860px; margin: 0 auto; }
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px; align-items: stretch;
+}
+.pkg-card {
+  background: linear-gradient(160deg, #131f35, #0b1220);
+  border: 1.5px solid rgba(243, 201, 120, 0.28);
+  border-radius: 22px; padding: 28px 26px;
+  display: flex; flex-direction: column; position: relative;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.5);
+}
+.pkg-card.popular {
+  background: linear-gradient(160deg, #1d2238, #0f172a);
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 0 1px rgba(243, 201, 120, 0.3), 0 22px 54px rgba(0, 0, 0, 0.65);
+}
+.pkg-ribbon {
+  position: absolute; top: -13px; right: 22px;
+  background: linear-gradient(135deg, #e13b4b, #b91c2c);
+  border: 1px solid var(--gold); color: #fff;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.08em;
+  padding: 5px 13px; border-radius: 999px; text-transform: uppercase;
+}
+.pkg-name { font-size: 14px; font-weight: 800; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; }
+.pkg-price { font-size: 46px; font-weight: 900; margin: 8px 0 4px; color: #fff; line-height: 1; }
+.pkg-price small { font-size: 14px; font-weight: 500; color: var(--muted); }
+.pkg-sub { font-size: 14px; color: var(--muted); margin-bottom: 18px; }
+.pkg-features { list-style: none; padding: 0; margin: 0 0 24px; display: grid; gap: 11px; font-size: 14.5px; }
+.pkg-features li::before { content: "✓ "; color: var(--gold); font-weight: 900; margin-right: 6px; }
+.pkg-btn { margin-top: auto; width: 100%; min-height: 50px; font-size: 15px; }
+.xmas-arrow, .xmas-dots { display: none; }
+
+/* FAQ */
+section.faq { padding: 36px 0 64px; max-width: 880px; margin: 0 auto; }
+.faq-list { display: grid; gap: 12px; }
+.faq-list details {
+  background: #0f1829; border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px 20px;
+}
+.faq-list summary { font-weight: 700; font-size: 16px; cursor: pointer; color: #fff; }
+.faq-list p { margin: 10px 0 0; color: var(--muted); font-size: 14.5px; line-height: 1.55; }
+
+footer {
+  border-top: 1px solid var(--border); padding: 28px 0 42px;
+  color: var(--muted); font-size: 13px; text-align: center;
+}
+
+@media (max-width: 900px) {
+  .feat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nav-links { display: none; }
+}
+@media (max-width: 700px) {
+  .feat-grid { grid-template-columns: 1fr; }
+  .canvas-box { aspect-ratio: 4 / 3; min-height: 320px; }
+  /* Mobile Pricing Carousel with Side Arrows & Right Peek */
+  .pricing-grid {
+    display: flex !important; grid-template-columns: none !important;
+    gap: 14px !important; overflow-x: auto; scroll-snap-type: x mandatory;
+    padding: 20px 20px 16px !important; margin-inline: -20px !important;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  .pricing-grid::-webkit-scrollbar { display: none; }
+  .pkg-card {
+    flex: 0 0 80% !important; max-width: 320px;
+    scroll-snap-align: center; scroll-snap-stop: always;
+  }
+  .xmas-arrow {
+    position: absolute; top: 46%; transform: translateY(-50%); z-index: 6;
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 1px solid var(--gold); background: rgba(12, 18, 32, 0.92);
+    color: var(--gold); font-size: 22px; display: grid; place-items: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.65); cursor: pointer;
+  }
+  .xmas-arrow[disabled] { opacity: 0.28; pointer-events: none; }
+  .xmas-arrow.prev { left: -6px; }
+  .xmas-arrow.next { right: -6px; }
+  .xmas-dots {
+    display: flex; justify-content: center; gap: 8px; margin-top: 6px;
+  }
+  .xmas-dots button {
+    width: 8px; height: 8px; border-radius: 99px; border: 0;
+    background: #475569; padding: 0; cursor: pointer; transition: width 0.2s, background 0.2s;
+  }
+  .xmas-dots button[aria-current="true"] { width: 24px; background: var(--gold); }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="shell nav">
+    <a href="deepsyq.html" class="brand">
+      <span class="brand-badge">🎄</span>
+      <span>DEEPSYQ <small>XMAS PC · WINTER STUDIO</small></span>
+    </a>
+    <nav class="nav-links">
+      <a href="#live-demo" data-i18n="navDemo">Живое демо</a>
+      <a href="#features" data-i18n="navFeatures">Возможности</a>
+      <a href="#custom-art" data-i18n="navArt">Свой зимний дом</a>
+      <a href="#pricing" data-i18n="navPricing">Цены (9 € / 14 €)</a>
+      <a href="#faq" data-i18n="navFaq">Вопросы</a>
+    </nav>
+    <div class="nav-actions">
+      <select id="langSelect" class="lang-select" aria-label="Language">
+        <option value="ru">🇷🇺 RU</option>
+        <option value="en">🇬🇧 EN</option>
+        <option value="fr">🇫🇷 FR</option>
+        <option value="es">🇪🇸 ES</option>
+      </select>
+      <a href="downloads/DEEPSYQ-Xmas-PC.exe" download class="btn btn-gold" data-i18n="navDownload">Скачать .EXE ❄️</a>
+    </div>
+  </div>
+</header>
+
+<main class="shell">
+  <section class="hero">
+    <div class="eyebrow" data-i18n="eyebrow">❄️ Новогодняя атмосфера для Windows 10/11 и macOS</div>
+    <h1 data-i18n-html="heroTitle">Живой <span class="red">Новый год</span> прямо на твоём <span class="green">ПК и Mac</span></h1>
+    <p class="lead" data-i18n="heroLead">Падающий снег собирается на панели задач и разлетается от курсора мыши. Лепи снеговика, зажигай гирлянды на доме и ёлках, смотри на дым из каминной трубы, запускай Санту на санях и снегоуборочный трактор!</p>
+
+    <div class="hero-dl-row">
+      <a href="https://apps.microsoft.com/detail/9PDN61GVCSMJ" target="_blank" rel="noopener" class="btn btn-win" data-i18n="btnStore">🛍️ Microsoft Store (Без предупреждений)</a>
+      <a href="downloads/DEEPSYQ-Xmas-PC.exe" download class="btn btn-gold" data-i18n="btnWin">⊞ Прямое скачивание Windows (.EXE)</a>
+      <a href="#pricing" class="btn btn-mac" data-i18n="btnMac"> Скачать для Mac</a>
+      <button type="button" id="fullscreenBtn" class="btn btn-outline" data-i18n="btnFull">⛶ Развернуть на весь экран</button>
+    </div>
+    <div class="hero-micro">
+      <span data-i18n="heroMicro">Microsoft Store ID: 9PDN61GVCSMJ (Deepsyq.XmasPC) · Без подписки · </span>
+      <a href="#pricing" data-i18n="heroMicroLink">от 9 € навсегда</a>
+    </div>
+
+    <!-- LIVE INTERACTIVE DESKTOP SIMULATOR -->
+    <div class="stage-wrap" id="live-demo">
+      <div class="stage-toolbar">
+        <div class="stage-controls">
+          <button type="button" class="ctrl-btn" id="btnAddSnowman">⛄ + Снеговик</button>
+          <button type="button" class="ctrl-btn" id="btnTractor">🚜 Трактор-снегоуборщик</button>
+          <button type="button" class="ctrl-btn" id="btnSanta">🎅 Запустить Санту</button>
+          <button type="button" class="ctrl-btn active" id="btnLights">✨ Гирлянды и дым</button>
+          <button type="button" class="ctrl-btn" id="btnSnowRate">❄️ Снег: Сильный</button>
+          <label class="ctrl-btn" style="cursor:pointer">
+            🖼️ Своя картинка дома
+            <input type="file" id="bgUploadInput" accept="image/*" hidden>
+          </label>
+          <button type="button" class="ctrl-btn" id="btnResetSnow">🧹 Сбросить сугробы</button>
+        </div>
+        <a href="downloads/DEEPSYQ-Xmas-PC.exe" download class="ctrl-btn" style="border-color:var(--gold);color:var(--gold)">⬇ Установить на рабочий стол Windows</a>
+      </div>
+
+      <div class="canvas-box" id="canvasBox">
+        <div class="stage-hint" id="stageHint">💡 Проведи мышкой по снегу внизу на панели, перетащи снеговика или повесь игрушки на ёлки!</div>
+        <canvas id="xmasCanvas" width="1280" height="720"></canvas>
+      </div>
+
+      <div class="garland-palette">
+        <span>🎄 Перетащи или нажми, чтобы приклеить на ёлки и дом:</span>
+        <button type="button" class="sticker-btn" data-add-ornament="0">🔴 Красный шар</button>
+        <button type="button" class="sticker-btn" data-add-ornament="1">🟡 Золотой фонарик</button>
+        <button type="button" class="sticker-btn" data-add-ornament="2">🟢 Изумрудная гирлянда</button>
+        <button type="button" class="sticker-btn" data-add-ornament="3">⭐ Рождественская звезда</button>
+        <button type="button" class="sticker-btn" data-add-ornament="4">🍬 Леденец-трость</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 CORE REQUESTED FEATURES -->
+  <section class="features" id="features">
+    <div class="sec-head">
+      <div class="eyebrow">ВСЁ САМОЕ НУЖНОЕ — БЕЗ ЛИШНЕГО ШУМА</div>
+      <h2>6 живых новогодних чудес на твоём экране</h2>
+      <p>Лёгкое приложение (всего 60 КБ для Windows), которое не нагружает видеокарту и пропускает клики мыши сквозь снег прямо в твои рабочие программы.</p>
+    </div>
+
+    <div class="feat-grid">
+      <article class="feat-card">
+        <div class="feat-icon">❄️</div>
+        <h3>Живой снег на панели задач</h3>
+        <p>Снежинки плавно падают по всему экрану и ложатся пушистым сугробом на панель задач. Проведи курсором мыши — и снег разлетится в стороны!</p>
+      </article>
+      <article class="feat-card">
+        <div class="feat-icon">⛄</div>
+        <h3>Лепка и настройка снеговика</h3>
+        <p>Создавай снеговиков прямо на заснеженной панели, передвигай их мышкой и меняй им шляпу (цилиндр или колпак Санты) и цвет тёплого шарфа.</p>
+      </article>
+      <article class="feat-card">
+        <div class="feat-icon">🏠</div>
+        <h3>Уютный дом: дым и гирлянды</h3>
+        <p>Тёплый свет в окнах альпийского шале, переливающиеся огоньки гирлянд вдоль крыши и мягкий дым, поднимающийся из каминной трубы в звёздное небо.</p>
+      </article>
+      <article class="feat-card">
+        <div class="feat-icon">🚜</div>
+        <h3>Снегоуборочный трактор</h3>
+        <p>Маленький жёлтый трактор с горящими фарами ездит влево и вправо по нижней панели и по-настоящему сгребает накопившийся снег в сугробы.</p>
+      </article>
+      <article class="feat-card">
+        <div class="feat-icon">🎅</div>
+        <h3>Санта-Клаус на санях с оленями</h3>
+        <p>Дед Мороз в упряжке с оленями и красноносым Рудольфом пролетает над заснеженным лесом, оставляя за собой золотой звёздный шлейф.</p>
+      </article>
+      <article class="feat-card">
+        <div class="feat-icon">🎄</div>
+        <h3>Гирлянды и игрушки на ёлки</h3>
+        <p>Выбирай светящиеся шары, фонарики, звёзды и леденцы и приклеивай их мышкой на пушистые ели вокруг дома — твоя композиция сохраняется.</p>
+      </article>
+    </div>
+
+    <div class="prompt-card" id="custom-art">
+      <div>
+        <strong style="color:var(--gold);font-size:16px">🎨 Хочешь сгенерировать свой уникальный зимний дом в DEEPSYQ Studio?</strong>
+        <div style="color:var(--muted);font-size:13.5px;margin-top:4px">Скопируй готовый промпт, создай картинку в 16:9 и нажми «🖼️ Своя картинка дома» в плеере выше или в приложении Windows:</div>
+        <code id="promptText">Cozy luxury alpine wooden chalet at twilight in winter, warm golden fairy lights glowing along the roof eaves and porch, stone chimney on the roof ready for rising smoke, snow-covered pine trees on left and right sides ready for garlands, flat snowy foreground clearing for a snowman and snowplow tractor, deep starry night sky for Santa's sleigh, cinematic 3D winter illustration, 16:9, 8k</code>
+      </div>
+      <button type="button" class="btn btn-gold" id="copyPromptBtn">📋 Скопировать промпт</button>
+    </div>
+  </section>
+
+  <!-- PRICING (WITH MOBILE CAROUSEL + ARROWS + PEEK) -->
+  <section class="pricing" id="pricing">
+    <div class="sec-head">
+      <div class="eyebrow">БЕЗ ПОДПИСКИ · ОДИН РАЗ И НАВСЕГДА</div>
+      <h2>Выбери свой пакет DEEPSYQ Xmas PC</h2>
+      <p>Лицензия работает одинаково на Windows 10/11 и macOS. Все функции, зимние сцены и будущие обновления включены.</p>
+    </div>
+
+    <div class="xmas-pricing-wrap">
+      <button type="button" class="xmas-arrow prev" id="xmasPrev" aria-label="Предыдущий тариф">‹</button>
+      <div class="pricing-grid" id="xmasPricingGrid">
+        <!-- Card 1 -->
+        <article class="pkg-card">
+          <div class="pkg-name">1 КОМПЬЮТЕР · PERSONAL</div>
+          <div class="pkg-price">9 € <small>/ навсегда</small></div>
+          <div class="pkg-sub">Идеально для твоего личного ПК с Windows или Mac.</div>
+          <ul class="pkg-features">
+            <li>1 Windows ПК или Mac (можно переносить)</li>
+            <li>Живой снег на панели с реакцией на мышь</li>
+            <li>Лепка снеговика, дым из трубы и гирлянды</li>
+            <li>Санта на санях + снегоуборочный трактор</li>
+            <li>Украшение ёлок игрушками и загрузка своего фона</li>
+          </ul>
+          <a href="downloads/DEEPSYQ-Xmas-PC.exe" download class="btn btn-outline pkg-btn">Купить и скачать — 9 €</a>
+        </article>
+
+        <!-- Card 2 -->
+        <article class="pkg-card popular">
+          <span class="pkg-ribbon">★ Выгоднее всего</span>
+          <div class="pkg-name">5 КОМПЬЮТЕРОВ · FAMILY &amp; STUDIO</div>
+          <div class="pkg-price">14 € <small>/ навсегда</small></div>
+          <div class="pkg-sub">Для дома, офиса и подарка близким — до 5 любых устройств.</div>
+          <ul class="pkg-features">
+            <li>До 5 компьютеров (Windows и Mac в любом сочетании)</li>
+            <li>Все интерактивные функции и режим сквозных кликов (F8)</li>
+            <li>Поддержка собственных AI-фонов 4K из студии DEEPSYQ</li>
+            <li>Мгновенная загрузка подписанного установщика</li>
+            <li>Все будущие зимние и праздничные обновления бесплатно</li>
+          </ul>
+          <a href="downloads/DEEPSYQ-Xmas-PC.exe" download class="btn btn-gold pkg-btn">Купить на 5 ПК / Mac — 14 €</a>
+        </article>
+      </div>
+      <button type="button" class="xmas-arrow next" id="xmasNext" aria-label="Следующий тариф">›</button>
+      <div class="xmas-dots" id="xmasDots">
+        <button type="button" aria-label="Тариф 1" aria-current="true"></button>
+        <button type="button" aria-label="Тариф 2" aria-current="false"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq" id="faq">
+    <div class="sec-head">
+      <h2>Частые вопросы</h2>
+    </div>
+    <div class="faq-list">
+      <details open>
+        <summary>Клики мыши проходят сквозь снег и декорации?</summary>
+        <p>Да! В приложении нажми клавишу <b>F8</b> (или кнопку «Сквозные клики»), и весь снег, трактор, Санта и гирлянды останутся поверх всех окон, а ты сможешь спокойно работать в браузере, играх и программах.</p>
+      </details>
+      <details>
+        <summary>На каких системах работает DEEPSYQ Xmas PC?</summary>
+        <p>На Windows 10 и Windows 11 (готовый лёгкий файл <code>DEEPSYQ-Xmas-PC.exe</code> без установки лишних библиотек), а также в веб/десктоп-режиме для macOS 14+.</p>
+      </details>
+      <details>
+        <summary>Можно ли поставить свою новогоднюю картинку дома?</summary>
+        <p>Да! Ты можешь сгенерировать любой зимний дом по нашему промпту и загрузить его одной кнопкой «🖼️ Свой фон» — дым из трубы, гирлянды, снеговик и трактор будут работать прямо поверх твоей иллюстрации.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="shell">
+    © 2026 DEEPSYQ Creative Studio · Xmas PC Interactive Desktop · <a href="deepsyq.html" style="color:var(--gold)">Вернуться на DEEPSYQ</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  const canvas = document.getElementById("xmasCanvas");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  const COLS = 200;
+  const snowBank = new Float32Array(COLS);
+  for (let i = 0; i < COLS; i++) snowBank[i] = 18 + Math.sin(i * 0.16) * 4;
+
+  let snowFast = true;
+  let lightsOn = true;
+  let customBgImg = null;
+  let tSec = 0;
+
+  // Snowflakes
+  const flakes = [];
+  function makeFlake(randomY) {
+    return {
+      x: Math.random() * W,
+      y: randomY ? Math.random() * H : -10,
+      vx: (Math.random() - 0.5) * 28,
+      vy: (38 + Math.random() * 62) * (snowFast ? 1.15 : 0.65),
+      r: 1.5 + Math.random() * 2.6,
+      phase: Math.random() * Math.PI * 2
+    };
+  }
+  for (let i = 0; i < 240; i++) flakes.push(makeFlake(true));
+
+  // Chimney smoke puffs
+  const smoke = [];
+  // Snow spray & sparkles
+  const spray = [];
+
+  // Snowmen
+  const snowmen = [
+    { x: W * 0.25, y: H - 36, scale: 1.0, hat: 0, scarf: 0 },
+    { x: W * 0.76, y: H - 36, scale: 0.9, hat: 1, scarf: 1 }
+  ];
+
+  // Tree & House Ornaments
+  const ornaments = [
+    { x: W * 0.11, y: H - 150, kind: 0, phase: 0.4 },
+    { x: W * 0.13, y: H - 195, kind: 1, phase: 1.7 },
+    { x: W * 0.15, y: H - 125, kind: 2, phase: 2.8 },
+    { x: W * 0.12, y: H - 245, kind: 3, phase: 0.9 },
+    { x: W * 0.85, y: H - 155, kind: 1, phase: 1.2 },
+    { x: W * 0.88, y: H - 205, kind: 0, phase: 3.1 },
+    { x: W * 0.86, y: H - 120, kind: 4, phase: 2.1 },
+    { x: W * 0.87, y: H - 255, kind: 3, phase: 0.2 }
+  ];
+
+  // Santa Sleigh
+  let santa = { x: -240, y: 92, dir: 1 };
+  // Snowplow Tractor
+  let tractor = { x: 140, dir: 1 };
+
+  let dragTarget = null;
+  let lastMouse = { x: 0, y: 0 };
+
+  function toCanvasCoords(e) {
+    const r = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: (clientX - r.left) * (W / r.width),
+      y: (clientY - r.top) * (H / r.height)
+    };
+  }
+
+  function onPointerDown(e) {
+    const p = toCanvasCoords(e);
+    for (let i = ornaments.length - 1; i >= 0; i--) {
+      const o = ornaments[i];
+      if (Math.hypot(p.x - o.x, p.y - o.y) < 22) {
+        dragTarget = { type: "ornament", item: o };
+        return;
+      }
+    }
+    for (let i = snowmen.length - 1; i >= 0; i--) {
+      const sm = snowmen[i];
+      if (Math.abs(p.x - sm.x) < 36 * sm.scale && p.y >= sm.y - 110 * sm.scale && p.y <= sm.y + 15) {
+        sm.hat = (sm.hat + 1) % 2;
+        sm.scarf = (sm.scarf + 1) % 3;
+        dragTarget = { type: "snowman", item: sm };
+        return;
+      }
+    }
+  }
+
+  function onPointerMove(e) {
+    const p = toCanvasCoords(e);
+    if (dragTarget) {
+      dragTarget.item.x = Math.max(24, Math.min(W - 24, p.x));
+      if (dragTarget.type === "ornament") {
+        dragTarget.item.y = Math.max(24, Math.min(H - 42, p.y));
+      } else {
+        dragTarget.item.y = Math.max(H - 120, Math.min(H - 28, p.y));
+      }
+    }
+
+    const dx = p.x - lastMouse.x;
+    const dy = p.y - lastMouse.y;
+    const speed = Math.hypot(dx, dy);
+    lastMouse = p;
+
+    // Scatter snow on bottom taskbar panel when cursor sweeps over it!
+    const col = Math.floor((p.x / W) * COLS);
+    if (col >= 0 && col < COLS && p.y >= H - 72 - snowBank[col]) {
+      for (let c = Math.max(0, col - 5); c <= Math.min(COLS - 1, col + 5); c++) {
+        const cut = Math.max(0, 6 - Math.abs(c - col) * 1.1);
+        snowBank[c] = Math.max(4, snowBank[c] - cut * 0.42);
+      }
+      const bursts = Math.min(14, 3 + Math.floor(speed * 0.25));
+      for (let k = 0; k < bursts; k++) {
+        spray.push({
+          x: p.x + (Math.random() - 0.5) * 18,
+          y: Math.min(H - 32, p.y),
+          vx: dx * 2.2 + (Math.random() - 0.5) * 110,
+          vy: -45 - Math.random() * 95,
+          r: 2 + Math.random() * 2.5,
+          alpha: 1,
+          color: "#ffffff"
+        });
+      }
+    }
+  }
+
+  canvas.addEventListener("mousedown", onPointerDown);
+  canvas.addEventListener("mousemove", onPointerMove);
+  window.addEventListener("mouseup", () => { dragTarget = null; });
+  canvas.addEventListener("touchstart", onPointerDown, { passive: true });
+  canvas.addEventListener("touchmove", onPointerMove, { passive: true });
+  window.addEventListener("touchend", () => { dragTarget = null; });
+
+  // Toolbar Actions
+  document.getElementById("btnAddSnowman").addEventListener("click", () => {
+    snowmen.push({
+      x: W * (0.2 + Math.random() * 0.6),
+      y: H - 36,
+      scale: 0.85 + Math.random() * 0.28,
+      hat: Math.floor(Math.random() * 2),
+      scarf: Math.floor(Math.random() * 3)
+    });
+  });
+  document.getElementById("btnTractor").addEventListener("click", () => {
+    tractor.dir = tractor.x > W * 0.5 ? -1 : 1;
+    for (let i = 0; i < COLS; i++) snowBank[i] = Math.min(54, snowBank[i] + 10);
+  });
+  document.getElementById("btnSanta").addEventListener("click", () => {
+    santa.x = -200;
+    santa.y = 75 + Math.random() * 55;
+  });
+  document.getElementById("btnLights").addEventListener("click", function() {
+    lightsOn = !lightsOn;
+    this.classList.toggle("active", lightsOn);
+  });
+  document.getElementById("btnSnowRate").addEventListener("click", function() {
+    snowFast = !snowFast;
+    this.textContent = snowFast ? "❄️ Снег: Сильный" : "❄️ Снег: Мягкий";
+  });
+  document.getElementById("btnResetSnow").addEventListener("click", () => {
+    for (let i = 0; i < COLS; i++) snowBank[i] = 24 + Math.sin(i * 0.2) * 5;
+  });
+  document.getElementById("bgUploadInput").addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => { customBgImg = img; };
+    img.src = URL.createObjectURL(file);
+  });
+  document.getElementById("fullscreenBtn").addEventListener("click", () => {
+    const box = document.getElementById("canvasBox");
+    if (box.requestFullscreen) box.requestFullscreen();
+  });
+  document.querySelectorAll("[data-add-ornament]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const kind = Number(btn.getAttribute("data-add-ornament")) || 0;
+      const onLeft = Math.random() < 0.5;
+      ornaments.push({
+        x: onLeft ? W * (0.09 + Math.random() * 0.11) : W * (0.81 + Math.random() * 0.11),
+        y: H - 115 - Math.random() * 150,
+        kind,
+        phase: Math.random() * 6.28
+      });
+    });
+  });
+  document.getElementById("copyPromptBtn").addEventListener("click", function() {
+    navigator.clipboard?.writeText(document.getElementById("promptText").textContent || "");
+    this.textContent = "✓ Промпт скопирован!";
+    setTimeout(() => { this.textContent = "📋 Скопировать промпт"; }, 2200);
+  });
+
+  function step(dt) {
+    tSec += dt;
+
+    // Snowflakes
+    for (let i = 0; i < flakes.length; i++) {
+      const f = flakes[i];
+      f.y += f.vy * (snowFast ? 1.1 : 0.65) * dt;
+      f.x += (f.vx + Math.sin(tSec * 1.7 + f.phase) * 18) * dt;
+      if (f.x < 0) f.x += W;
+      if (f.x >= W) f.x -= W;
+      const col = Math.floor((f.x / W) * COLS);
+      const topY = H - 32 - (col >= 0 && col < COLS ? snowBank[col] : 16);
+      if (f.y >= topY) {
+        if (col >= 0 && col < COLS && snowBank[col] < 54) snowBank[col] += 0.24;
+        Object.assign(f, makeFlake(false));
+      }
+    }
+    for (let i = 1; i < COLS - 1; i++) {
+      snowBank[i] = snowBank[i] * 0.992 + (snowBank[i - 1] + snowBank[i + 1]) * 0.004;
+    }
+
+    // Chimney smoke
+    if (lightsOn && Math.random() < 0.38) {
+      smoke.push({
+        x: W * 0.548 + (Math.random() - 0.5) * 6,
+        y: H - 318,
+        vx: 12 + Math.random() * 14,
+        vy: -26 - Math.random() * 14,
+        r: 7,
+        alpha: 0.55
+      });
+    }
+    for (let i = smoke.length - 1; i >= 0; i--) {
+      const p = smoke[i];
+      p.x += (p.vx + Math.sin(tSec * 2 + i) * 6) * dt;
+      p.y += p.vy * dt;
+      p.r += 11 * dt;
+      p.alpha -= 0.14 * dt;
+      if (p.alpha <= 0.02) smoke.splice(i, 1);
+    }
+
+    // Santa sleigh
+    santa.x += 112 * dt;
+    santa.y += Math.sin(tSec * 2.4) * 14 * dt;
+    if (Math.random() < 0.65) {
+      spray.push({
+        x: santa.x + 12,
+        y: santa.y + 18,
+        vx: -28 + (Math.random() - 0.5) * 20,
+        vy: (Math.random() - 0.5) * 18,
+        r: 2.4,
+        alpha: 0.95,
+        color: "#fde047"
+      });
+    }
+    if (santa.x > W + 280) {
+      santa.x = -240;
+      santa.y = 78 + Math.random() * 60;
+    }
+
+    // Snowplow tractor
+    tractor.x += 78 * tractor.dir * dt;
+    const tc = Math.floor((tractor.x / W) * COLS);
+    for (let c = Math.max(0, tc - 3); c <= Math.min(COLS - 1, tc + 3); c++) {
+      if (snowBank[c] > 8) {
+        const diff = snowBank[c] - 8;
+        snowBank[c] = 8;
+        const ahead = Math.max(0, Math.min(COLS - 1, c + (tractor.dir > 0 ? 5 : -5)));
+        snowBank[ahead] = Math.min(56, snowBank[ahead] + diff * 0.36);
+        if (Math.random() < 0.45) {
+          spray.push({
+            x: tractor.x + tractor.dir * 32,
+            y: H - 40,
+            vx: tractor.dir * (55 + Math.random() * 50),
+            vy: -45 - Math.random() * 55,
+            r: 2.5,
+            alpha: 0.9,
+            color: "#e2f1ff"
+          });
+        }
+      }
+    }
+    if (tractor.x > W - 85) tractor.dir = -1;
+    if (tractor.x < 85) tractor.dir = 1;
+
+    // Spray particles
+    for (let i = spray.length - 1; i >= 0; i--) {
+      const sp = spray[i];
+      sp.x += sp.vx * dt;
+      sp.y += sp.vy * dt;
+      sp.vy += 185 * dt;
+      sp.alpha -= 0.92 * dt;
+      if (sp.alpha <= 0.03) spray.splice(i, 1);
+    }
+  }
+
+  function draw() {
+    if (customBgImg) {
+      ctx.drawImage(customBgImg, 0, 0, W, H);
+    } else {
+      // Twilight winter sky
+      const sky = ctx.createLinearGradient(0, 0, 0, H);
+      sky.addColorStop(0, "#070d1d");
+      sky.addColorStop(0.6, "#132547");
+      sky.addColorStop(1, "#1d355e");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, W, H);
+
+      // Crescent Moon
+      ctx.fillStyle = "#fef08a";
+      ctx.beginPath(); ctx.arc(W * 0.84, 82, 28, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#0b152c";
+      ctx.beginPath(); ctx.arc(W * 0.84 + 10, 76, 25, 0, Math.PI * 2); ctx.fill();
+
+      // Mountains
+      ctx.fillStyle = "#162a4a";
+      ctx.beginPath();
+      ctx.moveTo(0, H - 120);
+      ctx.lineTo(W * 0.18, H - 310);
+      ctx.lineTo(W * 0.36, H - 190);
+      ctx.lineTo(W * 0.56, H - 350);
+      ctx.lineTo(W * 0.77, H - 200);
+      ctx.lineTo(W * 0.92, H - 310);
+      ctx.lineTo(W, H - 160);
+      ctx.lineTo(W, H); ctx.lineTo(0, H);
+      ctx.fill();
+
+      // Pine Trees on Left & Right
+      const trees = [
+        [W * 0.08, 210], [W * 0.13, 265], [W * 0.19, 195],
+        [W * 0.81, 200], [W * 0.87, 270], [W * 0.93, 215]
+      ];
+      for (const [tx, th] of trees) {
+        const baseY = H - 34;
+        for (let l = 0; l < 4; l++) {
+          const ly = baseY - l * (th * 0.22);
+          const lw = (4 - l) * 24 + 18;
+          ctx.fillStyle = `rgb(${16 + l * 4}, ${56 + l * 10}, ${45 + l * 6})`;
+          ctx.beginPath();
+          ctx.moveTo(tx, ly - th * 0.34);
+          ctx.lineTo(tx - lw, ly);
+          ctx.lineTo(tx + lw, ly);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = "rgba(235, 246, 255, 0.85)";
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(tx - lw * 0.82, ly - 2);
+          ctx.lineTo(tx + lw * 0.82, ly - 2);
+          ctx.stroke();
+        }
+      }
+
+      // Cozy Wooden Chalet House
+      const hx = W * 0.38, hy = H - 235, hw = W * 0.24, hh = 195;
+      // Chimney
+      const chX = hx + hw * 0.66, chY = hy - 74;
+      ctx.fillStyle = "#4b4442";
+      ctx.fillRect(chX, chY, 32, 65);
+      ctx.fillStyle = "#f1f7ff";
+      ctx.beginPath(); ctx.ellipse(chX + 16, chY, 20, 6, 0, 0, Math.PI * 2); ctx.fill();
+
+      // Cabin Wall
+      ctx.fillStyle = "#4e2e1c";
+      ctx.fillRect(hx, hy, hw, hh);
+
+      // Roof + Snow Overhang
+      ctx.fillStyle = "#331f14";
+      ctx.beginPath();
+      ctx.moveTo(hx - 26, hy + 10);
+      ctx.lineTo(hx + hw * 0.5, hy - 90);
+      ctx.lineTo(hx + hw + 26, hy + 10);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = "#f0f7ff";
+      ctx.lineWidth = 11;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(hx - 26, hy + 10);
+      ctx.lineTo(hx + hw * 0.5, hy - 90);
+      ctx.lineTo(hx + hw + 26, hy + 10);
+      ctx.stroke();
+
+      // Glowing Windows
+      const wins = [
+        [hx + 26, hy + 38, 54, 48],
+        [hx + hw - 80, hy + 38, 54, 48],
+        [hx + hw * 0.5 - 22, hy - 34, 44, 36]
+      ];
+      for (const [wx, wy, ww, wh] of wins) {
+        if (lightsOn) {
+          const wg = ctx.createRadialGradient(wx + ww/2, wy + wh/2, 4, wx + ww/2, wy + wh/2, 46);
+          wg.addColorStop(0, "rgba(255, 205, 95, 0.55)");
+          wg.addColorStop(1, "rgba(255, 205, 95, 0)");
+          ctx.fillStyle = wg;
+          ctx.beginPath(); ctx.arc(wx + ww/2, wy + wh/2, 46, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.fillStyle = lightsOn ? "#ffd875" : "#2c3545";
+        ctx.fillRect(wx, wy, ww, wh);
+        ctx.strokeStyle = "#5a341b";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(wx, wy, ww, wh);
+      }
+
+      // Door + Holiday Wreath
+      const dx = hx + hw * 0.5 - 20, dy = hy + hh - 80;
+      ctx.fillStyle = "#381c10";
+      ctx.fillRect(dx, dy, 40, 80);
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.arc(dx + 20, dy + 26, 11, 0, Math.PI * 2); ctx.stroke();
+
+      // Twinkling Roof Garlands
+      if (lightsOn) {
+        const cols = ["#fde047", "#ff5b69", "#34d399", "#60a5fa"];
+        const n = 22;
+        for (let i = 0; i <= n; i++) {
+          const u = i / n;
+          const bx = (hx - 20) + u * (hw + 40);
+          const by = u <= 0.5 ? (hy + 10) - (u * 2) * 98 : (hy - 88) + ((u - 0.5) * 2) * 98;
+          const pulse = 0.55 + 0.45 * Math.sin(tSec * 5.4 + i * 0.9);
+          ctx.save();
+          ctx.globalAlpha = pulse;
+          ctx.fillStyle = cols[i % cols.length];
+          ctx.shadowColor = cols[i % cols.length];
+          ctx.shadowBlur = 12;
+          ctx.beginPath(); ctx.arc(bx, by, 4.5, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        }
+      }
+    }
+
+    // Chimney Smoke
+    for (const p of smoke) {
+      ctx.fillStyle = `rgba(218, 228, 242, ${Math.max(0, p.alpha)})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Santa Claus & Reindeer Sleigh
+    ctx.save();
+    ctx.translate(santa.x, santa.y);
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath();
+    ctx.moveTo(0, 10); ctx.lineTo(54, 10); ctx.lineTo(66, 28); ctx.lineTo(-8, 28);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "#facc15"; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(-12, 32); ctx.lineTo(72, 32);
+    ctx.moveTo(60, 18); ctx.lineTo(150, 14);
+    ctx.stroke();
+    // Santa head & hat
+    ctx.fillStyle = "#fed7aa"; ctx.beginPath(); ctx.arc(28, 2, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(31, 8, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath(); ctx.moveTo(20, -2); ctx.lineTo(36, -2); ctx.lineTo(25, -15); ctx.closePath(); ctx.fill();
+    // Reindeer
+    for (let r = 0; r < 2; r++) {
+      const rx = 92 + r * 46, ry = 8 + Math.sin(tSec * 8 + r) * 3.5;
+      ctx.fillStyle = "#9a6338";
+      ctx.beginPath(); ctx.ellipse(rx + 12, ry + 8, 13, 6, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(rx + 26, ry + 2, 5, 0, Math.PI * 2); ctx.fill();
+      if (r === 1) {
+        ctx.fillStyle = "#ff3b3b";
+        ctx.beginPath(); ctx.arc(rx + 32, ry + 2, 3, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    ctx.restore();
+
+    // Tree & House Ornaments
+    const ornColors = ["#ef4444", "#facc15", "#10b981", "#fef08a", "#fb7185"];
+    for (const o of ornaments) {
+      const c = ornColors[o.kind % ornColors.length];
+      const pulse = 0.65 + 0.35 * Math.sin(tSec * 4.2 + o.phase);
+      ctx.save();
+      ctx.fillStyle = c;
+      ctx.shadowColor = c;
+      ctx.shadowBlur = 14 * pulse;
+      ctx.beginPath(); ctx.arc(o.x, o.y, o.kind === 3 ? 9 : 7.5, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    // Snowmen
+    for (const sm of snowmen) {
+      const s = sm.scale, x = sm.x, y = sm.y;
+      ctx.fillStyle = "#f8fbff";
+      ctx.strokeStyle = "#b8d0eb";
+      ctx.lineWidth = 1.5;
+      [[0, -20, 25], [0, -52, 19], [0, -78, 14]].forEach(([ox, oy, rad]) => {
+        ctx.beginPath(); ctx.arc(x + ox * s, y + oy * s, rad * s, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+      });
+      // Carrot nose
+      ctx.fillStyle = "#f97316";
+      ctx.beginPath();
+      ctx.moveTo(x, y - 78 * s); ctx.lineTo(x + 14 * s, y - 75 * s); ctx.lineTo(x, y - 73 * s);
+      ctx.closePath(); ctx.fill();
+      // Scarf
+      const scCols = ["#ef4444", "#10b981", "#eab308"];
+      ctx.fillStyle = scCols[sm.scarf % scCols.length];
+      ctx.fillRect(x - 14 * s, y - 66 * s, 28 * s, 6 * s);
+      ctx.fillRect(x + 4 * s, y - 64 * s, 6 * s, 16 * s);
+      // Hat
+      if (sm.hat === 0) {
+        ctx.fillStyle = "#1e293b";
+        ctx.fillRect(x - 16 * s, y - 92 * s, 32 * s, 4 * s);
+        ctx.fillRect(x - 11 * s, y - 110 * s, 22 * s, 18 * s);
+      } else {
+        ctx.fillStyle = "#dc2626";
+        ctx.beginPath();
+        ctx.moveTo(x - 14 * s, y - 89 * s); ctx.lineTo(x + 14 * s, y - 89 * s); ctx.lineTo(x - 3 * s, y - 112 * s);
+        ctx.closePath(); ctx.fill();
+      }
+    }
+
+    // Snowbank on Taskbar
+    ctx.fillStyle = "#eff6ff";
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    for (let i = 0; i < COLS; i++) {
+      const x = (i / (COLS - 1)) * W;
+      ctx.lineTo(x, H - 30 - snowBank[i]);
+    }
+    ctx.lineTo(W, H);
+    ctx.closePath();
+    ctx.fill();
+
+    // Snowplow Tractor
+    ctx.save();
+    ctx.translate(tractor.x, H - 34);
+    if (tractor.dir < 0) ctx.scale(-1, 1);
+    // Headlight beam
+    ctx.fillStyle = "rgba(254, 240, 138, 0.24)";
+    ctx.beginPath(); ctx.moveTo(28, -14); ctx.lineTo(115, -34); ctx.lineTo(115, 6); ctx.closePath(); ctx.fill();
+    // Body & Cabin
+    ctx.fillStyle = "#eab308";
+    ctx.fillRect(-24, -24, 42, 18);
+    ctx.fillRect(-16, -40, 22, 18);
+    ctx.fillStyle = "#bae6fd";
+    ctx.fillRect(-12, -37, 14, 11);
+    // Red Plow Blade
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath(); ctx.moveTo(20, -22); ctx.lineTo(32, -26); ctx.lineTo(36, 2); ctx.lineTo(20, 0); ctx.closePath(); ctx.fill();
+    // Wheels
+    ctx.fillStyle = "#1e293b";
+    ctx.beginPath(); ctx.arc(-16, -4, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(10, -2, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+
+    //Simulated Windows/Mac Taskbar strip at bottom
+    ctx.fillStyle = "rgba(10, 16, 28, 0.88)";
+    ctx.fillRect(0, H - 30, W, 30);
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "600 11px system-ui, sans-serif";
+    ctx.fillText("⊞ Пуск · DEEPSYQ Xmas PC активен (наведи мышь на сугробы выше!)", 14, H - 11);
+
+    // Spray & Sparkles
+    for (const sp of spray) {
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, sp.alpha);
+      ctx.fillStyle = sp.color;
+      ctx.beginPath(); ctx.arc(sp.x, sp.y, sp.r, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    // Falling Snowflakes
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    for (const f of flakes) {
+      ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  let last = performance.now();
+  function loop(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    step(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // Mobile Pricing Carousel
+  const grid = document.getElementById("xmasPricingGrid");
+  const prev = document.getElementById("xmasPrev");
+  const next = document.getElementById("xmasNext");
+  const dots = [].slice.call(document.querySelectorAll("#xmasDots button"));
+  const cards = [].slice.call(grid.querySelectorAll(".pkg-card"));
+  function setDot(i) {
+    prev.disabled = i === 0;
+    next.disabled = i === cards.length - 1;
+    dots.forEach((d, k) => d.setAttribute("aria-current", String(k === i)));
+  }
+  function goCard(i) {
+    i = Math.max(0, Math.min(cards.length - 1, i));
+    setDot(i);
+    const target = i === 0 ? 0 : cards[i].offsetLeft - (grid.clientWidth - cards[i].offsetWidth) / 2;
+    grid.scrollTo({ left: Math.max(0, target), behavior: "smooth" });
+  }
+  prev.addEventListener("click", () => goCard(0));
+  next.addEventListener("click", () => goCard(1));
+  dots.forEach((d, i) => d.addEventListener("click", () => goCard(i)));
+  grid.addEventListener("scroll", () => {
+    const idx = grid.scrollLeft > grid.clientWidth * 0.25 ? 1 : 0;
+    setDot(idx);
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>

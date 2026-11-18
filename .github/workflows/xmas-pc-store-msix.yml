@@ -1,0 +1,38 @@
+name: Build Deepsyq.XmasPC Store MSIX (9PDN61GVCSMJ)
+
+on:
+  push:
+    branches: [vsm-design-polish]
+    paths:
+      - 'desktop_xmas/**'
+      - '.github/workflows/xmas-pc-store-msix.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-msix:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Pillow for MSIX Store icons
+        run: python -m pip install --disable-pip-version-check Pillow==11.3.0
+      - name: Compile DEEPSYQ-Xmas-PC.exe
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path app/src/main/assets/downloads | Out-Null
+          C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /target:winexe /optimize+ /out:app/src/main/assets/downloads/DEEPSYQ-Xmas-PC.exe /r:System.dll,System.Drawing.dll,System.Windows.Forms.dll desktop_xmas/XmasPC.cs
+      - name: Package Deepsyq.XmasPC_1.0.0.0_x64.msix for Partner Center (9PDN61GVCSMJ)
+        run: python desktop_xmas/build_xmas_msix.py
+      - name: Upload Partner Center MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Deepsyq.XmasPC-Store-MSIX-9PDN61GVCSMJ
+          path: dist/Deepsyq.XmasPC_1.0.0.0_x64.msix
+          if-no-files-found: error
+          retention-days: 14
