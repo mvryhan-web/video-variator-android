@@ -63,7 +63,7 @@ export function decorateComposer(form,{settingsTarget=null}={}){
   orbBtn.setAttribute('aria-pressed','false');
   orbBtn.innerHTML='<div class="jarvis-mini-orb"><span class="jarvis-core"></span><span class="jarvis-ring"></span><span class="jarvis-ring ring-violet"></span></div>';
   const newVoice=import('./jarvix-new-voice.js');
-  void newVoice.catch(()=>{});
+  void newVoice.then(m=>m.installJarvixNewVoice?.()).catch(()=>{});
   orbBtn.onclick=e=>{
    e.preventDefault();
    void newVoice.then(({toggleJarvixNewVoice})=>toggleJarvixNewVoice()).catch(()=>{});

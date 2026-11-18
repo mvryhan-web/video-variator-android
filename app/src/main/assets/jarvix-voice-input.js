@@ -136,7 +136,9 @@ export function bindVoiceInput({mic,input,form,onError,getRecognizer=()=>window.
   };
 
   try{
+   window.__jarvixNewVoiceStop?.();
    pauseJarvisRecognition();
+   window.__jarvixStopComposerDictation=()=>stop({abort:true});
    recognition.start();
    display(true);
   }catch{

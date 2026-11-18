@@ -1283,17 +1283,18 @@ export function triggerVoiceLimitReached() {
 
 // Single source of truth for the sphere and the chat microphone stop button.
 export function isJarvisVoiceActive() {
-  return isJarvisActive;
+  return Boolean(isJarvisActive || (typeof window !== 'undefined' && window.__jarvixNewVoiceActive?.()));
 }
 function announceJarvisVoiceState() {
   if (typeof window !== 'undefined')
-    window.dispatchEvent(new CustomEvent('jarvix:voice-state', {detail:{active:isJarvisActive}}));
+    window.dispatchEvent(new CustomEvent('jarvix:voice-state', {detail:{active:isJarvisVoiceActive()}}));
 }
 export function activateJarvisVoice() {
   toggleJarvixNewVoice();
 }
 
 export function deactivateJarvisVoice() {
+  if (typeof window !== 'undefined') window.__jarvixNewVoiceStop?.();
   stopJarvixGuidedTour();
   cancelJarvixTurn();
   isJarvisActive = false;

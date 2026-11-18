@@ -132,6 +132,7 @@ HASH_REUSE_RELEASE_SETS = (
     frozenset({"canvas-workspace.css", "pricing-page.css", "account-settings.html"}),
     DESIGN_AUDIT_RELEASE,
     frozenset({"pricing-page.js", "pricing-page.css"}),
+    frozenset({"jarvix-new-voice.js", "jarvis-core.js", "jarvix-composer-design.js", "jarvix-composer.js", "jarvix-voice-input.js", "sw.js"}),
     frozenset({"auth-email.js", "auth-email.css"}),
     frozenset({"auth-email.css"}),
     frozenset({"auth-email.js", "auth-email.css", "jarvix-chat.js"}),

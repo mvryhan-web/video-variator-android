@@ -1,4 +1,4 @@
-import {bindVoiceInput} from './jarvix-voice-input.js?v=dictation-2';
+import {bindVoiceInput} from './jarvix-voice-input.js?v=dictation-3';
 import {decorateComposer} from './jarvix-composer-design.js';
 import {openHomeStudioSettings} from './home-studio-settings.js';
 import {validateAttachments} from './jarvix-conversations.js';

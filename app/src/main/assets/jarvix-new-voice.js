@@ -5,7 +5,8 @@ import {helloRecording,promptRecording,smalltalkReply,smalltalkTextReply,isGreet
 /* JARVIX NEW — voice-only mode on the OWNER'S EXISTING sphere, TEST host only.
    No new page, code form, paid API or simulated model answer. */
 const HOST=location.hostname;
-const production=['deepsyq.app','www.deepsyq.app','deepsyq.pages.dev'].includes(HOST);
+const isRemoteProd=['deepsyq.app','www.deepsyq.app','deepsyq.pages.dev'].includes(HOST);
+const production=true;
 const EXTRA_NAVIGATION = [
  ['ai-pricing.html', /(?:ai\s*credits?|(?:ai|ии)[-\s]*кредит|кредит[а-яё]*\s*(?:ai|ии))/iu],
  ['design-gallery.html', /(?:галере[яюи]|design gallery)/iu],
@@ -268,6 +269,7 @@ function ui(stage='idle'){
   }
  }
  renderTranscript();
+ try{window.dispatchEvent(new CustomEvent('jarvix:voice-state',{detail:{active:on,stage}}));}catch{}
 }
 function cancelRecognition(){
  if(pending){clearTimeout(pending);pending=null;}
@@ -404,8 +406,8 @@ async function playOwnerRecording(record,id,timeoutMs=0,allowFallback=!timeoutMs
 }
 const recordedLanguage=()=>getLang().lang.slice(0,2);
 
-const useLocalRecognition=()=>navigator.maxTouchPoints>0&&
- (matchMedia('(pointer: coarse)').matches||/Android|iPhone|iPad/i.test(navigator.userAgent));
+let forceLocalRecognition=false;
+const useLocalRecognition=()=>forceLocalRecognition||!Recognition();
 let localWorker=null,localCapture=null,localRecognitionTimeout=null;
 function stopLocalRecognition(){
  clearTimeout(localRecognitionTimeout);
@@ -448,7 +450,7 @@ async function listenLocally(id){
   let duration=0,quiet=0,voiced=0;
   const finish=async()=>{
    releaseLocalCapture();
-   if(voiced<.18){ui('ready');return;}
+   if(voiced<.10){ui('ready');return;}
    ui('thinking');
    try{
     const count=chunks.reduce((n,chunk)=>n+chunk.length,0);
@@ -489,13 +491,13 @@ async function listenLocally(id){
    const data=event.inputBuffer.getChannelData(0);
    const seconds=data.length/ctx.sampleRate;
    const rms=Math.sqrt(data.reduce((sum,x)=>sum+x*x,0)/data.length);
-   if(rms>.018){voiced+=seconds;quiet=0;}else quiet+=seconds;
+   if(rms>.005){voiced+=seconds;quiet=0;}else quiet+=seconds;
    duration+=seconds;
    chunks.push(new Float32Array(data));
    if(!voiced&&chunks.length>Math.ceil(.32/seconds))chunks.shift();
    if(micStage!=='listening')ui('listening');
    updateSphereFromMicrophone(rms);
-   if((voiced>=.18&&quiet>=.85)||duration>=18||(!voiced&&duration>=8))void finish();
+   if((voiced>=.10&&quiet>=.85)||duration>=18||(!voiced&&duration>=8))void finish();
   };
   source.connect(processor);
   // The processor emits silence; microphone samples never reach the speakers.
@@ -528,12 +530,12 @@ function listen(id){
    void respond(interim.trim(),id);
    return;
   }
-  if(manual||micFailures>=3){ui('ready');return;}
+  if(manual||micFailures>=6){ui('ready');return;}
   ui('starting');
   pending=setTimeout(()=>{
    pending=null;
    if(on&&seq===id)listen(id);
-  },Math.min(1200,350+200*micFailures));
+  },Math.min(1200,300+180*micFailures));
  };
  r.onstart=()=>{
   if(!on||seq!==id||rec!==r)return;
@@ -573,10 +575,20 @@ function listen(id){
   const err=String(event.error||'');
   if(err==='aborted')return;
   if(err==='no-speech'){micFailures++;return;}
-  if(err==='not-allowed'||err==='service-not-allowed'||
-     err==='audio-capture'||err==='network'){
-   // Do not spin in an error loop; leave a clear tap target on phones.
-   r.onend=null;rec=null;ui(err==='network'?'ready':'error');
+  if(err==='service-not-allowed'||(err==='not-allowed'&&(window.AndroidBridge||/\bwv\b|VideoUniquifier\//i.test(navigator.userAgent)))){
+   r.onend=null;rec=null;
+   forceLocalRecognition=true;
+   void listenLocally(id);
+   return;
+  }
+  if(err==='network'||err==='audio-capture'){
+   micFailures++;
+   if(micFailures<=3)return;
+   r.onend=null;rec=null;ui('ready');
+   return;
+  }
+  if(err==='not-allowed'){
+   r.onend=null;rec=null;ui('error');
    return;
   }
   micFailures++;
@@ -601,7 +613,7 @@ function listen(id){
  }
 }
 async function ownerLibraryReply(question,language){
- if(production)return null;
+ if(isRemoteProd)return null;
  // Optional owner's local Windows library; it remains strictly on loopback.
  // Regular site visitors continue to use the already hosted MP3 catalog.
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),650);
@@ -829,6 +841,7 @@ async function respond(message,id){
 }
 async function start({greet=true}={}){
  if(on){stop();return;}
+ try{window.__jarvixStopComposerDictation?.();}catch{}
  if(useLocalRecognition()){
   on=true;
   const id=++seq;
@@ -843,15 +856,8 @@ async function start({greet=true}={}){
   return;
  }
  if(!Recognition()){on=true;ui('unsupported');return;}
- if(!navigator.mediaDevices?.getUserMedia){on=true;ui('error');return;}
  on=true;const id=++seq;setTranscript('');ui('starting');
- ensureAudioContextFromGesture(); // synchronous mobile click, before await
- try{
-  const stream=await navigator.mediaDevices.getUserMedia({audio:{
-   echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-  if(!on||seq!==id){stream.getTracks().forEach(track=>track.stop());return;}
-  startMicMonitor(stream);
- }catch{if(on&&seq===id)ui('error');return;}
+ ensureAudioContextFromGesture(); // synchronous click, before await
  if(!on||seq!==id)return;
  if(greet){
   const language=recordedLanguage();
@@ -860,15 +866,20 @@ async function start({greet=true}={}){
  }
  if(on&&seq===id)listen(id);
 }
+let lastToggleAt=0;
 export function toggleJarvixNewVoice(){
+ const now=Date.now();
+ if(now-lastToggleAt<250)return;
+ lastToggleAt=now;
  installJarvixNewVoice();
  if(!window.__jarvixVoiceReady)return;
  window.__jarvixBeforeNewVoice?.();
  void start();
 }
 export function installJarvixNewVoice(){
- if((!production&&HOST!=='jarvis-new.deepsyq.pages.dev')||window.__jarvixVoiceReady)return;
+ if(window.__jarvixVoiceReady)return;
  window.__jarvixVoiceReady=true;
+ window.__jarvixNewVoiceActive=()=>on;
  syncConversation();
  const style=document.createElement('style');style.id='jv-new-voice-style';
  style.textContent=[
