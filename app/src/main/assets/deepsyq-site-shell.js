@@ -37,28 +37,28 @@
     en: {
       Home: 'Home', Creation: 'Creation', Tools: 'Tools', Library: 'Library', Community: 'Community', More: 'More',
       home: 'Home', image: 'Image', video: 'Video', agents: 'JARVIX', pet: 'Virtual Pet', voice: 'Voice Agent', audio: 'Audio',
-      tools: 'Tools', apps: 'AI Apps', canvas: 'Canvas', legacy: 'Video Uniquifier', customVideo: 'Custom Video',
+      tools: 'Tools', apps: 'AI Apps', canvas: 'Canvas', legacy: 'Video Uniquifier', customVideo: 'Custom Video', xmasPc: 'Xmas PC',
       history: 'My Creations', share: 'Share link', inspiration: 'Inspiration', pricing: 'Pricing',
       back: '← Back to Deepsyq Home', privacy: 'Privacy', soon: 'soon', copied: 'Link copied', backBtn: 'Back'
     },
     ru: {
       Home: 'Главная', Creation: 'Создание', Tools: 'Инструменты', Library: 'Коллекция', Community: 'Сообщество', More: 'Еще',
       home: 'Главная', image: 'Фото', video: 'Видео', agents: 'JARVIX', pet: 'Питомец', voice: 'Голосовой агент', audio: 'Аудио',
-      tools: 'Инструменты', apps: 'AI Apps', canvas: 'Canvas', legacy: 'Видеоуникализатор', customVideo: 'Видео на заказ',
+      tools: 'Инструменты', apps: 'AI Apps', canvas: 'Canvas', legacy: 'Видеоуникализатор', customVideo: 'Видео на заказ', xmasPc: 'Xmas ПК',
       history: 'Мои работы', share: 'Поделиться', inspiration: 'Вдохновение', pricing: 'Тарифы',
       back: '← Назад в Deepsyq', privacy: 'Конфиденциальность', soon: 'скоро', copied: 'Ссылка скопирована', backBtn: 'Назад'
     },
     fr: {
       Home: 'Accueil', Creation: 'Création', Tools: 'Outils', Library: 'Bibliothèque', Community: 'Communauté', More: 'Plus',
       home: 'Accueil', image: 'Image', video: 'Vidéo', agents: 'JARVIX', pet: 'Animal virtuel', voice: 'Agent vocal', audio: 'Audio',
-      tools: 'Outils', apps: 'Apps IA', canvas: 'Canvas', legacy: 'Unificateur vidéo', customVideo: 'Vidéo sur mesure',
+      tools: 'Outils', apps: 'Apps IA', canvas: 'Canvas', legacy: 'Unificateur vidéo', customVideo: 'Vidéo sur mesure', xmasPc: 'Xmas PC',
       history: 'Mes créations', share: 'Partager', inspiration: 'Inspiration', pricing: 'Tarifs',
       back: '← Retour à Deepsyq', privacy: 'Confidentialité', soon: 'bientôt', copied: 'Lien copié', backBtn: 'Retour'
     },
     es: {
       Home: 'Inicio', Creation: 'Creación', Tools: 'Herramientas', Library: 'Biblioteca', Community: 'Comunidad', More: 'Más',
       home: 'Inicio', image: 'Imagen', video: 'Vídeo', agents: 'JARVIX', pet: 'Mascota 3D', voice: 'Agente de voz', audio: 'Audio',
-      tools: 'Herramientas', apps: 'AI Apps', canvas: 'Canvas', legacy: 'Unificador de vídeo', customVideo: 'Vídeo a medida',
+      tools: 'Herramientas', apps: 'AI Apps', canvas: 'Canvas', legacy: 'Unificador de vídeo', customVideo: 'Vídeo a medida', xmasPc: 'Xmas PC',
       history: 'Mis creaciones', share: 'Compartir enlace', inspiration: 'Inspiración', pricing: 'Precios',
       back: '← Volver a Deepsyq', privacy: 'Privacidad', soon: 'pronto', copied: 'Enlace copiado', backBtn: 'Atrás'
     }
@@ -131,6 +131,7 @@
     { label: 'Tools', icon: '⊞', url:'free-tools.html', key: 'tools' },
     { label: 'Video Uniquifier', icon: '▤', url:'video-uniquifier.html', key: 'legacy' },
     { label: 'Custom Video', icon: '★', url:'video-sur-mesure.html', key: 'customVideo' },
+    { label: 'Xmas PC', icon: '❄️', url:'xmas-pc.html', key: 'xmasPc' },
     { section:'Library' },
 
     { label: 'My Creations', icon: '▣', url:'my-creations.html', key: 'history' },
@@ -148,6 +149,7 @@
       ['pricing.html', 'ai-pricing.html'].includes(path) ? 'pricing' :
         ['index.html', 'video-uniquifier.html'].includes(path) ? 'legacy' :
           ['video-sur-mesure.html', 'video-sur-mesure'].includes(path) ? 'customVideo' :
+          ['xmas-pc.html', 'xmas-pc'].includes(path) ? 'xmasPc' :
           ['free-tools.html', 'audio-studio.html', 'avatar-studio.html', 'mobile-utility.html',
             'photo-collage.html', 'simple-background-remover.html', 'smart-reminders.html', 'teleprompter.html'].includes(path) ? 'tools' : '';
 
