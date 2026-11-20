@@ -1,5 +1,11 @@
 # DEEPSYQ ROADMAP — approved next product phase
 
+### 2026-11-20 — Xmas PC responsive release blocked
+
+- [x] Stage the responsive one-page candidate and verify the production asset scope.
+- [ ] Obtain the exact deployed Pages Worker, run the guarded one-page release, and verify `/xmas` on desktop and mobile. Cloudflare returned HTTP 404 on both Worker content endpoints.
+- [Production preflight](https://github.com/mvryhan-web/video-variator-android/actions/runs/44763779074)
+
 ### 2026-11-17 — Protected production SEO release completed
 
 - [x] GitHub Actions [44085547710](https://github.com/mvryhan-web/video-variator-android/actions/runs/44085547710) -> Cloudflare **`06e7a5a7-524e-4951-9f41-955b15bfa831`**; changed only `/video-sur-mesure.html` and `/sitemap.xml`, verified 2,845 other assets and Worker/bindings unchanged.

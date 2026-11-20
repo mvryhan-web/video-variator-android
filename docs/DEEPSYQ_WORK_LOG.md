@@ -1,5 +1,11 @@
 # DEEPSYQ — журнал работ и проверок
 
+### 2026-11-20 — Xmas PC responsive release blocked
+
+- Candidate `158b83761d57bd98bb28a057cb68c68f8146ce1b` aligns the tabletop, monitor, mobile controls and footer. `/xmas` redirects to `/xmas-pc.html`.
+- Production preflight found exactly one changed asset and 2,911 unchanged assets. Cloudflare returned HTTP 404 for the original Pages Worker on both content endpoints. Publishing stopped before a deployment was made.
+- [Production preflight](https://github.com/mvryhan-web/video-variator-android/actions/runs/44763779074)
+
 ### 2026-11-17 — SEO indexability: PUBLISHED AND LIVE-VERIFIED
 
 - Safe exact-two-file release: GitHub Actions [44085547710](https://github.com/mvryhan-web/video-variator-android/actions/runs/44085547710), Cloudflare production deployment **`06e7a5a7-524e-4951-9f41-955b15bfa831`**. Explicit scope **`/sitemap.xml`** and **`/video-sur-mesure.html`** only.
