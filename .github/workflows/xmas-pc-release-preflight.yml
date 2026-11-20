@@ -24,4 +24,12 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
-        run: python scripts/deepsyq_surgical_publish.py --mode plan --files xmas-pc.html --commit "$GITHUB_SHA"
+        run: |
+          set -euo pipefail
+          origin="$(PYTHONPATH=scripts python -c 'from deepsyq_surgical_publish import Cloudflare; print(Cloudflare().read_live()[2])')"
+          echo "Production source commit: $origin"
+          git worktree add --detach "$RUNNER_TEMP/xmas-live-source" "$origin"
+          cp scripts/deepsyq_surgical_publish.py scripts/email_worker_scope.py "$RUNNER_TEMP/xmas-live-source/scripts/"
+          cp app/src/main/assets/xmas-pc.html "$RUNNER_TEMP/xmas-live-source/app/src/main/assets/"
+          cd "$RUNNER_TEMP/xmas-live-source"
+          python scripts/deepsyq_surgical_publish.py --mode plan --files xmas-pc.html
