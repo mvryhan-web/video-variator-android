@@ -32,4 +32,23 @@ jobs:
           cp scripts/deepsyq_surgical_publish.py scripts/email_worker_scope.py "$RUNNER_TEMP/xmas-live-source/scripts/"
           cp app/src/main/assets/xmas-pc.html "$RUNNER_TEMP/xmas-live-source/app/src/main/assets/"
           cd "$RUNNER_TEMP/xmas-live-source"
+          python - <<'PY'
+          from pathlib import Path
+          script = Path("scripts/deepsyq_surgical_publish.py")
+          source = script.read_text()
+          anchor = "HASH_REUSE_RELEASE_SETS = (\n"
+          assert source.count(anchor) == 1
+          script.write_text(source.replace(anchor, anchor + '    frozenset({"xmas-pc.html"}),\n', 1))
+          PY
           python scripts/deepsyq_surgical_publish.py --mode plan --files xmas-pc.html
+          PYTHONPATH=scripts python - <<'PY'
+          from urllib.parse import quote
+          from deepsyq_surgical_publish import API, Cloudflare, MAX_FILE_BYTES, insist
+          cf = Cloudflare()
+          _, _, _, worker, _ = cf.read_live()
+          response = cf.call("GET", f"{API}/accounts/{cf.account}/workers/scripts/{quote(worker, safe='')}")
+          mime = response.headers.get("Content-Type", "").lower()
+          insist(100 <= len(response.content) <= MAX_FILE_BYTES, "Original Worker bytes unavailable")
+          insist("javascript" in mime or mime.startswith("multipart/form-data"), "Original Worker format unsupported")
+          print("Canonical production Worker payload verified")
+          PY
