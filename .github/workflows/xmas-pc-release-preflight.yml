@@ -46,7 +46,7 @@ jobs:
           from deepsyq_surgical_publish import API, Cloudflare, MAX_FILE_BYTES, insist
           cf = Cloudflare()
           _, _, _, worker, _ = cf.read_live()
-          response = cf.call("GET", f"{API}/accounts/{cf.account}/workers/scripts/{quote(worker, safe='')}")
+          response = cf.call("GET", f"{API}/accounts/{cf.account}/workers/scripts/{quote(worker, safe='')}/content/v2")
           mime = response.headers.get("Content-Type", "").lower()
           insist(100 <= len(response.content) <= MAX_FILE_BYTES, "Original Worker bytes unavailable")
           insist("javascript" in mime or mime.startswith("multipart/form-data"), "Original Worker format unsupported")
