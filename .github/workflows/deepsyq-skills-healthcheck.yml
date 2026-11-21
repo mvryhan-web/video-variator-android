@@ -1,0 +1,56 @@
+name: DEEPSYQ Skills read-only healthcheck
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - '.github/skills/**'
+      - '.agents/skills/**'
+      - 'tools/ponytail/pilot/**'
+      - '.github/workflows/deepsyq-skills-healthcheck.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-skills:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate installed skill names, metadata and latest-owner rules (offline)
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          skills = [
+              *['.github/skills/deepsyq-' + name + '/SKILL.md' for name in [
+                'browser-qa', 'e2e-testing', 'frontend-review', 'reality-checker',
+                'security-review', 'tdd-workflow']],
+              '.agents/skills/ponytail/SKILL.md',
+              '.agents/skills/graphify/SKILL.md',
+          ]
+          assert len(skills) == 8
+          for file in skills:
+              p = Path(file)
+              text = p.read_text(encoding='utf-8')
+              frontmatter = re.match(r'\A---\s*\n(.*?)\n---\s*\n', text, re.S)
+              assert frontmatter, f'Missing YAML frontmatter: {file}'
+              header = frontmatter.group(1)
+              expected = p.parent.name
+              found = re.search(r'^name:\s*([\w-]+)\s*$', header, re.M)
+              assert found and found.group(1) == expected, f'Bad skill name: {file}'
+              assert re.search(r'^description:\s*\S', header, re.M), f'No description: {file}'
+              assert 'AGENTS.md' in text, f'No owner gate: {file}'
+              assert 'docs/DEEPSYQ_GRAPHIFY_LATEST_BASELINE.md' in text, f'Outdated baseline: {file}'
+              if file.startswith('.github/skills/'):
+                  assert 'old A/B/C/D are retired' in text, f'Old role instruction: {file}'
+              print('SKILL_METADATA_OK:', expected)
+          print('PASS: 8 installed skill definitions; runtime client activation not asserted')
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Ponytail regression pilot, no external services
+        run: |
+          node --check tools/ponytail/pilot/before.mjs
+          node --check tools/ponytail/pilot/after.mjs
+          node --test tools/ponytail/pilot/predicate.test.mjs
