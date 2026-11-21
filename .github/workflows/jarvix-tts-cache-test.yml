@@ -1,0 +1,34 @@
+name: JARVIX private TTS disk cache (no spend)
+on:
+  pull_request:
+    paths:
+      - 'server/jarvix-local-voice.js'
+      - 'server/jarvix-tts-cache.js'
+      - 'tests/jarvix-local-voice.test.mjs'
+      - 'tests/jarvix-tts-cache.test.mjs'
+      - '.github/workflows/jarvix-tts-cache-test.yml'
+  push:
+    paths:
+      - 'server/jarvix-local-voice.js'
+      - 'server/jarvix-tts-cache.js'
+      - 'tests/jarvix-local-voice.test.mjs'
+      - 'tests/jarvix-tts-cache.test.mjs'
+      - '.github/workflows/jarvix-tts-cache-test.yml'
+  workflow_dispatch:
+jobs:
+  jarvix-tts-cache:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Native private cache and existing voice tests (offline)
+        env:
+          JARVIX_TTS_CACHE_ENABLED: 'false'
+          JARVIX_VOICE_URL: ''
+          JARVIX_VOICE_TOKEN: ''
+          OPENAI_API_KEY: ''
+          GEMINI_API_KEY: ''
+        run: node --test tests/jarvix-tts-cache.test.mjs tests/jarvix-local-voice.test.mjs
