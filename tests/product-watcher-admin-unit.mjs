@@ -274,3 +274,18 @@ test('owner can read safe deployment preflight while disabled; public users cann
  assert.equal(ownerView.body.backupVerified,false);
  assert.ok(f.pool.seen.every(([sql])=>/^\s*SELECT/i.test(sql)));
 });
+
+// The owner status endpoint must match the explicit 15m TEST Cron schedule.
+test('owner status detects recent 15m Cloudflare Cron without relaxing legacy heartbeat',async()=>{
+ const twelve=new Date(Date.now()-12*60*1000);
+ const recent=new Date(Date.now()-60*1000);
+ const cloud=fixture({pool:db({heartbeat:twelve,runAt:recent}),settings:{...env,PRODUCT_WATCHER_SCHEDULER_MODE:'cloudflare-cron-15m'}});
+ const cloudStatus=await cloud.call('GET','/api/product-watcher/admin/status');
+ assert.equal(cloudStatus.body.schedulerActive,true);
+ const legacy=fixture({pool:db({heartbeat:twelve,runAt:recent})});
+ const legacyStatus=await legacy.call('GET','/api/product-watcher/admin/status');
+ assert.equal(legacyStatus.body.schedulerActive,false);
+ const old=fixture({pool:db({heartbeat:new Date(Date.now()-21*60*1000),runAt:recent}),settings:{...env,PRODUCT_WATCHER_SCHEDULER_MODE:'cloudflare-cron-15m'}});
+ const staleStatus=await old.call('GET','/api/product-watcher/admin/status');
+ assert.equal(staleStatus.body.schedulerActive,false);
+});

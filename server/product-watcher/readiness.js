@@ -1,3 +1,4 @@
+import { watcherHeartbeatTtlMs } from './scheduler.js';
 /**
  * Product Watcher deployment preflight.
  * Read-only; no schema creation, no secrets returned, no external network.
@@ -82,7 +83,7 @@ export async function watcherDeploymentReadiness(pool,{env={},now=()=>new Date()
       const latest=scheduler.rows?.[0]?.heartbeat_at?new Date(scheduler.rows[0].heartbeat_at).getTime():null;
       const instant=now().getTime();
       status.schedulerHeartbeatFresh=Number.isFinite(latest)&&Number.isFinite(instant)&&
-        latest<=instant&&(instant-latest)<180000;
+        latest<=instant&&(instant-latest)<watcherHeartbeatTtlMs(env);
       if(!status.schedulerHeartbeatFresh)status.blockers.push('WATCHER_WORKER_NOT_SEEN');
     }
   }catch{
