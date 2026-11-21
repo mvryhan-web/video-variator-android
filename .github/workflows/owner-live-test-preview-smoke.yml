@@ -1,0 +1,31 @@
+name: Owner TEST Render live acceptance
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'tests/owner-live-preview-smoke.mjs'
+      - '.github/workflows/owner-live-test-preview-smoke.yml'
+permissions:
+  contents: read
+jobs:
+  live-preview-acceptance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Check actually deployed TEST service HTTP, private SVG jobs and mobile/desktop Home
+        run: node tests/owner-live-preview-smoke.mjs
+      - name: Keep real desktop and mobile screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-actual-test-render-screenshots
+          path: test-results/live-preview/
+          if-no-files-found: ignore
+          retention-days: 7
