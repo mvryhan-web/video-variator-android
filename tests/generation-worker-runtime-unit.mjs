@@ -7,6 +7,8 @@ test('generation worker is fail-closed until DB, studio, polling and provider ke
  assert.equal(generationWorkerReady({},pool).ready,false);
  assert.equal(generationWorkerReady({AI_STUDIO_ENABLED:'true',AI_STUDIO_BACKGROUND_POLLING:'true'},pool).reason,'NO_AI_PROVIDER_KEY');
  assert.deepEqual(generationWorkerReady({AI_STUDIO_ENABLED:'true',AI_STUDIO_BACKGROUND_POLLING:'true',BYTEPLUS_API_KEY:'fixture'},pool),{ready:true,reason:null});
+ assert.deepEqual(generationWorkerReady({AI_STUDIO_ENABLED:'true',AI_STUDIO_BACKGROUND_POLLING:'true',OPENAI_API_KEY:'fixture'},pool),{ready:true,reason:null},'OpenAI-only Studio Image provider is a valid worker provider');
+ assert.equal(generationWorkerReady({AI_STUDIO_ENABLED:'true',AI_STUDIO_BACKGROUND_POLLING:'true',OPENAI_API_KEY:''},pool).reason,'NO_AI_PROVIDER_KEY');
  assert.equal(generationWorkerReady({AI_STUDIO_ENABLED:'true',AI_STUDIO_BACKGROUND_POLLING:'false',BYTEPLUS_API_KEY:'fixture'},pool).reason,'BACKGROUND_POLLING_DISABLED');
 });
 
@@ -23,6 +25,12 @@ test('reference cleanup-only worker starts without provider key, studio or walle
  assert.deepEqual(generationWorkerPlan(env,null,{storageConfigured:true}),{
   ready:false,recovery:false,cleanup:false,reason:'DATABASE_NOT_CONFIGURED'
  });
+});
+
+test('BASE #12: OpenAI-only provider config enables recovery, not cleanup without storage',()=>{
+ const env={AI_STUDIO_ENABLED:'true',AI_STUDIO_BACKGROUND_POLLING:'true',OPENAI_API_KEY:'fixture'};
+ assert.deepEqual(generationWorkerPlan(env,{},{}),{ready:true,recovery:true,cleanup:false,reason:null});
+ assert.equal(generationWorkerPlan({...env,AI_STUDIO_BACKGROUND_POLLING:'false'},{}).ready,false);
 });
 
 test('generation polling and cleanup can coexist without changing existing recovery gates',()=>{
