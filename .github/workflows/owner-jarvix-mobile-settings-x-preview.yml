@@ -1,0 +1,129 @@
+name: Owner D27 JARVIX mobile settings X isolated TEST
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'app/src/main/assets/home-studio-settings.js'
+      - '.github/workflows/owner-jarvix-mobile-settings-x-preview.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    if: github.head_ref == 'owner-jarvix-mobile-settings-close-20261109' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+      PREVIEW_BRANCH: jarvix-x-mobile-20261109
+      NODE_ENV: test
+      AI_BILLING_MODE: test
+      OPENAI_API_KEY: ''
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify current DEV ancestry and surgical source
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/deepsyq-platform:refs/remotes/origin/deepsyq-platform
+          git merge-base --is-ancestor refs/remotes/origin/deepsyq-platform HEAD
+          git diff --name-only refs/remotes/origin/deepsyq-platform HEAD > /tmp/changed.txt
+          while IFS= read -r f; do
+            case "$f" in
+              app/src/main/assets/home-studio-settings.js|.github/workflows/owner-jarvix-mobile-settings-x-preview.yml) ;;
+              *) echo "::error::Unexpected changed file $f"; exit 1 ;;
+            esac
+          done < /tmp/changed.txt
+          grep -Fxq app/src/main/assets/home-studio-settings.js /tmp/changed.txt
+          node --check app/src/main/assets/home-studio-settings.js
+      - name: Install no-spend browser dependencies
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Snapshot canonical MAIN deployment
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" > /tmp/project-before.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const r=JSON.parse(fs.readFileSync('/tmp/project-before.json','utf8'));
+          if(!r.success||r.result?.production_branch!=='deepsyq-platform'||!r.result?.canonical_deployment?.id)
+            throw Error('Cloudflare MAIN preflight failed');
+          fs.appendFileSync(process.env.GITHUB_ENV,'MAIN_BEFORE='+r.result.canonical_deployment.id+'\n');
+          JS
+      - name: Deploy to isolated Cloudflare preview ONLY
+        run: |
+          set -euo pipefail
+          test "$PREVIEW_BRANCH" != "deepsyq-platform"
+          npx --yes wrangler@4 pages deploy app/src/main/assets --project-name=deepsyq --branch="$PREVIEW_BRANCH" --commit-hash="${{ github.event.pull_request.head.sha }}" | tee /tmp/deploy.log
+          URL=$(grep -Eo 'https://[a-z0-9-]+\.deepsyq\.pages\.dev' /tmp/deploy.log | head -n1)
+          test -n "$URL"
+          test "$URL" != "https://deepsyq.pages.dev"
+          echo "TEST_URL=$URL" >> "$GITHUB_ENV"
+          echo "LIVE_TEST_URL=$URL"
+      - name: Verify real mobile Studio Settings X, no overlap, click-to-close
+        run: |
+          mkdir -p artifacts/settings-x
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          const base=process.env.TEST_URL;
+          assert.match(base,/^https:\/\/[a-z0-9-]+\.deepsyq\.pages\.dev$/);
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          try{
+            for(const [name,width,mobile] of [['mobile390',390,true],['mobile320',320,true],['desktop',1365,false]]){
+              const ctx=await browser.newContext({viewport:{width,height:844},isMobile:mobile,hasTouch:mobile});
+              try{
+                const page=await ctx.newPage();
+                const res=await page.goto(base+'/jarvix-chat.html',{waitUntil:'domcontentloaded',timeout:30000});
+                assert.equal(res?.status(),200,name+' page');
+                await page.locator('.j-settings-shortcut').first().click({timeout:20000});
+                const f=page.frameLocator('#homeStudioSettingsFrame');
+                await f.locator('#studioSettingsHub[open]').waitFor({state:'visible',timeout:20000});
+                const close=f.locator('#studioSettingsHub > button:nth-child(2)');
+                const picker=f.locator('#studioTypePicker');
+                const x=await close.boundingBox(),mode=await picker.boundingBox();
+                assert.ok(x&&mode,name+' settings elements visible');
+                const css=await close.evaluate(el=>({top:getComputedStyle(el).top,marginTop:getComputedStyle(el).marginTop,position:getComputedStyle(el).position,hoverNone:matchMedia('(hover:none)').matches,pointerCoarse:matchMedia('(pointer:coarse)').matches,mediaRule:matchMedia('(hover:none) and (pointer:coarse) and (max-width:500px)').matches}));
+                console.log('GEOMETRY '+name+' '+JSON.stringify({x,mode,css,gap:mode.y-x.y-x.height}));
+                await page.screenshot({path:'artifacts/settings-x/'+name+'.png'});
+                assert.ok(x.y+x.height <= mode.y-4,name+' close X overlaps Image/Video/Audio first row');
+                await close.click({timeout:10000});
+                await f.locator('#studioSettingsHub[open]').waitFor({state:'hidden',timeout:10000});
+                console.log('PASS '+name+' mode gap '+(mode.y-x.y-x.height));
+              }finally{await ctx.close();}
+            }
+          }finally{await browser.close();}
+          JS
+      - name: Prove MAIN was unchanged
+        if: success()
+        run: |
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/deepsyq" > /tmp/project-after.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const r=JSON.parse(fs.readFileSync('/tmp/project-after.json','utf8'));
+          if(!r.success||r.result?.canonical_deployment?.id!==process.env.MAIN_BEFORE)
+            throw Error('MAIN changed during TEST');
+          console.log('MAIN_UNCHANGED_VERIFIED');
+          JS
+      - name: Save screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-d27-settings-x-live-screens
+          path: artifacts/settings-x/*.png
+          if-no-files-found: ignore
+          retention-days: 7
