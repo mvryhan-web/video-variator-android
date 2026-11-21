@@ -342,7 +342,16 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(result.operation){await pool.query("UPDATE vv_generation_jobs SET status='processing',operation=$2 WHERE id=$1",[id,result.operation]);return;}
   let asset=null,media=result.bytes||null;
   if(objectStorage.configured&&result.bytes){
-   try{asset=await objectStorage.putGeneration({userId,jobId:id,mime:result.mime,bytes:result.bytes});media=null;}
+   try{
+    asset=await objectStorage.putGeneration({userId,jobId:id,mime:result.mime,bytes:result.bytes});
+    // A fulfilled S3 adapter must supply a real, content-bound receipt.
+    // Otherwise a paid customer could be charged without downloadable media.
+    if(!asset||asset.storage!=='s3'||typeof asset.key!=='string'||!asset.key.trim()||
+       asset.mime!==result.mime||asset.size!==result.bytes.length||
+       asset.sha256!==createHash('sha256').update(result.bytes).digest('hex'))
+      throw Error('OBJECT_STORAGE_INVALID_RECEIPT');
+    media=null;
+   }
    catch(_){
     // A produced Video is already a potentially billable provider result.
     // S3 outage is not proof that the AI call failed: never refund a held
@@ -356,7 +365,9 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
      }});
      return;
     }
-    await failTerminalProviderJob(id,userId,Error('OBJECT_STORAGE_FAILED'),'storage');
+    // Provider output may have already incurred a charge. Preserve HELD
+    // credits for owner review; a storage failure must not mint a refund.
+    await pool.query("UPDATE vv_generation_jobs SET status='failed',error='OBJECT_STORAGE_FAILED',error_message=CASE WHEN $2 THEN 'AI_WALLET_REVIEW_REQUIRED' ELSE NULL END,metadata=COALESCE(metadata,'{}'::jsonb)||jsonb_build_object('failure',jsonb_build_object('category','storage','stage','storage','sourceCode','OBJECT_STORAGE_FAILED','retryable',false,'providerOutputProduced',true)),failed_at=NOW() WHERE id=$1",[id,walletEnabled()]);
     return;
    }
   }

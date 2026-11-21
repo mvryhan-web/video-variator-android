@@ -340,6 +340,12 @@ async function simulateS3Failure(kind,{dbOutage=false,alreadyHasOperation=false}
    if(dbOutage)throw Error('db unavailable');
    return {rows:[{kind}]};
   }
+  if(sql.startsWith("UPDATE vv_generation_jobs SET status='failed',error='OBJECT_STORAGE_FAILED'")){
+   assert.equal(kind,'image');
+   assert.equal(args[0],'video-existing');
+   assert.equal(args[1],true,'billable provider output remains held for owner review');
+   return {rows:[]};
+  }
   if(sql.includes("operation IS NULL")){
    assert.equal(kind,'video');
    assert.match(sql,/kind='video'/);
@@ -387,12 +393,14 @@ test('BASE #5: failed S3 after polled Video keeps saved operation for result ret
  assert.ok(x.statements[1].sql.includes('operation IS NULL'));
 });
 
-test('BASE #5: old Image storage-failure handling stays unchanged (B touches only Video)',async()=>{
+test('BASE #5 / #51: Image S3 failure after billable output holds credits for owner reconciliation',async()=>{
  const x=await simulateS3Failure('image');
  assert.equal(x.error,null);
  assert.equal(x.quarantines,0);
- assert.equal(x.released,1);
- assert.equal(x.walletSettled,0);
+ assert.equal(x.released,0,'do not treat completed paid generation as a free refund');
+ assert.equal(x.walletSettled,0,'neither capture nor refund on failed storage');
+ assert.match(x.statements.at(-1).sql,/AI_WALLET_REVIEW_REQUIRED/);
+ assert.match(x.statements.at(-1).sql,/providerOutputProduced/);
 });
 
 test('BASE #5: S3 and database both down cannot invent a captured/refunded Video result',async()=>{
