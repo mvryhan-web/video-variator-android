@@ -607,7 +607,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  }});
  app.post('/api/studio/compare/mock-run',auth,generationUser,async(req,res)=>{res.set('Cache-Control','private, no-store');try{
   const context=await buildCompareContext(req);
-  const verdict=validateCompareAiPolicy({...req.body,userConsent:req.body?.userConsent??req.body?.consent??true},context);
+  const verdict=validateCompareAiPolicy({...req.body,userConsent:req.body?.userConsent??req.body?.consent},context);
   const planId=typeof req.body?.compareId==='string'&&/^[a-zA-Z0-9_-]{4,64}$/.test(req.body.compareId)?req.body.compareId:`cmp_${randomUUID().replace(/-/g,'').slice(0,16)}`;
   const plan={...verdict,id:planId};
   const result=await executeCompareAiMock(plan,{
