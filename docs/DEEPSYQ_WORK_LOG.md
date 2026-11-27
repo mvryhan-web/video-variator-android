@@ -1,5 +1,70 @@
 # DEEPSYQ — журнал работ и проверок
 
+### 2026-11-27 — Programmatic SEO & GEO Wave 2 (+30 Pages, 140 Canonical URLs) + Free Directories (PUBLISHED & LIVE-VERIFIED)
+
+- **Cloudflare Production Deployment:** `https://273b9a5c.deepsyq.pages.dev` (32 files uploaded, 3,329 unchanged, Worker compiled & verified).
+- **30 новых целевых страниц (`scripts/build_pseo_wave2.mjs`):**
+  - **12 конвертеров и утилит:** `mp4-to-gif.html`, `mov-to-mp4.html`, `webm-to-mp4.html`, `video-to-audio.html`, `compress-pdf-online-free.html`, `split-pdf-online-free.html`, `sign-pdf-online-free.html`, `pdf-to-jpg-free.html`, `jpg-to-pdf-free.html`, `resize-image-online-free.html`, `crop-video-online-free.html`, `speed-up-video-online-free.html`.
+  - **8 GEO-сравнений конкурентов:** `deepsyq-vs-premiere-pro.html`, `deepsyq-vs-davinci-resolve.html`, `deepsyq-vs-sora.html`, `deepsyq-vs-hailuo.html`, `deepsyq-vs-midjourney.html`, `deepsyq-vs-clipchamp.html`, `deepsyq-vs-veed.html`, `deepsyq-vs-smallpdf.html`.
+  - **10 мультиязычных страниц (FR / ES / RU / DE / PT):** `fr-compresser-video-gratuit.html`, `fr-fusionner-pdf-gratuit.html`, `fr-enlever-fond-image-gratuit.html`, `es-comprimir-video-gratis.html`, `es-unir-pdf-gratis.html`, `ru-szhat-video-onlajn-besplatno.html`, `ru-obedinit-pdf-besplatno.html`, `de-pdf-zusammenfuegen-kostenlos.html`, `de-video-komprimieren-kostenlos.html`, `pt-editor-de-video-online-gratis.html`.
+- **Карта сайта и AI-поиск:** `sitemap.xml` расширен до **140 канонических URL**, `llms-full.txt` расширен до 32 185 байт.
+- **Бесплатные каталоги:** поданы и подтверждены **SaaSHub** (автоматически), **AlternativeTo** и **FutureTools**; платные каталоги (`Toolify` $99, `TAAFT` $49, `AIxploria` $99, `AITools.fyi` $30) пропущены ($0 затрат).
+- **Подтверждённые проверки:** локальные тесты SEO/PWA **6/6 PASS**; боевые проверки на `https://deepsyq.app` HTTP 200, 140 `<loc>` в `sitemap.xml`; IndexNow-пинг по всем 30 новым URL принят (**Bing: HTTP 200**, **Yandex: HTTP 200**).
+
+### 2026-11-27 — 7-Point Growth Engine: Programmatic SEO, GEO, Viral Canvas Loop & Distribution Kits (PUBLISHED & LIVE-VERIFIED)
+
+- **Cloudflare Production Deployment:** `https://26b2a3a0.deepsyq.pages.dev` (32 files uploaded, 3,299 unchanged, Worker compiled & verified).
+- **#1 Programmatic SEO & #2 GEO (26 новых публичных страниц на EN/FR/ES/RU/DE):**
+  - Создан генератор `scripts/build_pseo_geo_pages.mjs` и сгенерированы 26 целевых страниц: 10 конвертеров/утилит (`png-to-jpg.html`, `jpg-to-png.html`, `webp-to-png.html`, `heic-to-jpg.html`, `mp4-to-mp3.html`, `compress-video-for-whatsapp.html`, `cut-video-without-watermark.html`, `remove-white-background-free.html`, `add-music-to-video-online.html`, `merge-pdf-free-online.html`), 6 GEO-сравнений конкурентов (`deepsyq-vs-capcut.html`, `deepsyq-vs-canva.html`, `deepsyq-vs-runway.html`, `deepsyq-vs-kling.html`, `deepsyq-vs-ilovepdf.html`, `best-free-capcut-alternative.html`) с прямыми ответами для ChatGPT/Perplexity/Gemini и таблицами цен, а также 10 мультиязычных лендингов (`fr-*`, `es-*`, `ru-*`, `de-*`).
+  - Обновлён `sitemap.xml` (84 → **110 канонических URL**) и `llms-full.txt` (23 297 байт с полными GEO-описаниями).
+- **#7 Виральный цикл в Canvas Studio (`canvas.html`, `canvas-workspace.css`, `canvas-workspace.js`, `deepsyq-i18n.js`):**
+  - После бесплатного экспорта видео или PNG появляется компактная карточка `#cwGrowthToast` с кнопками `↗ Share DeepSyQ` (Web Share API / копирование ссылки) и `⚡ $0.99 Trial (100 AI Credits)`, локализованная на 4 языка (`EN/RU/FR/ES`).
+- **#3–#6 Готовые пакеты дистрибуции (без автоотправки писем и спама):**
+  - `docs/DEEPSYQ_DIRECTORIES_KIT.md` (#3 каталоги и Product Hunt), `docs/DEEPSYQ_REDDIT_QUORA_KIT.md` (#4 анти-маркетинг Reddit/Quora), `docs/DEEPSYQ_SHORTS_PINTEREST_KIT.md` (#5 10 сценариев Shorts/TikTok/Pinterest), `docs/DEEPSYQ_B2B_OUTREACH_KIT.md` (#6 B2B-шаблоны для `video-sur-mesure.html`).
+- **Подтверждённые проверки:** локальные тесты (`node --check` + `tests/deepsyq-pwa-and-seo-integrity.test.mjs` + `tests/agent-c-public-seo-hygiene-unit.mjs`) — **6/6 PASS**; боевые проверки на `https://deepsyq.app` — HTTP 200 для всех выборочных страниц, 110 `<loc>` в `sitemap.xml`, `cwGrowthToast` и `20261127-growth1` на `canvas.html`; отправлен пинг IndexNow для всех 26 новых страниц + `canvas.html` (`www.bing.com/indexnow`: **HTTP 200**, `yandex.com/indexnow`: **HTTP 200**).
+
+### 2026-11-26 — Durable Billing & Stripe Fulfillment Fix Across All 4 Payment Systems (PUBLISHED & LIVE-VERIFIED)
+
+- **Cloudflare Production Deployment:** `https://858e67c0.deepsyq.pages.dev` (6 files uploaded, 3,299 unchanged, Worker compiled & verified; full rollback backup in `backups/billing_fix_20261126/`).
+- **1. Все 5 тарифов (`Trial $0.99`, `Basic $9`, `Pro $24`, `Business $99`, `Lifetime €2,999`):**
+  - Устранён критический баг хранения активного тарифа и кредитов в оперативной памяти одного edge-сервера Cloudflare (`edgeUsers` / `edgeWallets`).
+  - Статусы тарифов сохраняются постоянно в Cloudflare R2 (`billing/plans/by-user/` и `billing/plans/by-email/`), а AI-кредиты тарифов (`+100 / +750 / +2250 / +15000`) зачисляются атомарно и идемпотентно в Neon PostgreSQL (`grantPlanCredits` с `pg_advisory_xact_lock` в `server/edge-credit-fulfillment.js`).
+  - Добавлена автосинхронизация с Stripe (`syncUserStripePayments` + `POST /api/billing/sync`), вызываемая автоматически в `/api/me`, `/api/ai-wallet/balance` и `/api/ai-wallet/history` — автоматически восстанавливает уже оплаченные сессии (включая тестовый `$0.99 Trial`), плюс обработка продлений `invoice.paid` и отмен `customer.subscription.deleted` в вебхуке Stripe.
+  - В `pricing-page.js` добавлена обязательная авторизация перед оплатой тарифов и убран анонимный fallback на Stripe-ссылки без `client_reference_id`; все новые UI-строки локализованы на 4 языка (`EN/RU/FR/ES`) в `deepsyq-i18n.js`.
+- **2. Пакеты AI-кредитов (`$10` – `$100,000`):**
+  - Исправлен `success_url` / `cancel_url` на `/pricing.html?ai_checkout=returned&session_id={CHECKOUT_SESSION_ID}#credits` вместо редиректа `/generate-studio.html`, ломавшего параметры возврата.
+  - Исправлен баг отображения пустых дат и `0` в истории AI-кошелька (`pricing-wallet.js` + двойные camelCase/snake_case поля в `edge-credit-fulfillment.js`), добавлена авто-перезагрузка кошелька после оплаты.
+- **3. Xmas PC и 3D-темы для телефонов (`xmas-pc.html`):**
+  - Вебхук Stripe теперь обрабатывает и `xmas_themes` (сохраняет чек в R2 `billing/xmas-themes/`, выдаёт лицензию Xmas PC для VIP-комбо в Neon и отправляет письмо с дедупликацией даже если покупатель закрыл браузер до возврата на сайт).
+- **4. Видео на заказ (`video-sur-mesure.html` / `/api/sales/*`):**
+  - Заказы больше не теряются между edge-узлами Cloudflare: сохраняются в R2 (`sales/orders/<orderNumber>.json`) с глобально уникальными номерами (`DSQ-XXXX-YYYY`), вебхук и `GET /api/sales/orders/:orderNumber?session_id=...` переводят оплаченные заказы в статус `paid` / `queued`, а в панели владельца (`account-settings.html` + `/api/admin/stats`) отображаются подтверждённые оплаты из R2 (`billing/revenue/`).
+- **Проверка:** `tests/billing-durable-fulfillment.test.mjs`, `tests/agent-a40-pricing-wallet-privacy.test.mjs`, `tests/generation-billing-unit.mjs`, `tests/studio-credit-wallet-unit.mjs` — **100% PASS**; боевые эндпоинты и ассеты проверены на `https://deepsyq.app`.
+
+### 2026-11-26 — Global SEO, GEO & AEO Master Execution (PUBLISHED & LIVE-VERIFIED)
+
+- **Cloudflare Production Deployment:** `https://9fb5a31d.deepsyq.pages.dev` (85 files uploaded, 3,220 unchanged, Worker compiled & verified; full rollback backup in `backups/seo_master_20261126/`).
+- **P0 Technical SEO & Indexability Fixes:**
+  - Removed 5 redirecting-to-noindex URLs (`generate-studio.html`, `jarvix-studio.html`, `ai-agents.html`, `audio-studio.html`, `avatar-studio.html`), duplicate `/xmas` entries, and `.txt` files from `sitemap.xml` while keeping all live JARVIX Chat redirects and `noindex` privacy intact.
+  - Fixed Xmas PC `?lang=en|ru|fr|es` canonical contradiction via surgical edge rewrite in `_worker.js` (`SEO_XMAS_LANG_CANONICAL_v1`): live verified self-referencing canonical, `html lang`, and localized titles/descriptions for all 4 languages.
+  - Removed unverified `AggregateRating` (`4.9`/`1420`) and trimmed keyword stuffing in `xmas-pc.html`; added `noindex,nofollow` to `xmas-desktop.html`; upgraded `robots.txt` for all major Search & AI Search bots + `sitemap-images.xml`.
+- **On-Page Metadata, Schema & Internal Linking (Zero UI/Functional Changes):**
+  - Added missing OG, `og:image`, Twitter Cards, and validated Schema.org JSON-LD (`<head>` only) across existing public pages (`pricing.html`, `video-uniquifier.html`, `video-sur-mesure.html`, `canvas.html`, `contact.html`, `jarvix.html`, `design-gallery.html`, etc.). Homepage `deepsyq.html`/`index.html` left 100% untouched.
+  - Eliminated 22 internal 302-to-noindex header links on dedicated free-tool pages and resolved the orphan page `design-gallery.html`.
+- **SEO Growth Engine Built & Published Live (39 New Public Pages):**
+  - **18 public AI SEO landing pages** (`ai-video-generator.html`, `ai-image-generator.html`, `text-to-video.html`, `image-to-video.html`, `text-to-image.html`, `ai-voice-generator.html`, `ai-audio-generator.html`, `ai-music-generator.html`, `ai-avatar-generator.html`, `ai-chat.html`, `ai-agents-platform.html`, `ai-animation-generator.html`, `ai-product-photography.html`, `ai-logo-generator.html`, `ai-video-ads.html`, `ai-storyboard-generator.html`, `ai-prompts.html`, `ai-tools.html`).
+  - **SEO Content Hub (`/guides.html`) + 20 practical SEO/GEO/AEO articles** (`guide-*.html`), plus updated `llms.txt`, `llms-full.txt`, and `sitemap.xml` (**84 canonical HTTP-200 URLs**).
+- **SEO Reports & Semantic Core:** Generated `DEEPSYQ_SEO_KEYWORDS.csv` (**100,000 unique keywords**, zero fabricated volumes/KD), `DEEPSYQ_SEO_AUDIT.md`, `DEEPSYQ_SEO_COMPETITORS.md`, `DEEPSYQ_SEO_URL_INVENTORY.csv`, `DEEPSYQ_SEO_CONTENT_PLAN.md`, `DEEPSYQ_SEO_MASTER_PLAN.md`, `DEEPSYQ_SEO_CHANGELOG.md`, `DEEPSYQ_SEO_PROGRESS.md`.
+- **Confirmed Verification:** `node --test` SEO suites **12/12 PASS**; local audit (100 HTML files) **0 broken links, 0 invalid JSON-LD, 0 orphans**; live Production audit **84/84 sitemap URLs HTTP 200 & self-canonical, 20/20 privacy/redirect/API guards PASS, 7/7 Search & AI bots HTTP 200**; IndexNow submitted (`api.indexnow.org`: 502, `bing.com`: 200, `yandex.com`: 200).
+- **Pending Owner/External Access:** Google Search Console sitemap submission & URL inspection, Bing Webmaster Tools check, Semrush/Keyword Planner volume enrichment, and owner-approved directory launches (Product Hunt / AlternativeTo / FutureTools).
+
+### 2026-11-18 — DEEPSYQ Xmas PC: 3 тарифа (9 € / 14 € / 19,99 €), выбор мира, лицензирование и десктоп-приложение
+
+- **Три рождественских тарифа в `app/src/main/assets/xmas-pc.html`:** `SINGLE WORLD` (9 €, зелёный), `FAMILY` (14 €, красный, до 5 ПК), `FULL CHRISTMAS COLLECTION` (19,99 €, золотой с бейджем «Лучшее предложение», все 10 миров и 20 живых сцен до 5 ПК). Убрана строка обязательного ввода Gmail перед покупкой.
+- **Выбор конкретного мира и 7 кнопок оплаты:** на карточках 10 миров добавлена кнопка «Выбрать для покупки» + апселл-баннер за 19,99 € при выборе >1 мира; в демо справа добавлена кнопка «🛒 Купить этот мир — от 9 €» с привязкой к текущему миру; подключены все 7 кнопок покупки и 4 языка (`RU`, `EN`, `FR`, `ES`).
+- **Серверная система лицензирования (`server/xmas-licensing.js` + `app/src/main/assets/_worker.js`):** поддержка `single` (900 центов, 1 ПК), `family` (1400 центов, 5 ПК), `collection` (1999 центов, 5 ПК, `all`), таблицы `xmas_licenses` и `xmas_activations` в Neon PostgreSQL, идемпотентность webhook по `stripe_session_id`, эндпоинты `/api/xmas-pc/checkout`, `/api/xmas-pc/verify`, `/api/xmas-pc/activate`, `/api/xmas-pc/license`, `/api/xmas-pc/download`.
+- **Windows-программа (`desktop_xmas/XmasPC.cs` → `DEEPSYQ-Xmas-PC.exe`):** прикрепление за значки и окна (`WorkerW`), логотип `xmas-pc.ico`, опущенный трактор (`Height - 9f`), кнопка в программе «Открыть все 10 зимних миров — 19,99 €» с автоматическим обновлением лицензии.
+- **SEO и индексация:** обновлены `xmas-pc.html` (Open Graph, Twitter Card, Schema.org `SoftwareApplication` + `FAQPage`), `sitemap.xml`, `llms.txt`.
+
 ### 2026-11-17 — SEO indexability: PUBLISHED AND LIVE-VERIFIED
 
 - Safe exact-two-file release: GitHub Actions [44085547710](https://github.com/mvryhan-web/video-variator-android/actions/runs/44085547710), Cloudflare production deployment **`06e7a5a7-524e-4951-9f41-955b15bfa831`**. Explicit scope **`/sitemap.xml`** and **`/video-sur-mesure.html`** only.
@@ -705,3 +770,78 @@ Production `fc8fc614-bbe6-4c78-8aa9-f4a78a38020e`, [выпуск #43501433353](h
   - `deepsyq-theme-loader.js`: `const defaultAppearance='dark'`; new visitors without explicit saved choice get Dark theme.
   - `account-settings.html`: returns `'dark'` when `custom === null && previous === null`; Christmas theme remains an explicit opt-in choice.
   - `/api/config`: HTTP 200, billing and auth fully operational.
+
+## 2026-11-26 — Canvas Studio: Canva + CapCut / YouCut 1-Screen Editor (LIVE)
+- **Production deployment:** `https://22a26bfa.deepsyq.pages.dev` -> `https://deepsyq.app/canvas.html`
+- **Files updated:**
+  - `app/src/main/assets/canvas.html` (`?v=20261126-capcut1`, `?v=20261126c`)
+  - `app/src/main/assets/canvas-workspace.css` (`100dvh` zero-scroll desktop grid + CapCut/YouCut mobile bottom icon rail & slide-up sheets)
+  - `app/src/main/assets/canvas-workspace.js` (multi-clip video/photo timeline, Split, Trim L/R, Reorder, Speed `0.5x–2x`, Music track MP3/WAV/M4A with volume & offset, Canva text/shapes/filters/white-BG, on-device `MediaRecorder` + `AudioContext` Video Export & PNG Export at $0 server cost)
+  - `app/src/main/assets/deepsyq-i18n.js` (24 new 4-language EN/RU/FR/ES translations)
+- **Rollback backup:** `backups/canvas_capcut_20261126/`
+- **Verification:** `node --check` PASS, SEO/PWA/JARVIX-canvas/Billing tests PASS, live HTTP 200 & marker checks on all 4 production URLs PASS.
+
+## 2026-11-26 — Canvas Studio v2: Authentic Dual-Mode CapCut (Video Cut) + Clean Canva (Design) (LIVE)
+- **Production deployment:** `https://50c8e395.deepsyq.pages.dev` -> `https://deepsyq.app/canvas.html`
+- **Key Upgrades:**
+  - Single 42px CapCut top bar on mobile (site `<header class="top">` auto-hidden on `<= 760px` while preserved in DOM for desktop & JARVIX tests).
+  - Top mode switcher: **Video Cut (CapCut)** vs **Design (Canva)**.
+  - **CapCut mode:** clean black cinema preview, dedicated transport bar (`timecode · Play · Undo/Redo · Fullscreen`), time ruler, white vertical playhead, touch-draggable white Left/Right trim handles directly on selected clips, inline `+` add-clip button on video track, `♪ + Add audio` on audio track, and contextual bottom bar that switches cleanly between Main (`Edit · Audio · Text · Filters · Ratio · AI`) and Clip Edit (`‹ · Split · Speed · Volume · Rotate · Mirror · ← · → · Delete`).
+  - **Canva mode:** zero video/timeline clutter — 6 essential tools (`Photos · Text · Elements · Edit · BG · AI`) and 1-click `Export PNG`.
+- **Files updated:** `canvas.html`, `canvas-workspace.css?v=20261126-capcut2`, `canvas-workspace.js?v=20261126-capcut2`, `deepsyq-i18n.js?v=20261126d`.
+
+## 2026-11-26 — Canvas Studio v2.1: Desktop & Mobile Visual Audit & Fixes (100% PASS LIVE)
+- **Production deployment:** `https://8b94b0e0.deepsyq.pages.dev` -> `https://deepsyq.app/canvas.html` (`?v=20261126-capcut4`)
+- **Bugs caught via live browser screenshots & fixed:**
+  1. Desktop left sidebar (`204px`) overlapped `.cw-topbar`, `.cw-rail`, and `.cw-timeline-dock` -> restored `padding-left: 204px !important` on `>= 901px`.
+  2. Global `aside { position: fixed; width: 224px; }` pulled `.cw-drawer` out of CSS Grid on Desktop Design mode -> forced `position: static !important; width: auto !important;` on `>= 761px`.
+  3. Mobile `deepsyq-mobile-shell.css` injected a `132px` blank spacer + floating `☰` above CapCut topbar -> loaded `canvas-workspace.css` after `deepsyq-mobile-shell.css` and hid `.ds-mobile-header`, `.ds-mobile-header-spacer`, `.ds-mobile-menu`, and `.ds-site-mobile-toggle` on `<= 760px`.
+  4. Mobile Design mode topbar had `9:16` select + Undo/Redo overlapping `Дизайн` -> hid `.cw-ratio-select` and `.cw-canva-undo` on `<= 760px` and normalized button `min-height: 0 !important` (crisp 30×30 circular Play button).
+- **Live Browser Verification:** Desktop 1440×900 (Video Cut + Design) PASS, Mobile 390×844 (Video Cut + Clip Edit + Design) PASS — zero occluded buttons, zero overlap.
+
+## 2026-11-26 — Canvas Studio v2.2: Authentic CapCut Center-Locked Playhead, Compact Export Arrow & 28 Working Tools (100% PASS LIVE)
+- **Production deployment:** `https://05d3fdc1.deepsyq.pages.dev` -> `https://deepsyq.app/canvas.html` (`?v=20261126-capcut5`, `deepsyq-i18n.js?v=20261126e`)
+- **Upgrades verified live on Desktop (1440×900) & Mobile (390×844):**
+  1. **Compact mobile Export arrow icon (`↑` 36×32px):** 96px clear margin after `Дизайн`, zero overlap.
+  2. **Center-locked CapCut playhead + scrolling timeline:** white vertical line fixed at dead-center (`50%`); scrolling the video track smoothly scrubs `#cwTimecode` & preview live, and Play auto-scrolls the track under the center line.
+  3. **28 working CapCut tools** (10 Main Bar: Edit, Audio, Text, Stickers, Filters, Adjust, Effects, Ratio, Canvas, AI + 18 Clip Edit Sub-Bar: Back, Split, Speed 0.25x–3x, Volume, Animate, Transition, Filters, Adjust, Crop, Rotate, Mirror, Opacity, Copy, Freeze Frame, Mute, Left, Right, Delete) with 4-language EN/RU/FR/ES translations.
+
+## 2026-11-26 — Canvas Studio v2.3: Mobile Bottom Sheets, Download SVG, Smooth Hardware Video Playback & Tap-Outside Back (100% PASS LIVE)
+- **Production deployment:** `https://132c6c55.deepsyq.pages.dev` -> `https://deepsyq.app/canvas.html` (`?v=20261126-capcut6`)
+- **Fixes verified live on Mobile (390×844) & Desktop (1440×900):**
+  1. Changed `.cw-drawer` from `<aside>` to `<div role="region">` + explicit `transform: none !important; left: 6px !important; right: 6px !important; width: auto !important;` — Stickers, Filters, Adjust, Effects, Speed, Volume now all open 100% centered inside the 390px screen (`x=6, width=378`).
+  2. Replaced up-arrow with a crisp inline SVG **Download icon** (down-arrow into tray) in `#cwExport`.
+  3. Upgraded video playback to native hardware `v.play()` with `v.playbackRate` & `v.volume` (eliminating 1–2s decoder freeze while timeline kept scrolling).
+  4. Split (`Разрезать`) now keeps playhead cleanly at the cut and deselects without forcing right-half jump.
+  5. Tapping empty area around the video preview or timeline automatically triggers **Back** (closes open tool sheet & exits Clip Edit sub-bar, matching YouCut/CapCut).
+
+## 2026-11-26 — Canvas Studio v2.4: Exact YouCut/CapCut SVG Bottom Bar, Mobile Design Ratio Dropdown & Pro 3-Pane Web Video Editor (100% PASS LIVE)
+- **Production deployment:** `https://74bdf296.deepsyq.pages.dev` -> `https://deepsyq.app/canvas.html` (`?v=20261126-capcut8`, `deepsyq-i18n.js?v=20261126f`)
+- **Verified live on Desktop (1440×900) & Mobile (390×844):**
+  1. **Mobile Video Cut:** authentic pitch-black bottom bar with 12 thin white SVG line-art icons (`Изменить, Аудио, Текст, Эффекты, Наложение, Субтитры, Фильтры, Коррекция, Стикеры, ИИ-медиа [AI], Формат, Холст`) + Video, `♪ + Добавить аудио`, and `T + Добавить текст` rows on timeline.
+  2. **Mobile Design:** `9:16 / 16:9 / 1:1 / 4:5` aspect-ratio selector appears cleanly right beside `Дизайн` with zero overlap against `Дизайн` or the compact Download icon.
+  3. **Desktop Pro 3-Pane Web Video Editor:** Left Tool Rail + Open Media Library | Center Cinema Monitor | Right Live Properties Inspector (`Свойства`: Quick Actions, Speed, Transform, Scale, Opacity, Animation) | Full-Width Multi-Track Timeline below — zero overlap with the 204px site sidebar.
+
+## 2026-11-26 — Canvas Studio v2.5: 1-to-1 Mobile YouCut/CapCut Edge-to-Edge Match (100% PASS LIVE)
+- **Production deployment:** `https://25ea6844.deepsyq.pages.dev` -> `https://deepsyq.app/canvas.html` (`?v=20261126-capcut9`, `deepsyq-i18n.js?v=20261126g`)
+- **Verified live on Mobile (390×844):**
+  - Seamless edge-to-edge `#0e1015` layout (zero side padding or card boxes).
+  - Transport bar: Fullscreen left · Outline white Play triangle center (no circle) · Undo/Redo right · `00:00 / 00:03` directly below.
+  - Timeline: `Обложка` (Cover) tile to the left of the white playhead line, clip starting right on the white line, pinned white `+` square on the right, sleek dark-gray `+ Добавить аудио` and `+ Добавить текст` bars.
+  - Compact in-place bottom tool strip (`bottom: 0, height <= 178px`) with `‹` Back button replacing ONLY the bottom bar area.
+
+## 2026-11-27 — Custom Video (`video-sur-mesure.html`) Surgical UX Polish (LIVE)
+- **Production deployment:** `https://700a4b27.deepsyq.pages.dev` -> `https://deepsyq.app/video-sur-mesure.html`
+- **Changes:**
+  - Language selector simplified to short codes (`FR`, `EN`, `DE`, `AR`, `ES`, `IT`, `NL`, `PT`, `RU`) — removed duplicate full language names.
+  - Currency selector simplified to symbols (`€`, `$`, `£`, `CHF`, `AED`) — removed duplicate `EUR` / `USD` text.
+  - Removed top header `Tarifs (5 € – 55 €)` link so pricing doesn't scare visitors at first glance.
+  - Moved FAQ (`#questions` — «Всё, что нужно знать») directly below Additional Services (`#services-plus` — «Дополнительные услуги для вашего видео»).
+
+## 2026-11-27 — Custom Video (`video-sur-mesure.html`) Package Cards & Order Form Cleanup (100% PASS LIVE)
+- **Production deployment:** `https://0c9147c8.deepsyq.pages.dev` -> `https://deepsyq.app/video-sur-mesure.html`
+- **Surgical updates verified live on Mobile (390×844) & Desktop (1440×900):**
+  1. Removed `.pkg-sub` description lines under all 4 package cards (`BASIC`, `MEDIUM`, `PROFESSIONAL`, `CUSTOM` / `КАСТОМ`) and tightened mobile card grid (`grid-row: 1`) so title and price align cleanly.
+  2. Renamed 4th card from `CUSTOM STUDIO` to `CUSTOM` with Russian localization (`КАСТОМ` + `Настроить Кастом`).
+  3. Hid duplicate `Package, format and brand details` (`details.order-extra`) block from users while preserving internal checkout DOM fields.
+  4. Removed `Подготовить письмо-запрос` (`btnMailto`) button from `#projectForm`.
