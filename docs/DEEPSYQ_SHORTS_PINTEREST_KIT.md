@@ -1,21 +1,30 @@
-# #5 DeepSyQ — Конвейер коротких видео без лица (Shorts + TikTok + Pinterest Video Pins)
+# #5 DeepSyQ — Готовый пакет для Pinterest, YouTube Shorts и TikTok (10 файлов готовы к загрузке!)
 
-> **Секрет 2026:** Одно вертикальное 15-секундное видео (запись экрана без лица) заливается сразу в 3 места: **YouTube Shorts**, **TikTok** и **Pinterest Video Pin**. Pinterest работает как поисковик — пин с правильным заголовком приносит клики на `deepsyq.app` **месяцами и годами**.
+Все 10 файлов (красивые AI-картинки, слайды платформы и вертикальные видео из Inspiration + промо-ролик) уже собраны в папке: **`docs/pinterest_pack/`**.
+**Почему Pinterest — скрытое золото:** видео в TikTok живёт 48 часов, а **Pinterest Pin** со ссылкой на `https://deepsyq.app/...` приносит бесплатные переходы из поиска **месяцами и годами**.
 
-## 10 готовых 15-секундных сценариев (запись экрана телефона или ПК)
+---
 
-| № | Хук (0–2 сек, текст на экране) | Что показать на экране (3–12 сек) | Финал / CTA (13–15 сек) | SEO-заголовок для Pinterest Video Pin |
-|---|---|---|---|---|
-| 1 | **Stop paying $20/mo for CapCut Pro** | Открыть `deepsyq.app/canvas.html` на телефоне, разрезать клип, наложить музыку, нажать Export | «0 Watermark · Link in bio: deepsyq.app» | `Free CapCut Alternative Online Without Watermark (No App Needed)` |
-| 2 | **CapCut + Canva in ONE free browser app** | Нажать переключатель `Video Cut` ↔ `Design` на `deepsyq.app/canvas.html` | «Try free on phone & PC — deepsyq.app» | `Free Online Video Editor and Graphic Design Tool in Browser` |
-| 3 | **Convert MP4 to MP3 in 2 seconds (No upload!)** | Открыть `deepsyq.app/mp4-to-mp3.html`, выбрать видео, скачать MP3 | «100% private on-device — deepsyq.app» | `How to Convert MP4 to MP3 Free Online Without Uploading` |
-| 4 | **Remove white background from ANY logo in 1 click** | Открыть `deepsyq.app/remove-white-background-free.html`, убрать фон логотипа | «Free transparent PNG — deepsyq.app» | `Remove White Background From Logo Free Transparent PNG` |
-| 5 | **Test AI Video & Images for $0.99 (No subscription!)** | Открыть `deepsyq.app/jarvix-chat.html`, сгенерировать кинематографичную сцену | «$0.99 Trial = 100 AI Credits · deepsyq.app» | `Best Affordable AI Video Generator — $0.99 Trial No Subscription` |
-| 6 | **Merge & Sign PDFs privately (Stop uploading contracts!)** | Открыть `deepsyq.app/merge-pdf-free-online.html`, объединить 2 PDF локально | «22 Free Private Tools — deepsyq.app» | `Merge and Sign PDF Online Free Without Cloud Upload` |
-| 7 | **Shrink huge phone videos for WhatsApp in 5 sec** | Открыть `deepsyq.app/compress-video-for-whatsapp.html`, сжать видео | «Free on-device compressor — deepsyq.app» | `Compress Video for WhatsApp Free Online Fast` |
-| 8 | **Add MP3 music to your Reels without losing quality** | В `canvas.html` нажать `+ Add audio`, подвинуть трек, скачать видео | «Zero watermark · deepsyq.app/canvas.html» | `How to Add MP3 Music to Video Online Free No Watermark` |
-| 9 | **Need a luxury ad video for your business? From 5 €** | Показать примеры отеля/ресторана на `deepsyq.app/video-sur-mesure.html` | «Custom business videos — deepsyq.app» | `Custom Commercial Ad Video for Hotels Restaurants and Brands` |
-| 10 | **Voice-controlled AI Studio (Meet JARVIX)** | Нажать сферу JARVIX на `deepsyq.app`, голосом открыть инструмент | «Try JARVIX free — deepsyq.app» | `AI Voice Assistant for Video and Image Creation — DeepSyQ JARVIX` |
+## Готовая таблица для публикации (10 пинов / роликов)
 
-## Обязательная ссылка на Pinterest Pin
-Для каждого пина в поле **Destination Link** ставь точную страницу инструмента (например, `https://deepsyq.app/best-free-capcut-alternative.html` или `https://deepsyq.app/mp4-to-mp3.html`), чтобы человек попадал сразу в решение своей задачи.
+| № | Файл в `docs/pinterest_pack/` | SEO-заголовок (Pinterest / Shorts) | Ссылка назначения (URL) |
+|---|---|---|---|
+| **1** | `01-deepsyq-all-in-one-ai-platform.jpg` | `All-in-One AI Platform: JARVIX Voice, AI Video, Images & 22+ Free Tools` | `https://deepsyq.app/` |
+| **2** | `02-jarvix-voice-text-ai.jpg` | `Meet JARVIX: Unified Voice & Text AI Assistant for Video, Image & Audio` | `https://deepsyq.app/jarvix.html` |
+| **3** | `03-22-free-browser-tools.jpg` | `22+ Free Private Browser Tools: PDF Merge/Sign, MP4 to MP3 & Zero-Watermark Canvas` | `https://deepsyq.app/free-tools.html` |
+| **4** | `04-deepsyq-099-trial-pricing.png` | `Test Top AI Video & Image Models for $0.99 One-Time (100 AI Credits, No Auto-Renewal)` | `https://deepsyq.app/pricing.html` |
+| **5** | `05-deepsyq-promo-create-beyond-limits.mp4` | `DeepSyQ — Create Beyond Limits: All-in-One AI Video, Image & Voice Platform` | `https://deepsyq.app/` |
+| **6** | `06-inspiration-ai-video.mp4` | `Cinematic AI Video Made in Browser — Try DeepSyQ AI Studio ($0.99 Trial)` | `https://deepsyq.app/ai-video-generator.html` |
+| **7** | `07-inspiration-ai-video.mp4` | `Text-to-Video & Image-to-Video AI Platform — No Monthly Trap` | `https://deepsyq.app/text-to-video.html` |
+| **8** | `08-inspiration-ai-video.mp4` | `Create Viral AI Short Videos in 1 Click with JARVIX AI` | `https://deepsyq.app/ai-video-ads.html` |
+| **9** | `09-inspiration-ai-art.jpg` | `Photorealistic AI Image Generator Online — DeepSyQ AI Studio` | `https://deepsyq.app/ai-image-generator.html` |
+| **10** | `10-inspiration-ai-art.jpg` | `Stunning AI Visuals + Custom Commercial Videos from €4.95` | `https://deepsyq.app/video-sur-mesure.html` |
+
+---
+
+## Универсальное SEO-описание для каждого пина (копируй и вставляй)
+```text
+Stop juggling 5 separate AI subscriptions. DeepSyQ is an all-in-one AI platform powered by JARVIX (voice & text AI): generate AI videos, photorealistic images, and voiceovers across top models, edit in zero-watermark Canvas Studio, and use 22+ free private on-device browser tools (PDF, MP4 to MP3, video compression, background remover). Start with 22+ free tools or test AI generation with a $0.99 one-time Trial (100 AI credits, zero auto-renewal) at deepsyq.app!
+
+#AIPlatform #AIVideoGenerator #AIImageGenerator #JARVIX #AITools #ContentCreation #FreeOnlineTools #DeepSyQ
+```

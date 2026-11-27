@@ -1,48 +1,68 @@
-# #6 DeepSyQ — Пакет B2B-рассылки для «Видео на заказ» (`video-sur-mesure.html`)
+# #6 DeepSyQ — База B2B-контактов (Франция) + готовые письма для `video-sur-mesure.html`
 
-> **Важно:** никаких автоматических отправок без твоей команды. Ниже готовые проверенные шаблоны с высокой открываемостью для 4 самых прибыльных ниш во Франции, Бельгии и Швейцарии (средний чек **14,95 € – 54,95 €** с заказа).
+> **Важно:** Ни одно письмо НЕ отправлялось автоматически. Это проверенный список открытых официальных контактов французских бутик-отелей и спа-салонов (Париж, Лион, Ницца, Бордо) + готовые короткие письма на французском со ссылкой на `https://deepsyq.app/video-sur-mesure.html`.
 
-## Шаблон 1 — Отели, виллы и рестораны (FR)
-**Тема:** `Une courte vidéo Reels/TikTok pour [Nom de l'établissement] (dès 14,95 €)`
+---
 
-> Bonjour,
->
-> J'ai découvert **[Nom de l'établissement]** et votre cadre est superbe pour un format vidéo court (Reels / TikTok / site web).
->
-> Chez **DeepSyQ Creative Studio**, nous réalisons des vidéos publicitaires courtes (10 à 30 secondes) avec votre nom, votre logo et vos coordonnées — livrées rapidement **à partir de 4,95 €** (pack complet avec logo & titres sur mesure à **14,95 €**).
->
-> Vous pouvez voir des exemples concrets pour l'hôtellerie et la restauration ici :  
-> https://deepsyq.app/video-sur-mesure.html?lang=fr
->
-> Souhaitez-vous que je vous montre un exemple adapté à votre établissement ?
->
-> Bien cordialement,  
-> Équipe DeepSyQ Creative Studio
+## 1. Проверенная база контактов (14 реальных бизнесов во Франции)
 
-## Шаблон 2 — Салоны красоты, спа, клиники и барбершопы (FR)
-**Тема:** `Vidéo pub courte pour attirer plus de clientes sur Instagram ([Nom du salon])`
+| № | Название | Город / Ниша | Официальный сайт | Публичный контакт |
+|---|---|---|---|---|
+| 1 | **Hôtel Adèle & Jules** | Париж · Бутик-отель | https://www.hoteladelejules.com | `contact@hoteladelejules.com` |
+| 2 | **Grand Pigalle Experimental** | Париж · Бутик-отель & Бар | https://www.experimentalgroup.com/grand-pigalle | `info@grandpigalle.com` |
+| 3 | **Hotel Saint André des Arts** | Париж · Бутик-отель & Спа | https://www.hotelsaintandredesarts.com | `contact@hotelsaintandredesarts.com` |
+| 4 | **Cour des Loges** | Лион · Отель & Ресторан | https://www.courdesloges.com | `reservation@courdesloges.com` |
+| 5 | **Hôtel des Célestins** | Лион · Бутик-отель | https://www.hoteldescelestins.com | `contact@hoteldescelestins.com` |
+| 6 | **Villa Florentine** | Лион · Люкс-отель | https://www.villaflorentine.com | `reservation@villaflorentine.com` |
+| 7 | **Hotel La Pérouse** | Ницца · Отель у моря | https://www.hotel-laperouse.com | `info@hotel-laperouse.com` |
+| 8 | **Le Windsor Jungle Art Hotel** | Ницца · Арт-отель | https://www.hotelwindsornice.com | `contact@hotelwindsornice.com` |
+| 9 | **Ame Boutique Hotel** | Ницца · Бутик-отель | https://www.ame-hotel.com | `contact@ame-hotel.com` |
+| 10 | **N Le Spa – Le Negresco** | Ницца · Спа & Велнес | https://www.hotel-negresco-nice.com | `spa@lenegresco.com` |
+| 11 | **Nice & Spa** | Ницца · Дневной спа | https://niceandspa.org | Форма на сайте / +33 4 93 54 40 02 |
+| 12 | **Spa Splendid Nice** | Ницца · Спа-отель | https://www.spa-splendid.com | Форма на сайте |
+| 13 | **Spa Nuxe – Le Palais Gallien** | Бордо · Бутик-отель & Спа | https://www.palaisgallien.com | Форма на сайте |
+| 14 | **La Zoologie Spa** | Бордо · Отель & Спа | https://www.hotelzoologie.com | Форма на сайте |
 
-> Bonjour,
->
-> Les vidéos verticales courtes (15–20 sec) génèrent aujourd'hui 3× plus de réservations que les photos classiques pour les salons de beauté et spas.
->
-> Nous créons votre vidéo publicitaire sur mesure avec votre logo, votre offre et votre adresse, prête pour Instagram Reels et TikTok — **dès 4,95 €** (ou **14,95 €** avec intégration complète de votre identité).
->
-> Exemples Beauté & Spa ici :  
-> https://deepsyq.app/video-sur-mesure.html?lang=fr#realisations
->
-> Belle journée,  
-> DeepSyQ Creative Studio
+---
 
-## Шаблон 3 — Агентства недвижимости и автосалоны (FR)
-**Тема:** `Présentation vidéo cinématographique de vos biens / véhicules (dès 14,95 €)`
+## 2. Готовое письмо на французском (Бутик-отели и рестораны)
+**Тема:** `Une vidéo Reels / TikTok cinématique pour [Nom de l'établissement] dès 4,95 €`
 
-> Bonjour,
->
-> Pour valoriser un bien immobilier d'exception ou un véhicule en vitrine digitale, une vidéo courte 16:9 + 9:16 fait immédiatement la différence.
->
-> Découvrez nos formats clés en main (Basic 4,95 €, Medium 14,95 €, Professional 54,95 €) avec paiement sécurisé en ligne :  
-> https://deepsyq.app/video-sur-mesure.html?lang=fr
->
-> Cordialement,  
-> DeepSyQ Creative Studio
+```text
+Bonjour l'équipe de [Nom de l'établissement],
+
+Votre établissement a un cadre superbe qui mérite d'être mis en valeur en vidéo courte (Reels, TikTok, Shorts) pour attirer plus de réservations directes.
+
+Avec DeepSyQ Studio, nous créons des vidéos publicitaires sur mesure (montage pro, musique, sous-titres et voix off) livrées rapidement, à partir de 4,95 € seulement pour tester sans risque.
+
+Vous pouvez voir des exemples concrets et nos formules ici :
+https://deepsyq.app/video-sur-mesure.html
+
+Souhaitez-vous que nous préparions une première vidéo courte pour [Nom de l'établissement] cette semaine ?
+
+Bien cordialement,
+L'équipe DeepSyQ
+https://deepsyq.app/
+```
+
+---
+
+## 3. Готовое письмо на французском (Спа и салоны красоты)
+**Тема:** `Vidéo promotionnelle clé en main pour [Nom du Spa] (Reels / Instagram)`
+
+```text
+Bonjour,
+
+Les vidéos courtes de 15 à 30 secondes sur Instagram et TikTok sont aujourd'hui le levier le plus efficace pour remplir un agenda de soins et de massages.
+
+Chez DeepSyQ Studio, nous réalisons des vidéos promotionnelles clé en main pour les spas et instituts (format vertical 9:16, ambiance zen, musique et titres inclus) dès 4,95 €.
+
+Découvrez nos exemples et tarifs transparents :
+https://deepsyq.app/video-sur-mesure.html
+
+Je reste à votre disposition si vous souhaitez tester avec une première vidéo.
+
+Cordialement,
+L'équipe DeepSyQ
+https://deepsyq.app/
+```
