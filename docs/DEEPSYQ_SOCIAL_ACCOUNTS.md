@@ -11,9 +11,9 @@
 | **AlternativeTo** | `DeepSyQ` (`https://alternativeto.net/software/deepsyq/about/`) | Подан с логотипом, 4 слайдами и 6 альтернативами |
 | **SaaSHub** | `DeepSyQ` (`https://www.saashub.com/deepsyq`) | Подан и обновлён под AI-платформу |
 
-> **Строго запрещённые к редактированию (НИКОГДА НЕ ТРОГАТЬ):** `Ryhan Mykhaylo` (личный профиль), `Mikhail Ryhan` (FB-страница), `New Best Products` (FB-страница), `Ryhan Music` (FB-страница), `Ryhan Mykhaylo подписчиков` (закрытая группа), `Stefanka baby Star` (группа на 720 уч.).
+> **Строго запрещённые к редактированию (НИКОГДА НЕ ТРОГАТЬ):** `Ryhan Mykhaylo` (личный профиль), `New Best Products` (FB-страница), `Ryhan Music` (FB-страница), `Ryhan Mykhaylo подписчиков` (закрытая группа), `Stefanka baby Star` (группа на 720 уч.).
 
-## 7 Сателлитных страниц Facebook (ребрендинг 28.11.2026: Bio, Website, Email, Avatar ✅)
+## 8 Сателлитных страниц Facebook (ребрендинг 28.11.2026)
 | № | Текущее имя | Целевое SEO-имя (нужен пароль FB) | URL | Целевая ссылка |
 |---|---|---|---|---|
 | 1 | `Santa Claus Games` | **`DeepSyQ Xmas PC & 3D Themes`** | https://www.facebook.com/profile.php?id=100069348776968 | `https://deepsyq.app/xmas-pc.html` |
@@ -23,6 +23,7 @@
 | 5 | `Велорикша` | **`DeepSyQ Видео на Заказ`** | https://www.facebook.com/profile.php?id=100068895386732 | `https://deepsyq.app/video-sur-mesure.html` |
 | 6 | `Asmr` | **`DeepSyQ Visual ASMR AI`** | https://www.facebook.com/profile.php?id=61586112642829 | `https://deepsyq.app/ai-video-generator.html` |
 | 7 | `mvryhan` | **`JARVIX AI Assistant by DeepSyQ`** | https://www.facebook.com/profile.php?id=100082309311696 | `https://deepsyq.app/jarvix.html` |
+| 8 | `Mikhail Ryhan` | **`DeepSyQ Video Uniquifier Pro`** | *(разрешена владельцем 28.11.2026 — в работе)* | `https://deepsyq.app/video-uniquifier.html` |
 
 ## Управляемые группы Facebook (аудит 27.11.2026)
 1. **Взаимная Подписка** (`49` уч., открытая) — https://www.facebook.com/groups/MutualSubscription/
