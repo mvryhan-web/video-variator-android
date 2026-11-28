@@ -23,7 +23,7 @@
 | 5 | `Велорикша` | **`DeepSyQ Видео на Заказ`** | https://www.facebook.com/profile.php?id=100068895386732 | `https://deepsyq.app/video-sur-mesure.html` |
 | 6 | `Asmr` | **`DeepSyQ Visual ASMR AI`** | https://www.facebook.com/profile.php?id=61586112642829 | `https://deepsyq.app/ai-video-generator.html` |
 | 7 | `mvryhan` | **`JARVIX AI Assistant by DeepSyQ`** | https://www.facebook.com/profile.php?id=100082309311696 | `https://deepsyq.app/jarvix.html` |
-| 8 | `Mikhail Ryhan` | **`DeepSyQ Video Uniquifier Pro`** | *(разрешена владельцем 28.11.2026 — в работе)* | `https://deepsyq.app/video-uniquifier.html` |
+| 8 | `Mikhail Ryhan` | **`DeepSyQ Video Uniquifier Pro`** | https://www.facebook.com/profile.php?id=100063456406282 | `https://deepsyq.app/video-uniquifier.html` |
 
 ## Управляемые группы Facebook (аудит 27.11.2026)
 1. **Взаимная Подписка** (`49` уч., открытая) — https://www.facebook.com/groups/MutualSubscription/
